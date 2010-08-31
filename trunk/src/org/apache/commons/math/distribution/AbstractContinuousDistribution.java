@@ -44,7 +44,7 @@ public abstract class AbstractContinuousDistribution
      * Solver absolute accuracy for inverse cum computation
      * @since 2.1
      */
-    private double solverAbsoluteAccuracy =  1E-6;
+    private double solverAbsoluteAccuracy = BrentSolver.DEFAULT_ABSOLUTE_ACCURACY;
 
     /**
      * Default constructor.
