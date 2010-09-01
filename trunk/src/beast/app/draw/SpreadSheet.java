@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.EventObject;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -78,9 +79,13 @@ import javax.swing.table.TableCellEditor;
 import beast.core.Distribution;
 import beast.core.Input;
 import beast.core.Logger;
+import beast.core.Operator;
 import beast.core.Plugin;
 import beast.core.StateNode;
+import beast.evolution.alignment.Alignment;
+import beast.evolution.alignment.Sequence;
 import beast.util.ClassDiscovery;
+import beast.util.Randomizer;
 import beast.util.XMLParser;
 import beast.util.XMLProducer;
 
@@ -203,7 +208,6 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 			}
 			@Override
 			public void mousePressed(MouseEvent e) {
-				System.err.println("MOUSEPRESSED");
 			}
 			@Override
 			public void mouseExited(MouseEvent e) {
@@ -261,7 +265,6 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 		m_table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		m_table.setCellSelectionEnabled(true);
 		m_table.setDefaultRenderer(Object.class, new MyTableCellRenderer());
-		if (false)
 		m_table.setDefaultEditor(Object.class, new TableCellEditor() {
 			JComponent component = new JTextField();
 			int m_iRow, m_iCol;
@@ -327,6 +330,9 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 			@Override
 			public Component getTableCellEditorComponent(JTable table, Object value,
 					boolean isSelected, int row, int column) {
+				if (!isSelected) {
+					return null;
+				}
 				m_iRow = row;
 				m_iCol = column;
 				beginEditAction();
@@ -355,9 +361,6 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 			}
 		});
 		JScrollPane scrollPane = new JScrollPane(m_table);
-
-		m_table.getColumnModel().getColumn(0).setPreferredWidth(100);
-		m_table.getColumnModel().getColumn(1).setPreferredWidth(400);
 
 		// set up row labels
 		DefaultTableModel headerData = new DefaultTableModel(0, 1);
@@ -1413,6 +1416,9 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 
 	void readXML(String sFile) throws Exception {
 		XMLParser parser = new XMLParser();
+		Random rand = new Random(127);
+		
+
 		Plugin plugin0 = null;
 		plugin0 = parser.parseFile(sFile);
 		// collect all objects and store in m_plugins
@@ -1420,14 +1426,32 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 		collectPlugins(plugin0);
 		m_plugins.add(plugin0);
 
-		for (int i = 0; i < m_plugins.size(); i++) {
-			Plugin plugin = m_plugins.get(i);
+		Color color = new Color(rand.nextInt(256), 128+rand.nextInt(128), rand.nextInt(128));
+		int k = 0;
+		int i = 0;
+		while (k < m_plugins.size()) {
+			Plugin plugin = m_plugins.get(k++);
+			if (i > 1) {
+				Object prev = m_objects[i-1][1];
+				if (prev instanceof Sequence && !(plugin instanceof Sequence) ||
+				    !(prev instanceof Operator) && plugin instanceof Operator ||
+					plugin instanceof Alignment ||
+					plugin instanceof Runnable ||
+					plugin instanceof Logger) {
+					color = new Color(128+rand.nextInt(128), 200+rand.nextInt(56), rand.nextInt(128));
+					i++;
+				}
+			}
 			String sID = plugin.getID();
 			if (sID == null || sID.equals("")) {
 				sID = plugin.getClass().getName().substring(plugin.getClass().getName().lastIndexOf('.') + 1);
 			}
 			m_objects[i][0] = sID;
 			m_objects[i][1] = plugin;
+			CellFormat format = new CellFormat();
+			format.m_bgColor = color; 
+			m_cellFormat[i][1] = format;
+			
 			plugin.setID("B"+(i+1));
 			m_pluginLocation.put(plugin, i + MAX_ROW);
 			if (plugin instanceof StateNode || plugin instanceof Distribution) {
@@ -1436,8 +1460,10 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 				m_formulas.add(formula);
 				m_formulaLocation.put(formula, i + MAX_ROW * 2);
 			}
+			i++;
 		}
-		m_table.repaint();
+		m_table.getColumnModel().getColumn(0).setPreferredWidth(100);
+		m_table.getColumnModel().getColumn(1).setPreferredWidth(400);
 		updateActions();
 	} // readXML
 
@@ -1828,7 +1854,9 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 			Logger.FILE_MODE = Logger.FILE_OVERWRITE;
 			SpreadSheet spreadSheet = new SpreadSheet();
 			spreadSheet.setSize(2048, 2048);
-			spreadSheet.readXML(args[0]);
+			if (args.length > 0) {
+				spreadSheet.readXML(args[0]);
+			}
 
 			JFrame frame = new JFrame("Beast II Calculator");
 			JMenuBar menuBar = spreadSheet.getMenuBar();
