@@ -29,6 +29,7 @@ import beast.util.Randomizer;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
+
 import java.awt.*;
 
 
@@ -44,7 +45,7 @@ public class ModelBuilder extends JPanel {
     static final long serialVersionUID = 1L;
 
     public static void main(String args[]) {
-        Randomizer.setSeed(127);
+    	Randomizer.setSeed(127);
         JFrame f = new JFrame("Model Builder");
         beast.app.draw.ModelBuilder drawTest = new beast.app.draw.ModelBuilder();
         drawTest.init();
@@ -52,17 +53,17 @@ public class ModelBuilder extends JPanel {
         f.setJMenuBar(menuBar);
 
         f.add(drawTest.m_jTbTools, BorderLayout.NORTH);
-        f.add(drawTest.g_panel, BorderLayout.CENTER);
+        f.add(drawTest, BorderLayout.CENTER);
 
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        java.net.URL tempURL = ClassLoader.getSystemResource(beast.app.draw.ModelBuilder.ICONPATH + "/GenerationD.png");
+        java.net.URL tempURL = ClassLoader
+                .getSystemResource(beast.app.draw.ModelBuilder.ICONPATH + "/GenerationD.png");
         try {
             f.setIconImage(ImageIO.read(tempURL));
         } catch (Exception e) {
             e.printStackTrace();
             // ignore
         }
-        //drawTest.m_doc.loadFile("G:\\eclipse\\workspace\\var\\test2.xdl");
         if (args.length > 0) {
             drawTest.m_doc.loadFile(args[0]);
             drawTest.setDrawingFlag();

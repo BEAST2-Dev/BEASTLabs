@@ -279,11 +279,13 @@ public class PluginPanel extends JPanel {
             bProgress = false;
             for (int i = 0; i < ascendants.size(); i++) {
                 Plugin ascendant = ascendants.get(i);
-                for (Plugin parent2 : outputs.get(ascendant)) {
-                    if (!ascendants.contains(parent2)) {
-                        ascendants.add(parent2);
-                        bProgress = true;
-                    }
+                if (outputs.containsKey(ascendant)) {
+	                for (Plugin parent2 : outputs.get(ascendant)) {
+	                    if (!ascendants.contains(parent2)) {
+	                        ascendants.add(parent2);
+	                        bProgress = true;
+	                    }
+	                }
                 }
             }
         }

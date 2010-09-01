@@ -46,6 +46,7 @@ public abstract class InputEditor extends Box {
 
 		addInputLabel();
 		m_entry = new JTextField();
+		m_entry.setMinimumSize(new Dimension(100,16));
 		if (input.get()!= null) {
 			m_entry.setText(input.get().toString());
 		}
