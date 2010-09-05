@@ -67,6 +67,8 @@ public class State extends Plugin {
     
     /** number of state nodes **/
     private int m_nStateNode;
+    public int getNrOfStateNodes() {return m_nStateNode;}
+    
     /** pointers to memory allocated to stateNodes and storedStateNodes **/
     private StateNode[] m_stateNodeMem;
 
