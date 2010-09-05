@@ -185,7 +185,7 @@ public class MCMC extends Runnable {
             state.store(iSample);
 
             Operator operator = operatorSet.selectOperator();
-            //System.out.println(operator.getName()+ ":");
+            //System.out.print("\n" + iSample + " " + operator.getName()+ ":");
             double fLogHastingsRatio = operator.proposal();
             if (fLogHastingsRatio != Double.NEGATIVE_INFINITY) {
             	state.storeCalculationNodes();
@@ -203,6 +203,7 @@ public class MCMC extends Runnable {
                     if (iSample >= 0) {
                         operator.accept();
                     }
+                    //System.out.print(" accept");
                 } else {
                     // reject
                     if (iSample >= 0) {
@@ -210,18 +211,21 @@ public class MCMC extends Runnable {
                     }
                     state.restore();
                     state.restoreCalculationNodes();
+                    //System.out.print(" reject");
                 }
                 state.setEverythingDirty(false);
             } else {
                 // operation failed
-                state.restore();
                 if (iSample > 0) {
                     operator.reject();
                 }
+                state.restore();
+                //System.out.print(" direct reject");
             }
             log(iSample);
 
-            if (bDebug && iSample % 2 == 0) {
+            if (bDebug && iSample % 3 == 0) {
+            	//System.out.print("*");
             	// check that the posterior is correctly calculated
                 state.store(-1);
                 state.setEverythingDirty(true);
@@ -232,7 +236,7 @@ public class MCMC extends Runnable {
                 if (Math.abs(fLogLikelihood - fOldLogLikelihood) > 1e-10) {
                     throw new Exception("Likelihood incorrectly calculated: " + fOldLogLikelihood + " != " + fLogLikelihood);
                 }
-                if (iSample > NR_OF_DEBUG_SAMPLES) {
+                if (iSample > NR_OF_DEBUG_SAMPLES * 3) {
                     bDebug = false;
                 }
                 state.setEverythingDirty(false);
