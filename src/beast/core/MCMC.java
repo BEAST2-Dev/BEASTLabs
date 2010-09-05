@@ -221,7 +221,7 @@ public class MCMC extends Runnable {
             }
             log(iSample);
 
-            if (bDebug && iSample % 3 == 0) {
+            if (bDebug && iSample % 2 == 0) {
             	// check that the posterior is correctly calculated
                 state.store(-1);
                 state.setEverythingDirty(true);
