@@ -22,7 +22,7 @@ public class CompoundPopulationFunction extends PopulationFunction.Abstract {
             "Include/exclude population value from the population function.", Input.Validate.REQUIRED);
 
     public Input<List<TreeIntervals>> treesInput = new Input<List<TreeIntervals>>("itree", "Coalecent intervals of this tree are " +
-            "used in the compound population function.", Input.Validate.REQUIRED);
+            "used in the compound population function.", new ArrayList<TreeIntervals>(), Input.Validate.REQUIRED);
 
     public Input<String> demographicType = new Input<String>("type", "Flavour of demographic: either linear or stepwise for " +
             " piecewise-linear or piecewise-constant.",
