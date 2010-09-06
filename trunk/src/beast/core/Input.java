@@ -28,6 +28,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -71,6 +72,12 @@ public class Input<T> {
      */
     Input<?> other;
     public T defaultValue;
+    /**
+     * Possible values for enumerations, e.g. if
+     * an input can be any of "constant", "linear", "quadratic"
+     * this array contains these values. Used for validation and user interfaces. 
+     */
+    public T [] possibleValues;
 
     /**
      * constructors *
@@ -153,6 +160,23 @@ public class Input<T> {
         this.other.rule = rule;
     } // c'tor
 
+
+    /**
+     * constructor for enumeration.
+     * Typical usage is with an array of possible String values, say ["constant","exponential","lognormal"]
+     * Furthermore, a default value is required (should we have another constructor that could leave
+     * the value optional? When providing a 'no-input' entry in the list and setting that as the default,
+     * that should cover that situation.)
+     */
+    public Input(String sName, String sTipText, T startValue, T [] sPossibleValues) {
+        name = sName;
+        tipText = sTipText;
+        value =  startValue;
+        defaultValue =  startValue;
+        possibleValues = sPossibleValues;
+    } // c'tor
+    
+    
     /**
      * various setters and getters
      */
@@ -387,6 +411,19 @@ public class Input<T> {
      * @throws Exception when validation fails. why not return a string?
      */
     public void validate() throws Exception {
+    	if (possibleValues != null) {
+    		// it is an enumeration, check the value is in the list
+    		boolean bFound = false;
+    		for (T value : possibleValues) {
+    			if (value.equals(this.value)) {
+    				bFound = true;
+    			}
+    		}
+    		if (!bFound) {
+    			throw new Exception("Expected one of " + Arrays.toString(possibleValues) +" but got " + this.value);
+    		}
+    	}
+    	
         switch (rule) {
             case OPTIONAL:
                 // noting to do

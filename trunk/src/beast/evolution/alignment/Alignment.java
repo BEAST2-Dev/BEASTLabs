@@ -26,7 +26,6 @@ package beast.evolution.alignment;
 
 import beast.core.Description;
 import beast.core.Input;
-import beast.core.Input.Validate;
 import beast.core.Plugin;
 
 import java.util.ArrayList;
@@ -39,11 +38,13 @@ import java.util.List;
 
 @Description("Class representing alignment data")
 public class Alignment extends Plugin {
-
+    /** currently supported types **/
+	String[] TYPES = {"nucleotide","binary","twoStateCovarion","integerdata"};
+	
     public Input<List<Sequence>> m_pSequences =
             new Input<List<Sequence>>("sequence", "sequence and meta data for particular taxon", new ArrayList<Sequence>());
     public Input<Integer> m_nStateCount = new Input<Integer>("statecount", "maximum number of states in all sequences");
-    public Input<String> m_sDataType = new Input<String>("dataType", "data type (nucleotide, integerdata, etc)");
+    public Input<String> m_sDataType = new Input<String>("dataType", "data type, one of " + Arrays.toString(TYPES), NUCLEOTIDE, TYPES);
 
     public List<String> m_sTaxaNames = new ArrayList<String>();
     public List<Integer> m_nStateCounts = new ArrayList<Integer>();
