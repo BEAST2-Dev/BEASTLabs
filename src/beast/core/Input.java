@@ -31,6 +31,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import beast.core.parameter.RealParameter;
+
 /**
  * Represents input of a Plugin class.
  * Inputs connect Plugins with outputs of other Plugins,
@@ -397,6 +399,17 @@ public class Input<T> {
                value = (T) Boolean.FALSE;
                return;
             }
+        }
+        if (theClass.equals(RealParameter.class)) {
+        	sValue = sValue.replaceAll("^\\s+", "");
+        	sValue = sValue.replaceAll("\\s+$", "");
+        	String [] sValues = sValue.split("\\s+");
+            RealParameter param = new RealParameter(0.0, 0.0, 0.0, sValues.length);
+            for (int i = 0; i < sValues.length; i++) {
+                param.setValue(i, new Double(sValues[i]));
+            }
+            value = (T) param;
+            return;
         }
         // settle for a string
         if (theClass.isAssignableFrom(sValue.getClass())) {
