@@ -400,7 +400,7 @@ public class Input<T> {
                return;
             }
         }
-        if (theClass.equals(RealParameter.class)) {
+        if (theClass.equals(RealParameter.class) || theClass.equals(Valuable.class)) {
         	sValue = sValue.replaceAll("^\\s+", "");
         	sValue = sValue.replaceAll("\\s+$", "");
         	String [] sValues = sValue.split("\\s+");

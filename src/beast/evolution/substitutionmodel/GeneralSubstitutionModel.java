@@ -83,8 +83,9 @@ public class GeneralSubstitutionModel extends SubstitutionModel.Base {
             }
         }
 
-        // implemented a pool of iexp matrices to support multiple threads
-        // without creating a new matrix each call. - AJD
+        // TODO: is the following really necessary?
+        // TODO: implemented a pool of iexp matrices to support multiple threads
+        // TODO: without creating a new matrix each call. - AJD
         double[] iexp = new double[m_nStates * m_nStates];
         // Eigen vectors
         double[] Evec = eigenDecomposition.getEigenVectors();
@@ -92,7 +93,6 @@ public class GeneralSubstitutionModel extends SubstitutionModel.Base {
         double[] Ievc = eigenDecomposition.getInverseEigenVectors();
         // Eigen values
         double[] Eval = eigenDecomposition.getEigenValues();
-        System.arraycopy(Ievc, 0, iexp, 0, m_nStates * m_nStates);//popiexp();
         for (i = 0; i < m_nStates; i++) {
             temp = Math.exp(distance * Eval[i]);
             for (j = 0; j < m_nStates; j++) {
@@ -112,22 +112,47 @@ public class GeneralSubstitutionModel extends SubstitutionModel.Base {
                 u++;
             }
         }
-    }
+    } // getTransitionProbabilities
 
     /** sets up rate matrix **/
     public void setupRateMatrix() {
     	Valuable rates = m_rates.get();
+    	double [] fFreqs = frequencies.get().getFreqs();
 	    for (int i = 0; i < m_nStates; i++) {
 	    	m_rateMatrix[i][i] = 0;
 		    for (int j = 0; j < i; j++) {
 		    	m_rateMatrix[i][j] = rates.getArrayValue(i * (m_nStates -1) + j);
-		    	m_rateMatrix[i][i] -= rates.getArrayValue(i *(m_nStates -1) + j);
 		    }
 		    for (int j = i+1; j < m_nStates; j++) {
 		    	m_rateMatrix[i][j] = rates.getArrayValue(i * (m_nStates -1) + j-1);
-		    	m_rateMatrix[i][i] -= rates.getArrayValue(i *(m_nStates -1) + j-1);
 		    }
 	    }
+	    // bring in frequencies
+        for (int i = 0; i < m_nStates; i++) {
+            for (int j = i + 1; j < m_nStates; j++) {
+            	m_rateMatrix[i][j] *= fFreqs[j];
+            	m_rateMatrix[j][i] *= fFreqs[i];
+            }
+        }
+        // set up diagonal
+        for (int i = 0; i < m_nStates; i++) {
+            double fSum = 0.0;
+            for (int j = 0; j < m_nStates; j++) {
+                if (i != j)
+                    fSum += m_rateMatrix[i][j];
+            }
+            m_rateMatrix[i][i] = -fSum;
+        }
+        // normalise rate matrix to one expected substitution per unit time
+        double fSubst = 0.0;
+        for (int i = 0; i < m_nStates; i++)
+            fSubst += -m_rateMatrix[i][i] * fFreqs[i];
+
+        for (int i = 0; i < m_nStates; i++) {
+            for (int j = 0; j < m_nStates; j++) {
+            	m_rateMatrix[i][j] = m_rateMatrix[i][j] / fSubst;
+            }
+        }        
 	} // setupRelativeRates
 
     
