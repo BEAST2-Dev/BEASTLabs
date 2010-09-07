@@ -464,6 +464,7 @@ public class DocMaker {
         createIndex();
         // next, produce pages for individual plug-ins
         for (String sPlugin : m_sPluginNames) {
+        	System.err.println(sPlugin);
             createPluginPage(sPlugin);
         }
     } // generateDocs

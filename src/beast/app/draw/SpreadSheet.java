@@ -85,7 +85,7 @@ import beast.core.StateNode;
 import beast.evolution.alignment.Alignment;
 import beast.evolution.alignment.Sequence;
 import beast.util.ClassDiscovery;
-import beast.util.Randomizer;
+
 import beast.util.XMLParser;
 import beast.util.XMLProducer;
 
