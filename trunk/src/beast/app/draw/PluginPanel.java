@@ -17,9 +17,9 @@ import java.util.*;
 import java.util.List;
 
 /**
- * Dialog for editing Plugins.
+ * Panel for editing Plugins.
  * <p/>
- * This dynamically creates a dialog consisting of
+ * This dynamically creates a Panel consisting of
  * InputEditors associated with the inputs of a Plugin.
  * *
  */
