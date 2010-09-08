@@ -31,6 +31,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import beast.core.parameter.BooleanParameter;
+import beast.core.parameter.IntegerParameter;
 import beast.core.parameter.RealParameter;
 
 /**
@@ -411,6 +413,18 @@ public class Input<T> {
         	} else {
         		value = (T) param;
         	}
+            return;
+        }
+        if (theClass.equals(IntegerParameter.class)) {
+        	IntegerParameter param = new IntegerParameter(sValue, 0, 0, 1);
+            param.initAndValidate();
+       		value = (T) param;
+            return;
+        }
+        if (theClass.equals(BooleanParameter.class)) {
+        	BooleanParameter param = new BooleanParameter(sValue, 1);
+            param.initAndValidate();
+       		value = (T) param;
             return;
         }
         // settle for a string
