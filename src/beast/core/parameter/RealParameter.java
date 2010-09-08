@@ -6,6 +6,7 @@ import beast.core.Description;
 import beast.core.Input;
 
 import java.io.PrintStream;
+import java.util.List;
 
 
 /**
@@ -15,7 +16,7 @@ import java.io.PrintStream;
 @Description("A real-valued parameter represents a value (or array of values if the dimension is larger than one) " +
         "in the state space that can be changed by operators.")
 public class RealParameter extends Parameter<Double> {
-    public Input<Double> m_pValues = new Input<Double>("value", "start value for this parameter");
+    public Input<String> m_pValues = new Input<String>("value", "start value(s) for this parameter. If multiple values are specified, they should be separated by whitespace.");
     public Input<Double> lowerValueInput = new Input<Double>("lower", "lower value for this parameter");
     public Input<Double> upperValueInput = new Input<Double>("upper", "upper value for this parameter");
 
@@ -25,7 +26,7 @@ public class RealParameter extends Parameter<Double> {
     /**
      * Constructor for testing.
      */
-    public RealParameter(Double value, Double lower, Double upper, Integer dimension) throws Exception {
+    public RealParameter(String value, Double lower, Double upper, Integer dimension) throws Exception {
     	init(value, lower, upper, dimension);
     }
 
@@ -54,9 +55,16 @@ public class RealParameter extends Parameter<Double> {
     		m_fUpper = Double.POSITIVE_INFINITY;
     	}
 
-        values = new java.lang.Double[m_nDimension.get()];
+    	String sValue = m_pValues.get();
+    	// remove start and end spaces
+    	sValue = sValue.replaceAll("^\\s+", "");
+    	sValue = sValue.replaceAll("\\s+$", "");
+    	// split into space-separated bits
+    	String [] sValues = sValue.split("\\s+");
+    	int nDimension = Math.max(m_nDimension.get(), sValues.length);
+        values = new java.lang.Double[nDimension];
         for (int i = 0; i < values.length; i++) {
-            values[i] = m_pValues.get();
+            values[i] = new Double(sValues[i % sValues.length]);
         }
         super.initAndValidate();
     }
