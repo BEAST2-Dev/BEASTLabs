@@ -6,7 +6,6 @@ import beast.core.Description;
 import beast.core.Input;
 
 import java.io.PrintStream;
-import java.util.List;
 
 
 /**
@@ -16,7 +15,6 @@ import java.util.List;
 @Description("A real-valued parameter represents a value (or array of values if the dimension is larger than one) " +
         "in the state space that can be changed by operators.")
 public class RealParameter extends Parameter<Double> {
-    public Input<String> m_pValues = new Input<String>("value", "start value(s) for this parameter. If multiple values are specified, they should be separated by whitespace.");
     public Input<Double> lowerValueInput = new Input<Double>("lower", "lower value for this parameter");
     public Input<Double> upperValueInput = new Input<Double>("upper", "upper value for this parameter");
 
@@ -27,7 +25,7 @@ public class RealParameter extends Parameter<Double> {
      * Constructor for testing.
      */
     public RealParameter(String value, Double lower, Double upper, Integer dimension) throws Exception {
-    	init(value, lower, upper, dimension);
+    	init(lower, upper, value, dimension);
     }
 
 

@@ -38,6 +38,7 @@ import org.w3c.dom.Node;
 @Description("A parameter represents a value in the state space that can be changed " +
         "by operators.")
 public abstract class Parameter<T> extends StateNode {
+    public Input<String> m_pValues = new Input<String>("value", "start value(s) for this parameter. If multiple values are specified, they should be separated by whitespace.");
     public Input<java.lang.Integer> m_nDimension =
             new Input<java.lang.Integer>("dimension", "dimension of the paperameter(default 1)", 1);
 

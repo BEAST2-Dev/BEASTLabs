@@ -18,7 +18,7 @@ public class BayesianSkylineTest extends TestCase {
     public void testSkyline() throws Exception {
 
         RealParameter popSize = new RealParameter("1.0", 0.0, 10.0, 2);
-        IntegerParameter groupSize = new IntegerParameter(2, 1, 4, 2);
+        IntegerParameter groupSize = new IntegerParameter("2", 1, 4, 2);
 
         popSize.setValue(1, 2.0);
 

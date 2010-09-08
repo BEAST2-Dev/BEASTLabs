@@ -85,7 +85,7 @@ public class CompoundPopulationFunction extends PopulationFunction.Abstract {
             }
 
             if (indicatorsParameter.getDimension() != events - 1) {
-                final BooleanParameter p = new BooleanParameter(indicatorsParameter.getValue(), events-1) ;
+                final BooleanParameter p = new BooleanParameter(""+indicatorsParameter.getValue(), events-1) ;
                 indicatorsParameter.assignFrom(p);
             }
         } catch( Exception e ) {

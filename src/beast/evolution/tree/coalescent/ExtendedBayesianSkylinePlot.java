@@ -33,7 +33,7 @@ public class ExtendedBayesianSkylinePlot extends PopulationFunction.Abstract {
         	m_populationSize.get().assignFrom(popSize);
 
         	nDimension = 1;//???
-        	BooleanParameter indicators = new BooleanParameter(false, nDimension);
+        	BooleanParameter indicators = new BooleanParameter("false", nDimension);
         	m_indicators.get().assignFrom(indicators);
             // set m_popFunctionType
         	if (m_populationFunctionType.get() == null || m_populationFunctionType.get().equals("linear")) {
