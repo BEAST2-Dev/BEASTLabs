@@ -25,7 +25,6 @@
 package beast.core.parameter;
 
 import beast.core.Description;
-import beast.core.Input;
 
 import java.io.PrintStream;
 
@@ -37,7 +36,7 @@ import java.io.PrintStream;
         "in the state space that can be changed by operators.")
 public class BooleanParameter extends Parameter<java.lang.Boolean> {
 
-    public Input<Boolean> m_pValues = new Input<Boolean>("value", "start value for this parameter");
+//    public Input<Boolean> m_pValues = new Input<Boolean>("value", "start value for this parameter");
 
     public BooleanParameter() {}
 
@@ -47,15 +46,22 @@ public class BooleanParameter extends Parameter<java.lang.Boolean> {
      * @param dimension
      * @throws Exception
      */
-    public BooleanParameter(Boolean value, Integer dimension) throws Exception {
+    public BooleanParameter(String value, Integer dimension) throws Exception {
     	init(value, dimension);
     }
 
     @Override
     public void initAndValidate() throws Exception {
-        values = new Boolean[m_nDimension.get()];
+    	String sValue = m_pValues.get();
+    	// remove start and end spaces
+    	sValue = sValue.replaceAll("^\\s+", "");
+    	sValue = sValue.replaceAll("\\s+$", "");
+    	// split into space-separated bits
+    	String [] sValues = sValue.split("\\s+");
+    	int nDimension = Math.max(m_nDimension.get(), sValues.length);
+        values = new java.lang.Boolean[nDimension];
         for (int i = 0; i < values.length; i++) {
-            values[i] = m_pValues.get();
+            values[i] = new Boolean(sValues[i % sValues.length]);
         }
         super.initAndValidate();
     }
