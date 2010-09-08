@@ -310,14 +310,17 @@ public class Input<T> {
             setStringValue((String) value);
         } else if (this.value != null && this.value instanceof List<?>) {
             if (theClass.isAssignableFrom(value.getClass())) {
-                // don't insert duplicates
                 @SuppressWarnings("rawtypes")
 				List vector = (List) this.value;
-                for (Object o : vector) {
-                    if (o.equals(value)) {
-                        return;
-                    }
-                }
+//              // don't insert duplicates
+                // RRB: DO insert duplicates: this way CompoundValuable can be set up to 
+                // contain rate matrices with dependent variables/parameters.
+                // There does not seem to be an example where a duplicate insertion is a problem...
+//                for (Object o : vector) {
+//                    if (o.equals(value)) {
+//                        return;
+//                    }
+//                }
                 vector.add(value);
             } else {
                 throw new Exception("Input 101: type mismatch");
@@ -379,7 +382,7 @@ public class Input<T> {
      * @param sValue  value representation
      * @throws Exception when all conversions fail
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private void setStringValue(String sValue) throws Exception {
         // figure out the type of T and create object based on T=Integer, T=Double, T=Boolean, T=String
         if (theClass.equals(Integer.class)) {
@@ -401,14 +404,13 @@ public class Input<T> {
             }
         }
         if (theClass.equals(RealParameter.class) || theClass.equals(Valuable.class)) {
-        	sValue = sValue.replaceAll("^\\s+", "");
-        	sValue = sValue.replaceAll("\\s+$", "");
-        	String [] sValues = sValue.split("\\s+");
-            RealParameter param = new RealParameter(0.0, 0.0, 0.0, sValues.length);
-            for (int i = 0; i < sValues.length; i++) {
-                param.setValue(i, new Double(sValues[i]));
-            }
-            value = (T) param;
+            RealParameter param = new RealParameter(sValue, 0.0, 0.0, 1);
+            param.initAndValidate();
+        	if (value != null && value instanceof List) {
+        		((List) value).add(param);
+        	} else {
+        		value = (T) param;
+        	}
             return;
         }
         // settle for a string
