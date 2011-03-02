@@ -814,7 +814,6 @@ public class BeerLikelihoodCoreJava extends LikelihoodCore {
     }
 	@Override
     public void calcNodePsuedoRootPartials(double[] fInPseudoPartials, int iNode, double [] fOutPseudoPartials) {
-		int u = 0;
 		double [] fPartials = m_fPartials[m_iCurrentPartials[iNode]][iNode];
 		double [] fOldPartials = m_fPartials[m_iStoredPartials[iNode]][iNode];
 		int nMaxK = m_nPatterns * m_nMatrices * m_nStates; 

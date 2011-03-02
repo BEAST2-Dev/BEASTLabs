@@ -143,7 +143,7 @@ public class TreeLikelihood2 extends Distribution {
 
     public Input<Alignment> m_data = new Input<Alignment>("data", "sequence data for the beast.tree", Validate.REQUIRED);
     public Input<Tree> m_tree = new Input<Tree>("tree", "phylogenetic beast.tree with sequence data in the leafs", Validate.REQUIRED);
-    public Input<SiteModel> m_pSiteModel = new Input<SiteModel>("siteModel", "site model for leafs in the beast.tree", Validate.REQUIRED);
+    public Input<SiteModel.Base> m_pSiteModel = new Input<SiteModel.Base>("siteModel", "site model for leafs in the beast.tree", Validate.REQUIRED);
     public Input<BranchRateModel.Base> m_pBranchRateModel = new Input<BranchRateModel.Base>("branchRateModel",
             "A model describing the rates on the branches of the beast.tree.");
 
@@ -154,7 +154,7 @@ public class TreeLikelihood2 extends Distribution {
      * is safe to link to them only once, during initAndValidate.
      */
     SubstitutionModel m_substitutionModel;
-    SiteModel m_siteModel;
+    SiteModel.Base m_siteModel;
     BranchRateModel.Base m_branchRateModel;
 
     /** flag to indicate the 
@@ -404,7 +404,7 @@ public class TreeLikelihood2 extends Distribution {
     		calcPseudoRootPartials(node.getParent());
     	    m_likelihoodCore.calcPsuedoRootPartials(m_fPseudoRootPartials[node.getParent().getNr()], iNode, m_fPseudoRootPartials[iNode]);
     	} else {
-            double[] fFrequencies = m_siteModel.getFrequencies();
+            double[] fFrequencies = m_substitutionModel.getFrequencies();
     		m_likelihoodCore.calcRootPsuedoRootPartials(fFrequencies, iNode, m_fPseudoRootPartials[iNode]);
     	}
 		m_bIsValidePsuedoRoot[iNode] = true;
@@ -423,12 +423,14 @@ public class TreeLikelihood2 extends Distribution {
         int iNode = node.getNr();
 
         if (!node.isRoot() && (update != Tree.IS_CLEAN)) {
-            double branchTime = node.getLength();
+            Node parent = node.getParent();
+            //double branchTime = node.getLength();
 
             m_likelihoodCore.setNodeMatrixForUpdate(iNode);
             for (int i = 0; i < m_siteModel.getCategoryCount(); i++) {
-                double branchLength = m_siteModel.getRateForCategory(i) * branchTime;
-                m_substitutionModel.getTransitionProbabilities(branchLength, m_fProbabilities);
+//                double branchLength = m_siteModel.getRateForCategory(i) * branchTime;
+//                m_substitutionModel.getTransitionProbabilities(branchLength, m_fProbabilities);
+            	m_substitutionModel.getTransitionProbabilities(node, parent.getHeight(), node.getHeight(), m_siteModel.getRateForCategory(i, node), m_fProbabilities);
                 m_likelihoodCore.setNodeMatrix(iNode, i, m_fProbabilities);
                 //m_substitutionModel.getPaddedTransitionProbabilities(branchLength, m_fProbabilities);
                 //System.arraycopy(m_fProbabilities, 0, m_fProbabilities2, i * m_nMatrixSize, m_nMatrixSize);
@@ -467,13 +469,13 @@ public class TreeLikelihood2 extends Distribution {
                     if (node.isRoot()) {
                         // No parent this is the root of the beast.tree -
                         // calculate the pattern likelihoods
-                        double[] fFrequencies = m_siteModel.getFrequencies();
+                        double[] fFrequencies = m_substitutionModel.getFrequencies();
                         m_likelihoodCore.calcRootPsuedoRootPartials(fFrequencies, iNode, m_fNewPseudoRootPartials);
                     } else {
                         m_likelihoodCore.calcNodePsuedoRootPartials(m_fPseudoRootPartials[iNode], iNode, m_fNewPseudoRootPartials);
                     }
                     
-                    double[] proportions = m_siteModel.getCategoryProportions();
+                    double[] proportions = m_siteModel.getCategoryProportions(node);
                     m_likelihoodCore.integratePartialsP(m_fNewPseudoRootPartials, proportions, m_fRootPartials);
 
                     m_likelihoodCore.calculateLogLikelihoodsP(m_fRootPartials, m_fPatternLogLikelihoods);
@@ -571,6 +573,10 @@ public class TreeLikelihood2 extends Distribution {
             m_nHasDirt = Tree.IS_FILTHY;
             return true;
         }
+        if (m_data.get().isDirtyCalculation()) {
+            m_nHasDirt = Tree.IS_FILTHY;
+            return true;
+        }
         return m_tree.get().somethingIsDirty();
     }
         
@@ -600,12 +606,16 @@ public class TreeLikelihood2 extends Distribution {
             int update = (node.isDirty() | m_nHasDirt);
 
         	if (!node.isRoot() && (update != Tree.IS_CLEAN)) {
-                double branchTime = node.getLength();
-
+                //double branchTime = node.getLength();
+                Node parent = node.getParent();
+                double branchRate = m_branchRateModel.getRateForBranch(node);
+                
                 m_likelihoodCore.setNodeMatrixForUpdate(iNode);
                 for (int i = 0; i < m_siteModel.getCategoryCount(); i++) {
-                    double branchLength = m_siteModel.getRateForCategory(i) * branchTime;
-                    m_substitutionModel.getTransitionProbabilities(branchLength, m_fProbabilities);
+//                  double branchLength = m_siteModel.getRateForCategory(i) * branchTime;
+//                  m_substitutionModel.getTransitionProbabilities(branchLength, m_fProbabilities);
+                    double jointBranchRate = m_siteModel.getRateForCategory(i, node) * branchRate;
+                    m_substitutionModel.getTransitionProbabilities(node, parent.getHeight(), node.getHeight(), jointBranchRate, m_fProbabilities);
                     m_likelihoodCore.setNodeMatrix(iNode, i, m_fProbabilities);
                 }
             }        	
@@ -627,10 +637,10 @@ public class TreeLikelihood2 extends Distribution {
                     if (node.isRoot()) {
                         // No parent this is the root of the beast.tree -
                         // calculate the pattern likelihoods
-                        double[] fFrequencies = m_siteModel.getFrequencies();
+                        double[] fFrequencies = m_substitutionModel.getFrequencies();
                         m_likelihoodCore.calcRootPsuedoRootPartials(fFrequencies, iNode, m_fNewPseudoRootPartials);
                     }
-                    double[] proportions = m_siteModel.getCategoryProportions();
+                    double[] proportions = m_siteModel.getCategoryProportions(node);
                     m_likelihoodCore.integratePartialsP(m_fNewPseudoRootPartials, proportions, m_fRootPartials);
 
                     m_likelihoodCore.calculateLogLikelihoodsP(m_fRootPartials, m_fPatternLogLikelihoods);

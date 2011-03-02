@@ -76,6 +76,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
 
+import beast.app.BeastMCMC;
 import beast.core.Distribution;
 import beast.core.Input;
 import beast.core.Logger;
@@ -345,7 +346,7 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 					PluginDialog dlg = new PluginDialog(plugin, plugin.getClass());
 					dlg.setVisible(true);
 					if (dlg.getOK()) {
-						plugin = dlg.panel.m_plugin;
+						plugin = dlg.m_panel.m_plugin;
 						m_objects[m_iRow][m_iCol] = plugin;
 						m_table.repaint();
 					}
@@ -1850,6 +1851,7 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 	 **/
 	public static void main(String args[]) {
 		try { 
+        	BeastMCMC.loadExternalJars();
 
 			Logger.FILE_MODE = Logger.FILE_OVERWRITE;
 			SpreadSheet spreadSheet = new SpreadSheet();
