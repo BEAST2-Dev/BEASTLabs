@@ -45,7 +45,7 @@ public class ParticleFilter extends MCMC {
         boolean bDebug = true;
         state.setEverythingDirty(true);
         state.checkCalculationNodesDirtiness();
-        double fOldLogLikelihood = posterior.calculateLogP();
+        double fOldLogLikelihood = robustlyCalcPosterior(posterior); 
         System.err.println("Start likelihood: " + fOldLogLikelihood);
         
         
