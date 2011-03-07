@@ -17,7 +17,8 @@
 	<property name="report"  value="${build}/junitreport"/>
 
 	<path id="classpath">
-		<fileset dir="${lib}" includes="**/*.jar"/>
+		<fileset dir="${lib}" includes="junit-4.8.2.jar"/>
+		<fileset dir="${lib}" includes="beast.jar"/>
 	</path>
 
 	<!-- start -->
