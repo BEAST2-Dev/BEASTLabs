@@ -202,5 +202,11 @@ public class BeerLikelihoodCoreNative extends LikelihoodCore {
 		
 	}
 
+	@Override
+	public void setNodePartials(int iNode, double[] fPartials) {
+		// TODO Auto-generated method stub
+		
+	}
+
 
 } // class BeerLikelihoodCoreMixed

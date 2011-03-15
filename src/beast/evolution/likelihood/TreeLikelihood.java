@@ -183,7 +183,6 @@ public class TreeLikelihood extends Distribution {
     double[] m_fRootPartials;
     /** memory allocation for probability tables obtained from the SiteModel **/
     double[] m_fProbabilities;
-    double[] m_fProbabilities2;
     int m_nMatrixSize;
     
     /** flag to indicate ascertainment correction should be applied **/
@@ -213,13 +212,13 @@ public class TreeLikelihood extends Distribution {
         int nStateCount = m_data.get().getMaxStateCount();
         if (nStateCount == 4) {
         	//m_likelihoodCore = new BeerLikelihoodCore4();
-        	m_likelihoodCore = new BeerLikelihoodCoreCnG4();
-        	//m_likelihoodCore = new BeerLikelihoodCoreCnG(4);
+        	//m_likelihoodCore = new BeerLikelihoodCoreCnG4();
+        	m_likelihoodCore = new BeerLikelihoodCoreCnG(4);
             //m_likelihoodCore = new BeerLikelihoodCoreJava4();
         	//m_likelihoodCore = new BeerLikelihoodCoreNative(4);
         } else {
-            m_likelihoodCore = new BeerLikelihoodCore(nStateCount);
-            //m_likelihoodCore = new BeerLikelihoodCoreCnG(nStateCount);
+            //m_likelihoodCore = new BeerLikelihoodCore(nStateCount);
+            m_likelihoodCore = new BeerLikelihoodCoreCnG(nStateCount);
         }
         System.err.println("TreeLikelihood uses " + m_likelihoodCore.getClass().getName());
         initCore();
@@ -230,8 +229,6 @@ public class TreeLikelihood extends Distribution {
         m_nMatrixSize = (nStateCount +1)* (nStateCount+1);
         m_fProbabilities = new double[(nStateCount +1)* (nStateCount+1)];
         Arrays.fill(m_fProbabilities, 1.0);
-        m_fProbabilities2 = new double[m_nMatrixSize * m_siteModel.getCategoryCount()];
-        Arrays.fill(m_fProbabilities2, 1.0);
 
         if (m_data.get() instanceof AscertainedAlignment) {
             m_bAscertainedSitePatterns = true;
@@ -252,7 +249,11 @@ public class TreeLikelihood extends Distribution {
         int extNodeCount = nodeCount / 2 + 1;
         int intNodeCount = nodeCount / 2;
 
-        setStates(m_tree.get().getRoot(), m_data.get().getPatternCount());
+        if (m_useAmbiguities.get()) {
+        	setPartials(m_tree.get().getRoot(), m_data.get().getPatternCount());
+        } else {
+        	setStates(m_tree.get().getRoot(), m_data.get().getPatternCount());
+        }
         m_nHasDirt = Tree.IS_FILTHY;
         for (int i = 0; i < intNodeCount; i++) {
             m_likelihoodCore.createNodePartials(extNodeCount + i);
@@ -282,6 +283,35 @@ public class TreeLikelihood extends Distribution {
         }
     }
 
+    /** set leaf partials in likelihood core **/
+    void setPartials(Node node, int patternCount) {
+        if (node.isLeaf()) {
+        	Alignment data = m_data.get();
+        	int nStates = data.getDataType().getStateCount();
+            double[] partials = new double[patternCount * nStates];
+
+            int k = 0;
+            for (int iPattern = 0; iPattern < patternCount; iPattern++) {
+            	int nState = data.getPattern(node.getNr(), iPattern);
+            	boolean [] stateSet = data.getStateSet(nState);
+        		for (int iState = 0; iState < nStates; iState++) {
+        			partials[k++] = (stateSet[iState] ? 1.0 : 0.0);
+            	}
+            }
+            m_likelihoodCore.setNodePartials(node.getNr(), partials);
+
+            int[] states = new int[patternCount];
+            for (int iPattern = 0; iPattern < patternCount; iPattern++) {
+                states[iPattern] = m_data.get().getPattern(node.getNr(), iPattern);
+            }
+            m_likelihoodCore.setNodeStates(node.getNr(), states);
+            
+        } else {
+        	setPartials(node.m_left, patternCount);
+        	setPartials(node.m_right, patternCount);
+        }
+    }
+    
     /**
      * Calculate the log likelihood of the current state.
      * @return the log likelihood.

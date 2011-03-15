@@ -315,6 +315,11 @@ public class BeerLikelihoodCoreCnG extends LikelihoodCore {
 
 		// prepare the stack
 		m_nOperation[m_nTopOfStack] = OPERATION_SS;
+		if (m_fPartials[m_iCurrentPartials[iNode1]][iNode1] != null && m_fPartials[m_iCurrentPartials[iNode2]][iNode2] != null) {
+			// for handling ambiguities
+			m_nOperation[m_nTopOfStack] = OPERATION_PP;
+		}
+		
 		m_nNode1[m_nTopOfStack] = iNode1;
 		m_nNode2[m_nTopOfStack] = iNode2;
 		m_nNode3[m_nTopOfStack] = iNode3;
@@ -353,6 +358,10 @@ public class BeerLikelihoodCoreCnG extends LikelihoodCore {
 
 		// prepare the stack
 		m_nOperation[m_nTopOfStack] = OPERATION_SP;
+		if (m_fPartials[m_iCurrentPartials[iNode1]][iNode1] != null && m_fPartials[m_iCurrentPartials[iNode2]][iNode2] != null) {
+			// for handling ambiguities
+			m_nOperation[m_nTopOfStack] = OPERATION_PP;
+		}
 		m_nNode1[m_nTopOfStack] = iNode1;
 		m_nNode2[m_nTopOfStack] = iNode2;
 		m_nNode3[m_nTopOfStack] = iNode3;
