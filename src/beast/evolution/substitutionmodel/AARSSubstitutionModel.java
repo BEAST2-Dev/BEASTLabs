@@ -45,10 +45,10 @@ public class AARSSubstitutionModel extends GeneralSubstitutionModel {
 		SubstitutionModel model = m_default.get();
 		double[] fFreqs = model.getFrequencies();
 		m_nStates = fFreqs.length;
-		m_fQ = new double[m_tree.get().getNodeCount()][m_nStates * m_nStates];
+		m_fQ = new double[m_tree.get().getNodeCount()][];//m_nStates * m_nStates];
 		m_fP = new double[m_tree.get().getNodeCount()][m_nStates * m_nStates];
 		
-		m_fFreqs = new double[m_tree.get().getNodeCount()][m_nStates];
+		m_fFreqs = new double[m_tree.get().getNodeCount()][];//m_nStates];
 		m_nStateOfEpoch = new int[m_tree.get().getNodeCount()];
         eigenSystem = new DefaultEigenSystem(m_nStates);
         m_rateMatrix = new double[m_nStates][m_nStates];
@@ -67,7 +67,23 @@ public class AARSSubstitutionModel extends GeneralSubstitutionModel {
 	void update() {
 		SubstitutionModel model = m_default.get();
 		double[] fFreqs = model.getFrequencies();
-		double[] Q = model.getRateMatrix(null);
+		
+		// todo: move this to initAndValidate()
+		((GeneralSubstitutionModel)model).setupRelativeRates();
+		((GeneralSubstitutionModel)model).setupRateMatrix();
+		double [][] matrix = ((GeneralSubstitutionModel)model).getRateMatrix();
+		double[] Q = new double[matrix.length * matrix.length];
+		int k = 0;
+		for (int i = 0; i < matrix.length; i++) {
+			for (int j = 0; j < matrix.length; j++) {
+				Q[k++] = matrix[i][j];
+			}			
+		}
+		
+		
+		
+		
+		
 		Tree tree = m_tree.get();
 		// calculate epochs
 		Node[] nodes = tree.getNodesAsArray();
@@ -83,10 +99,12 @@ public class AARSSubstitutionModel extends GeneralSubstitutionModel {
 		List<Node> V = new ArrayList<Node>();
 		// start with any of the leaf nodes
 		V.add(tree.getNode(0));
-		Collections.sort(V, comparator);
-		calcStates(tree.getRoot(), V);
 
-		
+		calcStates(tree.getRoot(), V);
+		Collections.sort(V, comparator);
+
+		m_fQ[0] = new double[m_nStates * m_nStates];
+		m_fFreqs[0] = new double[m_nStates];
 		System.arraycopy(Q, 0, m_fQ[0], 0, Q.length);
 		System.arraycopy(fFreqs, 0, m_fFreqs[0], 0, fFreqs.length);
 		for (int v = 1; v < V.size(); v++) {
@@ -100,24 +118,43 @@ public class AARSSubstitutionModel extends GeneralSubstitutionModel {
 			assert(i!=j);// if i!=j then this node is not a split node. 
 			
 			// update frequencies
+			m_fFreqs[node.getNr()] = new double[m_nStates];
+			m_fQ[node.getNr()] = new double[m_nStates * m_nStates];
 			double[] fNewFreqs = m_fFreqs[node.getNr()];
-			double[] fOldFreqs = (iStateLeft < iStateRight ? m_fFreqs[node.m_left.getNr()] : m_fFreqs[node.m_right
-					.getNr()]);
+			double[] fOldFreqs = null;
+			double[] fNewQ = m_fQ[node.getNr()];
+			double[] fOldQ = null;
+			if (iStateLeft < iStateRight) {
+				if (node.m_left.isLeaf()) {
+					fOldFreqs = m_fFreqs[0];
+					fOldQ = m_fQ[0];
+				} else {
+					fOldFreqs = m_fFreqs[node.m_left.getNr()];
+					fOldQ = m_fQ[node.m_left.getNr()];
+				}
+			} else {
+				if (node.m_right.isLeaf()) {
+					fOldFreqs = m_fFreqs[0];
+					fOldQ = m_fQ[0];
+				} else {
+					fOldFreqs = m_fFreqs[node.m_right.getNr()];
+					fOldQ = m_fQ[node.m_right.getNr()];
+				}
+			}
+					
 			System.arraycopy(fOldFreqs, 0, fNewFreqs, 0, fOldFreqs.length);
 			fNewFreqs[i] = fOldFreqs[i] + fOldFreqs[j];
 			fNewFreqs[j] = 0.0;
 
 			// update rate matrix Q
-			double[] fNewQ = m_fQ[node.getNr()];
-			double[] fOldQ = (iStateLeft < iStateRight ? m_fQ[node.m_left.getNr()] : m_fQ[node.m_right.getNr()]);
 			System.arraycopy(fOldQ, 0, fNewQ, 0, fOldQ.length);
 			// zero out row and column j
-			for (int k = 0; k < m_nStates; k++) {
+			for ( k = 0; k < m_nStates; k++) {
 				fNewQ[j * m_nStates + k] = 0.0;
 				fNewQ[k * m_nStates + j] = 0.0;
 			}
 			// update entries for character i
-			for (int k = 0; k < m_nStates; k++) {
+			for (k = 0; k < m_nStates; k++) {
 				if (k != i && k != j) {
 					fNewQ[i * m_nStates + k] = (fOldFreqs[i] * fOldQ[i * m_nStates + k] + fOldFreqs[j]
 							* fOldQ[j * m_nStates + k])
@@ -126,13 +163,15 @@ public class AARSSubstitutionModel extends GeneralSubstitutionModel {
 				}
 			}
 			// update diagonal for character i, ensure the row sums to zero
-//			double fSum = -fNewQ[i * m_nStateCount + i];
-//			for (int k = 0; k < m_nStateCount; k++) {
-//				fSum += fNewQ[i * m_nStateCount + k];
-//			}
-//			fNewQ[i * m_nStateCount + i] = -fSum;
+			double fSum = -fNewQ[i * m_nStates + i];
+			for (k = 0; k < m_nStates; k++) {
+				fSum += fNewQ[i * m_nStates + k];
+			}
+			fNewQ[i * m_nStates + i] = -fSum;
 		}
 
+		
+		
 		/** calc transition probability matrices, one for each node **/
 		for (int iNode = 0; iNode < nodes.length; iNode++) {
 			Node node = nodes[iNode];
@@ -150,18 +189,20 @@ public class AARSSubstitutionModel extends GeneralSubstitutionModel {
 				int iTo = Collections.binarySearch(V, parent, comparator);
 				// TODO: handle negative values of iFrom and/or iTo
 				double d = node.getHeight();
-				for (int k = iFrom; k < iTo; k++) {
+				for (k = iFrom; k < iTo; k++) {
 					Node u = V.get(k);
+					Node v = V.get(k + 1);
+					
 					// A. t = min(d − d[k], d − depth(u))
-					double t = Math.min(d - u.getHeight(), parent.getHeight() - d);
+					double t = Math.min(parent.getHeight() - d, v.getHeight() - d);
 					
 					// B. P = exp(Q[k] ∗ t) ∗ P
 					((AARSFrequencies)frequencies.get()).setFreqs(m_fFreqs[u.getNr()]);
 					exponentiate(m_fQ[u.getNr()], fP, t);
 					
 					// C. let i be the state of V [k] and let j be the state of its child that is different from	i.
-					int iStateLeft = m_nStateOfEpoch[u.m_left.getNr()];
-					int iStateRight = m_nStateOfEpoch[u.m_right.getNr()];
+					int iStateLeft = m_nStateOfEpoch[v.m_left.getNr()];
+					int iStateRight = m_nStateOfEpoch[v.m_right.getNr()];
 					int i = Math.min(iStateLeft, iStateRight);
 					int j = Math.max(iStateLeft, iStateRight);
 
@@ -169,11 +210,11 @@ public class AARSSubstitutionModel extends GeneralSubstitutionModel {
 					// and π[k + 1]j /π[k]i times row j.
 					
 					// TODO: note maybe these freqs should be swapped
-					double[] fNewFreqs = m_fFreqs[node.getNr()];
-					double[] fOldFreqs = m_fFreqs[parent.getNr()];
+					double[] fNewFreqs = m_fFreqs[v.getNr()];
+					double[] fOldFreqs = m_fFreqs[u.getNr()];
 					for (int iCol = 0; iCol < m_nStates; iCol++) {
 						fP[i*m_nStates + iCol] =  fOldFreqs[i] * fP[i*m_nStates + iCol]/ fNewFreqs[i] + 
-							fOldFreqs[j] * fP[j*m_nStates + iCol]/ fNewFreqs[j];
+							fOldFreqs[j] * fP[j*m_nStates + iCol]/ fNewFreqs[i];
 					}
 					
 					// E. zero row j of P and set Pjj = 1.
@@ -183,14 +224,149 @@ public class AARSSubstitutionModel extends GeneralSubstitutionModel {
 					fP[j*m_nStates + j] = 1.0;
 				
 					// F. d = d − t.
-					d = d - t;
+					d = d + t;
 				}
 				
 			}
 		}
+		double [] defaultFreqs = {1.0,0.0,0.0,0.0,0.0,
+				                  0.0,0.0,0.0,0.0,0.0,
+				                  0.0,0.0,0.0,0.0,0.0,
+				                  0.0,0.0,0.0,0.0,0.0
+		};
+		((AARSFrequencies)frequencies.get()).setFreqs(defaultFreqs);
 		m_bRecalc = false;
 	}
 
+	
+
+	
+	
+	
+//    /**
+//     * Calculate matrix exponential of a square matrix.
+//     *
+//     * A scaled Pade approximation algorithm is used.
+//     * The algorithm has been directly translated from Golub & Van Loan "Matrix Computations",
+//     * algorithm 11.3.1. Special Horner techniques from 11.2 are also used to minimize the number
+//     * of matrix multiplications.
+//     *
+//     * @param A square matrix
+//     * @return matrix exponential of A
+//     */
+//    public static double [] expm(double [] A, int n) {
+//        // constants for pade approximation
+//        final double c0 = 1.0;
+//        final double c1 = 0.5;
+//        final double c2 = 0.12;
+//        final double c3 = 0.01833333333333333;
+//        final double c4 = 0.0019927536231884053;
+//        final double c5 = 1.630434782608695E-4;
+//        final double c6 = 1.0351966873706E-5;
+//        final double c7 = 5.175983436853E-7;
+//        final double c8 = 2.0431513566525E-8;
+//        final double c9 = 6.306022705717593E-10;
+//        final double c10 = 1.4837700484041396E-11;
+//        final double c11 = 2.5291534915979653E-13;
+//        final double c12 = 2.8101705462199615E-15;
+//        final double c13 = 1.5440497506703084E-17;
+//
+//        int j = Math.max(0, 1 + (int) Math.floor(Math.log(normmax(A)) / Math.log(2)));
+//        double [] As = div(A, (double) Math.pow(2, j)); // scaled version of A
+//    
+//        // calculate D and N using special Horner techniques
+//        double [] As_2 = mmul(As, As);
+//        double [] As_4 = mmul(As_2, As_2);
+//        double [] As_6 = mmul(As_4, As_2);
+//        // U = c0*I + c2*A^2 + c4*A^4 + (c6*I + c8*A^2 + c10*A^4 + c12*A^6)*A^6
+//        double [] U = DoubleMatrix.eye(n).muli(c0).addi(As_2.mul(c2)).addi(As_4.mul(c4)).addi(
+//                DoubleMatrix.eye(n).muli(c6).addi(As_2.mul(c8)).addi(As_4.mul(c10)).addi(As_6.mul(c12)).mmuli(As_6));
+//        // V = c1*I + c3*A^2 + c5*A^4 + (c7*I + c9*A^2 + c11*A^4 + c13*A^6)*A^6
+//        double [] V = DoubleMatrix.eye(n).muli(c1).addi(As_2.mul(c3)).addi(As_4.mul(c5)).addi(
+//                DoubleMatrix.eye(n).muli(c7).addi(As_2.mul(c9)).addi(As_4.mul(c11)).addi(As_6.mul(c13)).mmuli(As_6));
+//
+//        double [] AV = mmuli(As, V);
+//        double [] N = add(U, AV);
+//        double [] D = subi(U, AV);
+//
+//        // solve DF = N for F
+//        double [] F = Solve.solve(D, N);
+//
+//        // now square j times
+//        for (int k = 0; k < j; k++) {
+//            mmuli(F, F);
+//        }
+//
+//        return F;
+//    }
+
+	
+//	final static double MIN_STEP = 0.00001;
+//
+//	void exponentiate_ode(double[] fQ, double[] fP, double t) {
+//		//#define MIN_STEP 0.0001
+//		//#define MIN_STEP 0.00035
+//			// determine step size h, such that h is at most MIN_STEP
+//			double h = MIN_STEP;
+//			int nSteps;
+//			if (h > t) {
+//				h = t;
+//				nSteps = 1;
+//			} else {
+//				nSteps = (int)(t/h) + 1;
+//				h = t / nSteps;
+//			}
+//
+//			int n = fQ.length;
+//			int m = (int) Math.sqrt(n);
+//			double [] k1 = new double[n];
+//			double [] k2 = new double[n];
+//			double [] k3 = new double[n];
+//			double [] k4 = new double[n];
+//			double [] tmp = new double[n];
+//			for (int iStep = 0; iStep < nSteps; iStep++) {
+//				//k1 = hAyj
+//				multiply(fQ, fP, k1, m);
+//				for (int i = 0; i < n; i++) {k1[i] = h * k1[i];}
+//
+//				// k2 = hA(yj + 1/2 k1 )
+//				for (int i = 0; i < n; i++) {tmp[i] =  fP[i]+k1[i]/2.0;}
+//				multiply(fQ, tmp, k2, m);
+//				for (int i = 0; i < n; i++) {k2[i] = h * k2[i];}
+//
+//				// k3 = hA(yj + 1/2 k2 )
+//				for (int i = 0; i < n; i++) {tmp[i] =  fP[i]+k2[i]/2.0;}
+//				multiply(fQ, tmp, k3, m);
+//				for (int i = 0; i < n; i++) {k3[i] = h * k3[i];}
+//
+//				// k4 = hA(yj + k3 )
+//				for (int i = 0; i < n; i++) {tmp[i] =  fP[i]+k3[i];}
+//				multiply(fQ, tmp, k4, m);
+//				for (int i = 0; i < n; i++) {k4[i] = h * k4[i];}
+//
+//				// yj+1 = yj + 1/6 k1 + 1/3 k2 + 1/3 k3 + 1/6 k4 ,
+//				for (int i = 0; i < n; i++) {fP[i] = fP[i] + k1[i]/6.0 + k2[i]/3.0 + k3[i]/3.0 + k4[i]/6.0;}
+//			}
+//		} // ode_expmv	
+//	
+//	/** matrix multiplication B = A times B **/
+//	void multiply(double [] A, double [] B, double [] C, int n){
+//		double[] Bcolj = new double[n];
+//	    for (int j = 0; j < n; j++) {
+//	      for (int k = 0; k < n; k++) {
+//	        Bcolj[k] = B[k*n+j];
+//	      }
+//	      for (int i = 0; i < n; i++) {
+//	        double s = 0;
+//	        for (int k = 0; k < n; k++) {
+//	          s += A[i * n +k]*Bcolj[k];
+//	        }
+//	        C[i*n+j] = s;
+//	      }
+//	    }
+//	}
+	
+	
 	/** calculate P = exp(Qt)*P **/
 	private void exponentiate(double [] fQ, double[] fP, double fT) {
 		// set up relative rates
@@ -202,8 +378,43 @@ public class AARSSubstitutionModel extends GeneralSubstitutionModel {
 			}
 		}
 
-    	setupRateMatrix();
-    	eigenDecomposition = eigenSystem.decomposeMatrix(m_rateMatrix);
+	    for (int i = 0; i < m_nStates; i++) {
+	    	m_rateMatrix[i][i] = 0;
+		    for (int j = 0; j < i; j++) {
+		    	m_rateMatrix[i][j] = fQ[i*m_nStates + j];
+		    }
+		    for (int j = i+1; j < m_nStates; j++) {
+		    	m_rateMatrix[i][j] = fQ[i*m_nStates + j];
+		    }
+	    }
+//	    // bring in frequencies
+//        for (int i = 0; i < m_nStates; i++) {
+//            for (int j = i + 1; j < m_nStates; j++) {
+//            	m_rateMatrix[i][j] *= fFreqs[j];
+//            	m_rateMatrix[j][i] *= fFreqs[i];
+//            }
+//        }
+        // set up diagonal
+        for (int i = 0; i < m_nStates; i++) {
+            double fSum = 0.0;
+            for (int j = 0; j < m_nStates; j++) {
+                if (i != j)
+                    fSum += m_rateMatrix[i][j];
+            }
+            m_rateMatrix[i][i] = -fSum;
+        }
+        // normalise rate matrix to one expected substitution per unit time
+        double fSubst = 0.0;
+        for (int i = 0; i < m_nStates; i++)
+            fSubst += -m_rateMatrix[i][i]; // * fFreqs[i];
+
+        for (int i = 0; i < m_nStates; i++) {
+            for (int j = 0; j < m_nStates; j++) {
+            	m_rateMatrix[i][j] = m_rateMatrix[i][j] / fSubst;
+            }
+        }        
+
+        eigenDecomposition = eigenSystem.decomposeMatrix(m_rateMatrix);
     	double[] iexp = new double[m_nStates * m_nStates];
         // Eigen vectors
         double[] Evec = eigenDecomposition.getEigenVectors();
@@ -290,7 +501,7 @@ public class AARSSubstitutionModel extends GeneralSubstitutionModel {
 		if (m_bRecalc) {
 			update();
 		}
-		System.arraycopy(m_fP[node.getNr()], 0, matrix, 0, matrix.length);
+		System.arraycopy(m_fP[node.getNr()], 0, matrix, 0, m_nStates * m_nStates);
 	}
 
 	@Override
@@ -308,12 +519,12 @@ public class AARSSubstitutionModel extends GeneralSubstitutionModel {
 	@Override
 	public void store() {
 		m_bRecalc = true;
-		super.store();
+		//super.store();
 	}
 	@Override
 	public void restore() {
 		m_bRecalc = true;
-		super.restore();
+		//super.restore();
 	}
 	
 	
