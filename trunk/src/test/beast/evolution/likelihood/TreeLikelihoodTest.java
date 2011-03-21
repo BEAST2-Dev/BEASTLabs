@@ -23,6 +23,7 @@ import beast.util.TreeParser;
  * **/
 public class TreeLikelihoodTest extends TestCase {
 	final static double PRECISION = 1e-6;
+	final static boolean g_bUseAmbiguities = false;
 	
 	public TreeLikelihoodTest() {
 		super();
@@ -103,9 +104,11 @@ public class TreeLikelihoodTest extends TestCase {
 		fLogP = likelihood.calculateLogP();
 		assertEquals(fLogP, -1992.2056440317247, PRECISION);
 
-		likelihood.initByName("useAmbiguities", true, "data",data, "tree",tree, "siteModel", siteModel);
-		fLogP = likelihood.calculateLogP();
-		assertEquals(fLogP, -1992.2056440317247, PRECISION);
+		if (g_bUseAmbiguities) {
+			likelihood.initByName("useAmbiguities", true, "data",data, "tree",tree, "siteModel", siteModel);
+			fLogP = likelihood.calculateLogP();
+			assertEquals(fLogP, -1992.2056440317247, PRECISION);
+		}
 	}
 
 	@Test
@@ -156,9 +159,11 @@ public class TreeLikelihoodTest extends TestCase {
 		fLogP = likelihood.calculateLogP();
 		assertEquals(fLogP, -1856.303048876734, PRECISION);
 
-		likelihood.initByName("useAmbiguities", true, "data",data, "tree",tree, "siteModel", siteModel);
-		fLogP = likelihood.calculateLogP();
-		assertEquals(fLogP, -1856.303048876734, PRECISION);
+		if (g_bUseAmbiguities) {
+			likelihood.initByName("useAmbiguities", true, "data",data, "tree",tree, "siteModel", siteModel);
+			fLogP = likelihood.calculateLogP();
+			assertEquals(fLogP, -1856.303048876734, PRECISION);
+		}
 	}
 	
 	@Test
@@ -183,10 +188,13 @@ public class TreeLikelihoodTest extends TestCase {
 		fLogP = likelihood.calculateLogP();
 		assertEquals(fLogP, -1825.2131708068507, PRECISION);
 	
-		likelihood.initByName("useAmbiguities", true, "data",data, "tree",tree, "siteModel", siteModel);
-		fLogP = likelihood.calculateLogP();
-		assertEquals(fLogP, -1825.2131708068507, PRECISION);
+		if (g_bUseAmbiguities) {
+			likelihood.initByName("useAmbiguities", true, "data",data, "tree",tree, "siteModel", siteModel);
+			fLogP = likelihood.calculateLogP();
+			assertEquals(fLogP, -1825.2131708068507, PRECISION);
+		}
 	}
+		
 	
 	
 	@Test
@@ -215,9 +223,11 @@ public class TreeLikelihoodTest extends TestCase {
 		System.err.println(fLogP - -1789.7593576610134);
 		assertEquals(fLogP, -1789.7593576610134, PRECISION);
 	
-		likelihood.initByName("useAmbiguities", true, "data",data, "tree",tree, "siteModel", siteModel);
-		fLogP = likelihood.calculateLogP();
-		assertEquals(fLogP, -1789.7593576610134, PRECISION);
+		if (g_bUseAmbiguities) {
+			likelihood.initByName("useAmbiguities", true, "data",data, "tree",tree, "siteModel", siteModel);
+			fLogP = likelihood.calculateLogP();
+			assertEquals(fLogP, -1789.7593576610134, PRECISION);
+		}
 	}
 
 	@Test
@@ -245,9 +255,11 @@ public class TreeLikelihoodTest extends TestCase {
 		fLogP = likelihood.calculateLogP();
 		assertEquals(fLogP, -1789.912401996943, PRECISION);
 
-		likelihood.initByName("useAmbiguities", true, "data",data, "tree",tree, "siteModel", siteModel);
-		fLogP = likelihood.calculateLogP();
-		assertEquals(fLogP, -1789.912401996943, PRECISION);
+		if (g_bUseAmbiguities) {
+			likelihood.initByName("useAmbiguities", true, "data",data, "tree",tree, "siteModel", siteModel);
+			fLogP = likelihood.calculateLogP();
+			assertEquals(fLogP, -1789.912401996943, PRECISION);
+		}
 	}
 
 	@Test
@@ -275,9 +287,11 @@ public class TreeLikelihoodTest extends TestCase {
 		fLogP = likelihood.calculateLogP();
 		assertEquals(fLogP, -1789.639227747059, PRECISION);
 
-		likelihood.initByName("useAmbiguities", true, "data",data, "tree",tree, "siteModel", siteModel);
-		fLogP = likelihood.calculateLogP();
-		assertEquals(fLogP, -1789.639227747059, PRECISION);
+		if (g_bUseAmbiguities) {
+			likelihood.initByName("useAmbiguities", true, "data",data, "tree",tree, "siteModel", siteModel);
+			fLogP = likelihood.calculateLogP();
+			assertEquals(fLogP, -1789.639227747059, PRECISION);
+		}
 	}
 
 
