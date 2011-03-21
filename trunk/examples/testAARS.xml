@@ -1,0 +1,309 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><beast namespace="beast.core:beast.evolution.tree.coalescent:beast.core.util:beast.evolution.nuc:beast.evolution.operators:beast.evolution.sitemodel:beast.evolution.substitutionmodel:beast.evolution.likelihood:beast.evolution.alignment" version="2.0">
+<map name='taxon'>beast.evolution.alignment.Taxon</map>
+
+    <data dataType="aminoacid" id="AARS_sim" name="taxa">
+<!--
+                    <sequence id="AARS_V_1" taxon="AARS_V_1" totalcount="20" value="NMQAFAVNCFIIGDWKKQGWYMVIFCEDVWIKEFLAKFKYTATGQVFQWYSVFYQIGCGFDREYWIQGEMIKGQSNFVWCGSSMYTEEQFYYYYIYAEFN"/>
+                    <sequence id="AARS_E_1" taxon="AARS_E_1" totalcount="20" value="TNQSYAENYGVWDQYNWYVFEYLIDCVKMMYNSFYRFQNYPVRFFEFCYQSTGFYVFYFFKQSGQEYIYIVNDVTVNSQCNHFAQTGVENIEGIRSGHGI"/>
+                    <sequence id="AARS_L_1" taxon="AARS_L_1" totalcount="20" value="TTKNFPGDVYVQKQWDVLFFVQLQDQQGVRWFSFFTFVGPSRGKGAYSGCEYFIQEYVYFYYAGEEQRMWHFKMAVNLMYKAFQYIFYQFCEDEMRHMSK"/>
+                    <sequence id="AARS_R_1" taxon="AARS_R_1" totalcount="20" value="IMMTKTRNYFCQQQVDDMDGYIYQFCQFMRENTFLSDLDVSTKNFYKQEWMVFRSMNYGENVTVQIEVQMWFFQARGYVYNHFECTDQEYFVNYETSVYF"/>
+                    <sequence id="AARS_I_1" taxon="AARS_I_1" totalcount="20" value="TDQADTQNNYVENWYGNCVFMYLQPRVNQWFNWKRQKCGCTVYKNSFYRESAFQYVFVGDKIPNMYMQCVVNYIPQGTMCDPPEMTYLQFQMDYMSSCFK"/>
+                    <sequence id="AARS_Q_1" taxon="AARS_Q_1" totalcount="20" value="ENEAGKMFFNVENEYNFYVFVRLIDYVDQWYGSNYSFYMCPTCGDVDRFQAPNYFVKCFFGISTKVMIRVVNGVSQNADMKAGWMTFLIKQMIYETSYGN"/>
+                    <sequence id="AARS_C_1" taxon="AARS_C_1" totalcount="20" value="SEESFSYNYFGQKQIEDENKCICQGYQGIRIGTFLPQLYVSTFRERFQEQEWFRWEKCFDGVAVQIMVQMEFGQSMFRIYAAAWCSVQMNKVFYMTAIKN"/>
+                    <sequence id="AARS_Y_1" taxon="AARS_Y_1" totalcount="20" value="TWECRPYNYFCQNQVDNMDNYICQKYPFFRIFTGLTDLDITAFKGRNQERWMGNWENNNDNVRVQIMVRMMRKVHYFRQYNNNEYTDQEFRVFYQPTVGN"/>
+                    <sequence id="AARS_M_1" taxon="AARS_M_1" totalcount="20" value="ANQAFHQNKGVMEQYNNWVFEYLIDCVSEKYYSNYTGQKWAVRGFEKCYQTTKYYVGYFFNQANQEYIYVVFDVAANAACFSFQQTGVMFIEGYQVCYFG"/>
+                    <sequence id="AARS_W_1" taxon="AARS_W_1" totalcount="20" value="ANQSGTQGGKVWDQYYGYVDEYIIDCVFMIYGFNYANQFYPVRNFENCYQSAFWYMKYFNDQSNHWYIYVVGDAAMKSQCKANQQAGVEFIEGYQSTQDN"/>
+                    <sequence id="AARS_G_1" taxon="AARS_G_1" totalcount="20" value="TKYPRFNDVPIQCTGNKMNATFWTEAQRFYQSEVNQAVYNFYMQMKGATQKIVDIQQTVTYEDFEYCMSNTERVCFVWQEYVCQKWWYHEVQVQNPIYFE"/>
+                    <sequence id="AARS_A_1" taxon="AARS_A_1" totalcount="20" value="NAWFCISAMYIVEGAAMMNAFACSEFEQNLVMQVTQSYWCKVQGIQNGFGYSMFYYVWMNKMTNAVCYPQEIYQVAMYWQRQCVFVIYNEMVMRHWEDTL"/>
+                    <sequence id="AARS_D_1" taxon="AARS_D_1" totalcount="20" value="SFRTYFDFVMVARNQFKWFSPNWSMVQYQYCPEVGQTVCTERMGVQNCMQTNVKIFQAVTTEQYTYCMNRHWVVYGMEEECVYQQEMRTEIQVQFQVNMM"/>
+                    <sequence id="AARS_P_1" taxon="AARS_P_1" totalcount="20" value="NTYKCITTMKIVENSTMFFHGACAYNQFQLVMQIPQHYMCNLQFIQNKFFYTMFQQVEMFFMAQPVCSTHNIYQVAMFEQRQCVGVIYTWMVQREWWNML"/>
+                    <sequence id="AARS_S_1" taxon="AARS_S_1" totalcount="20" value="FEWFCIATMKIVGGSAMMCANVCYYNQQTLVMQISQHYWCGLQNIQFFFNYTFFQYIWMGKMTVNVCFHQFIYQVAMYEQRQCVKVIFHEMVQRTEANML"/>
+                    <sequence id="AARS_T_1" taxon="AARS_T_1" totalcount="20" value="KTWNACPTMKIMAKTSMMNAFHCSSGQQQLIMQIAQSNWCFMQKIQFNFGYSMNQFVWMNNIHFTVCYPENIYQVAMYFQRTCVGVIYSEMVQRTWEGML"/>
+                    <sequence id="AARS_N_1" taxon="AARS_N_1" totalcount="20" value="TKYHRKNDRPITCTFFNMKATKWTEHQRFYESEVKQHVYGFYMNVRFATQNIVDIQQEVTAEDNQFCMSRTEYVCNVWQEQVCQKWWYAEVQVQFQVQWE"/>
+                    <sequence id="AARS_H_1" taxon="AARS_H_1" totalcount="20" value="FAWFCIHHMFTMQKDHMTFHYACSEPQQQLVMQISQSYWCGLQKIRNGFKYSMFQYVWMFGMTFAVFYPQKIYQVHMYWQRQCVFIMYFEMVRRTWEFTL"/>
+                    <sequence id="AARS_K_1" taxon="AARS_K_1" totalcount="20" value="TGFARINEVPITCTGYGMYANNWIEAQRNYESEVFQQIYFNYMFVGGANQGIVDTQQEVTHEDNAYCMSRMDRVMNIWQQYVCQKFWYHEVQVQNQVYWE"/>
+                    <sequence id="AARS_F_1" taxon="AARS_F_1" totalcount="20" value="TKYHRKIDRPYTCTNFNMKATKWTEHQRFWECEVKQHVYGNYVFVKNATQNIVDIQREVTGEDFAYCMSRTESTCFIWQEYVAQQVWYAEVQIQFQVNWE"/>
+-->
+<!-- class i -->
+
+                    <sequence id="_AARS_v_1" taxon="AARS_v_1" totalcount="20" value="nmqafavncfiigdwkkqgwymvifcedvwikeflakfkytatgqvfqwysvfyqigcgfdreywiqgemikgqsnfvwcgssmyteeqfyyyyiyaefn"/>
+                    <sequence id="_AARS_v_2" taxon="AARS_v_2" totalcount="20" value="nmqayavncfkigewkkqgwymviccndvyikkflaklkytamgevfqwysvfyqigcgfdrtywiqgevnegqsnfvwcassmytqeqwyyfyisaefn"/>
+                    <sequence id="_AARS_v_3" taxon="AARS_v_3" totalcount="20" value="nmqayavncfkvgewkkqgwymviccedvyikkflaklkytamgqvfqwysvyyqigmgydrtywvqgevnegqsnfvwcgssmytqeqfyyfyisaefn"/>
+                    <sequence id="_AARS_v_4" taxon="AARS_v_4" totalcount="20" value="nmqayavncfkigewkkqgwymviccedvyikkflaklkytamgqvfqwysvfyqmgcgfdrtywiqgevnegqsnfvwcgssmytqeqfyyfyisnefn"/>
+                    <sequence id="_AARS_v_5" taxon="AARS_v_5" totalcount="20" value="nmqayavncfkvgewkkqgwymviccedvyikkflaklkytamgqvfqwysvyyqigmgydktywiqgevnegqsnfvwcgstmytqeqfyffyisaefn"/>
+                    <sequence id="_AARS_v_6" taxon="AARS_v_6" totalcount="20" value="nmqafavnpfiigewkkqgwymvifcedvyikrflakfkytatgqvfqwysvfyqigcgfdrhywvqgemnkgqtnfvwcmssmyteeqfyyyyiyaefn"/>
+                    <sequence id="_AARS_v_7" taxon="AARS_v_7" totalcount="20" value="nmqayavncfkigtwkkqgwymviccedvyikkflaklkytamgqvfqwysvfyqmgcgfdrtywiqgevnegqsnfvwcgssmytqeqfyyfyisnefn"/>
+                    <sequence id="_AARS_e_1" taxon="AARS_e_1" totalcount="20" value="tnqsyaenygvwdqynwyvfeylidcvkmmynsfyrfqnypvrffefcyqstgfyvfyffkqsgqeyiyivndvtvnsqcnhfaqtgveniegirsghgi"/>
+                    <sequence id="_AARS_e_2" taxon="AARS_e_2" totalcount="20" value="tqqsyaqnfgvwnqynfyvfeylidcvkmmynsfytfqnypvrffefcsqstgfyvfyfykqsgqemiyvvndvtvpsscnhfqqtgveniegyqsgygi"/>
+                    <sequence id="_AARS_e_3" taxon="AARS_e_3" totalcount="20" value="tqqsyaqnfgvyneynfyvfeyfidcvnmmfnsfytfqnytvrffefcyqstgfyvfyffkqsgqeviyvvndvtvnsscnhfqqtgveniegyqsgygi"/>
+                    <sequence id="_AARS_e_4" taxon="AARS_e_4" totalcount="20" value="tqqfyaenfgvwneynfyvfeyeidcvkmqynsfytfqnypvrffefcyqstifyvfyffkqsgqemiyvindvtvnsscnhfqqtgveniegyqsgfgi"/>
+                    <sequence id="_AARS_e_5" taxon="AARS_e_5" totalcount="20" value="aqqsyaqnfgvwnefnfyvfeyfidcvkmqynsfytfqnypvrffefcyqstgfyvfyffkrsgqeviyvvndvtvnsscnyfqqtgveniegyqsgygi"/>
+                    <sequence id="_AARS_e_6" taxon="AARS_e_6" totalcount="20" value="tnqsyaenygvwdqynwyvfeylidcvkmmynsfytfqnypvrffnfcyqstgfyvfyffkqsgqeyiyvvndvtvnsqcnqfqqtgienvegirsghgi"/>
+                    <sequence id="_AARS_e_7" taxon="AARS_e_7" totalcount="20" value="tqqsyaenfgvwneynfyvfeyeidcvkmmynsfytfqnypvrffefcyqstgfyvfyffkqsgqemiyvindvtvnsscnhfeqtgvetiegyqsgfgi"/>
+                    <sequence id="_AARS_l_1" taxon="AARS_l_1" totalcount="20" value="ttknfpgdvyvqkqwdvlffvqlqdqqgvrwfsfftfvgpsrgkgaysgceyfiqeyvyfyyageeqrmwhfkmavnlmykafqyifyqfcedemrhmsk"/>
+                    <sequence id="_AARS_l_2" taxon="AARS_l_2" totalcount="20" value="tgktfpgdvnvmrqwdvmffvqyqdqqgvrwfsfynfvgrsrgkgvtsgceyfvqqyvyyfyageeqrvwqfkiavnlmwkafqsiffqfcvddmqhink"/>
+                    <sequence id="_AARS_l_3" taxon="AARS_l_3" totalcount="20" value="tgktfpgdvnvmrqwdvmffvqyqdqqgvrwfsfynfvgrmrgkgvtsgceyfvqqyvyffyageeqrvwqfkiavnlmykafqyiffqffvdemqhink"/>
+                    <sequence id="_AARS_l_4" taxon="AARS_l_4" totalcount="20" value="tgktfpgdvnvmrqwdvmifvqyqdqqgvrwfsffnyvgrsrgegytsgceyfvqqyvyffyageeqrvwqfkiavnlmykvfqyiffqfcvdemqhine"/>
+                    <sequence id="_AARS_l_5" taxon="AARS_l_5" totalcount="20" value="tgktfpgdvnvmrqwdvmffvqyqdqqgvrwfsgynfvgrmrgkgvtsgceyfiqqyvyffyageeqrvwqfkiavnlmyktfqyiyfqfcvdemqhink"/>
+                    <sequence id="_AARS_l_6" taxon="AARS_l_6" totalcount="20" value="ttknfpgdvyvqkqwdvlifvnlqdqqgvrwfsfftfvgpsrgkqvysgceyfiqqyvyfyyageeqrmyqfkvavnlmykafqyifyqfsedemqhisk"/>
+                    <sequence id="_AARS_l_7" taxon="AARS_l_7" totalcount="20" value="tgktfpgdvnvmrqwdvmifvqyqdqqgvrwfsffnfvgrsrgegytsgceyfvqqyvyffyageeqrvwqfkiavnlmykafqyiffqfcvdemqhine"/>
+                    <sequence id="_AARS_r_1" taxon="AARS_r_1" totalcount="20" value="immtktrnyfcqqqvddmdgyiyqfcqfmrentflsdldvstknfykqewmvfrsmnygenvtvqievqmwffqargyvynhfectdqeyfvnyetsvyf"/>
+                    <sequence id="_AARS_r_2" taxon="AARS_r_2" totalcount="20" value="tvetktrnyfclgqidnmdgyvyqfcqavrentylsdlnvstknfnkqewmifrwmnygdnvtvqievqmwffqargyvynhfqctdqeffvnyetsilf"/>
+                    <sequence id="_AARS_r_3" taxon="AARS_r_3" totalcount="20" value="tmetktsnyfcqgqiddmdgyiyqfcravrensylsdldvstknftkqewmmfrwmnygdnvtvqievqmwffqargyvynhfqctdqeffvnyetsiff"/>
+                    <sequence id="_AARS_r_4" taxon="AARS_r_4" totalcount="20" value="nmetktrnyfcqgqidnmdgyiyqfcqavrenyylsdldvstknfnkqewmmfrwmnygdnvtvqievqmrffkargyvynhfqctdqeffvnyetsilf"/>
+                    <sequence id="_AARS_r_5" taxon="AARS_r_5" totalcount="20" value="tmetktrnyfcqgqiddmdgyiydfcravrentylsdldvstknftkqewmmfrwmnygdnvtvqievqmwffmargyvynhfqctdqeffvnyetsfff"/>
+                    <sequence id="_AARS_r_6" taxon="AARS_r_6" totalcount="20" value="tmetktrnyfcqgqiddmdgyiyqfcqfvrentflsdldvsqkmyykqewmvfrsmnygenvtvqievqmwffqargyvynhfectdqeyfvnyetsvyf"/>
+                    <sequence id="_AARS_r_7" taxon="AARS_r_7" totalcount="20" value="tmvtktrnyfcqgqidamdgyiyqfcqavrenyylsdldvstknfnkqewmmfrwmnygdnvtvqievqmrffkargyvynhfqctdqeffvnyetsilf"/>
+                    <sequence id="_AARS_i_1" taxon="AARS_i_1" totalcount="20" value="tdqadtqnnyvenwygncvfmylqprvnqwfnwkrqkcgctvyknsfyresafqyvfvgdkipnmymqcvvnyipqgtmcdppemtylqfqmdymsscfk"/>
+                    <sequence id="_AARS_i_2" taxon="AARS_i_2" totalcount="20" value="tdqadtqknfvenwygncvfvhiqtrvnqwynskrqkcgctiyknsfykesafqyvfvgdkipnmnyqcvvnyvpqgtmcdppektnlqfqmdymsscyk"/>
+                    <sequence id="_AARS_i_3" taxon="AARS_i_3" totalcount="20" value="tdqadtqknfvenwygncvfvyiqgrvkqwynskrqkcgctvyknsfyresafqyvfvgdkipnmnyqcvvnyvpqgtmcdppemtnlqfqvdfmsscfk"/>
+                    <sequence id="_AARS_i_4" taxon="AARS_i_4" totalcount="20" value="tdqadtqknfvenwygncvfwyiqgrvnqwynskrqkcgctvyknsfyresafqyvfvgdkipnmnyqcvvnyvpqgtmcdpwemtnlqfqmdymsscfk"/>
+                    <sequence id="_AARS_i_5" taxon="AARS_i_5" totalcount="20" value="tdqadteknfvenwygncvfvyiqgrvnqwynskrqkcgctiyknsfyresvfqyvfigdkipnmnyqcvvnyipqgtmcdppemtnlqfqmdymsscfk"/>
+                    <sequence id="_AARS_i_6" taxon="AARS_i_6" totalcount="20" value="kdqadtqknfvenwygncvfmylqprvnqwfnwkrqkcgctvyknsfyhesafqyvfvgdkvpnmnmqcvinyipqgtmcdppemtylqfqidymsacfk"/>
+                    <sequence id="_AARS_i_7" taxon="AARS_i_7" totalcount="20" value="tdqadtqkyfvenwygncvfwyiqgrvnqwynskrqkcgctvyknsfyresafqyvfvgdkipnmnyqcvvnyvpqgtmcdppemtnlqfqmdymsscfk"/>
+                    <sequence id="_AARS_q_1" taxon="AARS_q_1" totalcount="20" value="eneagkmffnveneynfyvfvrlidyvdqwygsnysfymcptcgdvdrfqapnyfvkcffgistkvmirvvngvsqnadmkagwmtflikqmiyetsygn"/>
+                    <sequence id="_AARS_q_2" taxon="AARS_q_2" totalcount="20" value="eneygkmfmnvenqynfyvyvryidyvgqwygsnysfyvcptcgdidrgqapnffvkcffgisnevmirvengvsqnaemkagwmtflikqmfyetsygn"/>
+                    <sequence id="_AARS_q_3" taxon="AARS_q_3" totalcount="20" value="eneagkmffnteneynfyiyvrlidyvgqfygsnysyyvcptcgdidrfqapnyyvkcffgfsnevmirveegvsqnaemkagwmtflikqmfyetsygn"/>
+                    <sequence id="_AARS_q_4" taxon="AARS_q_4" totalcount="20" value="eneagkmffnveneynfyayvrlidyvgqwygsnysfyvcptcghidrfqapnyyvkcffgienevmirvengvnqnaelkagwmtflikqmfyetsygn"/>
+                    <sequence id="_AARS_q_5" taxon="AARS_q_5" totalcount="20" value="eneagkmffnvrgeynlyvyvrlidyvgqwygqnysfyccptcgdidrfqapnyyvkcffgisneimirvengvsqaaemkagwmtflikqmfyetsygn"/>
+                    <sequence id="_AARS_q_6" taxon="AARS_q_6" totalcount="20" value="eneagkmffnveneynfwvfvrlidyvdqwygnnhsfymcptcgdvdrfqapnyfvkcffgisnkvmirvvngvsqnadmkagwmtflikqmiyetsygn"/>
+                    <sequence id="_AARS_q_7" taxon="AARS_q_7" totalcount="20" value="eneagkmffnveneynfyayvrlidyvgqwygtnysfyvcptcghidrfqapnyyvkcffgienevmirvengvnqnaemkagwmtflikqmfyetswgn"/>
+                    <sequence id="_AARS_c_1" taxon="AARS_c_1" totalcount="20" value="seesfsynyfgqkqiedenkcicqgyqgirigtflpqlyvstfrerfqeqewfrwekcfdgvavqimvqmefgqsmfriyaaawcsvqmnkvfymtaikn"/>
+                    <sequence id="_AARS_c_2" taxon="AARS_c_2" totalcount="20" value="seesysynyfcqkqiddedkcicqgyqsirfgtflpdlyvstfkhrfqeqewfrwekcfdgvivqimvqsehgqsyfrvyfaewcsdqmnrvfyitaikn"/>
+                    <sequence id="_AARS_c_3" taxon="AARS_c_3" totalcount="20" value="seetysynyfcqkqiddedkcicqgyqtvrfgtflpdlyvttfknrfqeqewfrwqkcfdgvivqimvqmehgqsyyrvffaeccsdqmnrvfymtaikn"/>
+                    <sequence id="_AARS_c_4" taxon="AARS_c_4" totalcount="20" value="seesysynyfcqkqiddedkcicqgyqsirfgtflpdlyvstyknrfqeqewfrwekcfdgvivhimvqmehgqsyfrvyfaewcsdqmnrvfymteikn"/>
+                    <sequence id="_AARS_c_5" taxon="AARS_c_5" totalcount="20" value="seesysynyfcqkqiddedkcvcqgyqsvqfgtflpdlyvstfknrfqeqewfrwqkcfdnvivqimvqmehgqsnfrvffaeccsdqvnrvfymtaikn"/>
+                    <sequence id="_AARS_c_6" taxon="AARS_c_6" totalcount="20" value="seesfsynyfcqkqmedenkcicqgyqgirigtflpqlyvstfrerfqeqewfrwekcfdgeavqimvqmefgqtyfrvyaaawcsvqmnkvfymtaikn"/>
+                    <sequence id="_AARS_c_7" taxon="AARS_c_7" totalcount="20" value="seesysynyfcqkqiddedkcicqgyqsirfgtflpdlyvstyknrfqeqewfrwekcfdgvivhimvqmehgqsyfrvyfaewcsdtmnrvyymtaikn"/>
+                    <sequence id="_AARS_y_1" taxon="AARS_y_1" totalcount="20" value="twecrpynyfcqnqvdnmdnyicqkypffriftgltdlditafkgrnqerwmgnwennndnvrvqimvrmmrkvhyfrqynnneytdqefrvfyqptvgn"/>
+                    <sequence id="_AARS_y_2" taxon="AARS_y_2" totalcount="20" value="tweskpynyfcqnqvddmdmyicqkyeffriftgltdlditafkgrsqerwmgqwenyndnvsvqimvqmmkkqhyfrqysnneytkqefgvfymptign"/>
+                    <sequence id="_AARS_y_3" taxon="AARS_y_3" totalcount="20" value="tweskpynyfcqnqvddmdnyicvkyqffriftgltdlditafkgrnqerwvgrwenyndnvsvqimvqmmkkqhyfrqynnneytdqefrcfympvign"/>
+                    <sequence id="_AARS_y_4" taxon="AARS_y_4" totalcount="20" value="tweskpynyfcqnqvedmdnyicqkyqfftiftgltdldiiaykgrnqerwmgrwenyndnvsvqimqqmmkkqhywrqyynneytdmefrvfymptign"/>
+                    <sequence id="_AARS_y_5" taxon="AARS_y_5" totalcount="20" value="tweskpynyycqnqvddmdnyicqkyqfftlftgltdlditafkgrnqerwmgrwenyndnvsvqvmvtmmkkqhffrqynnneytdqeyrvfyipvign"/>
+                    <sequence id="_AARS_y_6" taxon="AARS_y_6" totalcount="20" value="twecrpynyfcqnqvdnmdnyicqkypffriftgltdqditafkgrkqerwmgrwennndnvrvqimvrmmkkvhyfrqynnneytdqefwvfyqptvgn"/>
+                    <sequence id="_AARS_y_7" taxon="AARS_y_7" totalcount="20" value="tweskpynyfcqnqvddmdnyicqkyqfftiftgltdldivafkgrnqemwmgrwenyndnvsvqimvqmmkkqhyfrqynnneytdmefrvfymptign"/>
+                    <sequence id="_AARS_m_1" taxon="AARS_m_1" totalcount="20" value="anqafhqnkgvmeqynnwvfeylidcvsekyysnytgqkwavrgfekcyqttkyyvgyffnqanqeyiyvvfdvaanaacfsfqqtgvmfiegyqvcyfg"/>
+                    <sequence id="_AARS_m_2" taxon="AARS_m_2" totalcount="20" value="anqafhqnngvmdqynnyvfeylidcvteeyksnntgqkyavrgfekcyqttkyyvgyffnqanqeymyvvfdiaanaqcfsfqhygvmfiedfqtayfg"/>
+                    <sequence id="_AARS_m_3" taxon="AARS_m_3" totalcount="20" value="anqafhqnngvmdqynnyvfeylvdcvseeyktnytgqkyavrgfekcyqttdyyvgyffnqanqeymyvvfdmapnaqcfsvmqtgvmfiedyqtayfg"/>
+                    <sequence id="_AARS_m_4" taxon="AARS_m_4" totalcount="20" value="mnqafhmnngvmdqynnyvfeyliscvseeyksnytgqkyavrgfekcyqttkyyvgyffnqanqyymyvvvdvaanaqcfsfqhtgvmfiedyqtayfg"/>
+                    <sequence id="_AARS_m_5" taxon="AARS_m_5" totalcount="20" value="anqafhqnngvmdqynnyvfsylvdcvseefksnyagqkyavrgfekcyqttkyyvgyffnqanqeytyvvfdmaanaqcfsfqhtgmmfiedyqtayfg"/>
+                    <sequence id="_AARS_m_6" taxon="AARS_m_6" totalcount="20" value="aaqnfhqnkgvmdqynnwvfeylidcvsekfysnytgqkyavrgfekcyqtmkyyvgyffnqanqeyiyvvfdvaanaqcfsfqqtgvmffegyqvcyfg"/>
+                    <sequence id="_AARS_m_7" taxon="AARS_m_7" totalcount="20" value="mnqafhenngvmdqfnnyvyeyliscvsdeyksnytpqkyavrgfekcyqttkyyvgyffnqanqdymyvvfdvaanaqcfsfqhtgvmfiedfqtayfg"/>
+                    <sequence id="_AARS_w_1" taxon="AARS_w_1" totalcount="20" value="anqsgtqggkvwdqyygyvdeyiidcvfmiygfnyanqfypvrnfencyqsafwymkyfndqsnhwyiyvvgdaamksqckanqqagvefiegyqstqdn"/>
+                    <sequence id="_AARS_w_2" taxon="AARS_w_2" totalcount="20" value="anqsgtqggkvwdqynayangeiidcvfmywksnyanqfypvrnfencyqcafyymkyfnnqsnheyiyvygdvamksqckiqqqagmefiikfqstqkn"/>
+                    <sequence id="_AARS_w_3" taxon="AARS_w_3" totalcount="20" value="anqsgtqggkvwdhyngfaneeiidcvfmfwgsnyanqfypvrnfancyqsafyyfkyfnnqsnheyiyvvgdvamksqckiqqqagvqfiigfqstqkn"/>
+                    <sequence id="_AARS_w_4" taxon="AARS_w_4" totalcount="20" value="anqsgtqggkvwqqyngyaneeiidcvfmfwgsnytnqfypvrnfencyqsafyymiyfnnqsnneyiyvvgdvamksqckiqqqagvefmikaqstqkn"/>
+                    <sequence id="_AARS_w_5" taxon="AARS_w_5" totalcount="20" value="anqrgtqggkvwdqyngyaneeiivcvymfwgsnyanqfypvrnfencyqsafyymmyfnnqsnhnyiyvvgdvamksqckiqqqagvqfiigfqstqkn"/>
+                    <sequence id="_AARS_w_6" taxon="AARS_w_6" totalcount="20" value="anqsgtqggkvwdqyygyvdeyivdcvfmiygfnyanqfypvrnfeqcyqsafwymkyynkqsnhwyvyvvgdaamksqckanqqagveciegyqstqdn"/>
+                    <sequence id="_AARS_w_7" taxon="AARS_w_7" totalcount="20" value="anqsgtqggkvwqqyngyaneeiidcvfmfwgsnlanqfypirnfencyqsafymmiyfnnqsnheyiyvvgdvamksqckiqqqagvefmikfqstnkn"/>
+-->
+<!-- class ii -->
+                    <sequence id="_AARS_g_1" taxon="AARS_g_1" totalcount="20" value="tkyprfndvpiqctgnkmnatfwteaqrfyqsevnqavynfymqmkgatqkivdiqqtvtyedfeycmsntervcfvwqeyvcqkwwyhevqvqnpiyfe"/>
+                    <sequence id="_AARS_g_2" taxon="AARS_g_2" totalcount="20" value="tkwarftdvpitctgnkmnatfwteaqrfyesevkqavynfymnvkgavrkivdiqqevthedfaycmsrtervcfiwqeyvcqkwwyhevqiqnpvywe"/>
+                    <sequence id="_AARS_g_3" taxon="AARS_g_3" totalcount="20" value="tkwarfndmpitctgnkmsstfwteanrfyesevkqgvfkfymnvkgavqkivdiqqevthedfaycmsrtervcfiyqeyvcqkwyyhevqtqnpvywe"/>
+                    <sequence id="_AARS_g_4" taxon="AARS_g_4" totalcount="20" value="tkmarfndvpitctgnkmnatfwteaegfyesevkqavynyymnvkgavqkivdiqqeatmedfaycmsrservcfiwqeyvcqkwwyhevqiqmpvywe"/>
+                    <sequence id="_AARS_g_5" taxon="AARS_g_5" totalcount="20" value="tkwarfndvpitctgnkmnstfwtetnrfyeseikqavfnfymnvqgavqkivdvqqevthedfaycmartervcfiwqeyvcqkwwyhevqiqnpvywe"/>
+                    <sequence id="_AARS_g_6" taxon="AARS_g_6" totalcount="20" value="tkyerfndvpiqctgnkmnatfwteaqrfyqsevnqavynfymqmkgatqkivdiqqtvtyedfaycmsntarvcfiwqeyvcrkwwyhkvnvqnpvyfe"/>
+                    <sequence id="_AARS_g_7" taxon="AARS_g_7" totalcount="20" value="gkmarfndvpitctgnkmnatfwteaegfyesevkqavynyymnvkgavqkivdiqqeathedfaycmsrservcfiwqeyvcqkwwyhevqiqnpvywe"/>
+                    <sequence id="_AARS_a_1" taxon="AARS_a_1" totalcount="20" value="nawfcisamyivegaammnafacsefeqnlvmqvtqsywckvqgiqngfgysmfyyvwmnkmtnavcypqeiyqvamywqrqcvfviynemvmrhwedtl"/>
+                    <sequence id="_AARS_a_2" taxon="AARS_a_2" totalcount="20" value="nawfcisamfivmggammnafacsefqqqlvmqitqsyccklqgiqngfgysmfqyvwmnkmtnavcypqkiyqvamywmrqcvfvifsdmkqrhwenvl"/>
+                    <sequence id="_AARS_a_3" taxon="AARS_a_3" totalcount="20" value="nawfcisamfivmggammnafacsefqqqlvmqitqsywcklqgiqnpfgysmfqyvwmnkmtnavcwpqkiyqvamywmrqcvfvvfsemvqrhwenvl"/>
+                    <sequence id="_AARS_a_4" taxon="AARS_a_4" totalcount="20" value="nawfcisamfivmggammnafacsefqqqlvmqmtqtywcklqgiqngfgysmfeyvwmnhmtnaqcypqkiyqvamywmrqcvfvifsemvtrhwenvl"/>
+                    <sequence id="_AARS_a_5" taxon="AARS_a_5" totalcount="20" value="nawfcisaffiimggammnafacsefqqqlvmqitqsywcklqgiqnpfgysmfqyvwmnkmtnaicwpqkiyqvamywmrqcvfvifsemvqrhwenvl"/>
+                    <sequence id="_AARS_a_6" taxon="AARS_a_6" totalcount="20" value="nawfcisamyvvqgaammtafacsefqqnlvmqvtqsywckvrgiqngfgysmfhyvwmnkmtnavcypqeiyqvamywqrqcvfviynemvmrhweqtl"/>
+                    <sequence id="_AARS_a_7" taxon="AARS_a_7" totalcount="20" value="nawfcisamfivmggammnafacsefqqqlvmqitqtywcklqgiqngfgysmfqyvwmnkmtnaqcypqkiyqvamywmrqcvfvifsemvtrhwenvl"/>
+                    <sequence id="_AARS_d_1" taxon="AARS_d_1" totalcount="20" value="sfrtyfdfvmvarnqfkwfspnwsmvqyqycpevgqtvctermgvqncmqtnvkifqavtteqytycmnrhwvvygmeeecvyqqemrteiqvqfqvnmm"/>
+                    <sequence id="_AARS_d_2" taxon="AARS_d_2" totalcount="20" value="sfrtffdfvmparnnfkmfspnwsmiqydympdvgqtvctermgvqncmqnnvkiqeemtteyytycmtrhwvvygmqqesvyqqemrteiqiqfqvnmm"/>
+                    <sequence id="_AARS_d_3" taxon="AARS_d_3" totalcount="20" value="sfrtffdfvmvarnnfkwfspnwsmvqyeympeaaqtvctermgvqtcmqknvkiqqemtteyytfcmtrhwvvygmeqecvyqqemrtqiqvqfqvnmm"/>
+                    <sequence id="_AARS_d_4" taxon="AARS_d_4" totalcount="20" value="sfrtffdfvmvarnnfkwfspnwsmvqyeytpdvgqtvctervevqncmqnnvkiqqemtteyymycmtrhwvvygmeqecvyqqemrteiqfqfqvnrm"/>
+                    <sequence id="_AARS_d_5" taxon="AARS_d_5" totalcount="20" value="sfriffqfvmvarnnfkwfspnwsmvqyeympevgqtmctermgvqncmqnnvkiqqemttqyytfcmtrhwvvygmeqecvyqqemrteiqvqfqvnmm"/>
+                    <sequence id="_AARS_d_6" taxon="AARS_d_6" totalcount="20" value="sfrtyfdfvmvarnqfkwfspnwsmiqytympevgqtvctermgvqnmiqtnvkifqavtieqytycmerhwvvygmeqecvyqqemrtemqvqfqtnmm"/>
+                    <sequence id="_AARS_d_7" taxon="AARS_d_7" totalcount="20" value="sfrtffdfvmvarnnfkwfspnwttvqyeytpdvgqtvctermgvqncmqnnvkiqqemtteyytycmtrhwvvygmeqecvyqqemrteiqiqfqvnrm"/>
+                    <sequence id="_AARS_p_1" taxon="AARS_p_1" totalcount="20" value="ntykcittmkivenstmffhgacaynqfqlvmqipqhymcnlqfiqnkffytmfqqvemffmaqpvcsthniyqvamfeqrqcvgviytwmvqrewwnml"/>
+                    <sequence id="_AARS_p_2" taxon="AARS_p_2" totalcount="20" value="dtwkcittmkivanstmyfhgacaynqfqlvmqipqhytcnlwfiqnkffytmfqwivmyfiakpvcskqniyqvamyeqrqcvgkiytwmvqrtwwnml"/>
+                    <sequence id="_AARS_p_3" taxon="AARS_p_3" totalcount="20" value="dtwkcivtmqivnnstmyfhgacaynqfqlvmqipqhytcnqqfiqdkffftcfqyitmyfiakpvcskkniyqvamyeqrqcvgviytwmvkrtwwqml"/>
+                    <sequence id="_AARS_p_4" taxon="AARS_p_4" totalcount="20" value="dtwkcitimkivanstmyfhgacaynqfqlvmqipqhytcnlqfiqnkffytmfqyivmyfiakpvcskqniyqvamytqrqcvgviftwmvqrtwwnml"/>
+                    <sequence id="_AARS_p_5" taxon="AARS_p_5" totalcount="20" value="dtwkcivtmqivanytmyfhgacafnqfqlmmqipqhytcnqqmmqnkffytifqyipmyfiaqpvcpkkniyqvamyeqrmrvgfvytwmvqrtwwnml"/>
+                    <sequence id="_AARS_p_6" taxon="AARS_p_6" totalcount="20" value="nnykcvttmkivesstmyfhgacaynqfqlvmqipqhyycnlqfiqnkffytmfqqvemffmakaicstqnmyqvamfeqrqcvgviytwmvqrtwwnml"/>
+                    <sequence id="_AARS_p_7" taxon="AARS_p_7" totalcount="20" value="dtwkcitimkivanstmyfhgacaynqfqlvmqipqhytcnlqfiqnkffytmfqyivfyfiakpvcskqnvyqtamyeqrqcvgviytwmvqrtwwnml"/>
+                    <sequence id="_AARS_s_1" taxon="AARS_s_1" totalcount="20" value="fewfciatmkivggsammcanvcyynqqtlvmqisqhywcglqniqfffnytffqyiwmgkmtvnvcfhqfiyqvamyeqrqcvkvifhemvqrteanml"/>
+                    <sequence id="_AARS_s_2" taxon="AARS_s_2" totalcount="20" value="fawfciaimkivegsammsanachynqeqlvmqitqhywcglrniqfffnytffqciwmgkmtgsvcyhqfiyqvavyeqrqcvkvlfhemvqrteenml"/>
+                    <sequence id="_AARS_s_3" taxon="AARS_s_3" totalcount="20" value="fawfciatmkivegsammfanncyynqeqltmqisqhywcglqniqfmfnytffqfiwqgkmtgsvcyhqfiyevavyeqrqcmkaifhemvqrkeenml"/>
+                    <sequence id="_AARS_s_4" taxon="AARS_s_4" totalcount="20" value="fawfciatmkifegsammfanacsynqeqlvmqisqhywcglqniqfffnytffqfiwmgkmtgsvcyhqfiyqvavyeqrqcvkvifhemvqrteenml"/>
+                    <sequence id="_AARS_s_5" taxon="AARS_s_5" totalcount="20" value="fawfciatmkvvegsammfanachynqeqlvmqisehywcglqniqfmfnytffqfiwqgkmtgsvcyhqfiyqvavyeqrqcvkvifhemvqrteenml"/>
+                    <sequence id="_AARS_s_6" taxon="AARS_s_6" totalcount="20" value="fywfciatmkivggsammsanvcfynqqtlvmhisqhywcglqniqfffnytffqyiwqgkmtaevcfhhfiyqvamyeqrqcvkvifhemvqrteenml"/>
+                    <sequence id="_AARS_s_7" taxon="AARS_s_7" totalcount="20" value="fawfciatmkifegsammfanacsynqeqlvmqisqhywcglqniqfffnytffqfiwygkmtgsvcyhqfiyqvavyeqrqcvkvifhemvqrteenml"/>
+                    <sequence id="_AARS_t_1" taxon="AARS_t_1" totalcount="20" value="ktwnacptmkimaktsmmnafhcssgqqqlimqiaqsnwcfmqkiqfnfgysmnqfvwmnnihftvcypeniyqvamyfqrtcvgviysemvqrtwegml"/>
+                    <sequence id="_AARS_t_2" taxon="AARS_t_2" totalcount="20" value="ktwnciltmkivekttmmnafhssegqqklvmqidqsswcflqkiefnfgysmnqyvwmnnmhftvcypeniyqvamywtrqcvgviynemvqrtwegml"/>
+                    <sequence id="_AARS_t_3" taxon="AARS_t_3" totalcount="20" value="itwnciltmkivekttmmnafhssqgqqklvmqidqsswcflqkiefnfgysmnqyvwmnnmhftvcypeniyqvamywqrqcvgviysemmqrtwegml"/>
+                    <sequence id="_AARS_t_4" taxon="AARS_t_4" totalcount="20" value="ktwnciltmkivekttminafhssegqqklvmqidqsswcflqkiefnfgysmnqyvwmynmhftvcypesiyqvamywqrkcvgviysemvqrtwqgml"/>
+                    <sequence id="_AARS_t_5" taxon="AARS_t_5" totalcount="20" value="ktwnciltmkivekttqmnafyssqgqqklvmqidqsswcffqkiefnfgysmnqyvwmnnmhftvcypeniyqvamywqrqcvgciysemvqrtwegll"/>
+                    <sequence id="_AARS_t_6" taxon="AARS_t_6" totalcount="20" value="ntwnacptmkimakttmmnafhcssgqqqliiqiaqsnwcflqkvqfnfgysmnqfvwmnnihftvcypeniyqvamywqrtcvgviyseqvqrtwegml"/>
+                    <sequence id="_AARS_t_7" taxon="AARS_t_7" totalcount="20" value="ktwnciltmkivekttminafhssegqqklvmqidqsswcflqkiefnfgysmnqyvwmnnmhftvcypesiymvamywqrqcvgviysemvqrtwqgml"/>
+                    <sequence id="_AARS_n_1" taxon="AARS_n_1" totalcount="20" value="tkyhrkndrpitctffnmkatkwtehqrfyesevkqhvygfymnvrfatqnivdiqqevtaednqfcmsrteyvcnvwqeqvcqkwwyaevqvqfqvqwe"/>
+                    <sequence id="_AARS_n_2" taxon="AARS_n_2" totalcount="20" value="tkyhrkndkpitwtffnmkatkwtehqrfyepevkqhvygfymtvkfatqniidiqqevtaadnkfcmsrtesvcriwqeyvcqkwwyaeiqvqfqvqwe"/>
+                    <sequence id="_AARS_n_3" taxon="AARS_n_3" totalcount="20" value="tkyhrkndrpitctvfnmkatkwtehqrfyepevkqhvygfymnvkfatqniidiqqevtaadnaycmsrtesvcniwqeyvcqkwwyaevqvqfqvqwe"/>
+                    <sequence id="_AARS_n_4" taxon="AARS_n_4" totalcount="20" value="tkyhrkndrpirctfyqmkatkwtehqrfyepevkqhvygfymnvkfatqniidiqqevtaadnaycmsrtesvcniwqeyvcqkqwyaeiqvqfqvrwe"/>
+                    <sequence id="_AARS_n_5" taxon="AARS_n_5" totalcount="20" value="tkyhrnndepitctffnmkatkwtehqrfyepevkqhvygfymnvkfatqniidiqqevtaadnaycmsrteavcnmwqeyvcqkwwyaevqvqfqvqwe"/>
+                    <sequence id="_AARS_n_6" taxon="AARS_n_6" totalcount="20" value="tkyhrkndrpitctffnmkatkwtehqrfyesevkqhvygfyfnvkfatqnmvdiqqevtaednqycmsrneyvcniwqeqvcqkwwyaevqvqfqvqwe"/>
+                    <sequence id="_AARS_n_7" taxon="AARS_n_7" totalcount="20" value="tkyhrkndrpirctffnmkatkwtehqrfyepevkqhvygfymnvkfatqnivdiqqevtaadnaycmsrtesvcniwqeyvcqkqwyaeiqvqfqvqwe"/>
+                    <sequence id="_AARS_h_1" taxon="AARS_h_1" totalcount="20" value="fawfcihhmftmqkdhmtfhyacsepqqqlvmqisqsywcglqkirngfkysmfqyvwmfgmtfavfypqkiyqvhmywqrqcvfimyfemvrrtweftl"/>
+                    <sequence id="_AARS_h_2" taxon="AARS_h_2" totalcount="20" value="fawfcinhyfivekahmmfhfacspnqrqlviqitescwcglqknqngvkydmfqfvwmfgmtfatcypqkiyqvhmywqrqcgfvmysetvqrayeftl"/>
+                    <sequence id="_AARS_h_3" taxon="AARS_h_3" totalcount="20" value="fawfcinhffvvekahmlfhfacpenqrqlvvqmtescwcglqkiqngfkyymfqfmwmfgmtfatcypqkiyqfhmywqrqcgfvmysemvqrayeftl"/>
+                    <sequence id="_AARS_h_4" taxon="AARS_h_4" totalcount="20" value="fawfcinhyfivqkahmmfhfacspnqrqlviqitescccelsqiqngfkydmfqfvymsgmtfatcypqeiyqvhmfwqrqcgfvmysemvqrayewtl"/>
+                    <sequence id="_AARS_h_5" taxon="AARS_h_5" totalcount="20" value="fawfcinhyfivekahmlfhfacsenqrqlvvqmtnscwcglqkfqngfkysmfefmwmfgmtfatcypqkiyqvhmywqrqcafvmysemvqrayeftl"/>
+                    <sequence id="_AARS_h_6" taxon="AARS_h_6" totalcount="20" value="fawfcishmftfqkdhmmmhfacsepqqqlvmqisqsywcgvqkiqngfkysmfqyvwmfgmtfavcypqkiyqvhmywqrqcvfimyfemvqkaweftl"/>
+                    <sequence id="_AARS_h_7" taxon="AARS_h_7" totalcount="20" value="fawfcinhyfivekahmmfhfacspnqrqlviqitescwcglskiqngfkydmfqfvymsgmtfatcypqmiyqvhmywqrqcgftmysemvqrayewtl"/>
+                    <sequence id="_AARS_k_1" taxon="AARS_k_1" totalcount="20" value="tgfarinevpitctgygmyannwieaqrnyesevfqqiyfnymfvgganqgivdtqqevthednaycmsrmdrvmniwqqyvcqkfwyhevqvqnqvywe"/>
+                    <sequence id="_AARS_k_2" taxon="AARS_k_2" totalcount="20" value="tgyawfndypitctgfgmfatnwteaqrnyesevyqavyfnymfvggavqgivdiqtevthednaycmnrtnrvcniwqeyvcnkwwyrevqvenqvywe"/>
+                    <sequence id="_AARS_k_3" taxon="AARS_k_3" totalcount="20" value="tgyawfndvpitctgfgmfatnwteamrnyqsevfeavyfnykfvggatqgivdiqteithewnaycmnrtervcniwqeyvctkwwyhvvqvenqvywe"/>
+                    <sequence id="_AARS_k_4" taxon="AARS_k_4" totalcount="20" value="tgyawfndvpitctgfgmfttnwteaqrnyesevfqavyfnymfvggatqgisdiqtevthednafcmnrtervcnvwqeyvcnkwwyhevqvqnqvywe"/>
+                    <sequence id="_AARS_k_5" taxon="AARS_k_5" totalcount="20" value="tgyawfndvpitcegfgmfatnwteaqrnyesevfeavyfnymfvggatqgivdiqtevthednaycmnrtervcniwqeyvctkwfyhvvqvenqvywe"/>
+                    <sequence id="_AARS_k_6" taxon="AARS_k_6" totalcount="20" value="tgfarfndvpitctgngwyatnwieamryyesevfqqvyfnqmfvggatqgvvdtqqevthednaycmsrmdrvmniwqqyvcqkfwyhevqvqnqvyye"/>
+                    <sequence id="_AARS_k_7" taxon="AARS_k_7" totalcount="20" value="tgfawfndvpitctgfgmfttnwteaqrnyesevfqavyfnymfvggatqgisdiqtevthednafcmnrtervcnvwqeyvcnkwwyhevqvqnqvywe"/>
+                    <sequence id="_AARS_f_1" taxon="AARS_f_1" totalcount="20" value="tkyhrkidrpytctnfnmkatkwtehqrfwecevkqhvygnyvfvknatqnivdiqrevtgedfaycmsrtestcfiwqeyvaqqvwyaevqiqfqvnwe"/>
+                    <sequence id="_AARS_f_2" taxon="AARS_f_2" totalcount="20" value="tayhrkfdrpitctnmnmeatkwtehqrwyetevkqhvygnnmfvknatqniveiqqqvtaqdfaycmnatesvcfiwqeyvcqkwwyaevqcqfqvnwe"/>
+                    <sequence id="_AARS_f_3" taxon="AARS_f_3" totalcount="20" value="tkyhrkfdrpitcttfnmettkwtehqrfyetevkqhvygnnmyvknatqnivdiqrevtaenfaycvnrtvsvcfiwqeyvcqkwwyaevqcqfqvnwe"/>
+                    <sequence id="_AARS_f_4" taxon="AARS_f_4" totalcount="20" value="tkyhrkfdrpitctnfimeatkwtehqrwyhtevkqhvygnnmfvknatqnivdiqqevtaedfaycmtrtesvcyiwqqyvcqkwwyaevqcqfqvnwn"/>
+                    <sequence id="_AARS_f_5" taxon="AARS_f_5" totalcount="20" value="tkyhrkfdrpitctnfnmeatkwtehqrfyetevkqhvygnnmfvknatqniidiqqevtaedqaycmnrtesvcfiwqeyvcqkwwyaevqcqfqinwe"/>
+                    <sequence id="_AARS_f_6" taxon="AARS_f_6" totalcount="20" value="tkyhrkidrpytctnfnmkatkwtehqrfwecevkqhvygnymfvknatqnitditrevtgedfaycmsrtestcfiwqeyeaqqwwyaevqvqfqvnwe"/>
+                    <sequence id="_AARS_f_7" taxon="AARS_f_7" totalcount="20" value="tkyhrkfdrpitctnfimeatkwtehqrwyhtevkqhvygdnmfvknatqnivdiqqevtaenfaycmnrtesvcfiwqqyvcqkwwyaevqcqfqvnwn"/>
+
+                </data>
+
+
+    
+    <substModel spec="AARSSubstitutionModel" id="substmodel" tree="@tree">
+        <frequencies spec='AARSFrequencies'>
+            <frequencies spec='parameter.RealParameter' value="1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"/>
+        </frequencies>
+        <trait id="TraitSet1" spec="beast.evolution.tree.TraitSet" taxa="@AARS_sim" traitname='state'>
+<!--
+            AARS_A_1=0,
+            AARS_C_1=1,
+            AARS_D_1=2,
+            AARS_E_1=3,
+            AARS_F_1=4,
+            AARS_G_1=5,
+            AARS_H_1=6,
+            AARS_I_1=7,
+            AARS_K_1=8,
+            AARS_L_1=9,
+            AARS_M_1=10,
+            AARS_N_1=11,
+            AARS_P_1=12,
+            AARS_Q_1=13,
+            AARS_R_1=14,
+            AARS_S_1=15,
+            AARS_T_1=16,
+            AARS_V_1=17,
+            AARS_W_1=18,
+            AARS_Y_1=19
+-->
+            AARS_a_1=0,AARS_a_2=0,AARS_a_3=0,AARS_a_4=0,AARS_a_5=0,AARS_a_6=0,AARS_a_7=0,
+            AARS_c_1=1,AARS_c_2=1,AARS_c_3=1,AARS_c_4=1,AARS_c_5=1,AARS_c_6=1,AARS_c_7=1,
+            AARS_d_1=2,AARS_d_2=2,AARS_d_3=2,AARS_d_4=2,AARS_d_5=2,AARS_d_6=2,AARS_d_7=2,
+            AARS_e_1=3,AARS_e_2=3,AARS_e_3=3,AARS_e_4=3,AARS_e_5=3,AARS_e_6=3,AARS_e_7=3,
+            AARS_f_1=4,AARS_f_2=4,AARS_f_3=4,AARS_f_4=4,AARS_f_5=4,AARS_f_6=4,AARS_f_7=4,
+            AARS_g_1=5,AARS_g_2=5,AARS_g_3=5,AARS_g_4=5,AARS_g_5=5,AARS_g_6=5,AARS_g_7=5,
+            AARS_h_1=6,AARS_h_2=6,AARS_h_3=6,AARS_h_4=6,AARS_h_5=6,AARS_h_6=6,AARS_h_7=6,
+            AARS_i_1=7,AARS_i_2=7,AARS_i_3=7,AARS_i_4=7,AARS_i_5=7,AARS_i_6=7,AARS_i_7=7,
+            AARS_k_1=8,AARS_k_2=8,AARS_k_3=8,AARS_k_4=8,AARS_k_5=8,AARS_k_6=8,AARS_k_7=8,
+            AARS_l_1=9,AARS_l_2=9,AARS_l_3=9,AARS_l_4=9,AARS_l_5=9,AARS_l_6=9,AARS_l_7=9,
+            AARS_m_1=10,AARS_m_2=10,AARS_m_3=10,AARS_m_4=10,AARS_m_5=10,AARS_m_6=10,AARS_m_7=10,
+            AARS_n_1=11,AARS_n_2=11,AARS_n_3=11,AARS_n_4=11,AARS_n_5=11,AARS_n_6=11,AARS_n_7=11,
+            AARS_p_1=12,AARS_p_2=12,AARS_p_3=12,AARS_p_4=12,AARS_p_5=12,AARS_p_6=12,AARS_p_7=12,
+            AARS_q_1=13,AARS_q_2=13,AARS_q_3=13,AARS_q_4=13,AARS_q_5=13,AARS_q_6=13,AARS_q_7=13,
+            AARS_r_1=14,AARS_r_2=14,AARS_r_3=14,AARS_r_4=14,AARS_r_5=14,AARS_r_6=14,AARS_r_7=14,
+            AARS_s_1=15,AARS_s_2=15,AARS_s_3=15,AARS_s_4=15,AARS_s_5=15,AARS_s_6=15,AARS_s_7=15,
+            AARS_t_1=16,AARS_t_2=16,AARS_t_3=16,AARS_t_4=16,AARS_t_5=16,AARS_t_6=16,AARS_t_7=16,
+            AARS_v_1=17,AARS_v_2=17,AARS_v_3=17,AARS_v_4=17,AARS_v_5=17,AARS_v_6=17,AARS_v_7=17,
+            AARS_w_1=18,AARS_w_2=18,AARS_w_3=18,AARS_w_4=18,AARS_w_5=18,AARS_w_6=18,AARS_w_7=18,
+            AARS_y_1=19,AARS_y_2=19,AARS_y_3=19,AARS_y_4=19,AARS_y_5=19,AARS_y_6=19,AARS_y_7=19
+        </trait>
+        <defaultModel spec='WAG'/>
+    </substModel>
+
+
+
+
+    <distribution id="posterior" spec="util.CompoundDistribution">
+        <distribution spec='beast.evolution.tree.MonophyleticConstraint' tree='@tree' taxa='@AARS_sim'>
+            <set spec='TaxonSet'><taxon id='AARS_a_1'/><taxon id='AARS_a_2'/><taxon id='AARS_a_3'/><taxon id='AARS_a_4'/><taxon id='AARS_a_5'/><taxon id='AARS_a_6'/><taxon id='AARS_a_7'/></set>
+            <set spec='TaxonSet'><taxon id='AARS_c_1'/><taxon id='AARS_c_2'/><taxon id='AARS_c_3'/><taxon id='AARS_c_4'/><taxon id='AARS_c_5'/><taxon id='AARS_c_6'/><taxon id='AARS_c_7'/></set>
+            <set spec='TaxonSet'><taxon id='AARS_d_1'/><taxon id='AARS_d_2'/><taxon id='AARS_d_3'/><taxon id='AARS_d_4'/><taxon id='AARS_d_5'/><taxon id='AARS_d_6'/><taxon id='AARS_d_7'/></set>
+            <set spec='TaxonSet'><taxon id='AARS_e_1'/><taxon id='AARS_e_2'/><taxon id='AARS_e_3'/><taxon id='AARS_e_4'/><taxon id='AARS_e_5'/><taxon id='AARS_e_6'/><taxon id='AARS_e_7'/></set>
+            <set spec='TaxonSet'><taxon id='AARS_f_1'/><taxon id='AARS_f_2'/><taxon id='AARS_f_3'/><taxon id='AARS_f_4'/><taxon id='AARS_f_5'/><taxon id='AARS_f_6'/><taxon id='AARS_f_7'/></set>
+            <set spec='TaxonSet'><taxon id='AARS_g_1'/><taxon id='AARS_g_2'/><taxon id='AARS_g_3'/><taxon id='AARS_g_4'/><taxon id='AARS_g_5'/><taxon id='AARS_g_6'/><taxon id='AARS_g_7'/></set>
+            <set spec='TaxonSet'><taxon id='AARS_h_1'/><taxon id='AARS_h_2'/><taxon id='AARS_h_3'/><taxon id='AARS_h_4'/><taxon id='AARS_h_5'/><taxon id='AARS_h_6'/><taxon id='AARS_h_7'/></set>
+            <set spec='TaxonSet'><taxon id='AARS_i_1'/><taxon id='AARS_i_2'/><taxon id='AARS_i_3'/><taxon id='AARS_i_4'/><taxon id='AARS_i_5'/><taxon id='AARS_i_6'/><taxon id='AARS_i_7'/></set>
+            <set spec='TaxonSet'><taxon id='AARS_k_1'/><taxon id='AARS_k_2'/><taxon id='AARS_k_3'/><taxon id='AARS_k_4'/><taxon id='AARS_k_5'/><taxon id='AARS_k_6'/><taxon id='AARS_k_7'/></set>
+            <set spec='TaxonSet'><taxon id='AARS_l_1'/><taxon id='AARS_l_2'/><taxon id='AARS_l_3'/><taxon id='AARS_l_4'/><taxon id='AARS_l_5'/><taxon id='AARS_l_6'/><taxon id='AARS_l_7'/></set>
+            <set spec='TaxonSet'><taxon id='AARS_m_1'/><taxon id='AARS_m_2'/><taxon id='AARS_m_3'/><taxon id='AARS_m_4'/><taxon id='AARS_m_5'/><taxon id='AARS_m_6'/><taxon id='AARS_m_7'/></set>
+            <set spec='TaxonSet'><taxon id='AARS_n_1'/><taxon id='AARS_n_2'/><taxon id='AARS_n_3'/><taxon id='AARS_n_4'/><taxon id='AARS_n_5'/><taxon id='AARS_n_6'/><taxon id='AARS_n_7'/></set>
+            <set spec='TaxonSet'><taxon id='AARS_p_1'/><taxon id='AARS_p_2'/><taxon id='AARS_p_3'/><taxon id='AARS_p_4'/><taxon id='AARS_p_5'/><taxon id='AARS_p_6'/><taxon id='AARS_p_7'/></set>
+            <set spec='TaxonSet'><taxon id='AARS_q_1'/><taxon id='AARS_q_2'/><taxon id='AARS_q_3'/><taxon id='AARS_q_4'/><taxon id='AARS_q_5'/><taxon id='AARS_q_6'/><taxon id='AARS_q_7'/></set>
+            <set spec='TaxonSet'><taxon id='AARS_r_1'/><taxon id='AARS_r_2'/><taxon id='AARS_r_3'/><taxon id='AARS_r_4'/><taxon id='AARS_r_5'/><taxon id='AARS_r_6'/><taxon id='AARS_r_7'/></set>
+            <set spec='TaxonSet'><taxon id='AARS_s_1'/><taxon id='AARS_s_2'/><taxon id='AARS_s_3'/><taxon id='AARS_s_4'/><taxon id='AARS_s_5'/><taxon id='AARS_s_6'/><taxon id='AARS_s_7'/></set>
+            <set spec='TaxonSet'><taxon id='AARS_t_1'/><taxon id='AARS_t_2'/><taxon id='AARS_t_3'/><taxon id='AARS_t_4'/><taxon id='AARS_t_5'/><taxon id='AARS_t_6'/><taxon id='AARS_t_7'/></set>
+            <set spec='TaxonSet'><taxon id='AARS_v_1'/><taxon id='AARS_v_2'/><taxon id='AARS_v_3'/><taxon id='AARS_v_4'/><taxon id='AARS_v_5'/><taxon id='AARS_v_6'/><taxon id='AARS_v_7'/></set>
+            <set spec='TaxonSet'><taxon id='AARS_w_1'/><taxon id='AARS_w_2'/><taxon id='AARS_w_3'/><taxon id='AARS_w_4'/><taxon id='AARS_w_5'/><taxon id='AARS_w_6'/><taxon id='AARS_w_7'/></set>
+            <set spec='TaxonSet'><taxon id='AARS_y_1'/><taxon id='AARS_y_2'/><taxon id='AARS_y_3'/><taxon id='AARS_y_4'/><taxon id='AARS_y_5'/><taxon id='AARS_y_6'/><taxon id='AARS_y_7'/></set>
+        </distribution>
+<!--
+        <distribution id="prior" spec="util.CompoundDistribution">
+            <distribution spec="Coalescent">
+                <populationModel spec="ConstantPopulation">
+                    <parameter dimension="1" estimate="true" id="popSize" name="popSize" value="1.0"/>
+                </populationModel>
+                <treeIntervals spec="TreeIntervals" tree="@tree"/>
+            </distribution>
+        </distribution>
+-->
+        <distribution id="likelihood" spec="util.CompoundDistribution">
+            <distribution data="@AARS_sim" id="AARS_sim1" spec="TreeLikelihood" tree="@tree" useAmbiguities="false">
+                <siteModel gammaCategoryCount="0" spec="SiteModel" substModel='@substmodel'/>
+                <branchRateModel spec="beast.evolution.branchratemodel.StrictClockModel"/>
+            </distribution>
+        </distribution>
+    </distribution>
+
+
+    
+<run chainLength="10000000" distribution="@posterior" id="mcmc" preBurnin="0" spec="MCMC">
+    <state id="State0" storeEvery="1000">
+        <tree estimate="true" id="tree" name="stateNode">
+            <tree clusterType="upgma" estimate="true" name="initial" nodetype="beast.evolution.tree.Node" spec="beast.util.ClusterTree">
+                <taxa idref="AARS_sim"/>
+                <trait id="TraitSet0" spec="beast.evolution.tree.TraitSet" taxa="@AARS_sim" traitname="date" units="year" value=""/>
+            </tree>
+        </tree>
+        <parameter dimension="1" estimate="true" id="birthRate" lower="0.0" name="stateNode" upper="100.0" value="1.0"/>
+        <parameter dimension="1" estimate="true" id="growthRate" name="stateNode" value="1.0"/>
+        <stateNode dimension="11" estimate="true" id="rateCategories" spec="parameter.IntegerParameter" value="1"/>
+    </state>
+
+
+    <operator degreesOfFreedom="1" id="treeScaler" scaleAll="false" scaleAllIndependently="false" scaleFactor="0.5" spec="ScaleOperator" tree="@tree" weight="1.0"/>
+    <operator id="Uniform0" spec="Uniform" tree="@tree" weight="10.0"/>
+    <operator gaussian="true" id="SubtreeSlide0" size="1.0" spec="SubtreeSlide" tree="@tree" weight="5.0"/>
+    <operator id="narrow" isNarrow="true" spec="Exchange" tree="@tree" weight="1.0"/>
+    <operator id="wide" isNarrow="false" spec="Exchange" tree="@tree" weight="1.0"/>
+    <operator id="WilsonBalding0" spec="WilsonBalding" tree="@tree" weight="1.0"/>
+
+    <logger fileName="$(seed).log" id="Logger1" logEvery="1000" mode="autodetect" model="@posterior">
+        <log idref="likelihood"/>
+        <log id="TreeHeightLogger0" spec="beast.evolution.tree.TreeHeightLogger" tree="@tree"/>
+    </logger>
+
+    <logger fileName="$(seed).trees" id="Logger2" logEvery="1000" mode="autodetect">
+        <log idref="tree"/>
+    </logger>
+
+    <logger id="Logger0" logEvery="1000" mode="autodetect" model="@posterior">
+        <log idref="likelihood"/>
+        <log arg="@likelihood" id="ESS0" spec="util.ESS"/>
+    </logger>
+</run>
+
+</beast>

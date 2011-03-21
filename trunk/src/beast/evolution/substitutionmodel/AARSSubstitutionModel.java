@@ -48,7 +48,12 @@ public class AARSSubstitutionModel extends GeneralSubstitutionModel {
 		m_fQ = new double[m_tree.get().getNodeCount()][];//m_nStates * m_nStates];
 		m_fP = new double[m_tree.get().getNodeCount()][m_nStates * m_nStates];
 		
-		m_fFreqs = new double[m_tree.get().getNodeCount()][];//m_nStates];
+		m_fFreqs = new double[m_nStates][];//m_nStates];
+
+		m_fFreqs = new double[m_nStates][m_nStates];
+		m_fQ = new double[m_nStates][m_nStates * m_nStates];
+		
+		
 		m_nStateOfEpoch = new int[m_tree.get().getNodeCount()];
         eigenSystem = new DefaultEigenSystem(m_nStates);
         m_rateMatrix = new double[m_nStates][m_nStates];
@@ -62,14 +67,10 @@ public class AARSSubstitutionModel extends GeneralSubstitutionModel {
         freqs.initAndValidate();
         frequencies.setValue(freqs, this);
 		//m_fDepths = new double[m_tree.get().getNodeCount()];
-	}
-	
-	void update() {
-		SubstitutionModel model = m_default.get();
-		double[] fFreqs = model.getFrequencies();
-		
-		// todo: move this to initAndValidate()
-		((GeneralSubstitutionModel)model).setupRelativeRates();
+
+
+        // initialise first epoch from WAG
+        ((GeneralSubstitutionModel)model).setupRelativeRates();
 		((GeneralSubstitutionModel)model).setupRateMatrix();
 		double [][] matrix = ((GeneralSubstitutionModel)model).getRateMatrix();
 		double[] Q = new double[matrix.length * matrix.length];
@@ -79,22 +80,17 @@ public class AARSSubstitutionModel extends GeneralSubstitutionModel {
 				Q[k++] = matrix[i][j];
 			}			
 		}
-		
-		
-		
-		
-		
+		System.arraycopy(Q, 0, m_fQ[0], 0, Q.length);
+		System.arraycopy(fFreqs, 0, m_fFreqs[0], 0, fFreqs.length);
+	}
+	
+	void update() {
 		Tree tree = m_tree.get();
 		// calculate epochs
 		Node[] nodes = tree.getNodesAsArray();
 		
-//		Node[] V = new Node[tree.getInternalNodeCount()+1];
-//		V[0] = tree.getNode(0);// any leaf will do
-//		for (int i = 1; i < V.length; i++) {
-//			V[i] = nodes[i + tree.getLeafNodeCount()];
-//		}
 		NodeComparator comparator = new NodeComparator();
-//		Arrays.sort(V, comparator);
+
 		// at this point, V (= internalnodes) contains nodes sorted by height
 		List<Node> V = new ArrayList<Node>();
 		// start with any of the leaf nodes
@@ -103,10 +99,8 @@ public class AARSSubstitutionModel extends GeneralSubstitutionModel {
 		calcStates(tree.getRoot(), V);
 		Collections.sort(V, comparator);
 
-		m_fQ[0] = new double[m_nStates * m_nStates];
-		m_fFreqs[0] = new double[m_nStates];
-		System.arraycopy(Q, 0, m_fQ[0], 0, Q.length);
-		System.arraycopy(fFreqs, 0, m_fFreqs[0], 0, fFreqs.length);
+		//m_fQ[0] = new double[m_nStates * m_nStates];
+		//m_fFreqs[0] = new double[m_nStates];
 		for (int v = 1; v < V.size(); v++) {
 			Node node = V.get(v);
 			int iStateLeft = m_nStateOfEpoch[node.m_left.getNr()];
@@ -118,29 +112,37 @@ public class AARSSubstitutionModel extends GeneralSubstitutionModel {
 			assert(i!=j);// if i!=j then this node is not a split node. 
 			
 			// update frequencies
-			m_fFreqs[node.getNr()] = new double[m_nStates];
-			m_fQ[node.getNr()] = new double[m_nStates * m_nStates];
-			double[] fNewFreqs = m_fFreqs[node.getNr()];
-			double[] fOldFreqs = null;
-			double[] fNewQ = m_fQ[node.getNr()];
-			double[] fOldQ = null;
-			if (iStateLeft < iStateRight) {
-				if (node.m_left.isLeaf()) {
-					fOldFreqs = m_fFreqs[0];
-					fOldQ = m_fQ[0];
-				} else {
-					fOldFreqs = m_fFreqs[node.m_left.getNr()];
-					fOldQ = m_fQ[node.m_left.getNr()];
-				}
-			} else {
-				if (node.m_right.isLeaf()) {
-					fOldFreqs = m_fFreqs[0];
-					fOldQ = m_fQ[0];
-				} else {
-					fOldFreqs = m_fFreqs[node.m_right.getNr()];
-					fOldQ = m_fQ[node.m_right.getNr()];
-				}
-			}
+			//m_fFreqs[node.getNr()] = new double[m_nStates];
+			double[] fNewFreqs = m_fFreqs[v];
+			double[] fOldFreqs = m_fFreqs[v-1];
+			double[] fNewQ = m_fQ[v];
+			double[] fOldQ = m_fQ[v-1];
+
+			
+			
+//			m_fFreqs[node.getNr()] = new double[m_nStates];
+//			m_fQ[node.getNr()] = new double[m_nStates * m_nStates];
+//			double[] fNewFreqs = m_fFreqs[node.getNr()];
+//			double[] fOldFreqs = null;
+//			double[] fNewQ = m_fQ[node.getNr()];
+//			double[] fOldQ = null;
+//			if (iStateLeft < iStateRight) {
+//				if (node.m_left.isLeaf()) {
+//					fOldFreqs = m_fFreqs[0];
+//					fOldQ = m_fQ[0];
+//				} else {
+//					fOldFreqs = m_fFreqs[node.m_left.getNr()];
+//					fOldQ = m_fQ[node.m_left.getNr()];
+//				}
+//			} else {
+//				if (node.m_right.isLeaf()) {
+//					fOldFreqs = m_fFreqs[0];
+//					fOldQ = m_fQ[0];
+//				} else {
+//					fOldFreqs = m_fFreqs[node.m_right.getNr()];
+//					fOldQ = m_fQ[node.m_right.getNr()];
+//				}
+//			}
 					
 			System.arraycopy(fOldFreqs, 0, fNewFreqs, 0, fOldFreqs.length);
 			fNewFreqs[i] = fOldFreqs[i] + fOldFreqs[j];
@@ -149,12 +151,12 @@ public class AARSSubstitutionModel extends GeneralSubstitutionModel {
 			// update rate matrix Q
 			System.arraycopy(fOldQ, 0, fNewQ, 0, fOldQ.length);
 			// zero out row and column j
-			for ( k = 0; k < m_nStates; k++) {
+			for (int k = 0; k < m_nStates; k++) {
 				fNewQ[j * m_nStates + k] = 0.0;
 				fNewQ[k * m_nStates + j] = 0.0;
 			}
 			// update entries for character i
-			for (k = 0; k < m_nStates; k++) {
+			for (int k = 0; k < m_nStates; k++) {
 				if (k != i && k != j) {
 					fNewQ[i * m_nStates + k] = (fOldFreqs[i] * fOldQ[i * m_nStates + k] + fOldFreqs[j]
 							* fOldQ[j * m_nStates + k])
@@ -164,7 +166,7 @@ public class AARSSubstitutionModel extends GeneralSubstitutionModel {
 			}
 			// update diagonal for character i, ensure the row sums to zero
 			double fSum = -fNewQ[i * m_nStates + i];
-			for (k = 0; k < m_nStates; k++) {
+			for (int k = 0; k < m_nStates; k++) {
 				fSum += fNewQ[i * m_nStates + k];
 			}
 			fNewQ[i * m_nStates + i] = -fSum;
@@ -187,9 +189,15 @@ public class AARSSubstitutionModel extends GeneralSubstitutionModel {
 				
 				int iFrom = Collections.binarySearch(V, node, comparator);
 				int iTo = Collections.binarySearch(V, parent, comparator);
-				// TODO: handle negative values of iFrom and/or iTo
+				// handle negative values of iFrom and/or iTo
+				if (iFrom < 0) {
+					iFrom = -iFrom-1;
+				}
+				if (iTo < 0) {
+					iTo = -iTo-1;
+				}
 				double d = node.getHeight();
-				for (k = iFrom; k < iTo; k++) {
+				for (int k = iFrom; k < iTo; k++) {
 					Node u = V.get(k);
 					Node v = V.get(k + 1);
 					
@@ -197,21 +205,27 @@ public class AARSSubstitutionModel extends GeneralSubstitutionModel {
 					double t = Math.min(parent.getHeight() - d, v.getHeight() - d);
 					
 					// B. P = exp(Q[k] ∗ t) ∗ P
-					((AARSFrequencies)frequencies.get()).setFreqs(m_fFreqs[u.getNr()]);
-					exponentiate(m_fQ[u.getNr()], fP, t);
+//					((AARSFrequencies)frequencies.get()).setFreqs(m_fFreqs[u.getNr()]);
+//					exponentiate(m_fQ[u.getNr()], fP, t);
+					((AARSFrequencies)frequencies.get()).setFreqs(m_fFreqs[k]);
+					exponentiate(m_fQ[k], fP, t);
 					
 					// C. let i be the state of V [k] and let j be the state of its child that is different from	i.
-					int iStateLeft = m_nStateOfEpoch[v.m_left.getNr()];
-					int iStateRight = m_nStateOfEpoch[v.m_right.getNr()];
-					int i = Math.min(iStateLeft, iStateRight);
-					int j = Math.max(iStateLeft, iStateRight);
+//					int iStateLeft = m_nStateOfEpoch[v.m_left.getNr()];
+//					int iStateRight = m_nStateOfEpoch[v.m_right.getNr()];
+//					int i = Math.min(iStateLeft, iStateRight);
+//					int j = Math.max(iStateLeft, iStateRight);
+					int j = m_nStateOfEpoch[u.getNr()];
+					int i = m_nStateOfEpoch[v.getNr()];
 
 					// D. replace row i of P with the sum of π[k + 1]i /π[k]i times row i 
 					// and π[k + 1]j /π[k]i times row j.
 					
 					// TODO: note maybe these freqs should be swapped
-					double[] fNewFreqs = m_fFreqs[v.getNr()];
-					double[] fOldFreqs = m_fFreqs[u.getNr()];
+//					double[] fNewFreqs = m_fFreqs[v.getNr()];
+//					double[] fOldFreqs = m_fFreqs[u.getNr()];
+					double[] fNewFreqs = m_fFreqs[k+1];
+					double[] fOldFreqs = m_fFreqs[k];
 					for (int iCol = 0; iCol < m_nStates; iCol++) {
 						fP[i*m_nStates + iCol] =  fOldFreqs[i] * fP[i*m_nStates + iCol]/ fNewFreqs[i] + 
 							fOldFreqs[j] * fP[j*m_nStates + iCol]/ fNewFreqs[i];
@@ -222,7 +236,7 @@ public class AARSSubstitutionModel extends GeneralSubstitutionModel {
 						fP[j*m_nStates + iCol] = 0;
 					}
 					fP[j*m_nStates + j] = 1.0;
-				
+
 					// F. d = d − t.
 					d = d + t;
 				}
