@@ -22,6 +22,7 @@
 	<property name="report" value="${buildii}/junitreport"/>
 
 	<path id="classpath">
+        <pathelement path="${buildii}"/>
 		<fileset dir="${libii}" includes="junit-4.8.2.jar"/>
         <pathelement path="${beast2classpath}"/>
 	</path>
