@@ -13,6 +13,7 @@ import beast.evolution.alignment.Alignment;
 import beast.evolution.alignment.Sequence;
 import beast.evolution.alignment.Taxon;
 import beast.evolution.alignment.TaxonSet;
+import beast.evolution.datatype.DataType;
 import beast.evolution.tree.Node;
 import beast.evolution.tree.Tree;
 
@@ -180,6 +181,14 @@ public class CladeSubstitutionModel extends SubstitutionModel.Base {
 	public EigenDecomposition getEigenDecomposition(Node node) {
 		// cannot return EigenDecomposition for this substitution model
 		return null;
+	}
+
+	@Override
+	public boolean canHandleDataType(DataType dataType) throws Exception {
+		if (m_substitutionModels != null) {
+			return m_substitutionModels[0].canHandleDataType(dataType);
+		}
+		return true;
 	}
 
 } // class CladeSubstitutionModel
