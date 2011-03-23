@@ -7,6 +7,7 @@ import beast.core.Description;
 import beast.core.Input;
 import beast.core.Input.Validate;
 import beast.core.parameter.RealParameter;
+import beast.evolution.datatype.DataType;
 import beast.evolution.substitutionmodel.SubstitutionModel.Base;
 import beast.evolution.tree.Node;
 
@@ -95,4 +96,11 @@ public class EpochSubstitutionModel extends Base {
 	}
 
 
+	@Override
+	public boolean canHandleDataType(DataType dataType) throws Exception {
+		if (m_substitutionModels != null) {
+			return m_substitutionModels[0].canHandleDataType(dataType);
+		}
+		return true;
+	}
 } // class EpochSubstitutionModel
