@@ -22,6 +22,7 @@ public class EpochSubstitutionModel extends Base {
 	
 	@Override
 	public void initAndValidate() throws Exception {
+    	super.initAndValidate();
 		m_substitutionModels = new SubstitutionModel[m_models.get().size()];
 		int i = 0;
 		for (SubstitutionModel model : m_models.get()) {

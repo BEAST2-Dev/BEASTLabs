@@ -44,6 +44,7 @@ public class CladeSubstitutionModel extends SubstitutionModel.Base {
 	@SuppressWarnings("unchecked")
 	@Override
 	public void initAndValidate() throws Exception{
+    	super.initAndValidate();
 		if (m_clades.get().size() != m_clademodel.get().size()) {
 			throw new Exception("The number of clades should match the number of (non-default) substitution models");
 		}
