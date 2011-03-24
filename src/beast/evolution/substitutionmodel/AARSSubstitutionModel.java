@@ -65,7 +65,7 @@ public class AARSSubstitutionModel extends GeneralSubstitutionModel {
         RealParameter rootFrequencies = new RealParameter("1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0");
         freqs.frequencies.setValue(rootFrequencies, freqs);
         freqs.initAndValidate();
-        frequencies.setValue(freqs, this);
+        m_frequencies = freqs;
 		//m_fDepths = new double[m_tree.get().getNodeCount()];
 
 
@@ -207,7 +207,7 @@ public class AARSSubstitutionModel extends GeneralSubstitutionModel {
 					// B. P = exp(Q[k] ∗ t) ∗ P
 //					((AARSFrequencies)frequencies.get()).setFreqs(m_fFreqs[u.getNr()]);
 //					exponentiate(m_fQ[u.getNr()], fP, t);
-					((AARSFrequencies)frequencies.get()).setFreqs(m_fFreqs[k]);
+					((AARSFrequencies)m_frequencies).setFreqs(m_fFreqs[k]);
 					exponentiate(m_fQ[k], fP, t);
 					
 					// C. let i be the state of V [k] and let j be the state of its child that is different from	i.
@@ -248,7 +248,7 @@ public class AARSSubstitutionModel extends GeneralSubstitutionModel {
 				                  0.0,0.0,0.0,0.0,0.0,
 				                  0.0,0.0,0.0,0.0,0.0
 		};
-		((AARSFrequencies)frequencies.get()).setFreqs(defaultFreqs);
+		((AARSFrequencies)m_frequencies).setFreqs(defaultFreqs);
 		m_bRecalc = false;
 	}
 
