@@ -60,9 +60,7 @@
 
         <distribution spec='CompoundDistribution' id='posterior'>
             <distribution spec='CompoundDistribution' id='prior'>
-                <distribution spec='PrevalenceLikelihood' id='prevlikelihood' beta='@beta' gamma='@gamma' popSize='@popSize' list='@list'>
-                    <!--intervals spec='beast.evolution.tree.coalescent.TreeIntervals' tree='@tree'/-->
-                </distribution>
+                <distribution spec='PrevalenceLikelihood' id='prevlikelihood' beta='@beta' gamma='@gamma' popSize='@popSize' list='@list'/>
                 <distribution spec='TreeForPrevalenceLikelihood' id='treeprior' tree='@tree' list='@list'/>
             </distribution>
             <distribution id='likelihood' idref="treeLikelihood"/>
@@ -85,18 +83,6 @@
         <operator spec='SubtreeSlide' weight="5" gaussian="true" size="1.0" tree="@tree" list='@list'/>
         <operator spec='WilsonBalding' weight="1" tree="@tree" list='@list'/>
 
-        <logger logEvery="10000">
-	        <model idref='posterior'/>
-            <log idref="prior"/>
-            <log idref="likelihood"/>
-            <log idref="posterior"/>
-    	    <ESS spec='ESS' name='log' arg="@likelihood"/>
-            <log idref='hky.kappa'/>
-            <log idref='beta'/>
-            <log idref='gamma'/>
-            <log idref='popSize'/>
-    	    <ESS spec='ESS' name='log' arg="@hky.kappa"/>
-        </logger>
         <logger logEvery="10000" fileName="test.$(seed).log">
 	        <model idref='posterior'/>
             <log idref="prior"/>
@@ -110,6 +96,21 @@
         </logger>
         <logger logEvery="10000" fileName="test.$(seed).trees">
             <log idref="tree"/>
+        </logger>
+
+        <logger logEvery="1">
+	        <model idref='posterior'/>
+            <log idref="treeprior"/>
+            <log idref="prevlikelihood"/>
+            <log idref="prior"/>
+            <log idref="likelihood"/>
+            <log idref="posterior"/>
+    	    <ESS spec='ESS' name='log' arg="@likelihood"/>
+            <log idref='hky.kappa'/>
+            <log idref='beta'/>
+            <log idref='gamma'/>
+            <log idref='popSize'/>
+    	    <ESS spec='ESS' name='log' arg="@hky.kappa"/>
         </logger>
     </run>
 

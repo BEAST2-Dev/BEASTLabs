@@ -28,7 +28,7 @@ public class PrevalenceLikelihood extends Distribution {
 	
 	@Override
 	public double calculateLogP() {
-        Double logP = 0.0;
+        logP = 0.0;
         PrevalenceList list = m_list.get();
         List<Item> items = list.getItems();
         double beta = m_beta.get().getValue();

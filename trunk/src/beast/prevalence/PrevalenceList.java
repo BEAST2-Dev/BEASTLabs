@@ -156,6 +156,7 @@ public class PrevalenceList extends StateNode {
 			} else {
 				m_nRecoveries--;
 			}
+			return;
 		}
 		throw new Exception("Cannot delete an item outside the range of the list");
 	}
@@ -177,7 +178,7 @@ public class PrevalenceList extends StateNode {
 				m_nodeIDtoItemMap.remove(item.m_nNodeID);
 				m_nodeIDtoItemMap.put(item.m_nNodeID, movedItem);
 			}
-		
+			return;
 		}
 		throw new Exception("Cannot move an item outside the range of the list");
 	}
