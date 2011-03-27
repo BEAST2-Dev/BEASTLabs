@@ -44,65 +44,70 @@ public class TreeForPrevalenceLikelihood extends Distribution {
 
 	@Override
 	public double calculateLogP() {
-		PrevalenceList list = m_list.get();
-		List<Item> items = list.getItems();
-		
-		logP = 0.0;
-		
-		Item start, finish;
-		// keep track of number infected
-		int ninf = 1; 
-		// keep track of number of lineages in tree
-		int nlin = 1;
+        PrevalenceList list = m_list.get();
+        List<Item> items = list.getItems();
+        
+        Double logP = 0.0;
+        
+        Item start, finish;
+        // keep track of number infected
+        int ninf = 1;
+        // keep track of number of lineages in tree
+        int nlin = 1;
 
-				
-		// RRB: should this be "i >= 1" ???
-		for (int i= items.size()-1; i > 1; i--) {
-			start = items.get(i);
-			finish = items.get(i-1);
-		    
-		    // contribution to LogPTree only if interval started with an infection
-		    if (start.m_action == Action.INFECTED) {
-		        if (list.isLinked(i)){
-		            // have a coalescence, add a lineage
-		        	nlin++;
-		    		// RRB: code dies here due to division by zero at first Action.INFECTED, since ninf=1
-		            logP = logP + Math.log(2/(ninf*(ninf-1)));
-		        } else { 
-		        	// need have at least 2 lineages
-		            if (nlin >1) {
-		                logP = logP + Math.log(1 - (nlin*(nlin-1))/(ninf*(ninf-1)));
-		            }
-		        }
-		    } else if (start.m_action == Action.NONEVENT && list.isLinked(i)){
-		    	// have a leaf node, lose a lineage
-		    	nlin--;
-		    }
-		    
-		    // update number of infected 
-		    switch  (finish.m_action) {
-		        case RECOVERED:
-		            // finishes with a recovery
-		            ninf--;
-		            break;
-		        case INFECTED:
-		            // finishes with an infection
-		        	ninf++;
-		        	break;
-		        case NONEVENT:
-		        	// no contribution from non-event
-		        	break;
-		    }
-		    
-		    // check that number lineages is legal (need at least as many infected as there are lineages)  
-		    if (nlin == 0 || ninf < nlin){
-		        logP = Double.NEGATIVE_INFINITY;
-		        return logP;
-		    }
+                        
+        // RRB: should this be "i >= 1" ???
+        // DW: Yes
+        for (int i= items.size()-1; i >= 1; i--) {
+                start = items.get(i);
+                finish = items.get(i-1);
+        
+                // RRB: code dies here due to division by zero at first Action.INFECTED, since ninf=1
+                // DW:  OK, had the block of code updating number of infected after the LogPTree stuff rather than before, have moved it up
+                
+            // update number of infected
+            switch  (finish.m_action) {
+                case RECOVERED:
+                    // finishes with a recovery
+                    ninf--;
+                    break;
+                case INFECTED:
+                    // finishes with an infection
+                    ninf++;
+                    break;
+                case NONEVENT:
+                    // no contribution from non-event
+                    break;
+            }
+        
+            // contribution to LogPTree only if interval started with an infection
+            if (start.m_action == Action.INFECTED) {
+                if (list.isLinked(i)){
+                    // have a coalescence, add a lineage
+                        nlin++;
+                        // RRB: code dies here due to division by zero at first Action.INFECTED, since ninf=1
+                    logP = logP + Math.log(2/(ninf*(ninf-1)));
+                } else {
+                        // need have at least 2 lineages
+                    if (nlin >1) {
+                        logP = logP + Math.log(1 -(nlin*(nlin-1))/(ninf*(ninf-1)));
+                    }
+                }
+            } else if (start.m_action == Action.NONEVENT && list.isLinked(i)){
+                // have a leaf node, lose a lineage
+                nlin--;
+            }
 
-		}
+        
+            // check that number lineages is legal (need at least as many infected as there are lineages)
+            if (nlin == 0 || ninf < nlin){
+                logP = Double.NEGATIVE_INFINITY;
+                return logP;
+            }
 
-		return logP;
+        }
+
+        return logP;
 	}
 	
 
