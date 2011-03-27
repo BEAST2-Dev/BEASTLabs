@@ -47,7 +47,7 @@ public class TreeForPrevalenceLikelihood extends Distribution {
         PrevalenceList list = m_list.get();
         List<Item> items = list.getItems();
         
-        Double logP = 0.0;
+        logP = 0.0;
         
         Item start, finish;
         // keep track of number infected
@@ -86,11 +86,11 @@ public class TreeForPrevalenceLikelihood extends Distribution {
                     // have a coalescence, add a lineage
                         nlin++;
                         // RRB: code dies here due to division by zero at first Action.INFECTED, since ninf=1
-                    logP = logP + Math.log(2/(ninf*(ninf-1)));
+                    logP = logP + Math.log(2.0/(ninf*(ninf-1.0)));
                 } else {
                         // need have at least 2 lineages
                     if (nlin >1) {
-                        logP = logP + Math.log(1 -(nlin*(nlin-1))/(ninf*(ninf-1)));
+                        logP = logP + Math.log(1.0 -(nlin*(nlin-1.0))/(ninf*(ninf-1.0)));
                     }
                 }
             } else if (start.m_action == Action.NONEVENT && list.isLinked(i)){
@@ -98,6 +98,10 @@ public class TreeForPrevalenceLikelihood extends Distribution {
                 nlin--;
             }
 
+            if (logP == Double.NEGATIVE_INFINITY) {
+            	int h = 5;
+            	h++;
+            }
         
             // check that number lineages is legal (need at least as many infected as there are lineages)
             if (nlin == 0 || ninf < nlin){
