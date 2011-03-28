@@ -300,6 +300,7 @@ public class PrevalenceList extends StateNode {
 
 	@Override
 	public void setEverythingDirty(boolean isDirty) {
+    	setSomethingIsDirty(isDirty);
 	}
 
 	/** Loggable interface methods **/
@@ -343,6 +344,8 @@ public class PrevalenceList extends StateNode {
 		HashMap<Integer,Item> tmp3 = m_storedNodeIDtoItemMap;
 		m_storedNodeIDtoItemMap = m_nodeIDtoItemMap;
 		m_nodeIDtoItemMap = tmp3;
+
+		m_bHasStartedEditing = false;
 	}
 
 	@Override
