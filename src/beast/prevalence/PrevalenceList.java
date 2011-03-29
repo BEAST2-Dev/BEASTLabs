@@ -122,22 +122,25 @@ public class PrevalenceList extends StateNode {
 		} else {
 			m_nRecoveries++;
 		}
-		return true;
-	}
-
-	public boolean add(int iTime, double fTime, Action action, int nNodeID) {
-		Item item = new Item(fTime, action, nNodeID);
-		m_items.add(iTime, item);
 		if (nNodeID >= 0) {
 			m_nodeIDtoItemMap.put(nNodeID, item);
 		}
-		if (action == Action.INFECTED) {
-			m_nInfections++;
-		} else {
-			m_nRecoveries++;
-		}
 		return true;
 	}
+
+//	public boolean add(int iTime, double fTime, Action action, int nNodeID) {
+//		Item item = new Item(fTime, action, nNodeID);
+//		m_items.add(iTime, item);
+//		if (nNodeID >= 0) {
+//			m_nodeIDtoItemMap.put(nNodeID, item);
+//		}
+//		if (action == Action.INFECTED) {
+//			m_nInfections++;
+//		} else {
+//			m_nRecoveries++;
+//		}
+//		return true;
+//	}
 	
 	/** remove item at time fTime,
 	 * Throws exception if deletion failed 
