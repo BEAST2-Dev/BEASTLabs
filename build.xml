@@ -13,6 +13,7 @@
 	<property name="libii" location="lib" />
 	<property name="distii" location="${buildii}/dist" />
 	<property name="beast2path" location="../beast2" />
+	<property name="srcBeast2" location="${beast2path}/src" />
 	<property name="beast2classpath" location="${beast2path}/build" />
 
     <import file="${beast2path}/build.xml" />
@@ -127,6 +128,11 @@
 			<batchtest fork="yes" todir="${report}">
 				<fileset dir="${srcii}">
                     <include name="test/**/*Test.java"/>                                         
+				</fileset>
+				<fileset dir="${srcBeast2}">
+                    <include name="test/beast/integration/**/*Test.java"/>                                         
+                    <exclude name="test/beast/integration/**/ResumeTest.java"/>                                         
+                    <exclude name="test/beast/integration/**/ExampleXmlParsingTest.java"/>                                         
 				</fileset>
 			</batchtest>
 		</junit>

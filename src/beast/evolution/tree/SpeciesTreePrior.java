@@ -1,6 +1,7 @@
 package beast.evolution.tree;
 
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
@@ -11,6 +12,7 @@ import beast.core.Input;
 import beast.core.State;
 import beast.core.Input.Validate;
 import beast.core.parameter.RealParameter;
+import beast.evolution.alignment.TaxonSet;
 import beast.math.distributions.Gamma;
 
 @Description("Species tree prior for *BEAST analysis")
@@ -29,6 +31,7 @@ public class SpeciesTreePrior extends Distribution {
 	public Input<RealParameter> m_gammaParameter = new Input<RealParameter>("gammaParameter","shape parameter of the gamma distribution", Validate.REQUIRED);
 
 	public Input<RealParameter> m_rootHeightParameter = new Input<RealParameter>("rootBranchHeight","height of the node above the root, representing the root branch", Validate.REQUIRED);
+	public Input<List<TaxonSet>> m_taxonSet = new Input<List<TaxonSet>>("taxonset", "set of taxa mapping lineages to species", new ArrayList<TaxonSet>(), Validate.REQUIRED);
 	
 	
 	PopSizeFunction m_popFunction;
@@ -76,6 +79,12 @@ public class SpeciesTreePrior extends Distribution {
 	@Override
 	public double calculateLogP() {
 		logP = 0;
+		// make sure the root branch length is positive
+		if (m_rootHeightParameter.get().getValue() < m_speciesTree.get().getRoot().getHeight()) {
+			logP = Double.NEGATIVE_INFINITY;
+			return logP;
+		}
+		
 		Node [] speciesNodes = m_speciesTree.get().getNodesAsArray();
 		try {
 		switch (m_popFunction) 
