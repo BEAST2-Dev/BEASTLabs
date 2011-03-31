@@ -20,7 +20,6 @@ import beast.evolution.tree.SpeciesTreePrior.PopSizeFunction;
 public class GeneTreeForSpeciesTreeDistribution extends Distribution {
 	public Input<Tree> m_speciesTree = new Input<Tree>("speciesTree", "species tree containing the associated gene tree", Validate.REQUIRED);
 	public Input<Tree> m_geneTree = new Input<Tree>("geneTree", "gene tree for which to calculate probability conditioned on the species tree", Validate.REQUIRED);
-	public Input<List<TaxonSet>> m_taxonSet = new Input<List<TaxonSet>>("taxonset", "set of taxa mapping lineages to species", new ArrayList<TaxonSet>(), Validate.REQUIRED);
 
 	public Input<SpeciesTreePrior> m_popInfo = new Input<SpeciesTreePrior>("speciesTreePrior","defines population function and its parameters", Validate.REQUIRED);
 	
@@ -89,7 +88,7 @@ public class GeneTreeForSpeciesTreeDistribution extends Distribution {
 
 	/** find species ID to which the lineage ID belongs according to the TaxonSets **/
 	String getSetID(String sLineageID) {
-		List<TaxonSet> taxonSets = m_taxonSet.get();
+		List<TaxonSet> taxonSets = m_popInfo.get().m_taxonSet.get();
 		for (TaxonSet taxonSet : taxonSets) {
 			List<Taxon> taxa = taxonSet.m_taxonset.get();
 			for (int i = 0; i < taxa.size(); i++) {
