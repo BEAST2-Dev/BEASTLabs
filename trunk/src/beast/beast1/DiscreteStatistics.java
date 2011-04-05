@@ -25,6 +25,8 @@
 
 package beast.beast1;
 
+import beast.util.HeapSort;
+
 /**
  * simple discrete statistics (mean, variance, cumulative probability, quantiles etc.)
  *

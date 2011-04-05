@@ -1,29 +1,29 @@
 package beast.beast1;
 
+import beast.util.HeapSort;
+
 /**
  * @author Alexei Drummond
  * @author Andrew Rambaut
  * @author Walter Xie
  */
 public class TraceStatistics {
-
     private static final int MAX_LAG = 2000;
-    protected boolean isValid = false;
-    protected boolean hasGeometricMean = false;
+    private boolean isValid = false;
+    private boolean hasGeometricMean = false;
 
-    protected double minimum, maximum;
-    protected double mean;
-    protected double median;
-    protected double geometricMean;
-    protected double stdError, meanSquaredError;
-    protected double variance;
-    protected double cpdLower, cpdUpper, hpdLower, hpdUpper;
-    protected double ESS;
+    private double minimum, maximum;
+    private double mean;
+    private double median;
+    private double geometricMean;
+    private double stdev;
+    private double variance;
+    private double cpdLower, cpdUpper, hpdLower, hpdUpper;
+    private double ESS;
 
-    protected double stdErrorOfMean;
-    protected double stdErrorOfVariance;
-    protected double ACT;
-    protected double stdErrOfACT;
+    private double stdErrorOfMean;
+    private double autoCorrelationTime;
+    private double stdevAutoCorrelationTime;
 
     public TraceStatistics(double[] values) {
         analyseDistributionContinuous(values, 0.95);
@@ -44,7 +44,7 @@ public class TraceStatistics {
     private void analyseDistributionContinuous(double[] valuesC, double proportion) {
 
         mean = DiscreteStatistics.mean(valuesC);
-        stdError = DiscreteStatistics.stdev(valuesC);
+        stdev = DiscreteStatistics.stdev(valuesC);
         variance = DiscreteStatistics.variance(valuesC);
 
         minimum = Double.POSITIVE_INFINITY;
@@ -137,11 +137,11 @@ public class TraceStatistics {
         // standard error of mean
         stdErrorOfMean = Math.sqrt(varStat / samples);
         // auto correlation time
-        ACT = stepSize * varStat / gammaStat[0];
+        autoCorrelationTime = stepSize * varStat / gammaStat[0];
         // effective sample size
-        ESS = (stepSize * samples) / ACT;
+        ESS = (stepSize * samples) / autoCorrelationTime;
         // standard deviation of autocorrelation time
-        stdErrOfACT = (2.0 * Math.sqrt(2.0 * (2.0 * (double) (maxLag + 1)) / samples) * (varStat / gammaStat[0]) * stepSize);
+        stdevAutoCorrelationTime = (2.0 * Math.sqrt(2.0 * (2.0 * (double) (maxLag + 1)) / samples) * (varStat / gammaStat[0]) * stepSize);
 
         isValid = true;
     }
@@ -163,15 +163,12 @@ public class TraceStatistics {
     }
 
     public double getGeometricMean() {
-        return geometricMean;
+        if (hasGeometricMean) return geometricMean;
+        return Double.NaN;
     }
 
-    public double getStdError() {
-        return stdError;
-    }
-
-    public double getMeanSquaredError() {
-        return meanSquaredError;
+    public double getStdev() {
+        return stdev;
     }
 
     public double getVariance() {
@@ -202,15 +199,11 @@ public class TraceStatistics {
         return stdErrorOfMean;
     }
 
-    public double getStdErrorOfVariance() {
-        return stdErrorOfVariance;
+    public double getAutoCorrelationTime() {
+        return autoCorrelationTime;
     }
 
-    public double getACT() {
-        return ACT;
-    }
-
-    public double getStdErrOfACT() {
-        return stdErrOfACT;
+    public double getStdevAutoCorrelationTime() {
+        return stdevAutoCorrelationTime;
     }
 }
