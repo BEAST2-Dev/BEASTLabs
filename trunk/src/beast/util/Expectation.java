@@ -8,7 +8,9 @@ import beast.core.Input.Validate;
 import beast.core.Plugin;
 
 
-@Description("")
+@Description("It is used by LogAnalyser. assertExpectation(TraceStatistics) sets TraceStatistics instance " +
+        "passed from LogAnalyser.initAndValidate(), and determines whether expectation is significantly different " +
+        "to statisctial mean. If true, then set isFailed = true, which makes JUnit test assertion failed.")
 @Citation("Created by Walter Xie")
 public class Expectation extends Plugin {
 
