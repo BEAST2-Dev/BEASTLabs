@@ -1,6 +1,5 @@
-package beast.util;
+package beast.trace;
 
-import beast.beast1.TraceStatistics;
 import beast.core.Citation;
 import beast.core.Description;
 import beast.core.Input;
@@ -14,17 +13,23 @@ import beast.core.Plugin;
 @Citation("Created by Walter Xie")
 public class Expectation extends Plugin {
 
-    public Input<String> m_Name = new Input<String>("name", "The name of a loggable plugin", Validate.REQUIRED);
+    public Input<String> m_sTraceName = new Input<String>("traceName", "The trace name of a loggable plugin", Validate.REQUIRED);
 
-    public Input<Double> m_ExpValue =
+    public Input<Double> m_fExpValue =
             new Input<Double>("expectedValue", "The expected value of the referred loggable plugin", Validate.REQUIRED);
 
-    public Input<Double> m_StandErrorOfMean =
+    public Input<Double> m_fStandErrorOfMean =
             new Input<Double>("stdError", "The expected standard error of mean. If not given, it will estimate error from log",
-                    0.0, Validate.OPTIONAL);
+                    0.0);
 
-    private boolean isFailed = false;
+    private boolean isFailed = false; // assert result
     private TraceStatistics trace;
+
+    // this constructor is used by Unit test
+    public Expectation(String traceName, Double expValue) throws Exception {
+        this.m_sTraceName.setValue(traceName, this);
+        this.m_fExpValue.setValue(expValue, this);
+    }
 
     public boolean isFailed() {
         return isFailed;
@@ -34,7 +39,7 @@ public class Expectation extends Plugin {
 //        isFailed = failed;
 //    }
 
-    public boolean assertExpectation(TraceStatistics trace) {
+    public boolean assertExpectation(TraceStatistics trace, boolean displayStatistics) {
         this.trace = trace;
         double mean = trace.getMean();
         double stderr = getStdError();
@@ -42,8 +47,11 @@ public class Expectation extends Plugin {
         double upper = mean + 2 * stderr;
         double lower = mean - 2 * stderr;
 
-        isFailed = !(upper > m_ExpValue.get() && lower < m_ExpValue.get());
+        isFailed = !(upper > m_fExpValue.get() && lower < m_fExpValue.get());
 
+        if (displayStatistics) {
+            System.out.println(m_sTraceName.get() + " : " + mean + " +- " + stderr + ", expectation is " + m_fExpValue.get());
+        }
         return !isFailed;
     }
 
@@ -51,11 +59,10 @@ public class Expectation extends Plugin {
         return trace;
     }
 
-
     public double getStdError() {
         double stderr = trace.getStdErrorOfMean();
-        if (m_StandErrorOfMean.get() != 0) {
-            stderr = m_StandErrorOfMean.get();
+        if (m_fStandErrorOfMean.get() != 0) {
+            stderr = m_fStandErrorOfMean.get();
 //            System.out.println("User defines standard error of mean = " + stderr);
         }
         return stderr;

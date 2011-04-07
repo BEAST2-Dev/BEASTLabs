@@ -1,4 +1,4 @@
-package beast.beast1;
+package beast.trace;
 
 import beast.util.HeapSort;
 
@@ -9,7 +9,7 @@ import beast.util.HeapSort;
  */
 public class TraceStatistics {
     private static final int MAX_LAG = 2000;
-    private boolean isValid = false;
+    private boolean isValid = true;
     private boolean hasGeometricMean = false;
 
     private double minimum, maximum;

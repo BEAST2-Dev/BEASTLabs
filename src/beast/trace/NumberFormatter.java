@@ -23,7 +23,7 @@
  * Boston, MA  02110-1301  USA
  */
 
-package beast.util;
+package beast.trace;
 
 import java.text.DecimalFormat;
 

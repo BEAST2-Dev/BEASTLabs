@@ -23,7 +23,7 @@
  * Boston, MA  02110-1301  USA
  */
 
-package beast.beast1;
+package beast.trace;
 
 import beast.util.HeapSort;
 

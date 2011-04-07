@@ -1,4 +1,4 @@
-package beast.beast1;
+package beast.trace;
 
 import beast.core.util.TrimLineReader;
 
