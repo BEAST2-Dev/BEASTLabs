@@ -23,16 +23,11 @@
  * Boston, MA  02110-1301  USA
  */
 
-package beast.util;
+package beast.trace;
 
-import beast.beast1.LogFileTraces;
-import beast.beast1.TraceException;
-import beast.beast1.TraceStatistics;
-import beast.core.Citation;
-import beast.core.Description;
-import beast.core.Input;
+import beast.core.*;
 import beast.core.Input.Validate;
-import beast.core.Plugin;
+import beast.core.Runnable;
 
 import java.io.File;
 import java.io.IOException;
@@ -43,19 +38,28 @@ import java.util.List;
         "mean squared error, variance, ESS, hpd lower, hpd upper, cpd lower, cpd upper, standard error of mean, auto correlation time " +
         "and geometric mean, which does not store the input data values in memory.")
 @Citation("Created by Alexei Drummond and modelified by Walter Xie")
-public class LogAnalyser extends Plugin {
+public class LogAnalyser extends Runnable {
     public Input<String> m_sFileName =
             new Input<String>("fileName", "Name of the log file to be analysed", Validate.REQUIRED);
-    public Input<Integer> m_oBurnIn =
+    public Input<Integer> m_iBurnIn =
             new Input<Integer>("burnIn", "Number of burn in samples taken before log statistics analysis", 0);
-    public Input<Boolean> m_DisplayAll =
-            new Input<Boolean>("displayAll", "Display all availble atatistics result", false);
-    public Input<Boolean> m_Report =
-            new Input<Boolean>("report", "Display all availble atatistics result", true);
+    public Input<Boolean> m_bDisplayStat =
+            new Input<Boolean>("displayStatistics", "Display a brief statistics result", true);
+    public Input<Boolean> m_bDisplayAll =
+            new Input<Boolean>("displayAll", "Display all availble statistics result", false);
+    public Input<Boolean> m_bReport =
+            new Input<Boolean>("report", "Display all availble information", false);
 
     public Input<List<Expectation>> m_pExpectations = new Input<List<Expectation>>("expectation",
             "Expectation of log statistics analysis regarding a loggable plugin.",
             new ArrayList<Expectation>(), Validate.REQUIRED);
+    public Input<MCMC> m_pMCMC = new Input<MCMC>("expectation",
+            "Expectation of log statistics analysis regarding a loggable plugin.", Validate.REQUIRED);
+
+//    <run spec='beast.trace.LogAnalyser' fileName="test.$(seed).log" report="true">
+//        <input idref='MCMC'/>   
+//        <input spec='beast.trace.Expectation' traceName="hky.kappa" expectedValue="32.724"/>
+//    </run>
 
     public List<TraceStatistics> traceStatisticsList = new ArrayList<TraceStatistics>(); // use for JUnit test
 
@@ -67,39 +71,57 @@ public class LogAnalyser extends Plugin {
 
     private List<String> warning = new ArrayList<String>();
 
+    // this constructor is used by Unit test
+    public LogAnalyser(String fileName, List<Expectation> expectations) throws Exception {
+        this.m_sFileName.setValue(fileName, this);
+        this.m_pExpectations.get().addAll(expectations);
+        LogFileTraces traces = readLog(m_sFileName.get(), -1);
+        analyseLog(traces);
+    }
+
     @Override
     public void initAndValidate() throws Exception {
         super.initAndValidate();
 
-        LogFileTraces traces = readLog(m_sFileName.get(), m_oBurnIn.get());
 
+    }
+
+    @Override
+    public void run() throws Exception {
+        LogFileTraces traces = readLog(m_sFileName.get(), m_iBurnIn.get());
+        analyseLog(traces);
+    }
+
+    public void analyseLog(LogFileTraces traces) throws TraceException, IOException {
         formatter.setPadding(true);
         formatter.setFieldWidth(fieldWidth);
 
-        if (m_Report.get()) tracesTittleReport(traces, m_DisplayAll.get());
+        if (m_bReport.get()) tracesTittleReport(traces, m_bDisplayAll.get());
 
         for (int i = 0; i < traces.getTraceCount(); i++) {
             TraceStatistics distribution = traces.analyseTrace(i);
             traceStatisticsList.add(distribution);
 
             for (Expectation expectation : m_pExpectations.get()) {
-                if (!expectation.assertExpectation(distribution)) { // record isFailed in Expectation here
-                    warning.add(" * WARNING: " + expectation.m_Name.get() + " has significantly different value "
-                            + distribution.getMean() + " with the expectation " + expectation.m_ExpValue.get() + " !");
-                }
+                if (traces.getTraceName(i).equals(expectation.m_sTraceName.get())) {
+                    if (!expectation.assertExpectation(distribution, m_bDisplayStat.get())) { // record isFailed in Expectation here
+                        warning.add(" * WARNING: " + expectation.m_sTraceName.get() + " has significantly different value "
+                                + distribution.getMean() + " with the expectation " + expectation.m_fExpValue.get() + " !");
+                    }
 
-                if (distribution.getESS() < 100) {
-                    warning.add(" * WARNING: " + expectation.m_Name.get() + " has very low effective sample sizes (ESS) "
-                            + distribution.getESS() + " !");
-                }
+                    if (distribution.getESS() < 100) {
+                        warning.add(" * WARNING: " + expectation.m_sTraceName.get() + " has very low effective sample sizes (ESS) "
+                                + distribution.getESS() + " !");
+                    }
 
-                if (m_Report.get() && traces.getTraceName(i).equals(expectation.m_Name.get())) {
-                     traceStatisticalReport(expectation, m_DisplayAll.get(), null);
+                    if (m_bReport.get()) {
+                        traceStatisticalReport(expectation, m_bDisplayAll.get(), null);
+                    }
                 }
             }
         }
 
-        if (m_Report.get()) {
+        if (m_bReport.get()) {
             System.out.println();
             for (String s : warning) { // print warning here
                 System.out.println(s);
@@ -137,7 +159,7 @@ public class LogAnalyser extends Plugin {
         double mean = distribution.getMean();
         double error = expectation.getStdError();
 
-        System.out.print(formatter.formatToFieldWidth(expectation.m_Name.get(), firstField));
+        System.out.print(formatter.formatToFieldWidth(expectation.m_sTraceName.get(), firstField));
 
         System.out.print(formatter.format(mean));
         System.out.print("+-" + formatter.format(error));
@@ -330,4 +352,5 @@ public class LogAnalyser extends Plugin {
     }
     return traces;
     } */
+
 }

@@ -52,8 +52,8 @@
     </tree>
 
 
-    <run spec="MCMC" id="mcmc" chainLength="10000000">
-        <state storeEvery='100000'>
+    <run spec="MCMC" id="mcmc" chainLength="1000000">
+        <state storeEvery='10000'>
             <stateNode idref="hky.kappa"/>
             <stateNode idref="tree"/>
         </state>
@@ -68,7 +68,7 @@
         <operator id='wide' spec='Exchange' isNarrow='false' weight="1" tree="@tree"/>
         <operator spec='WilsonBalding' weight="1" tree="@tree"/>
 
-        <logger logEvery="10000" fileName="test.$(seed).log">
+        <logger logEvery="1000" fileName="test.$(seed).log">
 	        <model idref='likelihood'/>
             <log idref="likelihood"/>
             <log idref='hky.kappa'/>
@@ -77,7 +77,7 @@
         <logger logEvery="10000" fileName="test.$(seed).trees">
             <log idref="tree"/>
         </logger>
-        <logger logEvery="10000">
+        <logger logEvery="1000">
 	        <model idref='likelihood'/>
             <log idref="likelihood"/>
     	    <ESS spec='ESS' name='log' arg="@likelihood"/>
@@ -85,9 +85,5 @@
     	    <ESS spec='ESS' name='log' arg="@hky.kappa"/>
         </logger>
     </run>
-
-    <input spec='beast.util.LogAnalyser' fileName="test.$(seed).log" report="true">
-        <input spec='beast.util.Expectation' name="hky.kappa" expectedValue="32.724"/>
-    </input>
 
 </beast>
