@@ -24,8 +24,8 @@ public class BEAST2CompareBEAST1Test extends TestCase {
     public void testBESAT2XmlToCompareBEAST1Result() throws Exception {
         Randomizer.setSeed(SEED);
         Logger.FILE_MODE = Logger.FILE_OVERWRITE;
-        String sDir = System.getProperty("user.dir") + "/examples";
-        String sFileName = sDir + "/" + XML_FILE;
+        String sDir = System.getProperty("user.dir");
+        String sFileName = sDir + "/examples/" + XML_FILE;
 
         System.out.println("Processing " + sFileName);
         XMLParser parser = new XMLParser();
@@ -48,7 +48,9 @@ public class BEAST2CompareBEAST1Test extends TestCase {
         exp = new Expectation("tree.height", 0.06419215275960465);
         expList.add(exp);
 
-        LogAnalyser logAnalyser = new LogAnalyser("test." + SEED + ".log", expList);
+        String logFile = sDir + "/test." + SEED + ".log";
+        System.out.println("Analysing log " + logFile);
+        LogAnalyser logAnalyser = new LogAnalyser(logFile, expList);
 
         for (Expectation expectation : logAnalyser.m_pExpectations.get()) {
             assertTrue("Expected " + expectation.m_sTraceName.get() + " is " + expectation.m_fExpValue.get() + " but got "
