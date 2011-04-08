@@ -1,0 +1,57 @@
+<!-- Build BEAST II. It is also used by Hudson BEAST_II project. JUnit test is available for this build. -->
+<project basedir="." default="test" name="test_BEAST_2_ii">
+	<description>
+	    Integration test BEAST II.
+            Also used by Hudson BEAST_II project. 
+	    JUnit test is available for this build.
+	</description>
+
+	<!-- set global properties for this build -->
+	<property name="srcii" location="src" />
+	<property name="buildii" location="build" />
+	<property name="libii" location="lib" />
+	<property name="distii" location="${buildii}/dist" />
+	<property name="beast2path" location="../beast2" />
+	<property name="srcBeast2" location="${beast2path}/src" />
+	<property name="beast2classpath" location="${beast2path}/build" />
+
+    <import file="${beast2path}/build.xml" />
+
+
+	<property name="main_class_BEAST" value="beast.app.BeastMCMC" />
+	<property name="report" value="${buildii}/junitreport"/>
+
+	<path id="classpath">
+        <pathelement path="${buildii}"/>
+		<fileset dir="${libii}" includes="junit-4.8.2.jar"/>
+        <pathelement path="${beast2classpath}"/>
+	</path>
+
+	<!-- JUnit test -->
+	<target name="test">
+		<mkdir dir="${report}" />
+		<junit printsummary="yes"> <!--showoutput='yes'-->
+			<classpath>
+				<path refid="classpath" />
+				<path location="${buildii}" />
+			</classpath>
+
+			<formatter type="xml" />
+
+			<batchtest fork="yes" todir="${report}">
+				<fileset dir="${srcii}">
+                    <include name="test/beast/integration/**/*Test.java"/>
+				</fileset>
+			</batchtest>
+		</junit>
+		<echo message="JUnit test finished." />
+	</target>
+    
+    <target name="junitreport">
+		<junitreport todir="${report}">
+			<fileset dir="${report}" includes="*.xml"/>
+			<report format="frames" todir="${report}"/>
+		</junitreport>
+		<echo message="JUnit test report finished." />
+	</target>
+</project>

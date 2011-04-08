@@ -127,7 +127,8 @@
 
 			<batchtest fork="yes" todir="${report}">
 				<fileset dir="${srcii}">
-                    <include name="test/**/*Test.java"/>                                         
+                    <include name="test/**/*Test.java"/>
+                    <exclude name="test/beast/integration/**/*Test.java"/>
 				</fileset>
 				<fileset dir="${srcBeast2}">
                     <include name="test/beast/integration/**/*Test.java"/>                                         
