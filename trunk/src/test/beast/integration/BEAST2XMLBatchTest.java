@@ -52,7 +52,7 @@ public class BEAST2XMLBatchTest extends TestCase {
                 addExpIntoList(expList, "treeLikelihood", -1815.9602060116856);
                 addExpIntoList(expList, "tree.height", 0.07954514858114668);
                 addExpIntoList(expList, "coalescent", 8.119096310087864);
-                addExpIntoList(expList, "popSize", 0.11438247311835678);
+                addExpIntoList(expList, "popSize", 0.11438247311835678); // todo why Hudson got 0.09581514625061524 +/- 0.007326950921469767
                 addExpIntoList(expList, "hky.kappa", 32.47032863965677);
 //                addExpIntoList(expList, "indicators0", 0.0);
 //                addExpIntoList(expList, "indicators1", 0.012345679012345678);
@@ -131,8 +131,9 @@ public class BEAST2XMLBatchTest extends TestCase {
                 LogAnalyser logAnalyser = new LogAnalyser(logFile, giveExpectations(i));
 
                 for (Expectation expectation : logAnalyser.m_pExpectations.get()) {
-                    assertTrue("Expected " + expectation.m_sTraceName.get() + " is " + expectation.m_fExpValue.get() + " but got "
-                            + expectation.getTraceStatistics().getMean() + " +/- " + expectation.getStdError(), !expectation.isFailed());
+                    assertTrue(XML_FILES[i] + ": Expected " + expectation.m_sTraceName.get() + " is "
+                            + expectation.m_fExpValue.get() + " but got " + expectation.getTraceStatistics().getMean()
+                            + " +/- " + expectation.getStdError(), !expectation.isFailed());
                 }
 
                 System.out.println("\nSucceed " + sFileName);
