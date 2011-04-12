@@ -47,10 +47,15 @@ public class Expectation extends Plugin {
         double upper = mean + 2 * stderr;
         double lower = mean - 2 * stderr;
 
-        isFailed = !(upper > m_fExpValue.get() && lower < m_fExpValue.get());
+        if (stderr == 0) {
+            isFailed = mean != m_fExpValue.get();
+        } else {
+            isFailed = !(upper > m_fExpValue.get() && lower < m_fExpValue.get());
+        }
 
         if (displayStatistics) {
-            System.out.println(m_sTraceName.get() + " : " + mean + " +- " + stderr + ", expectation is " + m_fExpValue.get());
+            System.out.println(m_sTraceName.get() + " : " + mean + " +- " + stderr + ", expectation is "
+                    + m_fExpValue.get() + ", ESS = " + trace.getESS());
         }
         return !isFailed;
     }
