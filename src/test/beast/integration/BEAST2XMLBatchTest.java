@@ -18,7 +18,7 @@ import java.util.List;
 public class BEAST2XMLBatchTest extends TestCase {
     final static long SEED = 127;
 
-    final static String[] XML_FILES = new String[]{"testHKY.xml", "testRelaxedClock.xml", "testRandomLocalClock.xml",
+    final static String[] XML_FILES = new String[]{"testHKY.xml", "testStrictClock.xml", "testRelaxedClock.xml", "testRandomLocalClock.xml",
             "testTipDates.xml", "testCoalescent.xml"};//, "testExponentialGrowth.xml", "testYuleOneSite.xml"};
 
 
@@ -36,7 +36,21 @@ public class BEAST2XMLBatchTest extends TestCase {
                 addExpIntoList(expList, "tree.height", 0.06419215275960465);
                 break;
 
-            case 1: // testRelaxedClock.xml
+            case 1: // testStrictClock.xml
+                addExpIntoList(expList, "treeLikelihood", -1816.8248843712875);
+                addExpIntoList(expList, "tree.height", 0.06350091124818);
+                addExpIntoList(expList, "coalescent", 6.961739999232106);
+                addExpIntoList(expList, "popSize", 0.13182140342324114);
+                addExpIntoList(expList, "hky.kappa", 33.04470764934949);
+                addExpIntoList(expList, "hky.frequencies0", 0.32685654709482365);
+                addExpIntoList(expList, "hky.frequencies1", 0.25849935542742825);
+                addExpIntoList(expList, "hky.frequencies2", 0.15360288787098525);
+                addExpIntoList(expList, "hky.frequencies3", 0.2610412096067631);
+                addExpIntoList(expList, "clockRate", 1.0);
+                addExpIntoList(expList, "posterior", -1809.86314437205);
+                break;
+
+            case 2: // testRelaxedClock.xml
                 addExpIntoList(expList, "treeLikelihood", -1815.6833629399468);
                 addExpIntoList(expList, "tree.height", 0.02501244505827084);
                 addExpIntoList(expList, "coalescent", 12.323228234924514);
@@ -48,7 +62,7 @@ public class BEAST2XMLBatchTest extends TestCase {
                 addExpIntoList(expList, "posterior", -1803.3601347050233);
                 break;
 
-            case 2: // testRandomLocalClock.xml
+            case 3: // testRandomLocalClock.xml
                 addExpIntoList(expList, "treeLikelihood", -1815.9602060116856);
                 addExpIntoList(expList, "tree.height", 0.07954514858114668);
                 addExpIntoList(expList, "coalescent", 8.119096310087864);
@@ -59,13 +73,13 @@ public class BEAST2XMLBatchTest extends TestCase {
                 addExpIntoList(expList, "posterior", -1807.8411097015971);
                 break;
 
-            case 3: // testTipDates.xml
+            case 4: // testTipDates.xml
                 addExpIntoList(expList, "treeLikelihood", -15000.435271635279);
                 addExpIntoList(expList, "tree.height", 38.6109296447932);
                 addExpIntoList(expList, "hky.kappa", 2179.425239015365);
                 break;
 
-            case 4: // testCoalescent.xml
+            case 5: // testCoalescent.xml
                 addExpIntoList(expList, "treeLikelihood", -1815.498433460167);
                 addExpIntoList(expList, "tree.height", 0.06262400993502577);
                 addExpIntoList(expList, "coalescent", 6.860816283805018);
@@ -74,7 +88,7 @@ public class BEAST2XMLBatchTest extends TestCase {
                 addExpIntoList(expList, "posterior", -1808.6376171763627);
                 break;
 
-            case 5: // testExponentialGrowth.xml
+            case 6: // testExponentialGrowth.xml
 //coalescent : -0.4014183147929467 +- 0.00381600199385509, expectation is 6.860816283805018
 //popSize : Infinity +- 0.0, expectation is 0.13377527552728488
                 addExpIntoList(expList, "treeLikelihood", -1815.8383981132436);
@@ -85,7 +99,7 @@ public class BEAST2XMLBatchTest extends TestCase {
                 addExpIntoList(expList, "posterior", -1816.2398164280376);
                 break;
 
-            case 6: // testYuleOneSite.xml todo XML not workign
+            case 7: // testYuleOneSite.xml todo XML not workign
                 addExpIntoList(expList, "treeLikelihood", -1815.498433460167);
                 addExpIntoList(expList, "tree.height", 0.06262400993502577);
                 addExpIntoList(expList, "coalescent", 6.860816283805018);
@@ -110,7 +124,7 @@ public class BEAST2XMLBatchTest extends TestCase {
     @Test
     public void testBESAT2XmlsAnalyseLog() throws Exception {
 
-        for (int i = 1; i < XML_FILES.length; i++) {
+        for (int i = 0; i < 2; i++) {
             if (giveExpectations(i).size() > 0) {
                 Randomizer.setSeed(SEED);
                 Logger.FILE_MODE = Logger.FILE_OVERWRITE;
