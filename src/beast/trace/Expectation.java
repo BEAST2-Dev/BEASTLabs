@@ -9,7 +9,7 @@ import beast.core.Plugin;
 
 @Description("It is used by LogAnalyser. assertExpectation(TraceStatistics) sets TraceStatistics instance " +
         "passed from LogAnalyser.initAndValidate(), and determines whether expectation is significantly different " +
-        "to statisctial mean. If true, then set isFailed = true, which makes JUnit test assertion failed.")
+        "to statisctial mean. If true, then set isPassed = false, which makes JUnit test assertion failed.")
 @Citation("Created by Walter Xie")
 public class Expectation extends Plugin {
 
@@ -22,7 +22,8 @@ public class Expectation extends Plugin {
             new Input<Double>("stdError", "The expected standard error of mean. If not given, it will estimate error from log",
                     0.0);
 
-    private boolean isFailed = false; // assert result
+    private boolean isPassed = true; // assert result
+    private boolean isValid = true; // assert ESS
     private TraceStatistics trace;
 
     // this constructor is used by Unit test
@@ -31,33 +32,39 @@ public class Expectation extends Plugin {
         this.m_fExpValue.setValue(expValue, this);
     }
 
-    public boolean isFailed() {
-        return isFailed;
+    public boolean isPassed() {
+        return isPassed;
     }
 
 //    public void setFailed(boolean failed) {
-//        isFailed = failed;
+//        isPassed = failed;
 //    }
+
+    public boolean isValid() {
+        return isValid;
+    }
 
     public boolean assertExpectation(TraceStatistics trace, boolean displayStatistics) {
         this.trace = trace;
         double mean = trace.getMean();
         double stderr = getStdError();
+        double ess = trace.getESS();
 
         double upper = mean + 2 * stderr;
         double lower = mean - 2 * stderr;
 
         if (stderr == 0) {
-            isFailed = mean != m_fExpValue.get();
+            isPassed = mean == m_fExpValue.get(); // used to check whether fixed value is fixed.
         } else {
-            isFailed = !(upper > m_fExpValue.get() && lower < m_fExpValue.get());
+            isPassed = upper >= m_fExpValue.get() && lower <= m_fExpValue.get();
+            isValid = ess > 100;
         }
 
         if (displayStatistics) {
             System.out.println(m_sTraceName.get() + " : " + mean + " +- " + stderr + ", expectation is "
-                    + m_fExpValue.get() + ", ESS = " + trace.getESS());
+                    + m_fExpValue.get() + ", ESS = " + ess);
         }
-        return !isFailed;
+        return isPassed;
     }
 
     public TraceStatistics getTraceStatistics() {
