@@ -147,7 +147,10 @@ public class BEAST2XMLBatchTest extends TestCase {
                 for (Expectation expectation : logAnalyser.m_pExpectations.get()) {
                     assertTrue(XML_FILES[i] + ": Expected " + expectation.m_sTraceName.get() + " is "
                             + expectation.m_fExpValue.get() + " but got " + expectation.getTraceStatistics().getMean()
-                            + " +/- " + expectation.getStdError(), !expectation.isFailed());
+                            + " +/- " + expectation.getStdError(), expectation.isPassed());
+
+                    assertTrue(XML_FILES[i] + ":  has very low effective sample sizes (ESS) "
+                                + expectation.getTraceStatistics().getESS(), expectation.isValid());
                 }
 
                 System.out.println("\nSucceed " + sFileName);
