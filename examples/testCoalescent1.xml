@@ -1,6 +1,6 @@
 <beast version='2.0'
        namespace='beast.core:beast.evolution.tree.coalescent:beast.core.util:beast.evolution.nuc:beast.evolution.operators:beast.evolution.sitemodel:beast.evolution.substitutionmodel:beast.evolution.likelihood'>
-
+    <!-- equivalent to testCoalescentNoClock1.xml in BEAST 1          -->
 
     <!-- The sequence alignment (each sequence refers to a taxon above).         -->
     <!-- ntax=6 nchar=768                                                        -->
@@ -30,7 +30,7 @@
     <input spec='HKY' id="hky">
         <parameter name='kappa' idref='hky.kappa'/>
         <input id='freqs' name='frequencies' spec='Frequencies'>
-            <input name='data' idref='alignment'/>
+            <parameter name='frequencies' idref='hky.frequencies'/>
         </input>
     </input>
 
@@ -47,16 +47,18 @@
     </input>
 
 
-    <input spec='beast.util.ClusterTree' id='tree' clusterType='upgma'>
-        <input name='taxa' idref='alignment'/>
-    </input>
+<tree spec='beast.util.TreeParser' id='tree' newick='(siamang:0.06318470579939774,((gorilla:0.031056173315146828,((chimp:0.00982869388112981,bonobo:0.00982869388112981)
+        :0.01030402958978773,human:0.02013272347091754):0.010923449844229289):0.022256750048834654,orangutan:0.05331292336398148)
+        :0.009871782435416254);'
+taxa='@alignment'/>
+
 
     <parameter id="hky.kappa" value="2.0" lower="0.0"/>
     <parameter id="hky.frequencies" value="0.25" dimension="4"/>
     <parameter id="popSize" value="0.077" lower="0.0"/>
 
 
-    <run spec="MCMC" id="mcmc" chainLength="10000000"> <!--autoOptimize="true"-->
+    <run spec="MCMC" id="mcmc" chainLength="2"> <!--autoOptimize="true"-->
         <state>
             <input name='stateNode' idref='hky.kappa'/>
             <input name='stateNode' idref='hky.frequencies'/>
@@ -87,7 +89,7 @@
         <operator spec='WilsonBalding' weight="1" tree="@tree"/>
 
 
-        <logger logEvery="1000" fileName="test.$(seed).log">
+        <logger logEvery="1" fileName="test.$(seed).log">
    	        <model idref='posterior'/>
             <log idref="coalescent"/>
             <log idref="likelihood"/>
@@ -96,15 +98,15 @@
             <log idref="hky.kappa"/>
             <log idref="posterior"/>
         </logger>
-        <logger logEvery="1000" fileName="test.$(seed).trees">
+        <logger logEvery="1" fileName="test.$(seed).trees">
             <log idref="tree"/>
         </logger>
-        <logger logEvery="10000">
+        <logger logEvery="1">
 	        <model idref='posterior'/>
             <log idref="coalescent"/>
+            <log idref="popSize"/>
             <log idref="likelihood"/>
             <log spec='beast.evolution.tree.TreeHeightLogger' tree='@tree'/>
-            <log idref="popSize"/>
             <log idref="hky.kappa"/>
             <log idref="posterior"/>
         </logger>
