@@ -64,7 +64,7 @@ public class AARSSubstitutionModel extends GeneralSubstitutionModel {
         
         // set root frequencies
         Frequencies freqs = new AARSFrequencies();
-        RealParameter rootFrequencies = new RealParameter("1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0");
+        RealParameter rootFrequencies = new RealParameter(new Double[]{1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0});
         freqs.frequencies.setValue(rootFrequencies, freqs);
         freqs.initAndValidate();
         m_frequencies = freqs;
