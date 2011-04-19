@@ -67,7 +67,7 @@ public class SpeciesTreePrior extends Distribution {
 
 		// top prior = Gamma(4,Psi)
 		m_gamma4Prior = new Gamma();
-		RealParameter parameter = new RealParameter("4");
+		RealParameter parameter = new RealParameter(new Double[]{4.0});
 		m_gamma4Prior.m_alpha.setValue(parameter, m_gamma4Prior);
 		m_gamma4Prior.m_beta.setValue(m_gammaParameter, m_gamma4Prior);
 		

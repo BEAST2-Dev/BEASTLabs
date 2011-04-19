@@ -29,11 +29,14 @@ public class ExtendedBayesianSkylinePlot extends PopulationFunction.Abstract {
         public void initAndValidate() throws Exception {
             // set sizes of parameters
         	int nDimension = 1;//???
-        	RealParameter popSize = new RealParameter(""+(double) m_populationSize.get().getValue(), 0.0, Double.MAX_VALUE, nDimension);
+        	RealParameter popSize = new RealParameter();
+        	popSize.initByName("value", ""+(double) m_populationSize.get().getValue(), 
+        			"upper", Double.MAX_VALUE, "lower", 0.0, "dimension", nDimension);
         	m_populationSize.get().assignFrom(popSize);
 
         	nDimension = 1;//???
-        	BooleanParameter indicators = new BooleanParameter("false", nDimension);
+        	BooleanParameter indicators = new BooleanParameter();
+        	indicators.initByName("value", "false", "dimension", nDimension);
         	m_indicators.get().assignFrom(indicators);
             // set m_popFunctionType
         	if (m_populationFunctionType.get() == null || m_populationFunctionType.get().equals("linear")) {
