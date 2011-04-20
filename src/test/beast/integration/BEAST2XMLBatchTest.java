@@ -74,12 +74,10 @@ public class BEAST2XMLBatchTest extends TestCase {
                 break;
 
             case 4: // testCoalescent.xml
-                addExpIntoList(expList, "treeLikelihood", -1815.5922574473238);
-                addExpIntoList(expList, "tree.height", 0.06318470579939774);
-                addExpIntoList(expList, "coalescent", 6.978631140166439);
-                addExpIntoList(expList, "popSize", 0.13174828210461598);
-                addExpIntoList(expList, "hky.kappa", 32.27896230737591);
-                addExpIntoList(expList, "posterior", -1808.613626307146);
+                addExpIntoList(expList, "tree.height", 15000.0);
+                addExpIntoList(expList, "popSize", 10000.0);
+//                addExpIntoList(expList, "coalescent", -30.6);
+//                addExpIntoList(expList, "posterior", -30.6);
                 break;
 
             case 5: // testCoalescent1.xml
