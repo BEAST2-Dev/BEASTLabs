@@ -58,7 +58,7 @@ taxa='@alignment'/>
     <parameter id="popSize" value="0.077" lower="0.0"/>
 
 
-    <run spec="MCMC" id="mcmc" chainLength="2"> <!--autoOptimize="true"-->
+    <run spec="MCMC" id="mcmc" chainLength="10000000"> <!--autoOptimize="true"-->
         <state>
             <input name='stateNode' idref='hky.kappa'/>
             <input name='stateNode' idref='hky.frequencies'/>
@@ -89,7 +89,7 @@ taxa='@alignment'/>
         <operator spec='WilsonBalding' weight="1" tree="@tree"/>
 
 
-        <logger logEvery="1" fileName="test.$(seed).log">
+        <logger logEvery="1000" fileName="test.$(seed).log">
    	        <model idref='posterior'/>
             <log idref="coalescent"/>
             <log idref="likelihood"/>
@@ -98,10 +98,10 @@ taxa='@alignment'/>
             <log idref="hky.kappa"/>
             <log idref="posterior"/>
         </logger>
-        <logger logEvery="1" fileName="test.$(seed).trees">
+        <logger logEvery="1000" fileName="test.$(seed).trees">
             <log idref="tree"/>
         </logger>
-        <logger logEvery="1">
+        <logger logEvery="100000">
 	        <model idref='posterior'/>
             <log idref="coalescent"/>
             <log idref="popSize"/>
