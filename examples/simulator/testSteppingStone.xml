@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><beast namespace="beast.core:beast.evolution.tree.coalescent:beast.core.util:beast.evolution.nuc:beast.evolution.operators:beast.evolution.sitemodel:beast.evolution.substitutionmodel:beast.evolution.likelihood" version="2.0">
+
+
+    
+
+
+    
+
+
+    
+
+
+    
+<run deltaT="0.01" gamma="0.0010" id="SteppingStone" samples="100" spec="beast.app.simulator.SteppingStone" steps="1000">
+    <island id="Aotea" initial="0.3" posx="0.6" posy="0.2" spec="beast.app.simulator.Island">
+        <neighbor id="Neighbor0" island="Little Barier" rate="0.1" spec="beast.app.simulator.Neighbor"/>
+        <neighbor id="Neighbor1" island="Rangitoto" rate="0.1" spec="beast.app.simulator.Neighbor"/>
+        <neighbor id="Neighbor5" island="White Island" rate="0.1" spec="beast.app.simulator.Neighbor"/>
+    </island>
+
+    <island id="Rangitoto" initial="0.3" posx="0.4" posy="0.9" spec="beast.app.simulator.Island">
+        <neighbor id="Neighbor2" island="Little Barier" rate="0.1" spec="beast.app.simulator.Neighbor"/>
+        <neighbor id="Neighbor6" island="Aotea" rate="0.2" spec="beast.app.simulator.Neighbor"/>
+    </island>
+
+    <island id="Little Barier" initial="0.5" posx="0.1" posy="0.3" spec="beast.app.simulator.Island">
+        <neighbor id="Neighbor3" island="Rangitoto" rate="0.1" spec="beast.app.simulator.Neighbor"/>
+        <neighbor id="Neighbor7" island="Aotea" rate="0.2" spec="beast.app.simulator.Neighbor"/>
+    </island>
+
+    <island id="White Island" initial="0.5" posx="0.9" posy="0.5" spec="beast.app.simulator.Island">
+        <neighbor id="Neighbor4" island="Aotea" rate="0.2" spec="beast.app.simulator.Neighbor"/>
+    </island>
+
+</run>
+
+
+
+<!-- DO NOT EDIT the following machine generated text, they are used in Beauti 
+
+<input id='BeautiConfig0' spec='beast.app.beauti.BeautiConfig' inlinePlugins='beast.app.simulator.SteppingStone,beast.app.simulator.SteppingStone.island,beast.app.simulator.Island.neighbor'>
+    <input id='BeautiPanelConfig0' spec='beast.app.beauti.BeautiPanelConfig' name='panel' panelname='Stepping Stone' tiptext='Stepping Stone simulator configuration' path='' hasPartitions='false' addButtons='true' isVisible='true' icon='9.png' forceExpansion='TRUE'/>
+
+</input>
+
+
+
+-->
+
+</beast>
