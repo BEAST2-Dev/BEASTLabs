@@ -36,12 +36,16 @@
 
 <!-- DO NOT EDIT the following machine generated text, they are used in Beauti 
 
-<input id='BeautiConfig0' spec='beast.app.beauti.BeautiConfig' inlinePlugins='beast.app.simulator.SteppingStone,beast.app.simulator.SteppingStone.island,beast.app.simulator.Island.neighbor' 
+<input id='BeautiConfig0' 
+    spec='beast.app.beauti.BeautiConfig' 
+    inlinePlugins='beast.app.simulator.SteppingStone,beast.app.simulator.SteppingStone.island,beast.app.simulator.Island.neighbor' 
     suppressPlugins = 'beast.app.simulator.SteppingStone.island,beast.app.simulator.Neighbor.island,beast.app.simulator.Neighbor.rate'
-    inputLabelMap='beast.app.simulator.SteppingStone.neighbor=Neighbors'
+    inputLabelMap='beast.app.simulator.Island.neighbor=Neighbors,beast.app.simulator.Island.posx=X-position,beast.app.simulator.Island.posy=Y-position'
+    disableMenus='Mode'
+    isExpert='true'
     >
-    <input id='BeautiPanelConfig1' spec='beast.app.beauti.BeautiPanelConfig' name='panel' panelname='Islands' tiptext='List of islands' path='island' hasPartitions='false' addButtons='true' isVisible='true' icon='8.png' forceExpansion='TRUE'/>
-    <input id='BeautiPanelConfig0' spec='beast.app.beauti.BeautiPanelConfig' name='panel' panelname='Stepping Stone' tiptext='Stepping Stone simulator configuration' path='' hasPartitions='false' addButtons='true' isVisible='true' icon='9.png' forceExpansion='TRUE'/>
+    <input id='BeautiPanelConfig1' labelWidth='90' spec='beast.app.beauti.BeautiPanelConfig' name='panel' panelname='Islands' tiptext='List of islands' path='island' hasPartitions='false' addButtons='true' isVisible='true' icon='8.png' forceExpansion='TRUE'/>
+    <input id='BeautiPanelConfig0' labelWidth='200' spec='beast.app.beauti.BeautiPanelConfig' name='panel' panelname='Stepping Stone' tiptext='Stepping Stone simulator configuration' path='' hasPartitions='false' addButtons='true' isVisible='true' icon='9.png' forceExpansion='TRUE'/>
 </input>
 
 
