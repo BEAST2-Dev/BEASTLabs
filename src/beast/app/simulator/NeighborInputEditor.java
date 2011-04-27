@@ -22,11 +22,11 @@ public class NeighborInputEditor extends ListInputEditor {
     protected void addPluginItem(Box itemBox, Plugin plugin) {
     	Neighbor neighbor = (Neighbor) plugin;
     	try {
-    		InputEditor inputEditor = PluginPanel.createInputEditor(neighbor.m_neighborsInput, plugin, true, EXPAND.FALSE, this);
+    		InputEditor inputEditor = PluginPanel.createInputEditor(neighbor.m_neighborsInput, plugin, true, EXPAND.FALSE, BUTTONSTATUS.ALL, this);
     		inputEditor.addValidationListener(this);
 			itemBox.add(inputEditor);
 
-			inputEditor = PluginPanel.createInputEditor(neighbor.m_migrationRateInput, plugin, true, EXPAND.FALSE, this); 
+			inputEditor = PluginPanel.createInputEditor(neighbor.m_migrationRateInput, plugin, true, EXPAND.FALSE, BUTTONSTATUS.ALL, this); 
 			itemBox.add(inputEditor);
     		inputEditor.addValidationListener(this);
     		
