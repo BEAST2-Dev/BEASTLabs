@@ -127,6 +127,7 @@ import beast.core.Input.Validate;
 import beast.evolution.alignment.Alignment;
 import beast.evolution.alignment.AscertainedAlignment;
 import beast.evolution.branchratemodel.BranchRateModel;
+import beast.evolution.branchratemodel.StrictClockModel;
 import beast.evolution.sitemodel.SiteModel;
 import beast.evolution.substitutionmodel.SubstitutionModel;
 import beast.evolution.tree.Node;
@@ -201,13 +202,11 @@ public class TreeLikelihood extends Distribution {
         m_siteModel = m_pSiteModel.get();
         m_substitutionModel = m_siteModel.m_pSubstModel.get();
         m_branchRateModel = m_pBranchRateModel.get();
-        if (m_branchRateModel != null) {
-        	m_branchLengths = new double[nodeCount];
-        	m_StoredBranchLengths = new double[nodeCount];
-        } else {
-        	m_branchLengths = new double[0];
-        	m_StoredBranchLengths = new double[0];
+        if (m_branchRateModel == null) {
+            m_branchRateModel = new StrictClockModel();
         }
+    	m_branchLengths = new double[nodeCount];
+    	m_StoredBranchLengths = new double[nodeCount];
 
         int nStateCount = m_data.get().getMaxStateCount();
         if (nStateCount == 4) {
@@ -327,7 +326,7 @@ public class TreeLikelihood extends Distribution {
         if (m_branchRateModel == null) {
         	traverse(tree.getRoot());
         } else {
-        	traverseWithBRM(tree.getRoot());
+        	traverse(tree.getRoot());
         }
         calcLogP();
         
@@ -341,7 +340,7 @@ public class TreeLikelihood extends Distribution {
             if (m_branchRateModel == null) {
             	traverse(tree.getRoot());
             } else {
-            	traverseWithBRM(tree.getRoot());
+            	traverse(tree.getRoot());
             }
             calcLogP();
             return logP;
@@ -355,7 +354,7 @@ public class TreeLikelihood extends Distribution {
             if (m_branchRateModel == null) {
             	traverse(tree.getRoot());
             } else {
-            	traverseWithBRM(tree.getRoot());
+            	traverse(tree.getRoot());
             }
             calcLogP();
             return logP;
@@ -377,80 +376,80 @@ public class TreeLikelihood extends Distribution {
         }
     }
     
-    /**
-     * Traverse the tree calculating partial likelihoods.
-     * Assumes there is no branch rate model
-     *
-     * @return whether the partials for this node were recalculated.
-     */
-    int traverse(Node node) throws Exception {
-
-        int update = (node.isDirty() | m_nHasDirt);
-
-        int iNode = node.getNr();
-
-        if (!node.isRoot() && (update != Tree.IS_CLEAN)) {
-            Node parent = node.getParent();
-        	//double branchTime = node.getLength();
-
-            m_likelihoodCore.setNodeMatrixForUpdate(iNode);
-            for (int i = 0; i < m_siteModel.getCategoryCount(); i++) {
-                //double branchLength = m_siteModel.getRateForCategory(i) * branchTime;
-                //m_substitutionModel.getTransitionProbabilities(branchLength, m_fProbabilities);
-
-            	m_substitutionModel.getTransitionProbabilities(node, parent.getHeight(), node.getHeight(), m_siteModel.getRateForCategory(i, node), m_fProbabilities);
-                m_likelihoodCore.setNodeMatrix(iNode, i, m_fProbabilities);
-                //m_substitutionModel.getPaddedTransitionProbabilities(branchLength, m_fProbabilities);
-                //System.arraycopy(m_fProbabilities, 0, m_fProbabilities2, i * m_nMatrixSize, m_nMatrixSize);
-            }
-            //m_likelihoodCore.setPaddedNodeMatrices(iNode, m_fProbabilities2);
-        }
-
-        // If the node is internal, update the partial likelihoods.
-        if (!node.isLeaf()) {
-
-            // Traverse down the two child nodes
-            Node child1 = node.m_left; //Two children
-            int update1 = traverse(child1);
-
-            Node child2 = node.m_right;
-            int update2 = traverse(child2);
-
-            // If either child node was updated then update this node too
-            if (update1 != Tree.IS_CLEAN || update2 != Tree.IS_CLEAN) {
-
-                m_likelihoodCore.setNodePartialsForUpdate(iNode);
-                update |= (update1|update2);
-                if (update >= Tree.IS_FILTHY) {
-                    m_likelihoodCore.setNodeStatesForUpdate(iNode);
-                }
-
-                if (m_siteModel.integrateAcrossCategories()) {
-                    m_likelihoodCore.calculatePartials(child1.getNr(), child2.getNr(), iNode);
-                } else {
-                    throw new Exception("Error TreeLikelihood 201: Site categories not supported");
-                    //m_pLikelihoodCore->calculatePartials(childNum1, childNum2, nodeNum, siteCategories);
-                }
-
-                if (node.isRoot()) {
-                    // No parent this is the root of the beast.tree -
-                    // calculate the pattern likelihoods
-                    double[] frequencies = //m_pFreqs.get().
-                            m_substitutionModel.getFrequencies();
-
-                    double[] proportions = m_siteModel.getCategoryProportions(node);
-                    m_likelihoodCore.integratePartials(node.getNr(), proportions, m_fRootPartials);
-
-                    m_likelihoodCore.calculateLogLikelihoods(m_fRootPartials, frequencies, m_fPatternLogLikelihoods);
-                }
-
-            }
-        }
-        return update;
-    } // traverse
+//    /**
+//     * Traverse the tree calculating partial likelihoods.
+//     * Assumes there is no branch rate model
+//     *
+//     * @return whether the partials for this node were recalculated.
+//     */
+//    int traverse(Node node) throws Exception {
+//
+//        int update = (node.isDirty() | m_nHasDirt);
+//
+//        int iNode = node.getNr();
+//
+//        if (!node.isRoot() && (update != Tree.IS_CLEAN)) {
+//            Node parent = node.getParent();
+//        	//double branchTime = node.getLength();
+//
+//            m_likelihoodCore.setNodeMatrixForUpdate(iNode);
+//            for (int i = 0; i < m_siteModel.getCategoryCount(); i++) {
+//                //double branchLength = m_siteModel.getRateForCategory(i) * branchTime;
+//                //m_substitutionModel.getTransitionProbabilities(branchLength, m_fProbabilities);
+//
+//            	m_substitutionModel.getTransitionProbabilities(node, parent.getHeight(), node.getHeight(), m_siteModel.getRateForCategory(i, node), m_fProbabilities);
+//                m_likelihoodCore.setNodeMatrix(iNode, i, m_fProbabilities);
+//                //m_substitutionModel.getPaddedTransitionProbabilities(branchLength, m_fProbabilities);
+//                //System.arraycopy(m_fProbabilities, 0, m_fProbabilities2, i * m_nMatrixSize, m_nMatrixSize);
+//            }
+//            //m_likelihoodCore.setPaddedNodeMatrices(iNode, m_fProbabilities2);
+//        }
+//
+//        // If the node is internal, update the partial likelihoods.
+//        if (!node.isLeaf()) {
+//
+//            // Traverse down the two child nodes
+//            Node child1 = node.m_left; //Two children
+//            int update1 = traverse(child1);
+//
+//            Node child2 = node.m_right;
+//            int update2 = traverse(child2);
+//
+//            // If either child node was updated then update this node too
+//            if (update1 != Tree.IS_CLEAN || update2 != Tree.IS_CLEAN) {
+//
+//                m_likelihoodCore.setNodePartialsForUpdate(iNode);
+//                update |= (update1|update2);
+//                if (update >= Tree.IS_FILTHY) {
+//                    m_likelihoodCore.setNodeStatesForUpdate(iNode);
+//                }
+//
+//                if (m_siteModel.integrateAcrossCategories()) {
+//                    m_likelihoodCore.calculatePartials(child1.getNr(), child2.getNr(), iNode);
+//                } else {
+//                    throw new Exception("Error TreeLikelihood 201: Site categories not supported");
+//                    //m_pLikelihoodCore->calculatePartials(childNum1, childNum2, nodeNum, siteCategories);
+//                }
+//
+//                if (node.isRoot()) {
+//                    // No parent this is the root of the beast.tree -
+//                    // calculate the pattern likelihoods
+//                    double[] frequencies = //m_pFreqs.get().
+//                            m_substitutionModel.getFrequencies();
+//
+//                    double[] proportions = m_siteModel.getCategoryProportions(node);
+//                    m_likelihoodCore.integratePartials(node.getNr(), proportions, m_fRootPartials);
+//
+//                    m_likelihoodCore.calculateLogLikelihoods(m_fRootPartials, frequencies, m_fPatternLogLikelihoods);
+//                }
+//
+//            }
+//        }
+//        return update;
+//    } // traverse
 
     /* Assumes there IS a branch rate model as opposed to traverse() */
-    int traverseWithBRM(Node node) throws Exception {
+    int traverse(Node node) throws Exception {
 
         int update = (node.isDirty()| m_nHasDirt);
 
@@ -481,10 +480,10 @@ public class TreeLikelihood extends Distribution {
 
             // Traverse down the two child nodes
             Node child1 = node.m_left; //Two children
-            int update1 = traverseWithBRM(child1);
+            int update1 = traverse(child1);
 
             Node child2 = node.m_right;
-            int update2 = traverseWithBRM(child2);
+            int update2 = traverse(child2);
 
             // If either child node was updated then update this node too
             if (update1 != Tree.IS_CLEAN || update2 != Tree.IS_CLEAN) {
