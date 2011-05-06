@@ -100,11 +100,11 @@ public class BeerLikelihoodCoreNative extends LikelihoodCore {
 	}
 	native void setNodeMatrixC(long pBeer, int iNode, int iMatrixIndex, double[] fMatrix);
 
-	@Override
-	public void setPaddedNodeMatrices(int iNode, double[] fMatrix) {
-		setPaddedMatricesC(m_pBEER, iNode, fMatrix);
-	}
-	native void setPaddedMatricesC(long pBeer, int iNode, double[] fMatrix);
+//	@Override
+//	public void setPaddedNodeMatrices(int iNode, double[] fMatrix) {
+//		setPaddedMatricesC(m_pBEER, iNode, fMatrix);
+//	}
+//	native void setPaddedMatricesC(long pBeer, int iNode, double[] fMatrix);
 	
 	
 	@Override
@@ -121,13 +121,11 @@ public class BeerLikelihoodCoreNative extends LikelihoodCore {
 	}
 	native void calculatePartialsC(long pBeer, int iNode1, int iNode2, int iNode3);
 
-	@Override
 	public void integratePartials(int iNode, double[] fProportions, double[] fOutPartials) {
 		integratePartialsC(m_pBEER, iNode, fProportions, fOutPartials);
 	}
 	native void integratePartialsC(long pBeer, int iNode, double[] fProportions, double[] fOutPartials);
 	
-	@Override
 	public void calculateLogLikelihoods(double[] fPartials,	double[] fFrequencies, double[] fOutLogLikelihoods) {
         int v = 0;
 		for (int k = 0; k < m_nPatterns; k++) {
@@ -166,44 +164,33 @@ public class BeerLikelihoodCoreNative extends LikelihoodCore {
 	}
 	native void restoreC(long pBeer);
 
-	@Override
-	protected void calculateIntegratePartials(double[] fInPartials, double[] fProportions, double[] fOutPartials) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void calcRootPsuedoRootPartials(double[] fFrequencies, int iNode, double[] fPseudoPartials) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void calcNodePsuedoRootPartials(double[] fInPseudoPartials, int iNode, double[] fOutPseudoPartials) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void calcPsuedoRootPartials(double[] fParentPseudoPartials, int iNode, double[] fPseudoPartials) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	void integratePartialsP(double[] fInPartials, double[] fProportions, double[] m_fRootPartials) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	void calculateLogLikelihoodsP(double[] fPartials, double[] fOutLogLikelihoods) {
-		// TODO Auto-generated method stub
-		
-	}
 
 	@Override
 	public void setNodePartials(int iNode, double[] fPartials) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public double calcLogP(int iNode, double[] fProportions, double[] fFrequencies) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public void setPatternWeights(int[] nPatterWeights) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setProportionInvariant(double fProportianInvariant, int[] iConstantPatterns) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void getPatternLogLikelihoods(double[] fPatternLogLikelihoods) {
 		// TODO Auto-generated method stub
 		
 	}
