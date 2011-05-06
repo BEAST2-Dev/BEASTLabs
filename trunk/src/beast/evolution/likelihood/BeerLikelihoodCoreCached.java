@@ -32,6 +32,8 @@ package beast.evolution.likelihood;
 
 import java.util.Arrays;
 
+import beast.evolution.sitemodel.SiteModel;
+
 
 public class BeerLikelihoodCoreCached extends LikelihoodCore {
 	int u, v, w, v1, v2;
@@ -87,6 +89,17 @@ public class BeerLikelihoodCoreCached extends LikelihoodCore {
 	double[] m_pfPartials2;
 	double[] m_pfPartials3;
 
+	
+	/** memory allocation for the root partials **/
+    double[] m_fRootPartials;
+    /** dealing with proportion of site being invariant **/
+    int [] m_iConstantPattern = null;
+    double m_fProportianInvariant = 0.0;
+    
+    /** memory allocation for likelihoods for each of the patterns **/
+    double[] m_fPatternLogLikelihoods;      
+    int [] m_nPatternWeights;
+    
 	public BeerLikelihoodCoreCached(int nStateCount) {
 		this.m_nStates = nStateCount;
 	} // c'tor
@@ -658,6 +671,11 @@ public class BeerLikelihoodCoreCached extends LikelihoodCore {
 //        } else {
 //        	m_innerLoopCalculator = new InnerLoopCalculator();
 //        }
+        
+    	m_fRootPartials = new double[m_nPatterns * m_nStates];
+        m_fPatternLogLikelihoods = new double[m_nPatterns];
+        m_nPatternWeights  = new int[m_nPatterns];
+        
     }
 
     /**
@@ -777,11 +795,11 @@ public class BeerLikelihoodCoreCached extends LikelihoodCore {
 	        m_fMatrices[m_iCurrentMatrices[iNode]][iNode][iMatrixIndex * m_nMatrixSize+m_nStates*(m_nStates+1)+i]=1.0;
     	}
     }
-    @Override
-    public void setPaddedNodeMatrices(int iNode, double[] fMatrix) {
-    	double [] fMatrix2 = m_fMatrices[m_iCurrentMatrices[iNode]][iNode];
-    	System.arraycopy(fMatrix, 0, fMatrix2, 0, fMatrix.length);
-    }
+//    @Override
+//    public void setPaddedNodeMatrices(int iNode, double[] fMatrix) {
+//    	double [] fMatrix2 = m_fMatrices[m_iCurrentMatrices[iNode]][iNode];
+//    	System.arraycopy(fMatrix, 0, fMatrix2, 0, fMatrix.length);
+//    }
     /**
      * Gets probability matrix for a node
      */
@@ -982,44 +1000,41 @@ public class BeerLikelihoodCoreCached extends LikelihoodCore {
         m_iStoredPartials = iTmp2;
     }
 
+
 	@Override
-	protected void calculateIntegratePartials(double[] fInPartials, double[] fProportions, double[] fOutPartials) {
-		// TODO Auto-generated method stub
-		
+	public void setPatternWeights(int [] nPatterWeights) {
+		System.arraycopy(nPatterWeights, 0, m_nPatternWeights, 0, m_nPatterns);
+	}
+	
+	@Override
+	public void setProportionInvariant(double fProportianInvariant, int [] iConstantPatterns) {
+		m_fProportianInvariant = fProportianInvariant;
+		m_iConstantPattern = new int[iConstantPatterns.length];
+		System.arraycopy(iConstantPatterns, 0, m_iConstantPattern, 0, iConstantPatterns.length);
+	}
+	
+	@Override
+	public void getPatternLogLikelihoods(double [] fPatternLogLikelihoods) {
+		System.arraycopy(m_fPatternLogLikelihoods, 0, fPatternLogLikelihoods, 0, m_nPatterns);
 	}
 
 	@Override
-	public void calcRootPsuedoRootPartials(double[] fFrequencies, int iNode, double[] fPseudoPartials) {
-		// TODO Auto-generated method stub
-		
-	}
+	public double calcLogP(int iNode, double[] fProportions, double[] fFrequencies) {
+		integratePartials(iNode, fProportions, m_fRootPartials);
 
-	@Override
-	public void calcNodePsuedoRootPartials(double[] fInPseudoPartials, int iNode, double[] fOutPseudoPartials) {
-		// TODO Auto-generated method stub
-		
-	}
+		if (m_iConstantPattern != null && !SiteModel.g_bUseOriginal) {
+        	// some portion of sites is invariant, so adjust root partials for this
+        	for (int i : m_iConstantPattern) {
+    			m_fRootPartials[i] += m_fProportianInvariant;
+        	}
+        }
 
-	@Override
-	public void calcPsuedoRootPartials(double[] fParentPseudoPartials, int iNode, double[] fPseudoPartials) {
-		// TODO Auto-generated method stub
-		
-	}
+        calculateLogLikelihoods(m_fRootPartials, fFrequencies, m_fPatternLogLikelihoods);
 
-	@Override
-	void integratePartialsP(double[] fInPartials, double[] fProportions, double[] m_fRootPartials) {
-		// TODO Auto-generated method stub
-		
+        double fLogP = 0.0;
+        for (int i = 0; i < m_nPatterns; i++) {
+            fLogP += m_fPatternLogLikelihoods[i] * m_nPatternWeights[i];
+        }
+        return fLogP;
 	}
-
-	@Override
-	void calculateLogLikelihoodsP(double[] fPartials, double[] fOutLogLikelihoods) {
-		// TODO Auto-generated method stub
-		
-	}
-
-//	@Override
-//	LikelihoodCore feelsGood() {
-//		return null;
-//	}
 } // class BeerLikelihoodCore

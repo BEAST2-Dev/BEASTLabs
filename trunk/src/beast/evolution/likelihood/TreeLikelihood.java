@@ -23,99 +23,7 @@
 * Boston, MA  02110-1301  USA
 */
 
-/* BEAST 1.0: 1M samples testMCMC.xml
-real	0m27.889s
-user	0m29.722s
-sys	0m0.356s
-real	0m22.344s
-user	0m24.298s
-sys	0m0.252s
-TreeLikelihood(treeModel) using Java nucleotide likelihood beast.core
 
-BEAST 2.0: no store/restore
-real	0m22.371s
-user	0m23.565s
-sys	0m0.160s
-
-with store/restore
-real	0m20.339s
-user	0m21.209s
-sys	0m0.176s
-
-GORED aware
-real	0m18.958s
-user	0m20.401s
-sys	0m0.216s
-
-6 taxa
-768 sites
-69 patterns
-10M samples testMCMC.xml single thread
-        Beast 1.6/java  Beast1.6/native Beast 2.0
-real	3m55.056s       3m38.670s       2m31.794s
-user	3m54.839s       3m38.670s       2m32.162s
-sys	    0m0.392s        0m0.428s        0m0.476s
-
-46 taxa
-1363 sites
-199 patterns
-500K samples testMCMC2.xml
-        Beast 1.6/java  Beast1.6/native Beast 2.0
-real	2m28.815s       2m0.174s        0m43.520s
-user	2m30.493s       2m0.420s        0m45.299s
-sys	    0m0.324s        0m0.632s        0m0.424s
-
-Beast1.6/native
-real	1m56.097s
-user	1m58.683s
-sys	0m0.332s
-Beast 2.0 + auto
-real	0m56.843s
-user	0m59.264s
-sys	0m0.428s
-
-
-191 taxa
-606 sites
-228 patterns
-100K samples testMCMC3.xml
-      Beast1.6/java Beast1.6/native   Beast 2.0 no scaling    Beast 2.0 with scaling
-real	8m39.146s     8m47.876s       0m28.725s               0m30.034s
-user	8m37.112s     8m47.961s       0m30.610s               0m32.998s
-sys	    0m0.500s      0m0.648s        0m0.452s                0m0.368s
-
-
-Beast1.6/native
-real	8m32.418s
-user	8m33.060s
-sys	0m0.476s
-1.35 hours/million states
-
-Beast 2.0 + auto optimize
-real	0m43.962s = 11.636363636
-user	0m46.051s = 11.130434783x
-sys	0m0.432s
-3022 s/sec = 0.091918523 hr/M states = 14.7 x Beast1.6
-
-
-Caveat 1: no auto optimise
-
-100 samples Ourisia60
-SnAP    1 thread  2 threads Beast 2.0 1 thread 2 threads
-real	4m55.316s 3m19.635s           6m9.100s 3m24.905s
-user	4m52.522s 5m7.543s            6m1.491s 6m5.183s
-sys	    0m0.164s  0m1.448s            0m1.328s 0m4.740s
-
-
-400 taxa
-34440 sites
-31119 patterns
-  PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
-10907 rrb       20   0 3336m 1.7g 9008 S  101 58.4   1:45.05 java
-1	-1,096,649.8002	2.1268E-4   	1.00000     	1,335.83 hours/million states
-
-*
-*/
 
 package beast.evolution.likelihood;
 
@@ -133,6 +41,7 @@ import beast.evolution.substitutionmodel.SubstitutionModel;
 import beast.evolution.tree.Node;
 import beast.evolution.tree.Tree;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -163,7 +72,7 @@ public class TreeLikelihood extends Distribution {
     /** flag to indicate the 
     // when CLEAN=0, nothing needs to be recalculated for the node
     // when DIRTY=1 indicates a node partial needs to be recalculated
-    // when GORED=2 indicates the indices for the node need to be recalculated
+    // when FILTHY=2 indicates the indices for the node need to be recalculated
     // (often not necessary while node partial recalculation is required)
      */
     int m_nHasDirt;
@@ -184,11 +93,16 @@ public class TreeLikelihood extends Distribution {
     double[] m_fRootPartials;
     /** memory allocation for probability tables obtained from the SiteModel **/
     double[] m_fProbabilities;
+
     int m_nMatrixSize;
     
     /** flag to indicate ascertainment correction should be applied **/
     boolean m_bAscertainedSitePatterns = false;
 
+    /** dealing with proportion of site being invariant **/
+    double m_fProportianInvariant = 0;
+    List<Integer> m_iConstantPattern = null;
+    
     @Override
     public void initAndValidate() throws Exception {
     	// sanity check: alignment should have same #taxa as tree
@@ -196,18 +110,19 @@ public class TreeLikelihood extends Distribution {
     		throw new Exception("The number of nodes in the tree does not match the number of sequences");
     	}
     	
-    	
-    	
-        int nodeCount = m_tree.get().getNodeCount();
+        int nNodeCount = m_tree.get().getNodeCount();
         m_siteModel = m_pSiteModel.get();
+        m_siteModel.setDataType(m_data.get().getDataType());
         m_substitutionModel = m_siteModel.m_pSubstModel.get();
-        m_branchRateModel = m_pBranchRateModel.get();
-        if (m_branchRateModel == null) {
+
+        if (m_pBranchRateModel.get() != null) {
+        	m_branchRateModel = m_pBranchRateModel.get();
+        } else {
             m_branchRateModel = new StrictClockModel();
         }
-    	m_branchLengths = new double[nodeCount];
-    	m_StoredBranchLengths = new double[nodeCount];
-
+    	m_branchLengths = new double[nNodeCount];
+    	m_StoredBranchLengths = new double[nNodeCount];
+    	
         int nStateCount = m_data.get().getMaxStateCount();
         if (nStateCount == 4) {
         	//m_likelihoodCore = new BeerLikelihoodCore4();
@@ -215,16 +130,18 @@ public class TreeLikelihood extends Distribution {
         	m_likelihoodCore = new BeerLikelihoodCoreCnG(4);
             //m_likelihoodCore = new BeerLikelihoodCoreJava4();
         	//m_likelihoodCore = new BeerLikelihoodCoreNative(4);
+            m_likelihoodCore = new BeerLikelihoodCoreSimple4();
         } else {
             //m_likelihoodCore = new BeerLikelihoodCore(nStateCount);
             m_likelihoodCore = new BeerLikelihoodCoreCnG(nStateCount);
+            m_likelihoodCore = new BeerLikelihoodCoreSimple(nStateCount);
         }
         System.err.println("TreeLikelihood uses " + m_likelihoodCore.getClass().getName());
-        initCore();
+        int nPatterns = m_data.get().getPatternCount();
+        initCore(nNodeCount, nPatterns, nStateCount);
         
-        
-        m_fPatternLogLikelihoods = new double[m_data.get().getPatternCount()];
-        m_fRootPartials = new double[m_data.get().getPatternCount() * nStateCount];
+        m_fPatternLogLikelihoods = new double[nPatterns];
+        m_fRootPartials = new double[nPatterns * nStateCount];
         m_nMatrixSize = (nStateCount +1)* (nStateCount+1);
         m_fProbabilities = new double[(nStateCount +1)* (nStateCount+1)];
         Arrays.fill(m_fProbabilities, 1.0);
@@ -232,21 +149,55 @@ public class TreeLikelihood extends Distribution {
         if (m_data.get() instanceof AscertainedAlignment) {
             m_bAscertainedSitePatterns = true;
         }
-    
     }
 
+
+	/** Determine indices of m_fRootProbabilities that need to be updates
+	// due to sites being invariant. If none of the sites are invariant,
+	// the 'site invariant' category does not contribute anything to the
+	// root probability. If the site IS invariant for a certain character,
+	// taking ambiguities in account, there is a contribution of 1 from
+	// the 'site invariant' category.
+	 **/
+    int [] calcConstantPatternIndices(int nPatterns, int nStateCount) {
+		m_iConstantPattern = new ArrayList<Integer>();
+		for (int i = 0; i < nPatterns; i++) {
+			int [] pattern = m_data.get().getPattern(i);
+			boolean [] bIsInvariant = new boolean[nStateCount];
+			Arrays.fill(bIsInvariant, true);
+			for (int j = 0; j < pattern.length; j++) {
+				int state = pattern[j];
+				boolean [] bStateSet = m_data.get().getStateSet(state);
+				if (m_useAmbiguities.get() || !m_data.get().getDataType().isAmbiguousState(state)) {
+	    			for (int k = 0; k < nStateCount; k++) {
+	    				bIsInvariant[k] &= bStateSet[k];
+	    			}
+				}
+			}
+				for (int k = 0; k < nStateCount; k++) {
+				if (bIsInvariant[k]) {
+	    			m_iConstantPattern.add(i * nStateCount + k);    					
+				}
+			}
+		}
+		
+    	int [] iConstantPattern = new int[m_iConstantPattern.size()];
+        for (int i = 0; i < m_iConstantPattern.size(); i++) {
+        	iConstantPattern[i]= m_iConstantPattern.get(i);
+        }
+        return iConstantPattern;
+    }
     
-    void initCore() {
-        int nodeCount = m_tree.get().getNodeCount();
+    void initCore(int nNodeCount, int nPatterns, int nStateCount) {
         m_likelihoodCore.initialize(
-                nodeCount,
+                nNodeCount,
                 m_data.get().getPatternCount(),
                 m_siteModel.getCategoryCount(),
                 true
         );
 
-        int extNodeCount = nodeCount / 2 + 1;
-        int intNodeCount = nodeCount / 2;
+        int extNodeCount = nNodeCount / 2 + 1;
+        int intNodeCount = nNodeCount / 2;
 
         if (m_useAmbiguities.get()) {
         	setPartials(m_tree.get().getRoot(), m_data.get().getPatternCount());
@@ -257,6 +208,13 @@ public class TreeLikelihood extends Distribution {
         for (int i = 0; i < intNodeCount; i++) {
             m_likelihoodCore.createNodePartials(extNodeCount + i);
         }
+        
+        m_fProportianInvariant = m_siteModel.getProportianInvariant();
+        if (m_fProportianInvariant > 0) {
+        	int [] iConstantPattern = calcConstantPatternIndices(nPatterns, nStateCount);
+            m_likelihoodCore.setProportionInvariant(m_fProportianInvariant, iConstantPattern);
+        }
+        m_likelihoodCore.setPatternWeights(m_data.get().getWeights());
     }
     
     /**
@@ -299,12 +257,6 @@ public class TreeLikelihood extends Distribution {
             }
             m_likelihoodCore.setNodePartials(node.getNr(), partials);
 
-            int[] states = new int[patternCount];
-            for (int iPattern = 0; iPattern < patternCount; iPattern++) {
-                states[iPattern] = m_data.get().getPattern(node.getNr(), iPattern);
-            }
-            m_likelihoodCore.setNodeStates(node.getNr(), states);
-            
         } else {
         	setPartials(node.m_left, patternCount);
         	setPartials(node.m_right, patternCount);
@@ -318,16 +270,11 @@ public class TreeLikelihood extends Distribution {
     double m_fScale = 1.01;
     int m_nScale = 0;
     int X = 100;
-//    int m_nCalls = 0;
     @Override
     public double calculateLogP() throws Exception {
         Tree tree = m_tree.get();
 
-        if (m_branchRateModel == null) {
-        	traverse(tree.getRoot());
-        } else {
-        	traverse(tree.getRoot());
-        }
+       	traverse(tree.getRoot());
         calcLogP();
         
         m_nScale++;
@@ -337,11 +284,7 @@ public class TreeLikelihood extends Distribution {
             m_likelihoodCore.unstore();
             m_nHasDirt = Tree.IS_FILTHY;
             X *= 2;
-            if (m_branchRateModel == null) {
-            	traverse(tree.getRoot());
-            } else {
-            	traverse(tree.getRoot());
-            }
+           	traverse(tree.getRoot());
             calcLogP();
             return logP;
         } else if (logP == Double.NEGATIVE_INFINITY && m_fScale < 10) { // && !m_likelihoodCore.getUseScaling()) {
@@ -351,11 +294,7 @@ public class TreeLikelihood extends Distribution {
             m_likelihoodCore.setUseScaling(m_fScale);
             m_likelihoodCore.unstore();
             m_nHasDirt = Tree.IS_FILTHY;
-            if (m_branchRateModel == null) {
-            	traverse(tree.getRoot());
-            } else {
-            	traverse(tree.getRoot());
-            }
+           	traverse(tree.getRoot());
             calcLogP();
             return logP;
         }
@@ -363,90 +302,19 @@ public class TreeLikelihood extends Distribution {
     }
 
     private void calcLogP() throws Exception {
-        logP = 0.0;
         if (m_bAscertainedSitePatterns) {
+            logP = 0.0;
+            m_likelihoodCore.getPatternLogLikelihoods(m_fPatternLogLikelihoods);
             double ascertainmentCorrection = ((AscertainedAlignment)m_data.get()).getAscertainmentCorrection(m_fPatternLogLikelihoods);
             for (int i = 0; i < m_data.get().getPatternCount(); i++) {
             	logP += (m_fPatternLogLikelihoods[i] - ascertainmentCorrection) * m_data.get().getPatternWeight(i);
             }
-        } else {
-	        for (int i = 0; i < m_data.get().getPatternCount(); i++) {
-	            logP += m_fPatternLogLikelihoods[i] * m_data.get().getPatternWeight(i);
-	        }
+//        } else {
+//	        for (int i = 0; i < m_data.get().getPatternCount(); i++) {
+//	            logP += m_fPatternLogLikelihoods[i] * m_data.get().getPatternWeight(i);
+//	        }
         }
     }
-    
-//    /**
-//     * Traverse the tree calculating partial likelihoods.
-//     * Assumes there is no branch rate model
-//     *
-//     * @return whether the partials for this node were recalculated.
-//     */
-//    int traverse(Node node) throws Exception {
-//
-//        int update = (node.isDirty() | m_nHasDirt);
-//
-//        int iNode = node.getNr();
-//
-//        if (!node.isRoot() && (update != Tree.IS_CLEAN)) {
-//            Node parent = node.getParent();
-//        	//double branchTime = node.getLength();
-//
-//            m_likelihoodCore.setNodeMatrixForUpdate(iNode);
-//            for (int i = 0; i < m_siteModel.getCategoryCount(); i++) {
-//                //double branchLength = m_siteModel.getRateForCategory(i) * branchTime;
-//                //m_substitutionModel.getTransitionProbabilities(branchLength, m_fProbabilities);
-//
-//            	m_substitutionModel.getTransitionProbabilities(node, parent.getHeight(), node.getHeight(), m_siteModel.getRateForCategory(i, node), m_fProbabilities);
-//                m_likelihoodCore.setNodeMatrix(iNode, i, m_fProbabilities);
-//                //m_substitutionModel.getPaddedTransitionProbabilities(branchLength, m_fProbabilities);
-//                //System.arraycopy(m_fProbabilities, 0, m_fProbabilities2, i * m_nMatrixSize, m_nMatrixSize);
-//            }
-//            //m_likelihoodCore.setPaddedNodeMatrices(iNode, m_fProbabilities2);
-//        }
-//
-//        // If the node is internal, update the partial likelihoods.
-//        if (!node.isLeaf()) {
-//
-//            // Traverse down the two child nodes
-//            Node child1 = node.m_left; //Two children
-//            int update1 = traverse(child1);
-//
-//            Node child2 = node.m_right;
-//            int update2 = traverse(child2);
-//
-//            // If either child node was updated then update this node too
-//            if (update1 != Tree.IS_CLEAN || update2 != Tree.IS_CLEAN) {
-//
-//                m_likelihoodCore.setNodePartialsForUpdate(iNode);
-//                update |= (update1|update2);
-//                if (update >= Tree.IS_FILTHY) {
-//                    m_likelihoodCore.setNodeStatesForUpdate(iNode);
-//                }
-//
-//                if (m_siteModel.integrateAcrossCategories()) {
-//                    m_likelihoodCore.calculatePartials(child1.getNr(), child2.getNr(), iNode);
-//                } else {
-//                    throw new Exception("Error TreeLikelihood 201: Site categories not supported");
-//                    //m_pLikelihoodCore->calculatePartials(childNum1, childNum2, nodeNum, siteCategories);
-//                }
-//
-//                if (node.isRoot()) {
-//                    // No parent this is the root of the beast.tree -
-//                    // calculate the pattern likelihoods
-//                    double[] frequencies = //m_pFreqs.get().
-//                            m_substitutionModel.getFrequencies();
-//
-//                    double[] proportions = m_siteModel.getCategoryProportions(node);
-//                    m_likelihoodCore.integratePartials(node.getNr(), proportions, m_fRootPartials);
-//
-//                    m_likelihoodCore.calculateLogLikelihoods(m_fRootPartials, frequencies, m_fPatternLogLikelihoods);
-//                }
-//
-//            }
-//        }
-//        return update;
-//    } // traverse
 
     /* Assumes there IS a branch rate model as opposed to traverse() */
     int traverse(Node node) throws Exception {
@@ -465,13 +333,9 @@ public class TreeLikelihood extends Distribution {
             m_likelihoodCore.setNodeMatrixForUpdate(iNode);
             for (int i = 0; i < m_siteModel.getCategoryCount(); i++) {
                 double jointBranchRate = m_siteModel.getRateForCategory(i, node) * branchRate;
-//                m_substitutionModel.getTransitionProbabilities(branchLength, m_fProbabilities);
             	m_substitutionModel.getTransitionProbabilities(node, parent.getHeight(), node.getHeight(), jointBranchRate, m_fProbabilities);
                 m_likelihoodCore.setNodeMatrix(iNode, i, m_fProbabilities);
-//                m_substitutionModel.getPaddedTransitionProbabilities(branchLength, m_fProbabilities);
-//                System.arraycopy(m_fProbabilities, 0, m_fProbabilities2, i * m_nMatrixSize, m_nMatrixSize);
             }
-//            m_likelihoodCore.setPaddedNodeMatrices(iNode, m_fProbabilities2);
             update |= Tree.IS_DIRTY;
         }
 
@@ -507,13 +371,24 @@ public class TreeLikelihood extends Distribution {
                 if (node.isRoot()) {
                     // No parent this is the root of the beast.tree -
                     // calculate the pattern likelihoods
-                    double[] frequencies = //m_pFreqs.get().
+                    double[] fFrequencies = //m_pFreqs.get().
                             m_substitutionModel.getFrequencies();
 
-                    double[] proportions = m_siteModel.getCategoryProportions(node);
-                    m_likelihoodCore.integratePartials(node.getNr(), proportions, m_fRootPartials);
-
-                    m_likelihoodCore.calculateLogLikelihoods(m_fRootPartials, frequencies, m_fPatternLogLikelihoods);
+                    double[] fProportions = m_siteModel.getCategoryProportions(node);
+//                    
+//                    
+//                    m_likelihoodCore.integratePartials(node.getNr(), fProportions, m_fRootPartials);
+//
+//                    if (m_iConstantPattern != null && !SiteModel.g_bUseOriginal) {
+//                    	// some portion of sites is invariant, so adjust root partials for this
+//                    	for (int i : m_iConstantPattern) {
+//                			m_fRootPartials[i] += m_fProportianInvariant;
+//                    	}
+//                    }
+//
+//                    m_likelihoodCore.calculateLogLikelihoods(m_fRootPartials, fFrequencies, m_fPatternLogLikelihoods);
+                    
+                    logP = m_likelihoodCore.calcLogP(iNode, fProportions, fFrequencies);
                 }
 
             }
@@ -578,6 +453,5 @@ public class TreeLikelihood extends Distribution {
     public List<String> getConditions() {
         return m_siteModel.getConditions();
     }
-
-
+    
 } // class TreeLikelihood
