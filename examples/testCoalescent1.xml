@@ -96,6 +96,7 @@ taxa='@alignment'/>
             <log spec='beast.evolution.tree.TreeHeightLogger' tree='@tree'/>
             <log idref="popSize"/>
             <log idref="hky.kappa"/>
+            <log idref="hky.frequencies"/>
             <log idref="posterior"/>
         </logger>
         <logger logEvery="1000" fileName="test.$(seed).trees">
@@ -108,6 +109,7 @@ taxa='@alignment'/>
             <log idref="likelihood"/>
             <log spec='beast.evolution.tree.TreeHeightLogger' tree='@tree'/>
             <log idref="hky.kappa"/>
+            <log idref="hky.frequencies"/>
             <log idref="posterior"/>
         </logger>
     </run>
