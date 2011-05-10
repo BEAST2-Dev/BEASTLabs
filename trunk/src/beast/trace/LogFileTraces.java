@@ -199,7 +199,7 @@ public class LogFileTraces {
     public TraceStatistics analyseTrace(int index) {
         int start = (getBurnIn() / getStepSize());
 
-        List<Double> values = valuesList.get(index).subList(start, getStateCount());
+        List<Double> values = valuesList.get(index).subList(start, valuesList.get(index).size());
         double[] doubleValues = new double[values.size()];
         for (int i = 0; i < values.size(); i++) {
             doubleValues[i] = values.get(i);

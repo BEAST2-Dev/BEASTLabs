@@ -68,7 +68,7 @@
     <input spec='beast.core.parameter.RealParameter' id="popSize">1.0</input>
 
 
-    <run spec="MCMC" id="mcmc" chainLength="1000000"> <!--autoOptimize="true"-->
+    <run spec="MCMC" id="mcmc" chainLength="10000000"> <!--autoOptimize="true"-->
         <state>
             <input name='stateNode' idref='hky.kappa'/>
             <input name='stateNode' idref='popSize'/>
@@ -121,7 +121,7 @@
             <tree idref="tree"/>
         </operator>
 
-        <logger logEvery="10000" fileName="test.$(seed).log">
+        <logger logEvery="1000" fileName="test.$(seed).log">
 	    <model idref='posterior'/>
             <log idref="coalescent"/>
             <log idref="likelihood"/>
@@ -133,7 +133,7 @@
             <log idref="indicators"/>
             <log idref="posterior"/>
         </logger>
-        <logger logEvery="10000" fileName="test.$(seed).trees">
+        <logger logEvery="1000" fileName="test.$(seed).trees">
             <log idref="tree"/>
         </logger>
         <logger logEvery="10000">

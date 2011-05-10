@@ -42,7 +42,8 @@ public class LogAnalyser extends Runnable {
     public Input<String> m_sFileName =
             new Input<String>("fileName", "Name of the log file to be analysed", Validate.REQUIRED);
     public Input<Integer> m_iBurnIn =
-            new Input<Integer>("burnIn", "Number of burn in samples taken before log statistics analysis", 0);
+            new Input<Integer>("burnIn", "Number of burn in samples taken before log statistics analysis. " +
+                    "If burnIn = -1 then burnIn = 0.1 * maxState.", -1);
     public Input<Boolean> m_bDisplayStat =
             new Input<Boolean>("displayStatistics", "Display a brief statistics result", true);
     public Input<Boolean> m_bDisplayAll =
@@ -88,7 +89,7 @@ public class LogAnalyser extends Runnable {
 
     @Override
     public void run() throws Exception {
-        LogFileTraces traces = readLog(m_sFileName.get(), m_iBurnIn.get());
+        LogFileTraces traces = readLog(m_sFileName.get(), m_iBurnIn.get()); // if burnIn = -1 then burnIn = 0.1 * maxState
         analyseLog(traces);
     }
 
