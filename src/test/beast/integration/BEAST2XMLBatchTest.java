@@ -19,7 +19,7 @@ public class BEAST2XMLBatchTest extends TestCase {
     final static long SEED = 127;
 
     final static String[] XML_FILES = new String[]{"testHKY.xml", "testStrictClock.xml", "testStrictClock2.xml", "testRelaxedClock.xml",
-            "testRandomLocalClock.xml", "testCoalescent.xml", "testCoalescent1.xml", "testTipDates.xml"};//, "testExponentialGrowth.xml", "testYuleOneSite.xml"};
+            "testRandomLocalClock.xml", "testCoalescentUnit.xml", "testCoalescent.xml", "testCoalescent1.xml", "testTipDates.xml"};//, "testExponentialGrowth.xml", "testYuleOneSite.xml"};
 
 
     private List<Expectation> giveExpectations(int index_XML) throws Exception {
@@ -83,14 +83,14 @@ public class BEAST2XMLBatchTest extends TestCase {
                 addExpIntoList(expList, "posterior", -1807.8411097015971);
                 break;
 
-            case 5: // testCoalescent.xml
+            case 5: // testCoalescentUnit.xml
                 addExpIntoList(expList, "tree.height", 15000.0);
                 addExpIntoList(expList, "popSize", 10000.0);
 //                addExpIntoList(expList, "coalescent", -30.6);
 //                addExpIntoList(expList, "posterior", -30.6);
                 break;
 
-            case 6: // testCoalescent1.xml
+            case 6: // testCoalescent.xml
                 addExpIntoList(expList, "treeLikelihood", -1816.733153794347);
                 addExpIntoList(expList, "tree.height", 0.06356593871883662);
                 addExpIntoList(expList, "coalescent", 6.96172944685552);
@@ -103,7 +103,20 @@ public class BEAST2XMLBatchTest extends TestCase {
                 addExpIntoList(expList, "posterior", -1809.7714243475011);
                 break;
 
-            case 7: // testTipDates.xml
+            case 7: // testCoalescent1.xml
+                addExpIntoList(expList, "treeLikelihood", -1816.733153794347);
+                addExpIntoList(expList, "tree.height", 0.06356593871883662);
+                addExpIntoList(expList, "coalescent", 6.96172944685552);
+                addExpIntoList(expList, "popSize", 0.13117988457760046);
+                addExpIntoList(expList, "hky.kappa", 32.85365877899093);
+                addExpIntoList(expList, "hky.frequencies0", 0.3260530610729557);
+                addExpIntoList(expList, "hky.frequencies1", 0.25687182798090596);
+                addExpIntoList(expList, "hky.frequencies2", 0.15496948041859962);
+                addExpIntoList(expList, "hky.frequencies3", 0.26210563052754);
+                addExpIntoList(expList, "posterior", -1809.7714243475011);
+                break;
+
+            case 8: // testTipDates.xml
                 addExpIntoList(expList, "treeLikelihood", -15000.435271635279);
                 addExpIntoList(expList, "tree.height", 38.6109296447932);
                 addExpIntoList(expList, "hky.kappa", 2179.425239015365);
@@ -145,7 +158,7 @@ public class BEAST2XMLBatchTest extends TestCase {
     @Test
     public void testBESAT2XmlsAnalyseLog() throws Exception {
 
-        for (int i = 6; i < 7; i++) {
+        for (int i = 0; i < 8; i++) {
             if (giveExpectations(i).size() > 0) {
                 Randomizer.setSeed(SEED);
                 Logger.FILE_MODE = Logger.FILE_OVERWRITE;
@@ -171,7 +184,7 @@ public class BEAST2XMLBatchTest extends TestCase {
                             + " +/- " + expectation.getStdError(), expectation.isPassed());
 
                     assertTrue(XML_FILES[i] + ":  has very low effective sample sizes (ESS) "
-                                + expectation.getTraceStatistics().getESS(), expectation.isValid());
+                            + expectation.getTraceStatistics().getESS(), expectation.isValid());
                 }
 
                 System.out.println("\nSucceed " + sFileName);
