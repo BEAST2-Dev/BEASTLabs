@@ -100,7 +100,7 @@ public class TreeLikelihood extends Distribution {
     boolean m_bAscertainedSitePatterns = false;
 
     /** dealing with proportion of site being invariant **/
-    double m_fProportianInvariant = 0;
+    double m_fProportionInvariant = 0;
     List<Integer> m_iConstantPattern = null;
     
     @Override
@@ -128,14 +128,17 @@ public class TreeLikelihood extends Distribution {
         	//m_likelihoodCore = new BeerLikelihoodCore4();
         	//m_likelihoodCore = new BeerLikelihoodCoreCnG4();
         	m_likelihoodCore = new BeerLikelihoodCoreCnG(4);
-            //m_likelihoodCore = new BeerLikelihoodCoreJava4();
+            m_likelihoodCore = new BeerLikelihoodCoreJava4();
         	//m_likelihoodCore = new BeerLikelihoodCoreNative(4);
             m_likelihoodCore = new BeerLikelihoodCoreSimple4();
         } else {
             //m_likelihoodCore = new BeerLikelihoodCore(nStateCount);
             m_likelihoodCore = new BeerLikelihoodCoreCnG(nStateCount);
             m_likelihoodCore = new BeerLikelihoodCoreSimple(nStateCount);
+            //m_likelihoodCore = new BeerLikelihoodCoreJava(nStateCount);
         }
+        //m_likelihoodCore = new BeerLikelihoodCoreSimpleNative(nStateCount);
+        //m_likelihoodCore = new BeerLikelihoodCoreSimpleGPU(nStateCount);
         System.err.println("TreeLikelihood uses " + m_likelihoodCore.getClass().getName());
         int nPatterns = m_data.get().getPatternCount();
         initCore(nNodeCount, nPatterns, nStateCount);
@@ -193,7 +196,7 @@ public class TreeLikelihood extends Distribution {
                 nNodeCount,
                 m_data.get().getPatternCount(),
                 m_siteModel.getCategoryCount(),
-                true
+                true, m_useAmbiguities.get()
         );
 
         int extNodeCount = nNodeCount / 2 + 1;
@@ -209,10 +212,10 @@ public class TreeLikelihood extends Distribution {
             m_likelihoodCore.createNodePartials(extNodeCount + i);
         }
         
-        m_fProportianInvariant = m_siteModel.getProportianInvariant();
-        if (m_fProportianInvariant > 0) {
+        m_fProportionInvariant = m_siteModel.getProportianInvariant();
+        if (m_fProportionInvariant > 0 && m_siteModel.m_bPropInvariantIsCategory == false) {
         	int [] iConstantPattern = calcConstantPatternIndices(nPatterns, nStateCount);
-            m_likelihoodCore.setProportionInvariant(m_fProportianInvariant, iConstantPattern);
+            m_likelihoodCore.setProportionInvariant(m_fProportionInvariant, iConstantPattern);
         }
         m_likelihoodCore.setPatternWeights(m_data.get().getWeights());
     }
@@ -302,6 +305,7 @@ public class TreeLikelihood extends Distribution {
     }
 
     private void calcLogP() throws Exception {
+        //m_likelihoodCore.getPatternLogLikelihoods(m_fPatternLogLikelihoods);
         if (m_bAscertainedSitePatterns) {
             logP = 0.0;
             m_likelihoodCore.getPatternLogLikelihoods(m_fPatternLogLikelihoods);
@@ -453,5 +457,8 @@ public class TreeLikelihood extends Distribution {
     public List<String> getConditions() {
         return m_siteModel.getConditions();
     }
-    
+
+    public void finalize() {
+    	try {m_likelihoodCore.finalize();} catch (Throwable e) {}
+    }
 } // class TreeLikelihood

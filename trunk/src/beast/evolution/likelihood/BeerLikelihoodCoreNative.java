@@ -51,12 +51,12 @@ public class BeerLikelihoodCoreNative extends LikelihoodCore {
     } // c'tor
 
 	@Override
-	public void initialize(int nNodeCount, int nPatternCount, int nMatrixCount, boolean bIntegrateCategories) {
+	public boolean initialize(int nNodeCount, int nPatternCount, int nMatrixCount, boolean bIntegrateCategories, boolean bUseAmbiguities) {
 		m_nPatterns = nPatternCount;
 		m_nNodes = nNodeCount;
-		initializeC(m_pBEER, nNodeCount, nPatternCount, nMatrixCount, bIntegrateCategories);
+		return initializeC(m_pBEER, nNodeCount, nPatternCount, nMatrixCount, bIntegrateCategories);
 	}
-	native void initializeC(long pBeer, int nNodeCount, int nPatternCount, int nMatrixCount, boolean bIntegrateCategories);
+	native boolean initializeC(long pBeer, int nNodeCount, int nPatternCount, int nMatrixCount, boolean bIntegrateCategories);
 
 	@Override
 	public void finalize() throws Throwable {
