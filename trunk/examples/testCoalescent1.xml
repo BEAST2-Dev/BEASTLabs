@@ -91,26 +91,26 @@ taxa='@alignment'/>
 
         <logger logEvery="1000" fileName="test.$(seed).log">
    	        <model idref='posterior'/>
-            <log idref="coalescent"/>
-            <log idref="likelihood"/>
+            <log idref="posterior"/>
             <log spec='beast.evolution.tree.TreeHeightLogger' tree='@tree'/>
             <log idref="popSize"/>
             <log idref="hky.kappa"/>
             <log idref="hky.frequencies"/>
-            <log idref="posterior"/>
+            <log idref="likelihood"/>
+            <log idref="coalescent"/>                                                       
         </logger>
         <logger logEvery="1000" fileName="test.$(seed).trees">
             <log idref="tree"/>
         </logger>
         <logger logEvery="100000">
 	        <model idref='posterior'/>
-            <log idref="coalescent"/>
-            <log idref="popSize"/>
-            <log idref="likelihood"/>
+            <log idref="posterior"/>
             <log spec='beast.evolution.tree.TreeHeightLogger' tree='@tree'/>
+            <log idref="popSize"/>
             <log idref="hky.kappa"/>
             <log idref="hky.frequencies"/>
-            <log idref="posterior"/>
+            <log idref="likelihood"/>
+            <log idref="coalescent"/>   
         </logger>
     </run>
 
