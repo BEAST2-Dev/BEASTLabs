@@ -31,9 +31,6 @@
 
 package beast.evolution.likelihood;
 
-import java.util.List;
-
-import beast.evolution.alignment.AscertainedAlignment;
 import beast.evolution.sitemodel.SiteModel;
 
 
@@ -61,7 +58,7 @@ public class BeerLikelihoodCoreSimple extends LikelihoodCore {
     protected int[] m_iStoredPartials;  // # nodes
 
     // used to store/restore state
-	int [] m_iCurrentStates;
+	//int [] m_iCurrentStates;
 	int [] m_iStoredStates;
 
 	/** one number to scale them all */
@@ -444,7 +441,7 @@ public class BeerLikelihoodCoreSimple extends LikelihoodCore {
      * @param bIntegrateCategories whether sites are being integrated over all matrices
      */
     @Override
-    public void initialize(int nNodeCount, int nPatternCount, int nMatrixCount, boolean bIntegrateCategories) {
+    public boolean initialize(int nNodeCount, int nPatternCount, int nMatrixCount, boolean bIntegrateCategories, boolean bUseAmbiguities) {
 
         this.m_nNodes = nNodeCount;
         this.m_nPatterns = nPatternCount;
@@ -466,7 +463,7 @@ public class BeerLikelihoodCoreSimple extends LikelihoodCore {
         m_iCurrentPartials = new int[nNodeCount];
         m_iStoredPartials = new int[nNodeCount];
 
-        m_iCurrentStates = new int[nNodeCount];
+        //m_iCurrentStates = new int[nNodeCount];
         m_iStoredStates = new int[nNodeCount];
 
         m_iStates = new int[nNodeCount][];
@@ -478,7 +475,8 @@ public class BeerLikelihoodCoreSimple extends LikelihoodCore {
             m_iStates[i] = null;
         }
 
-        m_nMatrixSize = (m_nStates+1) * (m_nStates+1);
+        //m_nMatrixSize = (m_nStates+1) * (m_nStates+1);
+        m_nMatrixSize = m_nStates * m_nStates;
 
         m_fMatrices = new double[2][nNodeCount][nMatrixCount * m_nMatrixSize];
         
@@ -491,7 +489,7 @@ public class BeerLikelihoodCoreSimple extends LikelihoodCore {
         m_fRootPartials = new double[m_nPatterns * m_nStates];
         m_fPatternLogLikelihoods = new double[m_nPatterns];
         m_nPatternWeights  = new int[m_nPatterns];
-    
+        return true;
     }
 
     /**
@@ -510,6 +508,9 @@ public class BeerLikelihoodCoreSimple extends LikelihoodCore {
         m_fMatrices = null;
         m_iCurrentMatrices = null;
         m_iStoredMatrices = null;
+        m_fRootPartials = null;
+        m_fPatternLogLikelihoods = null;
+        m_nPatternWeights  = null;
     }
 
     /**
@@ -572,11 +573,6 @@ public class BeerLikelihoodCoreSimple extends LikelihoodCore {
                 iMatrixIndex * m_nMatrixSize, m_nMatrixSize);
     }
 
-//    @Override
-//    public void setPaddedNodeMatrices(int iNode, double[] fMatrix) {
-//        System.arraycopy(fMatrix, 0, m_fMatrices[m_iCurrentMatrices[iNode]][iNode],
-//                0, m_nMatrices * m_nMatrixSize);
-//    }
 
     @Override
     public void setNodePartialsForUpdate(int iNode) {
@@ -586,7 +582,7 @@ public class BeerLikelihoodCoreSimple extends LikelihoodCore {
     
     @Override
     public void setNodeStatesForUpdate(int iNode) {
-    	m_iCurrentStates[iNode] = 1 - m_iCurrentStates[iNode];
+    	//m_iCurrentStates[iNode] = 1 - m_iCurrentStates[iNode];
     }
 
 
@@ -636,14 +632,14 @@ public class BeerLikelihoodCoreSimple extends LikelihoodCore {
     public void store() {
         System.arraycopy(m_iCurrentMatrices, 0, m_iStoredMatrices, 0, m_nNodes);
         System.arraycopy(m_iCurrentPartials, 0, m_iStoredPartials, 0, m_nNodes);
-        System.arraycopy(m_iCurrentStates, 0, m_iStoredStates, 0, m_nNodes);
+        //System.arraycopy(m_iCurrentStates, 0, m_iStoredStates, 0, m_nNodes);
     }
     
     @Override
     public void unstore() {
         System.arraycopy(m_iStoredMatrices, 0, m_iCurrentMatrices, 0, m_nNodes);
         System.arraycopy(m_iStoredPartials, 0, m_iCurrentPartials, 0, m_nNodes);
-        System.arraycopy(m_iStoredStates, 0, m_iCurrentStates, 0, m_nNodes);
+        //System.arraycopy(m_iStoredStates, 0, m_iCurrentStates, 0, m_nNodes);
     }
 
     /**
@@ -660,9 +656,9 @@ public class BeerLikelihoodCoreSimple extends LikelihoodCore {
         m_iCurrentPartials = m_iStoredPartials;
         m_iStoredPartials = iTmp2;
 
-        int[] iTmp3 = m_iCurrentStates;
-        m_iCurrentStates= m_iStoredStates;
-        m_iStoredStates = iTmp3;
+//        int[] iTmp3 = m_iCurrentStates;
+//        m_iCurrentStates= m_iStoredStates;
+//        m_iStoredStates = iTmp3;
     }
 
 	@Override
@@ -676,10 +672,11 @@ public class BeerLikelihoodCoreSimple extends LikelihoodCore {
 	public double calcLogP(int iNode, double[] fProportions, double[] fFrequencies) {
 		integratePartials(iNode, fProportions, m_fRootPartials);
 
-		if (m_iConstantPattern != null && !SiteModel.g_bUseOriginal) {
+		if (m_iConstantPattern != null) {
         	// some portion of sites is invariant, so adjust root partials for this
         	for (int i : m_iConstantPattern) {
     			m_fRootPartials[i] += m_fProportianInvariant;
+        		System.err.println(i + " " + m_fProportianInvariant + " " + m_fRootPartials[i]);
         	}
         }
 

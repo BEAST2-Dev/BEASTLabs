@@ -416,7 +416,7 @@ public class BeerLikelihoodCoreJava extends LikelihoodCore {
      * @param nMatrixCount         the number of matrices (i.e., number of categories)
      * @param bIntegrateCategories whether sites are being integrated over all matrices
      */
-    public void initialize(int nNodeCount, int nPatternCount, int nMatrixCount, boolean bIntegrateCategories) {
+    public boolean initialize(int nNodeCount, int nPatternCount, int nMatrixCount, boolean bIntegrateCategories, boolean bUseAmbiguities) {
 
         this.m_nNodes = nNodeCount;
         this.m_nPatterns = nPatternCount;
@@ -455,6 +455,7 @@ public class BeerLikelihoodCoreJava extends LikelihoodCore {
         m_fPatternLogLikelihoods = new double[m_nPatterns];
         m_nPatternWeights  = new int[m_nPatterns];
         
+        return true;
     }
 
     /**
@@ -921,7 +922,7 @@ public class BeerLikelihoodCoreJava extends LikelihoodCore {
 	public double calcLogP(int iNode, double[] fProportions, double[] fFrequencies) {
 		integratePartials(iNode, fProportions, m_fRootPartials);
 
-		if (m_iConstantPattern != null && !SiteModel.g_bUseOriginal) {
+		if (m_iConstantPattern != null) {
         	// some portion of sites is invariant, so adjust root partials for this
         	for (int i : m_iConstantPattern) {
     			m_fRootPartials[i] += m_fProportianInvariant;

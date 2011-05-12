@@ -45,8 +45,10 @@ package beast.evolution.likelihood;
 abstract public class LikelihoodCore {
 
 	/** reserve memory for partials, indices and other 
-	 * data structures required by the core **/
-	abstract public void initialize(int nNodeCount, int nPatternCount, int nMatrixCount, boolean bIntegrateCategories);
+	 * data structures required by the core 
+	 * @param bUseAmbiguities TODO
+	 * @return TODO**/
+	abstract public boolean initialize(int nNodeCount, int nPatternCount, int nMatrixCount, boolean bIntegrateCategories, boolean bUseAmbiguities);
 	
 	/** clean up after last likelihood calculation, if at all required **/
 	abstract public void finalize() throws java.lang.Throwable;
