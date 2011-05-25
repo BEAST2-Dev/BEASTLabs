@@ -1,7 +1,6 @@
 package beast.evolution.tree;
 
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
@@ -12,6 +11,7 @@ import beast.core.Input;
 import beast.core.State;
 import beast.core.Input.Validate;
 import beast.core.parameter.RealParameter;
+import beast.evolution.alignment.Taxon;
 import beast.evolution.alignment.TaxonSet;
 import beast.math.distributions.Gamma;
 
@@ -31,7 +31,8 @@ public class SpeciesTreePrior extends Distribution {
 	public Input<RealParameter> m_gammaParameter = new Input<RealParameter>("gammaParameter","shape parameter of the gamma distribution", Validate.REQUIRED);
 
 	public Input<RealParameter> m_rootHeightParameter = new Input<RealParameter>("rootBranchHeight","height of the node above the root, representing the root branch", Validate.REQUIRED);
-	public Input<List<TaxonSet>> m_taxonSet = new Input<List<TaxonSet>>("taxonset", "set of taxa mapping lineages to species", new ArrayList<TaxonSet>(), Validate.REQUIRED);
+	/** m_taxonSet is used by GeneTreeForSpeciesTreeDistribution **/
+	public Input<TaxonSet> m_taxonSet = new Input<TaxonSet>("taxonset", "set of taxa mapping lineages to species", Validate.REQUIRED);
 	
 	
 	PopSizeFunction m_popFunction;
@@ -63,16 +64,22 @@ public class SpeciesTreePrior extends Distribution {
 
 		// bottom prior = Gamma(2,Psi)
 		m_gamma2Prior = new Gamma();
-		m_gamma2Prior.m_beta.setValue(m_gammaParameter, m_gamma2Prior);
+		m_gamma2Prior.m_beta.setValue(m_gammaParameter.get(), m_gamma2Prior);
 
 		// top prior = Gamma(4,Psi)
 		m_gamma4Prior = new Gamma();
 		RealParameter parameter = new RealParameter(new Double[]{4.0});
 		m_gamma4Prior.m_alpha.setValue(parameter, m_gamma4Prior);
-		m_gamma4Prior.m_beta.setValue(m_gammaParameter, m_gamma4Prior);
+		m_gamma4Prior.m_beta.setValue(m_gammaParameter.get(), m_gamma4Prior);
 		
 		if (m_popFunction != PopSizeFunction.constant && m_gamma4Prior == null) {
 			throw new Exception("Top prior must be specified when population function is not constant");
+		}
+		// make sure the m_taxonSet is a set of taxonsets
+		for (Taxon taxon : m_taxonSet.get().m_taxonset.get()) {
+			if (!(taxon instanceof TaxonSet)) {
+				throw new Exception("taxonset should be sets of taxa only, not individual taxons");
+			}
 		}
 	}	
 	
