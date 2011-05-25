@@ -59,7 +59,7 @@ public class GeneTreeForSpeciesTreeDistribution extends Distribution {
 		for (int i = 0; i < nLineages; i++) {
 			String sSpeciesID = getSetID(nodes[i].getID());
 			if (sSpeciesID == null) {
-				throw new Exception("Cannot find species for lineage taxon " + nodes[i].getID());
+				throw new Exception("Cannot find species for lineage " + nodes[i].getID());
 			}
 			for (int iSpecies = 0; iSpecies < nSpecies; iSpecies++) {
 				if (sSpeciesID.equals(nodes2[iSpecies].getID())) {
@@ -88,9 +88,9 @@ public class GeneTreeForSpeciesTreeDistribution extends Distribution {
 
 	/** find species ID to which the lineage ID belongs according to the TaxonSets **/
 	String getSetID(String sLineageID) {
-		List<TaxonSet> taxonSets = m_popInfo.get().m_taxonSet.get();
-		for (TaxonSet taxonSet : taxonSets) {
-			List<Taxon> taxa = taxonSet.m_taxonset.get();
+		List<Taxon> taxonSets = m_popInfo.get().m_taxonSet.get().m_taxonset.get();
+		for (Taxon taxonSet : taxonSets) {
+			List<Taxon> taxa = ((TaxonSet) taxonSet).m_taxonset.get();
 			for (int i = 0; i < taxa.size(); i++) {
 				if (taxa.get(i).getID().equals(sLineageID)) {
 					return taxonSet.getID();
