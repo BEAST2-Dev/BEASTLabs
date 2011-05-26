@@ -108,6 +108,12 @@
 
     <distribution id="posterior" spec="util.CompoundDistribution">
         <distribution id="prior" spec="util.CompoundDistribution">
+            <distribution id='SpeciesTreePrior' spec='SpeciesTreePrior' speciesTree='@speciesTree' 
+            		popFunction='constant' taxonset='@taxonsuperset'>
+                <bottomPopSize spec='parameter.RealParameter' id='popSize' value='1'/> 
+                <parameter name='gammaParameter' id='psi' value='1'/>
+                <parameter name='rootBranchHeight' id='speciesTreeRootBranchHeight' value='1'/>
+            </distribution>
 <!--
             <distribution id="coalescent" spec="Coalescent">
                 <populationModel id="ConstantPopulation" popSize="@popSize" spec="ConstantPopulation"/>
@@ -120,19 +126,13 @@
             <distribution id="kappa.prior29" spec="beast.math.distributions.Prior" x="@hky.kappa29">
                 <distribution id="OneOnX29" offset="0.0" spec="beast.math.distributions.OneOnX"/>
             </distribution>
-            <distribution id='SpeciesTreePrior' spec='SpeciesTreePrior' speciesTree='@speciesTree' 
-            		popFunction='constant' taxonset='@taxonsuperset'>
-                <parameter name='bottomPopSize' id='popSize' value='1'/> 
-                <parameter name='gammaParameter' id='psi' value='1'/>
-                <parameter name='rootBranchHeight' id='speciesTreeRootBranchHeight' value='1'/>
-            </distribution>
 
             <distribution id='tree.prior.26' spec='GeneTreeForSpeciesTreeDistribution' geneTree='@tree26' speciesTree='@speciesTree' speciesTreePrior='@SpeciesTreePrior'/>
             <distribution id='tree.prior.29' spec='GeneTreeForSpeciesTreeDistribution' geneTree='@tree29' speciesTree='@speciesTree' speciesTreePrior='@SpeciesTreePrior'/>
         </distribution>
         <distribution id="likelihood" spec="util.CompoundDistribution">
             <distribution data="@26" id="261" spec="TreeLikelihood" tree="@tree26" useAmbiguities="false">
-                <siteModel gammaCategoryCount="0" id="siteModel26" mutationRate="@mutationRate" proportionInvariant="@proportionInvariant" shape="@gammaShape" spec="SiteModel">
+                <siteModel gammaCategoryCount="1" id="siteModel26" mutationRate="@mutationRate" proportionInvariant="@proportionInvariant" shape="@gammaShape" spec="SiteModel">
                     <substModel id="hky26" kappa="@hky.kappa26" spec="HKY">
                         <frequencies data="@26" estimate="true" id="freqs26" spec="Frequencies"/>
                     </substModel>
@@ -140,7 +140,7 @@
                 <branchRateModel clock.rate="@clockRate" id="StrictClockModel26" spec="beast.evolution.branchratemodel.StrictClockModel"/>
             </distribution>
             <distribution data="@29" id="291" spec="TreeLikelihood" tree="@tree29" useAmbiguities="false">
-                <siteModel gammaCategoryCount="0" id="siteModel29" mutationRate="@mutationRate" proportionInvariant="@proportionInvariant" shape="@gammaShape" spec="SiteModel">
+                <siteModel gammaCategoryCount="1" id="siteModel29" mutationRate="@mutationRate" proportionInvariant="@proportionInvariant" shape="@gammaShape" spec="SiteModel">
                     <substModel id="hky29" kappa="@hky.kappa29" spec="HKY">
                         <frequencies data="@29" estimate="true" id="freqs29" spec="Frequencies"/>
                     </substModel>
@@ -158,14 +158,14 @@
     </tree>
 
     <tree spec='beast.evolution.tree.RandomGeneTree' id='randomGeneTree1' 
-	initial='@tree26' speciesTree='@speciesTree' taxonset='@taxonsuperset'>
+	initial='@tree26' speciesTree='@speciesTree' taxa='@26'>
         <populationModel spec='ConstantPopulation'>
 		<popSize spec='parameter.RealParameter' value='1'/>
 	</populationModel>
     </tree>
     
     <tree spec='beast.evolution.tree.RandomGeneTree' id='randomGeneTree2' 
-	initial='@tree29' speciesTree='@speciesTree' taxonset='@taxonsuperset'>
+	initial='@tree29' speciesTree='@speciesTree' taxa='@29'>
         <populationModel spec='ConstantPopulation'>
 		<popSize spec='parameter.RealParameter' value='1'/>
 	</populationModel>
@@ -186,9 +186,9 @@
         <parameter dimension="1" estimate="false" id="hky.kappa26" lower="0.0" name="stateNode" value="1.0"/>
         <parameter dimension="1" estimate="false" id="hky.kappa29" lower="0.0" name="stateNode" value="1.0"/>
 
-        <stateNode idref='@popSize'/> 
-        <stateNode idref='@psi'/>
-        <stateNode idref='@speciesTreeRootBranchHeight'/>
+        <stateNode idref='popSize'/> 
+        <stateNode idref='psi'/>
+        <stateNode idref='speciesTreeRootBranchHeight'/>
 
         <tree estimate="true" id="tree26" name="stateNode"/>
         <tree estimate="true" id="tree29" name="stateNode"/>
@@ -218,7 +218,7 @@
     <operator id="WilsonBalding29" spec="WilsonBalding" tree="@tree29" weight="1.0"/>
     <operator id="Uniform29" spec="Uniform" tree="@tree29" weight="10.0"/>
 
-    <operator id="Reheight" spec="NodeReheight" tree="@speciesTree29" weight="30.0" taxonset='@taxonsuperset'>
+    <operator id="Reheight" spec="NodeReheight" tree="@speciesTree" weight="30.0" taxonset='@taxonsuperset'>
         <genetree idref='tree26'/>
         <genetree idref='tree29'/>
     </operator>
@@ -231,7 +231,7 @@
         <log id="TreeHeightLogger29" spec="beast.evolution.tree.TreeHeightLogger" tree="@tree29"/>
     </logger>
 
-    <logger id="Logger1" logEvery="10000" mode="autodetect" model="@posterior">
+    <logger id="Logger1" logEvery="1" mode="autodetect" model="@posterior">
         <log idref="likelihood"/>
         <log arg="@likelihood" id="ESS0" spec="util.ESS"/>
         <log idref="hky.kappa26"/>

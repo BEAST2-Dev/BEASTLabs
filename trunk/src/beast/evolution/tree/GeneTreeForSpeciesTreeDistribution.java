@@ -21,7 +21,7 @@ public class GeneTreeForSpeciesTreeDistribution extends Distribution {
 	public Input<Tree> m_speciesTree = new Input<Tree>("speciesTree", "species tree containing the associated gene tree", Validate.REQUIRED);
 	public Input<Tree> m_geneTree = new Input<Tree>("geneTree", "gene tree for which to calculate probability conditioned on the species tree", Validate.REQUIRED);
 
-	public Input<SpeciesTreePrior> m_popInfo = new Input<SpeciesTreePrior>("speciesTreePrior","defines population function and its parameters", Validate.REQUIRED);
+	public Input<SpeciesTreePrior> m_speciesTreePrior = new Input<SpeciesTreePrior>("speciesTreePrior","defines population function and its parameters", Validate.REQUIRED);
 	
 	// intervals for each of the species tree branches
 	PriorityQueue<Double> [] m_intervals;
@@ -63,7 +63,8 @@ public class GeneTreeForSpeciesTreeDistribution extends Distribution {
 			}
 			for (int iSpecies = 0; iSpecies < nSpecies; iSpecies++) {
 				if (sSpeciesID.equals(nodes2[iSpecies].getID())) {
-					m_nLineageToSpeciesMap[i] = iSpecies;	
+					m_nLineageToSpeciesMap[i] = iSpecies;
+					break;
 				}
 			}
 			if (m_nLineageToSpeciesMap[i] < 0) {
@@ -80,7 +81,7 @@ public class GeneTreeForSpeciesTreeDistribution extends Distribution {
 			}
 		}
 		
-		SpeciesTreePrior popInfo = m_popInfo.get();
+		SpeciesTreePrior popInfo = m_speciesTreePrior.get();
 		m_bIsConstantPopFunction = popInfo.m_popFunctionInput.get();
 		m_fPopSizesBottom = popInfo.m_popSizesBottom.get();
 		m_fPopSizesTop = popInfo.m_popSizesTop.get();
@@ -88,7 +89,8 @@ public class GeneTreeForSpeciesTreeDistribution extends Distribution {
 
 	/** find species ID to which the lineage ID belongs according to the TaxonSets **/
 	String getSetID(String sLineageID) {
-		List<Taxon> taxonSets = m_popInfo.get().m_taxonSet.get().m_taxonset.get();
+		TaxonSet taxonSuperset = m_speciesTreePrior.get().m_taxonSet.get(); 
+		List<Taxon> taxonSets = taxonSuperset.m_taxonset.get();
 		for (Taxon taxonSet : taxonSets) {
 			List<Taxon> taxa = ((TaxonSet) taxonSet).m_taxonset.get();
 			for (int i = 0; i < taxa.size(); i++) {
@@ -132,7 +134,11 @@ public class GeneTreeForSpeciesTreeDistribution extends Distribution {
 		for (int i = 1; i <= k; i++) {
 			fTimes[i] = m_intervals[iNode].poll();
 		}
-		fTimes[k+1] = node.getParent().getHeight(); 
+		if (!node.isRoot()) {
+			fTimes[k+1] = node.getParent().getHeight(); 
+		} else {
+			fTimes[k+1] = Math.max(node.getHeight(), m_geneTree.get().getRoot().getHeight());
+		}
 		
 		switch (m_bIsConstantPopFunction) {
 		case constant:
@@ -202,13 +208,13 @@ public class GeneTreeForSpeciesTreeDistribution extends Distribution {
 			double fHeight = node.getHeight();
 			
 			if (nSpeciesLeft != nSpeciesRight) {
-				while (fHeight > speciesNodes[nSpeciesLeft].getHeight()) {
+				while (!speciesNodes[nSpeciesLeft].isRoot() && fHeight > speciesNodes[nSpeciesLeft].getHeight()) {
 					nSpeciesLeft =  speciesNodes[nSpeciesLeft].getParent().getNr();
 					m_nLineages[nSpeciesLeft]++;
 				}
 				m_intervals[nSpeciesLeft].add(node.getHeight());
 			}
-			while (fHeight > speciesNodes[nSpeciesRight].getHeight()) {
+			while (!speciesNodes[nSpeciesRight].isRoot() && fHeight > speciesNodes[nSpeciesRight].getHeight()) {
 				nSpeciesRight =  speciesNodes[nSpeciesRight].getParent().getNr();
 				m_nLineages[nSpeciesRight]++;
 			}
