@@ -115,7 +115,7 @@ public class GeneTreeForSpeciesTreeDistribution extends Distribution {
 		if (logP == 0) {
 			traverseSpeciesTree(m_speciesTree.get().getRoot());
 		}
-		return 0; 
+		return logP; 
 	}
 	
 	/** calculate contribution to logP for each of the branches of the species tree **/
