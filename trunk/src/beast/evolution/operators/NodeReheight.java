@@ -77,16 +77,32 @@ public class NodeReheight extends TreeOperator {
 		collectHeights(tree.getRoot(), fHeights, iReverseOrder, 0);
 		// change height of an internal node
 		int iNode = Randomizer.nextInt(fHeights.length);
-		while (m_nodes[iNode].isLeaf()) {
+		while (m_nodes[iReverseOrder[iNode]].isLeaf()) {
 			iNode = Randomizer.nextInt(fHeights.length);
 		}
 		double fMaxHeight = calcMaxHeight(iReverseOrder, iNode);
 		fHeights[iNode] = Randomizer.nextDouble() * fMaxHeight;
 		m_nodes[iReverseOrder[iNode]].setHeight(fHeights[iNode]);
 		// reconstruct tree from heights
-		Node root = reconstructTree(fHeights, iReverseOrder);
+		Node root = reconstructTree(fHeights, iReverseOrder, 0, fHeights.length, new boolean[fHeights.length]);
+		
+		if (!checkConsistency(root, new boolean[fHeights.length])) {
+			System.err.println("Inconsisten tree");
+		}
+		root.setParent(null);
 		tree.setRoot(root);
 		return 0;
+	}
+
+	private boolean checkConsistency(Node node, boolean[] bUsed) {
+		if (bUsed[node.getNr()]) {
+			return false;
+		}
+		bUsed[node.getNr()] = true;
+		if (!node.isLeaf()) {
+			return checkConsistency(node.m_left, bUsed) && checkConsistency(node.m_right, bUsed);
+		}
+		return true;
 	}
 
 	/** calculate maximum height that node iNode can become restricted
@@ -170,27 +186,68 @@ public class NodeReheight extends TreeOperator {
 	}
 
 	/** construct tree top down by joining heighest left and right nodes **/
-	private Node reconstructTree(double[] fHeights, int [] iReverseOrder) {
-		int iNode = maxIndex(fHeights, 0, fHeights.length);
-		Node root = m_nodes[iReverseOrder[iNode]];
-		Node node = root;
-		for (int i  = 0; i < fHeights.length; i++) {
-			int iLeft = maxIndex(fHeights, 0, iNode);
-			int iRight = maxIndex(fHeights, iNode+1, fHeights.length);
-			node.m_left = m_nodes[iReverseOrder[iLeft]];
-			node.m_left.setParent(node);
-			node.m_right = m_nodes[iReverseOrder[iRight]];
-			node.m_right.setParent(node);
-			fHeights[iNode] = Double.NEGATIVE_INFINITY;
+
+
+	private Node reconstructTree(double[] fHeights, int [] iReverseOrder, int iFrom, int iTo, boolean [] bHasParent) {
+		//iNode = maxIndex(fHeights, 0, fHeights.length);
+		int iNode = -1;
+		double fMax = Double.NEGATIVE_INFINITY;
+		for (int j = iFrom; j < iTo; j++) {
+			if (fMax < fHeights[j] && !m_nodes[iReverseOrder[j]].isLeaf()) {
+				fMax = fHeights[j];
+				iNode = j;
+			}
 		}
-		return root;
+		if (iNode < 0) {
+			return null;
+		}
+		Node node = m_nodes[iReverseOrder[iNode]];
+
+		//int iLeft = maxIndex(fHeights, 0, iNode);
+		int iLeft = -1;
+		fMax = Double.NEGATIVE_INFINITY;
+		for (int j = iFrom; j < iNode; j++) {
+			if (fMax < fHeights[j] && !bHasParent[j]) {
+				fMax = fHeights[j];
+				iLeft = j;
+			}
+		}
+		
+		//int iRight = maxIndex(fHeights, iNode+1, fHeights.length);
+		int iRight = -1;
+		fMax = Double.NEGATIVE_INFINITY;
+		for (int j = iNode+1; j < iTo; j++) {
+			if (fMax < fHeights[j] && !bHasParent[j]) {
+				fMax = fHeights[j];
+				iRight = j;
+			}
+		}
+
+		node.m_left = m_nodes[iReverseOrder[iLeft]];
+		node.m_left.setParent(node);
+		node.m_right = m_nodes[iReverseOrder[iRight]];
+		node.m_right.setParent(node);
+		if (node.m_left.isLeaf()) {
+			fHeights[iLeft] = Double.NEGATIVE_INFINITY;
+		}
+		if (node.m_right.isLeaf()) {
+			fHeights[iRight] = Double.NEGATIVE_INFINITY;
+		}
+		bHasParent[iLeft] = true;
+		bHasParent[iRight] = true;
+		fHeights[iNode] = Double.NEGATIVE_INFINITY;
+
+		
+		reconstructTree(fHeights, iReverseOrder, iFrom, iNode, bHasParent);
+		reconstructTree(fHeights, iReverseOrder, iNode, iTo, bHasParent);
+		return node;
 	}
 	
 	// helper for reconstructTree, to find maximum in range 
 	private int maxIndex(double[] fHeights, int iFrom, int iTo) {
-		int iMax = iFrom;
-		double fMax = fHeights[iFrom];
-		for (int i = iFrom+1; i < iTo; i++) {
+		int iMax = -1;
+		double fMax = Double.NEGATIVE_INFINITY;
+		for (int i = iFrom; i < iTo; i++) {
 			if (fMax < fHeights[i]) {
 				fMax = fHeights[i];
 				iMax = i;

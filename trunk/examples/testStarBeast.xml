@@ -108,6 +108,8 @@
 
     <distribution id="posterior" spec="util.CompoundDistribution">
         <distribution id="prior" spec="util.CompoundDistribution">
+            <distribution id='tree.prior.29' spec='GeneTreeForSpeciesTreeDistribution' geneTree='@tree29' speciesTree='@speciesTree' speciesTreePrior='@SpeciesTreePrior'/>
+            <distribution id='tree.prior.26' spec='GeneTreeForSpeciesTreeDistribution' geneTree='@tree26' speciesTree='@speciesTree' speciesTreePrior='@SpeciesTreePrior'/>
             <distribution id='SpeciesTreePrior' spec='SpeciesTreePrior' speciesTree='@speciesTree' 
             		popFunction='constant' taxonset='@taxonsuperset'>
                 <bottomPopSize spec='parameter.RealParameter' id='popSize' value='1'/> 
@@ -127,8 +129,6 @@
                 <distribution id="OneOnX29" offset="0.0" spec="beast.math.distributions.OneOnX"/>
             </distribution>
 
-            <distribution id='tree.prior.26' spec='GeneTreeForSpeciesTreeDistribution' geneTree='@tree26' speciesTree='@speciesTree' speciesTreePrior='@SpeciesTreePrior'/>
-            <distribution id='tree.prior.29' spec='GeneTreeForSpeciesTreeDistribution' geneTree='@tree29' speciesTree='@speciesTree' speciesTreePrior='@SpeciesTreePrior'/>
         </distribution>
         <distribution id="likelihood" spec="util.CompoundDistribution">
             <distribution data="@26" id="261" spec="TreeLikelihood" tree="@tree26" useAmbiguities="false">
@@ -147,11 +147,12 @@
                 </siteModel>
                 <branchRateModel clock.rate="@clockRate" id="StrictClockModel29" spec="beast.evolution.branchratemodel.StrictClockModel"/>
             </distribution>
-
         </distribution>
     </distribution>
 
-    <tree spec='beast.evolution.tree.RandomTree' id='randomSpeciesTree' initial='@speciesTree' taxonset='@taxonsuperset'>
+    <tree spec='beast.evolution.tree.RandomSpeciesTree' id='randomSpeciesTree' initial='@speciesTree'
+        rootBranchHeight='@speciesTreeRootBranchHeight'
+        taxonset='@taxonsuperset'>
         <populationModel spec='ConstantPopulation'>
 		<popSize spec='parameter.RealParameter' value='1'/>
 	</populationModel>
@@ -224,20 +225,17 @@
     </operator>
 
     <logger fileName="$(seed).log" id="Logger0" logEvery="10000" mode="autodetect" model="@posterior">
+        <log idref="posterior"/>
+        <log idref="prior"/>
+        <log idref="SpeciesTreePrior"/>
+        <log idref="tree.prior.26"/>
+        <log idref="tree.prior.29"/>
         <log idref="likelihood"/>
         <log idref="hky.kappa26"/>
         <log idref="hky.kappa29"/>
-        <log id="TreeHeightLogger26" spec="beast.evolution.tree.TreeHeightLogger" tree="@tree26"/>
-        <log id="TreeHeightLogger29" spec="beast.evolution.tree.TreeHeightLogger" tree="@tree29"/>
-    </logger>
-
-    <logger id="Logger1" logEvery="1" mode="autodetect" model="@posterior">
-        <log idref="likelihood"/>
-        <log arg="@likelihood" id="ESS0" spec="util.ESS"/>
-        <log idref="hky.kappa26"/>
-        <log arg="@hky.kappa26" id="ESS.kappa26" spec="util.ESS"/>
-        <log idref="hky.kappa29"/>
-        <log arg="@hky.kappa29" id="ESS.kappa29" spec="util.ESS"/>
+        <log id="TreeHeightSP" spec="beast.evolution.tree.TreeHeightLogger" tree="@speciesTree"/>
+        <log id="TreeHeight26" spec="beast.evolution.tree.TreeHeightLogger" tree="@tree26"/>
+        <log id="TreeHeight29" spec="beast.evolution.tree.TreeHeightLogger" tree="@tree29"/>
     </logger>
 
     <logger fileName="$(seed).26.trees" id="Logger2" logEvery="10000" mode="autodetect">
@@ -246,6 +244,22 @@
 
     <logger fileName="$(seed).29.trees" id="Logger3" logEvery="10000" mode="autodetect">
         <log idref="tree29"/>
+    </logger>
+
+    <logger id="Logger1" logEvery="10000" mode="autodetect" model="@posterior">
+        <log idref="posterior"/>
+        <log idref="prior"/>
+        <log idref="SpeciesTreePrior"/>
+        <log idref="tree.prior.26"/>
+        <log idref="tree.prior.29"/>
+        <log idref="likelihood"/>
+        <log idref="hky.kappa26"/>
+        <log idref="hky.kappa29"/>
+<!--
+        <log arg="@likelihood" id="ESS0" spec="util.ESS"/>
+        <log arg="@hky.kappa26" id="ESS.kappa26" spec="util.ESS"/>
+        <log arg="@hky.kappa29" id="ESS.kappa29" spec="util.ESS"/>
+-->
     </logger>
 
 </run>
