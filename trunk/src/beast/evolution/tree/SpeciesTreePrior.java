@@ -30,7 +30,7 @@ public class SpeciesTreePrior extends Distribution {
 	
 	public Input<RealParameter> m_gammaParameter = new Input<RealParameter>("gammaParameter","shape parameter of the gamma distribution", Validate.REQUIRED);
 
-	public Input<RealParameter> m_rootHeightParameter = new Input<RealParameter>("rootBranchHeight","height of the node above the root, representing the root branch", Validate.REQUIRED);
+//	public Input<RealParameter> m_rootHeightParameter = new Input<RealParameter>("rootBranchHeight","height of the node above the root, representing the root branch", Validate.REQUIRED);
 	/** m_taxonSet is used by GeneTreeForSpeciesTreeDistribution **/
 	public Input<TaxonSet> m_taxonSet = new Input<TaxonSet>("taxonset", "set of taxa mapping lineages to species", Validate.REQUIRED);
 	
@@ -87,10 +87,10 @@ public class SpeciesTreePrior extends Distribution {
 	public double calculateLogP() {
 		logP = 0;
 		// make sure the root branch length is positive
-		if (m_rootHeightParameter.get().getValue() < m_speciesTree.get().getRoot().getHeight()) {
-			logP = Double.NEGATIVE_INFINITY;
-			return logP;
-		}
+//		if (m_rootHeightParameter.get().getValue() < m_speciesTree.get().getRoot().getHeight()) {
+//			logP = Double.NEGATIVE_INFINITY;
+//			return logP;
+//		}
 		
 		Node [] speciesNodes = m_speciesTree.get().getNodesAsArray();
 		try {
@@ -150,6 +150,10 @@ public class SpeciesTreePrior extends Distribution {
 	}
 	
 	
+	@Override
+	protected boolean requiresRecalculation() {
+		return true;
+	}
 	
 	@Override public List<String> getArguments() {return null;}
 	@Override public List<String> getConditions() {return null;}

@@ -109,12 +109,19 @@ public class GeneTreeForSpeciesTreeDistribution extends Distribution {
 		for (int i = 0; i < m_intervals.length; i++) {
 			m_intervals[i].clear();
 		}
+		Arrays.fill(m_nLineages, 0);
+
 		Node [] speciesNodes = m_speciesTree.get().getNodesAsArray();
 		traverseLineageTree(speciesNodes, m_geneTree.get().getRoot());
+//		System.err.println(getID());
+//		for (int i = 0; i < m_intervals.length; i++) {
+//			System.err.println(m_intervals[i]);
+//		}
 		// if the gene tree does not fit the species tree, logP = -infinity by now
 		if (logP == 0) {
 			traverseSpeciesTree(m_speciesTree.get().getRoot());
 		}
+//		System.err.println("logp=" + logP);
 		return logP; 
 	}
 	
@@ -128,6 +135,7 @@ public class GeneTreeForSpeciesTreeDistribution extends Distribution {
 		int iNode = node.getNr();
 
 		// k, as defined in the paper
+		//System.err.println(Arrays.toString(m_nLineages));
 		int k = m_intervals[iNode].size();
 		double [] fTimes = new double[k+2];
 		fTimes[0] = node.getHeight();
@@ -139,19 +147,28 @@ public class GeneTreeForSpeciesTreeDistribution extends Distribution {
 		} else {
 			fTimes[k+1] = Math.max(node.getHeight(), m_geneTree.get().getRoot().getHeight());
 		}
+		// sanity check
+		for (int i = 0; i <= k; i++) {
+			if (fTimes[i] > fTimes[i+1]) {
+				System.err.println("invalid times");
+				calculateLogP();
+			}
+		}
 		
+		int nLineagesBottom = m_nLineages[iNode];
+
 		switch (m_bIsConstantPopFunction) {
 		case constant:
-			calcConstantPopSizeContribution(iNode, fTimes, k);
+			calcConstantPopSizeContribution(nLineagesBottom, iNode, fTimes, k);
 			break;
 		case linear:
-			calcLinearPopSizeContribution(iNode, fTimes, k, node);
+			calcLinearPopSizeContribution(nLineagesBottom, iNode, fTimes, k, node);
 			break;
 		case linear_with_constant_root:
 			if (node.isRoot()) {
-				calcConstantPopSizeContribution(iNode, fTimes, k);
+				calcConstantPopSizeContribution(nLineagesBottom, iNode, fTimes, k);
 			} else {
-				calcLinearPopSizeContribution(iNode, fTimes, k, node);
+				calcLinearPopSizeContribution(nLineagesBottom, iNode, fTimes, k, node);
 			}
 			break;
 		}
@@ -160,20 +177,20 @@ public class GeneTreeForSpeciesTreeDistribution extends Distribution {
 	/* the contribution of a branch in the species tree to
 	 * the log probability, for constant population function.
 	 */
-	private void calcConstantPopSizeContribution(int iNode, double[] fTimes, int k) {
-		int nLineagesBottom = m_nLineages[iNode];
+	private void calcConstantPopSizeContribution(int nLineagesBottom, int iNode, double[] fTimes, int k) {
 		double fPopSize = m_fPopSizesBottom.getValue(iNode);
 		logP += - k * Math.log(fPopSize);
+//		System.err.print(logP);
 		for (int i = 0; i <= k; i++) {
 			logP += -((nLineagesBottom - i) * (nLineagesBottom-i - 1.0) / 2.0) * (fTimes[i+1]-fTimes[i]) / fPopSize;
 		}
+//		System.err.println(" " + logP + " " + Arrays.toString(fTimes) + " " + iNode + " " + k);
 	}
 
 	/* the contribution of a branch in the species tree to
 	 * the log probability, for linear population function.
 	 */
-	private void calcLinearPopSizeContribution(int iNode, double[] fTimes, int k, Node node) {
-		int nLineagesBottom = m_nLineages[iNode];
+	private void calcLinearPopSizeContribution(int nLineagesBottom, int iNode, double[] fTimes, int k, Node node) {
 		double fPopSizeBottom;
 		if (node.isLeaf()) {
 			fPopSizeBottom = m_fPopSizesBottom.getValue(iNode);
@@ -201,30 +218,29 @@ public class GeneTreeForSpeciesTreeDistribution extends Distribution {
 	 */
 	private int traverseLineageTree(Node[] speciesNodes, Node node) {
 		if (node.isLeaf()) {
-			return m_nLineageToSpeciesMap[node.getNr()];
+			int nSpecies = m_nLineageToSpeciesMap[node.getNr()];
+			m_nLineages[nSpecies]++;
+			return nSpecies;
 		} else {
 			int nSpeciesLeft = traverseLineageTree(speciesNodes, node.m_left);
 			int nSpeciesRight = traverseLineageTree(speciesNodes, node.m_right);
 			double fHeight = node.getHeight();
 			
-			if (nSpeciesLeft != nSpeciesRight) {
-				while (!speciesNodes[nSpeciesLeft].isRoot() && fHeight > speciesNodes[nSpeciesLeft].getHeight()) {
-					nSpeciesLeft =  speciesNodes[nSpeciesLeft].getParent().getNr();
-					m_nLineages[nSpeciesLeft]++;
-				}
-				m_intervals[nSpeciesLeft].add(node.getHeight());
+			while (!speciesNodes[nSpeciesLeft].isRoot() && fHeight > speciesNodes[nSpeciesLeft].getParent().getHeight()) {
+				nSpeciesLeft =  speciesNodes[nSpeciesLeft].getParent().getNr();
+				m_nLineages[nSpeciesLeft]++;
 			}
-			while (!speciesNodes[nSpeciesRight].isRoot() && fHeight > speciesNodes[nSpeciesRight].getHeight()) {
+			while (!speciesNodes[nSpeciesRight].isRoot() && fHeight > speciesNodes[nSpeciesRight].getParent().getHeight()) {
 				nSpeciesRight =  speciesNodes[nSpeciesRight].getParent().getNr();
 				m_nLineages[nSpeciesRight]++;
 			}
-			m_intervals[nSpeciesRight].add(node.getHeight());
 			// sanity check
 			if (nSpeciesLeft != nSpeciesRight) {
 				// if we got here, it means the gene tree does 
 				// not fit in the species tree
 				logP = Double.NEGATIVE_INFINITY;
 			}
+			m_intervals[nSpeciesRight].add(fHeight);
 			return nSpeciesRight;
 		}
 	}
