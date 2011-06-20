@@ -38,7 +38,7 @@ public class CladeSubstitutionModel extends SubstitutionModel.Base {
 
 	
 	public CladeSubstitutionModel() {
-		frequencies.setRule(Validate.OPTIONAL);
+		frequenciesInput.setRule(Validate.OPTIONAL);
 	}
 	
 	@SuppressWarnings("unchecked")
