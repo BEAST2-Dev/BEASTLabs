@@ -40,7 +40,7 @@ public class AARSSubstitutionModel extends GeneralSubstitutionModel {
 
 	
 	public AARSSubstitutionModel() {
-		frequencies.setRule(Validate.OPTIONAL);
+		frequenciesInput.setRule(Validate.OPTIONAL);
 		m_rates.setRule(Validate.OPTIONAL);
 	}
 	
