@@ -104,14 +104,14 @@ public class LogAnalyser extends Runnable {
             traceStatisticsList.add(distribution);
 
             for (Expectation expectation : m_pExpectations.get()) {
-                if (traces.getTraceName(i).equals(expectation.m_sTraceName.get())) {
+                if (traces.getTraceName(i).equals(expectation.traceName.get())) {
                     if (!expectation.assertExpectation(distribution, m_bDisplayStat.get())) { // record isPassed in Expectation here
-                        warning.add(" * WARNING: " + expectation.m_sTraceName.get() + " has significantly different value "
-                                + distribution.getMean() + " with the expectation " + expectation.m_fExpValue.get() + " !");
+                        warning.add(" * WARNING: " + expectation.traceName.get() + " has significantly different value "
+                                + distribution.getMean() + " with the expectation " + expectation.expValue.get() + " !");
                     }
 
                     if (!expectation.isValid()) {
-                        warning.add(" * WARNING: " + expectation.m_sTraceName.get() + " has very low effective sample sizes (ESS) "
+                        warning.add(" * WARNING: " + expectation.traceName.get() + " has very low effective sample sizes (ESS) "
                                 + distribution.getESS() + " !");
                     }
 
@@ -160,7 +160,7 @@ public class LogAnalyser extends Runnable {
         double mean = distribution.getMean();
         double error = expectation.getStdError();
 
-        System.out.print(formatter.formatToFieldWidth(expectation.m_sTraceName.get(), firstField));
+        System.out.print(formatter.formatToFieldWidth(expectation.traceName.get(), firstField));
 
         System.out.print(formatter.format(mean));
         System.out.print("+-" + formatter.format(error));
