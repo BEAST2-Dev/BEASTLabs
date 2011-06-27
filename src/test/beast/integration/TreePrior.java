@@ -10,8 +10,9 @@ import java.util.List;
  */
 public class TreePrior extends TestFramework {
 
-    private final String[] XML_FILES = new String[]{"testCoalescent.xml", "testCoalescent1.xml"};//, "testExponentialGrowth.xml"};
-    //, "testCoalescentUnit.xml","testYuleOneSite.xml"};
+    private final String[] XML_FILES = new String[]{"testCoalescent.xml", "testCoalescent1.xml", "testYuleModel_10taxa.xml"};
+//            , "testExponentialGrowth.xml"};
+//            , "testCoalescentUnit.xml"};
 
     protected void analyseXMLsAndLogs() throws Exception {
         super.analyseXMLsAndLogs(XML_FILES);
@@ -51,7 +52,14 @@ public class TreePrior extends TestFramework {
                 addExpIntoList(expList, "coalescent", 6.948, 1.24E-02);
                 break;
 
-            case 2: // testExponentialGrowth.xml
+            case 2: // testYuleModel_10taxa.xml
+//        BEAST 1 testYuleModel_10taxa.xml
+                addExpIntoList(expList, "yule", -2.8068, 3.894E-2); // speciationLikelihood
+                addExpIntoList(expList, "tree.height", 0.9702, 4.2554E-3);
+                addExpIntoList(expList, "birthRate", 2.0, 0.0);
+                break;
+
+            case 3: // testExponentialGrowth.xml
 //        BEAST 1 testExponentialGrowthNoClock1.xml
                 addExpIntoList(expList, "posterior", -1818.4448, 6.3697E-2);
                 addExpIntoList(expList, "prior", -1.726, 3.6124E-2);
@@ -66,15 +74,6 @@ public class TreePrior extends TestFramework {
                 addExpIntoList(expList, "treeLikelihood", -1816.7188, 4.9732E-2);
                 addExpIntoList(expList, "coalescent", 9.4203, 1.31E-2);
                 break;
-
-//            case 9: // testYuleOneSite.xml todo XML not workign
-//                addExpIntoList(expList, "treeLikelihood", -1815.498433460167);
-//                addExpIntoList(expList, "tree.height", 0.06262400993502577);
-//                addExpIntoList(expList, "coalescent", 6.860816283805018);
-//                addExpIntoList(expList, "popSize", 0.13377527552728488);
-//                addExpIntoList(expList, "hky.kappa", 34.273735441171816);
-//                addExpIntoList(expList, "posterior", -1808.6376171763627);
-//                break;
 
 //            case 1: // testCoalescentUnit.xml
 //                addExpIntoList(expList, "tree.height", 15000.0);
