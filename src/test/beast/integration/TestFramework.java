@@ -23,7 +23,7 @@ public abstract class TestFramework {
                 Logger.FILE_MODE = Logger.FILE_OVERWRITE;
                 String sDir = System.getProperty("user.dir");
 
-                String sFileName = sDir + "/examples/" + xmls[i];
+                String sFileName = sDir + "/examples/beast2vsbeast1/" + xmls[i];
 
                 System.out.println("Processing " + sFileName);
                 XMLParser parser = new XMLParser();

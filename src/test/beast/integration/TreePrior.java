@@ -10,8 +10,8 @@ import java.util.List;
  */
 public class TreePrior extends TestFramework {
 
-    private final String[] XML_FILES = new String[]{"testCoalescent.xml", "testCoalescent1.xml"};
-    //, "testCoalescentUnit.xml","testExponentialGrowth.xml", "testYuleOneSite.xml"};
+    private final String[] XML_FILES = new String[]{"testCoalescent.xml", "testCoalescent1.xml"};//, "testExponentialGrowth.xml"};
+    //, "testCoalescentUnit.xml","testYuleOneSite.xml"};
 
     protected void analyseXMLsAndLogs() throws Exception {
         super.analyseXMLsAndLogs(XML_FILES);
@@ -51,17 +51,22 @@ public class TreePrior extends TestFramework {
                 addExpIntoList(expList, "coalescent", 6.948, 1.24E-02);
                 break;
 
-//            case 2: // testExponentialGrowth.xml
-////coalescent : -0.4014183147929467 +- 0.00381600199385509, expectation is 6.860816283805018
-////popSize : Infinity +- 0.0, expectation is 0.13377527552728488
-//                addExpIntoList(expList, "treeLikelihood", -1815.8383981132436);
-//                addExpIntoList(expList, "tree.height", 0.06462423202463202);
-//                addExpIntoList(expList, "coalescent", -0.4014183147929467);
-//                addExpIntoList(expList, "popSize", 0.13377527552728488);
-//                addExpIntoList(expList, "hky.kappa", 33.88522193182046);
-//                addExpIntoList(expList, "posterior", -1816.2398164280376);
-//                break;
-//
+            case 2: // testExponentialGrowth.xml
+//        BEAST 1 testExponentialGrowthNoClock1.xml
+                addExpIntoList(expList, "posterior", -1818.4448, 6.3697E-2);
+                addExpIntoList(expList, "prior", -1.726, 3.6124E-2);
+                addExpIntoList(expList, "tree.height", 6.1545E-2, 6.6865E-5);
+                addExpIntoList(expList, "popSize", 1.0231, 5.1484E-2);
+                addExpIntoList(expList, "growthRate", 58.5276, 0.6012);
+                addExpIntoList(expList, "hky.kappa", 26.301, 0.211);
+                addExpIntoList(expList, "hky.frequencies0", 0.3266, 5.9862E-4);
+                addExpIntoList(expList, "hky.frequencies1", 0.2569, 5.3533E-4);
+                addExpIntoList(expList, "hky.frequencies2", 0.154, 4.0839E-4);
+                addExpIntoList(expList, "hky.frequencies3", 0.2625, 5.7627E-4);
+                addExpIntoList(expList, "treeLikelihood", -1816.7188, 4.9732E-2);
+                addExpIntoList(expList, "coalescent", 9.4203, 1.31E-2);
+                break;
+
 //            case 9: // testYuleOneSite.xml todo XML not workign
 //                addExpIntoList(expList, "treeLikelihood", -1815.498433460167);
 //                addExpIntoList(expList, "tree.height", 0.06262400993502577);

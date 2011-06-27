@@ -63,8 +63,8 @@ public class Expectation extends Plugin {
         }
 
         if (displayStatistics) {
-            System.out.println(traceName.get() + " : " + mean + " +- " + stderr + ", expectation is "
-                    + expValue.get() + " +- " + standErrorOfMean.get() + ", ESS = " + ess);
+            System.out.println(traceName.get() + " : " + mean + " +- " + stderr + ", ESS = " + ess + ", expectation is "
+                    + expValue.get() + " +- " + standErrorOfMean.get());
         }
         return isPassed;
     }

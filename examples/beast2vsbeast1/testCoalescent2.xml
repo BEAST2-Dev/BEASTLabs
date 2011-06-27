@@ -84,11 +84,11 @@
         <log idref="hky.kappa"/>
         <log idref="posterior"/>
     </logger>
-
+    <!--
     <logger fileName="test2.$(seed).trees" logEvery="1000" mode="autodetect">
         <log idref="tree"/>
     </logger>
-
+    -->
     <logger logEvery="10000" mode="autodetect" model="@posterior">
         <log idref="coalescent"/>
         <log idref="treeLikelihood"/>
