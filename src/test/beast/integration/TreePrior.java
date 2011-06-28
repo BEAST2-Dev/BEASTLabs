@@ -10,8 +10,8 @@ import java.util.List;
  */
 public class TreePrior extends TestFramework {
 
-    private final String[] XML_FILES = new String[]{"testCoalescent.xml", "testCoalescent1.xml", "testYuleModel_10taxa.xml"};
-//            , "testExponentialGrowth.xml"};
+    private final String[] XML_FILES = new String[]{"testCoalescent.xml", "testCoalescent1.xml",
+            "testYuleModel_10taxa.xml"};//, "testBirthDeathModel_10taxa.xml", "testExponentialGrowth.xml"};
 //            , "testCoalescentUnit.xml"};
 
     protected void analyseXMLsAndLogs() throws Exception {
@@ -59,7 +59,15 @@ public class TreePrior extends TestFramework {
                 addExpIntoList(expList, "birthRate", 2.0, 0.0);
                 break;
 
-            case 3: // testExponentialGrowth.xml
+            case 3: // testBirthDeathModel_10taxa.xml
+//        BEAST 1 testBirthDeathModel_10taxa.xml
+                addExpIntoList(expList, "birthDeath", 1.066, 5.4414E-2); // speciationLikelihood
+                addExpIntoList(expList, "tree.height", 0.6957, 4.1537E-3);
+                addExpIntoList(expList, "birthRate", 2.0, 0.0);
+                addExpIntoList(expList, "relativeDeathRate", 0.5, 0.0);
+                break;
+
+            case 4: // testExponentialGrowth.xml
 //        BEAST 1 testExponentialGrowthNoClock1.xml
                 addExpIntoList(expList, "posterior", -1818.4448, 6.3697E-2);
                 addExpIntoList(expList, "prior", -1.726, 3.6124E-2);
