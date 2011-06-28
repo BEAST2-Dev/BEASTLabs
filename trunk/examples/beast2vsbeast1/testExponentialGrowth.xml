@@ -29,9 +29,7 @@
     <!-- The HKY substitution model (Hasegawa, Kishino & Yano, 1985)             -->
     <input spec='HKY' id="hky">
         <parameter name='kappa' idref='hky.kappa'/>
-        <input id='freqs' name='frequencies' spec='Frequencies'>
-            <input name='data' idref='alignment'/>
-        </input>
+        <input id='freqs' name='frequencies' spec='Frequencies' frequencies='@hky.frequencies'/>
     </input>
 
     <!-- site model                                                              -->
@@ -52,7 +50,7 @@
     </input>
 
     <parameter id="hky.kappa" value="2.0" lower="0.0"/>
-    <parameter id="hky.frequencies" value="0.25" dimension="4"/>
+    <parameter id="hky.frequencies" value="0.25" dimension="4" lower='0.0'/>
     <parameter id="popSize" value="0.077" lower="0.0"/>
     <parameter id="growthRate" value="7.7E-5"/>
 
@@ -84,6 +82,7 @@
                 <distribution id="popSize.prior" spec="beast.math.distributions.Prior" x="@popSize">
                     <distribution id="OneOnX" offset="0.0" spec="beast.math.distributions.OneOnX"/>
                 </distribution>
+
                 <distribution id="growthRate.prior" spec="beast.math.distributions.Prior" x="@growthRate">
                     <distribution id="LaplaceDistribution" mu="0.001" scale="119.61481002566472"
                                   spec="beast.math.distributions.LaplaceDistribution"/>
