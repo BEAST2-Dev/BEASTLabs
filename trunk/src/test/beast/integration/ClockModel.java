@@ -10,8 +10,8 @@ import java.util.List;
  */
 public class ClockModel extends TestFramework {
 
-    private final String[] XML_FILES = new String[]{"testStrictClock.xml", "testStrictClock2.xml"};
-//            "testRelaxedClock.xml", "testRandomLocalClock.xml"};
+    private final String[] XML_FILES = new String[]{"testStrictClock.xml", "testStrictClock2.xml"};//, "testRandomLocalClock.xml"};
+//            "testUCRelaxedClockLogNormal.xml"};
 
     protected void analyseXMLsAndLogs() throws Exception {
         super.analyseXMLsAndLogs(XML_FILES);
@@ -50,7 +50,7 @@ public class ClockModel extends TestFramework {
                 addExpIntoList(expList, "coalescent", 7.276, 9.55E-03);
                 break;
 
-//            case 3: // testRelaxedClock.xml
+//            case 2: // testUCRelaxedClockLogNormal.xml
 //                addExpIntoList(expList, "treeLikelihood", -1815.6833629399468);
 //                addExpIntoList(expList, "tree.height", 0.02501244505827084);
 //                addExpIntoList(expList, "coalescent", 12.323228234924514);
@@ -61,20 +61,22 @@ public class ClockModel extends TestFramework {
 //                addExpIntoList(expList, "rateCategories1", 5.765432098765432);
 //                addExpIntoList(expList, "posterior", -1803.3601347050233);
 //                break;
-//
-//            case 4: // testRandomLocalClock.xml
-//                addExpIntoList(expList, "treeLikelihood", -1815.9602060116856);
-//                addExpIntoList(expList, "tree.height", 0.07954514858114668);
-//                addExpIntoList(expList, "coalescent", 8.119096310087864);
-//                addExpIntoList(expList, "popSize", 0.11438247311835678); // todo why Hudson got 0.09581514625061524 +/- 0.007326950921469767
-//                addExpIntoList(expList, "hky.kappa", 32.47032863965677);
-////                addExpIntoList(expList, "indicators0", 0.0);
-////                addExpIntoList(expList, "indicators1", 0.012345679012345678);
-//                addExpIntoList(expList, "posterior", -1807.8411097015971);
-//                break;
-//
 
-            default:
+            case 2: // testRandomLocalClock.xml
+                addExpIntoList(expList, "posterior", -1821.7238, 0.1538);
+                addExpIntoList(expList, "prior", -5.0977, 0.1429);
+                addExpIntoList(expList, "tree.height", 6.3713E-2, 1.128E-4);
+                addExpIntoList(expList, "popSize", 9.8913E-2, 6.8336E-4);
+                addExpIntoList(expList, "hky.kappa", 26.3161, 0.2575);
+                addExpIntoList(expList, "hky.frequencies0", 0.326, 8.5172E-4);
+                addExpIntoList(expList, "hky.frequencies1", 0.2582, 6.0012E-4);
+                addExpIntoList(expList, "hky.frequencies2", 0.1546, 4.6971E-4);
+                addExpIntoList(expList, "hky.frequencies3", 0.2613, 6.8585E-4);
+                addExpIntoList(expList, "treeLikelihood", -1816.6262, 6.1374E-2);
+                addExpIntoList(expList, "coalescent", 7.2642, 1.1661E-2);
+                break;
+
+           default:
                 throw new Exception("No such XML");
         }
 
