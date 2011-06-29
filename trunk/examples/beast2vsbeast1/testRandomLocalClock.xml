@@ -44,8 +44,8 @@
 
     <input spec='RandomLocalClockModel' id="branchRates" ratesAreMultipliers="false">
         <!--<parameter name='mutationRate'>1.0</parameter>-->
-        <parameter name='rates' id='rates' dimension="11" value="1.0" lower='0.0'/>
-        <input name="indicators" spec='IntegerParameter' id='indicators' dimension="11" value="0" lower='0'/>
+        <parameter name='rates' id='rates' value="1.0" lower='0.0'/>
+        <input name="indicators" spec='IntegerParameter' id='indicators' value="0" lower='0'/>
         <tree idref="tree"/>
     </input>
 
