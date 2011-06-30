@@ -87,7 +87,9 @@
     	    <ESS spec='ESS' name='log' arg="@hky.kappa"/>
             <log idref='hky.kappa2'/>
     	    <ESS spec='ESS' name='log' arg="@hky.kappa2"/>
-            <log spec='beast.evolution.tree.MRCATime' tree='@tree' data='@alignment1' taxa='human,chimp'/>
+            <log spec='beast.evolution.tree.MRCATime' tree='@tree' data='@alignment1'>
+                <taxa spec='TaxonSet'><taxon spec='Taxon' idref='human'/><taxon spec='Taxon' idref='chimp'/></taxa>
+            </log>
             <!--log spec='beast.evolution.tree.TreeNodeLogger' tree='@tree'/-->
         </logger>
         <logger logEvery="10000" fileName="test.$(seed).log">
