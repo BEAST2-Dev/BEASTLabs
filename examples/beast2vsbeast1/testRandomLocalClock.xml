@@ -45,7 +45,7 @@
     <input spec='RandomLocalClockModel' id="branchRates" ratesAreMultipliers="false">
         <!--<parameter name='mutationRate'>1.0</parameter>-->
         <parameter name='rates' id='rates' value="1.0" lower='0.0'/>
-        <input name="indicators" spec='IntegerParameter' id='indicators' value="0" lower='0'/>
+        <input name="indicators" spec='BooleanParameter' id='indicators' value="false"/>
         <tree idref="tree"/>
     </input>
 
@@ -85,9 +85,9 @@
                 <distribution id="rates.prior" spec="beast.math.distributions.Prior" x="@rates">
                     <distribution id="Gamma" alpha="0.5" beta="2.0" spec="beast.math.distributions.Gamma"/>
                 </distribution>
-                <distribution id="indicators.prior" spec="beast.math.distributions.Prior" x="@indicators">
+                <!--<distribution id="indicators.prior" spec="beast.math.distributions.Prior" x="@indicators">
                     <distribution id="Poisson" lambda="0.6931471805599453" spec="beast.math.distributions.Poisson"/>
-                </distribution>
+                </distribution>-->
 
                 <distribution id="coalescent" spec="Coalescent">
                     <treeIntervals spec='TreeIntervals' id='TreeIntervals'>
@@ -101,8 +101,7 @@
             <distribution id='likelihood' idref="treeLikelihood"/>
         </distribution>
 
-        <operator id="indicatorsRandomWalk" spec="IntUniformOperator" weight="1" parameter="@indicators"/>
-<!-- flip needs Boolean parameter ? <operator id="indicatorsBitFlip" spec="BitFlipOperator" weight="15" parameter="@indicators"/>  -->
+        <operator id="indicatorsBitFlip" spec="BitFlipOperator" weight="15" parameter="@indicators"/>
         <operator id='rateScaler' spec='ScaleOperator' scaleFactor="0.75" weight="15" parameter="@rates"/>
 
         <operator id='kappaScaler' spec='ScaleOperator' scaleFactor="0.75" weight="0.1" parameter="@hky.kappa"/>

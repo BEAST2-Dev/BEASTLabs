@@ -10,7 +10,7 @@ import java.util.List;
  */
 public class ClockModel extends TestFramework {
 
-    private final String[] XML_FILES = new String[]{"testStrictClock.xml", "testStrictClock2.xml"};//, "testRandomLocalClock.xml"};
+    private final String[] XML_FILES = new String[]{"testStrictClock.xml", "testStrictClock2.xml", "testRandomLocalClock.xml"};
 //            "testUCRelaxedClockLogNormal.xml"};
 
     protected void analyseXMLsAndLogs() throws Exception {
@@ -63,17 +63,17 @@ public class ClockModel extends TestFramework {
 //                break;
 
             case 2: // testRandomLocalClock.xml
-                addExpIntoList(expList, "posterior", -1821.7238, 0.1538);
-                addExpIntoList(expList, "prior", -5.0977, 0.1429);
-                addExpIntoList(expList, "tree.height", 6.3713E-2, 1.128E-4);
-                addExpIntoList(expList, "popSize", 9.8913E-2, 6.8336E-4);
-                addExpIntoList(expList, "hky.kappa", 26.3161, 0.2575);
-                addExpIntoList(expList, "hky.frequencies0", 0.326, 8.5172E-4);
-                addExpIntoList(expList, "hky.frequencies1", 0.2582, 6.0012E-4);
-                addExpIntoList(expList, "hky.frequencies2", 0.1546, 4.6971E-4);
-                addExpIntoList(expList, "hky.frequencies3", 0.2613, 6.8585E-4);
-                addExpIntoList(expList, "treeLikelihood", -1816.6262, 6.1374E-2);
-                addExpIntoList(expList, "coalescent", 7.2642, 1.1661E-2);
+                addExpIntoList(expList, "posterior", -1821.0538, 0.1647);
+                addExpIntoList(expList, "prior", -4.4935, 0.1553);
+                addExpIntoList(expList, "tree.height", 6.4088E-2, 1.4663E-4);
+                addExpIntoList(expList, "popSize", 9.6541E-2, 6.6609E-4);
+                addExpIntoList(expList, "hky.kappa", 26.544, 0.2648);
+                addExpIntoList(expList, "hky.frequencies0", 0.3253, 7.3002E-4);
+                addExpIntoList(expList, "hky.frequencies1", 0.258, 5.5405E-4);
+                addExpIntoList(expList, "hky.frequencies2", 0.1546, 4.6881E-4);
+                addExpIntoList(expList, "hky.frequencies3", 0.262, 6.1501E-4);
+                addExpIntoList(expList, "treeLikelihood", -1816.5603, 5.5936E-2);
+                addExpIntoList(expList, "coalescent", 7.2815, 1.3472E-2);
                 break;
 
            default:
