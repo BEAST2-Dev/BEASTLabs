@@ -23,8 +23,8 @@
     <!-- A prior on the distribution node heights defined given                  -->
     <!-- a Yule speciation process (a pure birth process).                       -->
     <input spec='BirthDeathGernhard08Model' id="birthDeath">
-        <parameter name='birthDiffRate' idref="birthRate"/>
-        <parameter name='relativeDeathRate' idref='relativeDeathRate'/>
+        <birthDiffRate idref="birthRate"/>
+        <relativeDeathRate idref='relativeDeathRate'/>
         <tree idref='tree'/>
     </input>
 

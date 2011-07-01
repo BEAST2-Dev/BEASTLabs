@@ -46,10 +46,10 @@
     </input>
 
     <input spec='TreeLikelihood' id="treeLikelihood">
-        <input name='data' idref="alignment"/>
-        <input name='tree' idref="tree"/>
-        <input name='siteModel' idref="siteModel"/>
-        <input name="branchRateModel" idref="branchRates"/>
+        <data idref="alignment"/>
+        <tree idref="tree"/>
+        <siteModel idref="siteModel"/>
+        <branchRateModel idref="branchRates"/>
     </input>
 
     <input spec='beast.util.ClusterTree' id='tree' clusterType='upgma'>
@@ -62,9 +62,9 @@
 
     <run spec="MCMC" id="mcmc" chainLength="10000000"> <!--autoOptimize="true"-->
         <state>
-            <input name='stateNode' idref='hky.kappa'/>
-            <input name='stateNode' idref='popSize'/>
-            <input name='stateNode' idref='tree'/>
+            <stateNode idref='hky.kappa'/>
+            <stateNode idref='popSize'/>
+            <stateNode idref='tree'/>
         </state>
 
         <distribution spec="CompoundDistribution" id="posterior">
@@ -82,7 +82,7 @@
                         <tree idref="tree"/>
                     </treeIntervals>
                     <populationModel spec="ConstantPopulation">
-                        <parameter name="popSize" idref="popSize"/>
+                        <popSize idref="popSize"/>
                     </populationModel>
                 </distribution>
             </distribution>
