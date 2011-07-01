@@ -29,9 +29,7 @@
     <!-- The HKY substitution model (Hasegawa, Kishino & Yano, 1985)             -->
     <input spec='HKY' id="hky">
         <parameter name='kappa' idref='hky.kappa'/>
-        <input id='freqs' name='frequencies' spec='Frequencies'>
-            <parameter name='frequencies' idref='hky.frequencies'/>
-        </input>
+        <input id='freqs' name='frequencies' spec='Frequencies' frequencies='@hky.frequencies'/>
     </input>
 
     <!-- site model                                                              -->
@@ -41,9 +39,9 @@
     </input>
 
     <input spec='TreeLikelihood' id="treeLikelihood">
-        <input name='data' idref="alignment"/>
-        <input name='tree' idref="tree"/>
-        <input name='siteModel' idref="siteModel"/>
+        <data idref="alignment"/>
+        <tree idref="tree"/>
+        <siteModel idref="siteModel"/>
     </input>
 
    <input spec='beast.util.ClusterTree' id='tree' clusterType='upgma'>

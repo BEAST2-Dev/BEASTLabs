@@ -23,7 +23,7 @@
     <!-- A prior on the distribution node heights defined given                  -->
     <!-- a Yule speciation process (a pure birth process).                       -->
     <input spec='YuleModel' id="yule">
-        <parameter name='birthDiffRate' idref="birthRate"/>
+        <birthDiffRate idref="birthRate"/>
         <tree idref='tree'/>
     </input>
 

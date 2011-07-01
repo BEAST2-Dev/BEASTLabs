@@ -50,10 +50,10 @@
     </input>
 
     <input spec='TreeLikelihood' id="treeLikelihood">
-        <input name='data' idref="alignment"/>
-        <input name='tree' idref="tree"/>
-        <input name='siteModel' idref="siteModel"/>
-        <input name="branchRateModel" idref="branchRates"/>
+        <data idref="alignment"/>
+        <tree idref="tree"/>
+        <siteModel idref="siteModel"/>
+        <branchRateModel idref="branchRates"/>
     </input>
 
     <parameter id="hky.kappa" value="2.0" lower="0.0"/>
@@ -62,12 +62,12 @@
 
     <run spec="MCMC" id="mcmc" chainLength="10000000"> <!--autoOptimize="true"-->
         <state>
-            <input name='stateNode' idref='hky.kappa'/>
-            <input name='stateNode' idref='hky.frequencies'/>
-            <input name='stateNode' idref='popSize'/>
-            <input name='stateNode' idref='tree'/>
-            <input name='stateNode' idref='rates'/>
-            <input name='stateNode' idref='indicators'/>
+            <stateNode idref='hky.kappa'/>
+            <stateNode idref='hky.frequencies'/>
+            <stateNode idref='popSize'/>
+            <stateNode idref='tree'/>
+            <stateNode idref='rates'/>
+            <stateNode idref='indicators'/>
         </state>
 
         <distribution spec="CompoundDistribution" id="posterior">
@@ -94,7 +94,7 @@
                         <tree idref="tree"/>
                     </treeIntervals>
                     <populationModel spec="ConstantPopulation" id='ConstantPopulation'>
-                        <parameter name="popSize" idref="popSize"/>
+                        <popSize idref="popSize"/>
                     </populationModel>
                 </distribution>
             </distribution>

@@ -29,21 +29,19 @@
     <!-- The HKY substitution model (Hasegawa, Kishino & Yano, 1985)             -->
     <input spec='HKY' id="hky">
         <parameter name='kappa' idref='hky.kappa'/>
-        <input id='freqs' name='frequencies' spec='Frequencies'>
-            <parameter name='frequencies' idref='hky.frequencies'/>
-        </input>
+        <input id='freqs' name='frequencies' spec='Frequencies' frequencies='@hky.frequencies'/>
     </input>
 
     <!-- site model                                                              -->
     <input spec='SiteModel' id="siteModel">
         <!--<parameter name='mutationRate'>1.0</parameter>-->
-        <input name='substModel' idref='hky'/>
+        <substModel idref='hky'/>
     </input>
 
     <input spec='TreeLikelihood' id="treeLikelihood">
-        <input name='data' idref="alignment"/>
-        <input name='tree' idref="tree"/>
-        <input name='siteModel' idref="siteModel"/>
+        <data idref="alignment"/>
+        <tree idref="tree"/>
+        <siteModel idref="siteModel"/>
     </input>
 
 
@@ -61,10 +59,10 @@
 
     <run spec="MCMC" id="mcmc" chainLength="10000000"> <!--autoOptimize="true"-->
         <state>
-            <input name='stateNode' idref='hky.kappa'/>
-            <input name='stateNode' idref='hky.frequencies'/>
-            <input name='stateNode' idref='popSize'/>
-            <input name='stateNode' idref='tree'/>
+            <stateNode idref='hky.kappa'/>
+            <stateNode idref='hky.frequencies'/>
+            <stateNode idref='popSize'/>
+            <stateNode idref='tree'/>
         </state>
 
         <distribution spec="CompoundDistribution" id="posterior">
@@ -73,7 +71,7 @@
                     <tree idref="tree"/>
                 </treeIntervals>
                 <populationModel spec="ConstantPopulation" id='ConstantPopulation'>
-                    <parameter name="popSize" idref="popSize"/>
+                    <popSize idref="popSize"/>
                 </populationModel>
             </distribution>
             <distribution id='likelihood' idref="treeLikelihood"/>

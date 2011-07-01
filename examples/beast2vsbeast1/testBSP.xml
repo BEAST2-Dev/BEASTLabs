@@ -39,9 +39,9 @@
     </input>
 
     <input spec='TreeLikelihood' id="treeLikelihood">
-        <input name='data' idref="alignment"/>
-        <input name='tree' idref="tree"/>
-        <input name='siteModel' idref="siteModel"/>
+        <data idref="alignment"/>
+        <tree idref="tree"/>
+        <siteModel idref="siteModel"/>
     </input>
 
 
@@ -56,11 +56,11 @@
 
     <run spec="MCMC" id="mcmc" chainLength="10000000"> <!--autoOptimize="true"-->
         <state>
-            <input name='stateNode' idref='hky.kappa'/>
-            <input name='stateNode' idref='hky.frequencies'/>
-            <input name='stateNode' idref='popSizes'/>
-            <input name='stateNode' idref='groupSizes'/>
-            <input name='stateNode' idref='tree'/>
+            <stateNode idref='hky.kappa'/>
+            <stateNode idref='hky.frequencies'/>
+            <stateNode idref='popSizes'/>
+            <stateNode idref='groupSizes'/>
+            <stateNode idref='tree'/>
         </state>
 
         <distribution spec="CompoundDistribution" id="posterior">
