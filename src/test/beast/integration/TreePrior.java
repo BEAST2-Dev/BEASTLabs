@@ -9,7 +9,7 @@ import java.util.List;
  * @author Walter Xie
  */
 public class TreePrior extends TestFramework {
-    private final String[] XML_FILES = new String[]{"testCoalescent.xml", "testCoalescent1.xml",
+    private final String[] XML_FILES = new String[]{"testCoalescentNoClock.xml", "testCoalescentNoClock1.xml",
             "testExponentialGrowth.xml", "testYuleModel_10taxa.xml"};// ,"testBSP.xml"};//, "testBirthDeathModel_10taxa.xml"};
             //, "testBirthDeathAsYule.xml"};
 
@@ -22,7 +22,7 @@ public class TreePrior extends TestFramework {
 
         // all values below are from BEAST 1.7
         switch (index_XML) {
-            case 0: // testCoalescent.xml
+            case 0: // testCoalescentNoClock.xml
 //        BEAST 1 testCoalescentNoClock.xml
                 addExpIntoList(expList, "posterior", -1813.059, 0.0569);
                 addExpIntoList(expList, "prior", 3.705, 0.025);
@@ -37,7 +37,7 @@ public class TreePrior extends TestFramework {
                 addExpIntoList(expList, "coalescent", 7.242, 9.94E-03);
                 break;
 
-            case 1: // testCoalescent1.xml
+            case 1: // testCoalescentNoClock1.xml
 //        BEAST 1 testCoalescentNoClock1.xml
                 addExpIntoList(expList, "posterior", -1809.75, 5.96E-02);
                 addExpIntoList(expList, "tree.height", 6.35E-02, 6.61E-05);
@@ -112,7 +112,7 @@ public class TreePrior extends TestFramework {
                 addExpIntoList(expList, "relativeDeathRate", 0.5, 0.0);
                 break;
 
-//            case 1: // testCoalescentUnit.xml
+//            case 1: // testCoalescent.xml
 //                addExpIntoList(expList, "tree.height", 15000.0);
 //                addExpIntoList(expList, "popSize", 10000.0);
 ////                addExpIntoList(expList, "coalescent", -30.6);
