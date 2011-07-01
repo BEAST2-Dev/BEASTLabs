@@ -35,7 +35,7 @@
     <!-- site model                                                              -->
     <input spec='SiteModel' id="siteModel">
         <!--<parameter name='mutationRate'>1.0</parameter>-->
-        <input name='substModel' idref='hky'/>
+        <substModel idref='hky'/>
     </input>
 
     <input spec='TreeLikelihood' id="treeLikelihood">
@@ -46,7 +46,7 @@
 
 
     <input spec='beast.util.ClusterTree' id='tree' clusterType='upgma'>
-        <input name='taxa' idref='alignment'/>
+        <taxa idref='alignment'/>
     </input>
 
     <parameter id="hky.kappa" value="2.0" lower="0.0"/>

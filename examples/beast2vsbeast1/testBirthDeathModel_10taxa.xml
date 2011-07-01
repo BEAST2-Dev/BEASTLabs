@@ -17,7 +17,7 @@
     </data>
 
     <input spec='beast.util.ClusterTree' id='tree' clusterType='upgma'>
-        <input name='taxa' idref='alignment'/>
+        <taxa idref='alignment'/>
     </input>
 
     <!-- A prior on the distribution node heights defined given                  -->

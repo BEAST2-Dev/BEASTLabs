@@ -30,14 +30,14 @@
     <input spec='HKY' id="hky">
         <parameter name='kappa' idref='hky.kappa'/>
         <input id='freqs' name='frequencies' spec='Frequencies'>
-            <input name='data' idref='alignment'/>
+            <data idref='alignment'/>
         </input>
     </input>
 
     <!-- site model                                                              -->
     <input spec='SiteModel' id="siteModel">
         <!--<parameter name='mutationRate'>1.0</parameter>-->
-        <input name='substModel' idref='hky'/>
+        <substModel idref='hky'/>
     </input>
 
 
@@ -48,7 +48,7 @@
             <parameter name='S' id='S' value="0.5" lower="0" upper="5"/>
         </input>
         <parameter spec='IntegerParameter' name='rateCategories' id='rateCategories' dimension="11" value="1"/>
-        <input name='tree' idref="tree"/>
+        <tree idref="tree"/>
     </input>
 
     <input spec='TreeLikelihood' id="treeLikelihood">
@@ -60,12 +60,12 @@
 
     <input spec='beast.util.ClusterTree' id='tree' clusterType='upgma'>
 	<!--trait idref='rateCategories'/--> 
-        <input name='taxa' idref='alignment'/>
+        <taxa idref='alignment'/>
     </input>
 
-    <input spec='beast.core.parameter.RealParameter' id="hky.kappa">1.0</input>
+    <parameter id="hky.kappa" value="1.0"/>
 
-    <input spec='beast.core.parameter.RealParameter' id="popSize">1.0</input>
+    <parameter id="popSize" value="1.0"/>
 
 
     <run spec="MCMC" id="mcmc" chainLength="1000000"> <!--autoOptimize="true"-->

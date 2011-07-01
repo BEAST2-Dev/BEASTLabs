@@ -120,7 +120,7 @@
 		D4Thai84   = 1984'>
             <taxa idref='alignment'/>
         </trait>
-        <input name='taxa' idref='alignment'/>
+        <taxa idref='alignment'/>
     </tree>
 
 
