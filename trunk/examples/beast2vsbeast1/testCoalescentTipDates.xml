@@ -17,7 +17,15 @@
     </data>
 
    <tree spec='beast.util.ClusterTree' id='tree' clusterType='upgma'>
-        <taxa idref='alignment'/>
+        <trait spec='beast.evolution.tree.TraitSet' traitname='date-forward' units='day'
+               value='
+		A  = 5000,
+		B  = 5000,
+		C  = 5000,
+		D  = 5000'>
+            <taxa idref='alignment'/>
+        </trait>
+       <taxa idref='alignment'/>
     </tree>
 
     <parameter id="popSize" value="10000" lower="0.0"/>
