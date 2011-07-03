@@ -21,8 +21,8 @@
                value='
 		A  = 5000,
 		B  = 5000,
-		C  = 0,
-		D  = 0'>
+		C  = 5000,
+		D  = 5000'>
             <taxa idref='alignment'/>
         </trait>
        <taxa idref='alignment'/>
