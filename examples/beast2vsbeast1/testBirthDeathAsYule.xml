@@ -129,7 +129,7 @@
             <stateNode idref='tree'/>
         </state>
 
-        <distribution spec="CompoundDistribution" id="prior">
+        <distribution spec="CompoundDistribution" id="posterior">
             <distribution id="birthDeath.prior" idref='birthDeath'/>
             <distribution id="birthRate.prior" spec="beast.math.distributions.Prior" x="@birthRate">
                 <distribution id="OneOnX" offset="0.0" spec="beast.math.distributions.OneOnX"/>
@@ -139,6 +139,8 @@
         <operator id='birthScaler' spec='ScaleOperator' scaleFactor="0.75" weight="1" parameter="@birthRate"/>
 
         <logger logEvery="1000" fileName="test.$(seed).log">
+            <model idref='posterior'/>
+            <log idref="posterior"/>
             <log idref='birthDeath'/>
             <log spec='beast.evolution.tree.TreeHeightLogger' tree='@tree'/>
             <log idref='birthRate'/>
@@ -146,7 +148,9 @@
             <log idref='sampleProbability'/>
         </logger>
 
-        <logger logEvery="10000">
+        <logger logEvery="100000">
+            <model idref='posterior'/>
+            <log idref="posterior"/>
             <log idref='birthDeath'/>
             <log spec='beast.evolution.tree.TreeHeightLogger' tree='@tree'/>
             <log idref='birthRate'/>
