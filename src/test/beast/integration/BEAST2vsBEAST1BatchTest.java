@@ -22,6 +22,12 @@ public class BEAST2vsBEAST1BatchTest extends TestCase {
     }
 
     @Test
+    public void testTree() throws Exception {
+        Tree test = new Tree();
+        test.analyseXMLsAndLogs();
+    }
+
+    @Test
     public void testClockModels() throws Exception {
         ClockModel test = new ClockModel();
         test.analyseXMLsAndLogs();
