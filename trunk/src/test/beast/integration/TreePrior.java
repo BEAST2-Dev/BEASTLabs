@@ -11,8 +11,9 @@ import java.util.List;
 public class TreePrior extends TestFramework {
     private final String[] XML_FILES = new String[]{"testCoalescentNoClock.xml", "testCoalescentNoClock1.xml",
             "testCoalescentTipDates.xml", "testCoalescentTipDates1.xml", "testCoalescentTipDates2.xml",
-            "testExponentialGrowth.xml", "testYuleModel_10taxa.xml"};// ,"testBSP.xml"};//, "testBirthDeathModel_10taxa.xml"};
-            //, "testBirthDeathAsYule.xml"};
+            "testExponentialGrowth.xml", "testYuleModel_10taxa.xml", "testBirthDeathModel_10taxa.xml",
+            "testBirthDeathAsYule.xml"};// ,"testBSP.xml"};
+
 
     protected void analyseXMLsAndLogs() throws Exception {
         super.analyseXMLsAndLogs(XML_FILES);
@@ -89,10 +90,22 @@ public class TreePrior extends TestFramework {
 //        BEAST 1 testYuleModel_10taxa.xml
                 addExpIntoList(expList, "yule", -2.8068, 3.894E-2); // speciationLikelihood
                 addExpIntoList(expList, "tree.height", 0.9702, 4.2554E-3);
-                addExpIntoList(expList, "birthRate", 2.0, 0.0);
                 break;
 
-            case 7: // testBSP.xml
+            case 7: // testBirthDeathModel_10taxa.xml
+//        BEAST 1 testBirthDeathModel_10taxa.xml
+                addExpIntoList(expList, "birthDeath", 0.981, 4.9536E-2); // speciationLikelihood
+                addExpIntoList(expList, "tree.height", 0.7017, 3.9048E-3);
+                break;
+
+            case 8: // testBirthDeathAsYule.xml
+//        BEAST 1 testBirthDeathAsYule.xml
+                addExpIntoList(expList, "posterior", -84.941, 2.3521E-2);
+                addExpIntoList(expList, "birthDeath", -84.7945, 2.3471E-2); // speciationLikelihood
+                addExpIntoList(expList, "birthRate", 1.1636, 3.8458E-3);
+                break;
+
+            case 9: // testBSP.xml
 //        BEAST 1 testBSPNoClock.xml
                 addExpIntoList(expList, "posterior", -1826.2014, 0.1562);
                 addExpIntoList(expList, "prior", -9.4517, 0.1782);
@@ -110,24 +123,6 @@ public class TreePrior extends TestFramework {
                 addExpIntoList(expList, "hky.frequencies3", 0.2614, 6.1733E-4);
                 addExpIntoList(expList, "treeLikelihood", -1816.7497, 5.4764E-2);
                 addExpIntoList(expList, "skyline", -3.4472, 0.1802);
-                break;
-
-
-            case 8: // testBirthDeathAsYule.xml
-//        BEAST 1 testBirthDeathAsYule.xml
-                addExpIntoList(expList, "birthDeath", 1.066, 5.4414E-2); // speciationLikelihood
-                addExpIntoList(expList, "tree.height", 0.6957, 4.1537E-3);
-                addExpIntoList(expList, "birthRate", 2.0, 0.0);
-                addExpIntoList(expList, "relativeDeathRate", 0.0, 0.0);
-                addExpIntoList(expList, "sampleProbability", 1.0, 0.0);
-                break;
-
-            case 9: // testBirthDeathModel_10taxa.xml
-//        BEAST 1 testBirthDeathModel_10taxa.xml
-                addExpIntoList(expList, "birthDeath", 1.066, 5.4414E-2); // speciationLikelihood
-                addExpIntoList(expList, "tree.height", 0.6957, 4.1537E-3);
-                addExpIntoList(expList, "birthRate", 2.0, 0.0);
-                addExpIntoList(expList, "relativeDeathRate", 0.5, 0.0);
                 break;
 
             default:
