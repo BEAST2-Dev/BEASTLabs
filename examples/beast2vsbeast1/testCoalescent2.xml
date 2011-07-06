@@ -34,7 +34,7 @@
 
     <distribution id="posterior" name="posterior" spec="Posterior">
         <distribution name="prior" spec="Prior">
-            <distribution id="coalescent" spec="Coalescent">
+            <distr id="coalescent" spec="Coalescent">
                 <populationModel id="ConstantPopulation" spec="ConstantPopulation">
                     <parameter dimension="1" estimate="true" id="popSize" lower="0.0" name="popSize" value="0.077"/>
                 </populationModel>
@@ -43,7 +43,7 @@
                         <taxa idref="alignment"/>
                     </tree>
                 </treeIntervals>
-            </distribution>
+            </distr>
         </distribution>
         <distribution name="likelihood" spec="Likelihood">
             <distribution data="@alignment" id="treeLikelihood" spec="TreeLikelihood" tree="@tree" useAmbiguities="false">

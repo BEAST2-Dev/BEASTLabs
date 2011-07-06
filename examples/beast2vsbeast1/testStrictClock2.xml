@@ -70,11 +70,11 @@
         <distribution spec="CompoundDistribution" id="posterior">
             <distribution spec="CompoundDistribution" id="prior">
                 <distribution id="hky.kappa.prior" spec="beast.math.distributions.Prior" x="@hky.kappa">
-                    <distribution id="LogNormalDistributionModel" M="1.0" S="1.25" meanInRealSpace="false"
+                    <distr id="LogNormalDistributionModel" M="1.0" S="1.25" meanInRealSpace="false"
                                   spec="beast.math.distributions.LogNormalDistributionModel"/>
                 </distribution>
                 <distribution id="popSize.prior" spec="beast.math.distributions.Prior" x="@popSize">
-                    <distribution id="OneOnX" offset="0.0" spec="beast.math.distributions.OneOnX"/>
+                    <distr id="OneOnX" offset="0.0" spec="beast.math.distributions.OneOnX"/>
                 </distribution>
 
                 <distribution id="coalescent" spec="Coalescent">

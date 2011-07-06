@@ -132,7 +132,7 @@
         <distribution spec="CompoundDistribution" id="posterior">
             <distribution id="birthDeath.prior" idref='birthDeath'/>
             <distribution id="birthRate.prior" spec="beast.math.distributions.Prior" x="@birthRate">
-                <distribution id="OneOnX" offset="0.0" spec="beast.math.distributions.OneOnX"/>
+                <distr id="OneOnX" offset="0.0" spec="beast.math.distributions.OneOnX"/>
             </distribution>
         </distribution>
 
