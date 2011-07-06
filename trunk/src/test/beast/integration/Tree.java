@@ -10,7 +10,7 @@ import java.util.List;
  */
 public class Tree extends TestFramework {
 
-    private final String[] XML_FILES = new String[]{"testCalibration.xml"}; //, ".xml"};
+    private final String[] XML_FILES = new String[]{"testCalibration.xml", "testCalibrationMono.xml"};
 
     protected void analyseXMLsAndLogs() throws Exception {
         super.analyseXMLsAndLogs(XML_FILES);
@@ -35,6 +35,22 @@ public class Tree extends TestFramework {
                 addExpIntoList(expList, "hky.frequencies3", 0.2617, 5.1085E-4);
                 addExpIntoList(expList, "treeLikelihood", -1816.6943, 5.8444E-2);
                 addExpIntoList(expList, "coalescent", 7.2378, 9.1912E-3);
+                break;
+
+            case 1: // testCalibrationMono.xml
+//        BEAST 1 testCalibrationMono.xml
+                addExpIntoList(expList, "posterior", -1897.3811, 6.5818E-2);
+                addExpIntoList(expList, "prior", -68.6144, 1.9896E-2);
+                addExpIntoList(expList, "tree.height", 6.3258E-2, 6.7751E-5);
+                addExpIntoList(expList, "mrcatime(human,chimp)", 1.7069E-2, 3.3455E-5);
+                addExpIntoList(expList, "popSize", 0.1049, 6.4588E-4);
+                addExpIntoList(expList, "hky.kappa", 26.7792, 0.1851);
+                addExpIntoList(expList, "hky.frequencies0", 0.328, 7.1121E-4);
+                addExpIntoList(expList, "hky.frequencies1", 0.2573, 5.4356E-4);
+                addExpIntoList(expList, "hky.frequencies2", 0.1548, 4.2604E-4);
+                addExpIntoList(expList, "hky.frequencies3", 0.2599, 6.0174E-4);
+                addExpIntoList(expList, "treeLikelihood", -1828.7667, 6.527E-2);
+                addExpIntoList(expList, "coalescent", 6.864, 9.7699E-3);
                 break;
 
             default:
