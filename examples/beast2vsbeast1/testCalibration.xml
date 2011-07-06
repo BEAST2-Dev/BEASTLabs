@@ -86,10 +86,10 @@
                             <taxon spec='Taxon' id='chimp'/>
                         </taxa>
                     </x>
-                    <distribution spec='beast.math.distributions.Normal'>
+                    <distr spec='beast.math.distributions.Normal'>
                         <parameter name='mean' value='6.0'/>
                         <parameter name='sigma' value='0.5'/>
-                    </distribution>
+                    </distr>
                 </distribution>
 
                 <distribution id="coalescent" spec="Coalescent">
