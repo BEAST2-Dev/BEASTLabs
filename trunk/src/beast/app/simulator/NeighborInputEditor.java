@@ -1,5 +1,6 @@
 package beast.app.simulator;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.Box;
@@ -38,9 +39,11 @@ public class NeighborInputEditor extends ListInputEditor {
     }
 
 	@Override
-    public Plugin pluginSelector(Input<?> input, Plugin parent, List<String> sTabuList) {
+    public List<Plugin> pluginSelector(Input<?> input, Plugin parent, List<String> sTabuList) {
         Plugin plugin = new Neighbor();
         PluginPanel.addPluginToMap(plugin);
-		return plugin; 
+    	List<Plugin> selectedPlugins = new ArrayList<Plugin>();
+    	selectedPlugins.add(plugin);
+		return selectedPlugins; 
 	}
 }
