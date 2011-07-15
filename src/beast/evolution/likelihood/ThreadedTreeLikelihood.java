@@ -48,8 +48,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
 
 @Description("Calculates the likelihood of sequence data on a beast.tree given a site and substitution model using " +
 		"a variant of the 'peeling algorithm'. For details, see" +
@@ -64,7 +65,7 @@ public class ThreadedTreeLikelihood extends Distribution {
     public Input<Boolean> m_useAmbiguities = new Input<Boolean>("useAmbiguities", "flag to indicate leafs that sites containing ambigue states should be handled instead of ignored (the default)", false);
 
     /** calculation engine **/
-    ThreadedLikelihoodCore [] m_likelihoodCore;
+    ThreadedLikelihoodCore m_likelihoodCore;
     BeagleTreeLikelihood m_beagle;
     
     /** Plugin associated with inputs. Since none of the inputs are StateNodes, it
@@ -108,8 +109,13 @@ public class ThreadedTreeLikelihood extends Distribution {
     double m_fProportionInvariant = 0;
     List<Integer> m_iConstantPattern = null;
     
+    /** number of threads to use, changes when threading causes problems **/
+    
+	int m_nThreads;
     @Override
     public void initAndValidate() throws Exception {
+		m_nThreads = BeastMCMC.m_nThreads;
+
     	// sanity check: alignment should have same #taxa as tree
     	if (m_data.get().getNrTaxa() != m_tree.get().getLeafNodeCount()) {
     		throw new Exception("The number of nodes in the tree does not match the number of sequences");
@@ -139,11 +145,10 @@ public class ThreadedTreeLikelihood extends Distribution {
     	
         int nStateCount = m_data.get().getMaxStateCount();
         int nPatterns = m_data.get().getPatternCount();
-        m_likelihoodCore = new ThreadedLikelihoodCore[BeastMCMC.m_nThreads];
         if (nStateCount == 4) {
-        	m_likelihoodCore[0] = new ThreadedBeerLikelihoodCore4();
+        	m_likelihoodCore = new ThreadedBeerLikelihoodCore4();
         } else {
-        	m_likelihoodCore[0] = new ThreadedBeerLikelihoodCore(nStateCount);
+        	m_likelihoodCore = new ThreadedBeerLikelihoodCore(nStateCount);
         }
         System.err.println("TreeLikelihood uses " + m_likelihoodCore.getClass().getName());
 
@@ -199,7 +204,7 @@ public class ThreadedTreeLikelihood extends Distribution {
     
     void initCore() {
         int nodeCount = m_tree.get().getNodeCount();
-        m_likelihoodCore[0].initialize(
+        m_likelihoodCore.initialize(
 	        nodeCount,
 	        m_data.get().getPatternCount(),
 	        m_siteModel.getCategoryCount(),
@@ -215,7 +220,7 @@ public class ThreadedTreeLikelihood extends Distribution {
         }
         m_nHasDirt = Tree.IS_FILTHY;
         for (int i = 0; i < intNodeCount; i++) {
-       		m_likelihoodCore[0].createNodePartials(extNodeCount + i);
+       		m_likelihoodCore.createNodePartials(extNodeCount + i);
         }
     }
     
@@ -234,7 +239,7 @@ public class ThreadedTreeLikelihood extends Distribution {
             for (i = 0; i < patternCount; i++) {
                 states[i] = m_data.get().getPattern(node.getNr(), i);
             }
-        	m_likelihoodCore[0].setNodeStates(node.getNr(), states);
+        	m_likelihoodCore.setNodeStates(node.getNr(), states);
         } else {
             setStates(node.m_left, patternCount);
             setStates(node.m_right, patternCount);
@@ -256,7 +261,7 @@ public class ThreadedTreeLikelihood extends Distribution {
         			partials[k++] = (stateSet[iState] ? 1.0 : 0.0);
             	}
             }
-       		m_likelihoodCore[0].setNodePartials(node.getNr(), partials);
+       		m_likelihoodCore.setNodePartials(node.getNr(), partials);
 
         } else {
         	setPartials(node.m_left, patternCount);
@@ -280,33 +285,36 @@ public class ThreadedTreeLikelihood extends Distribution {
         Tree tree = m_tree.get();
 
        
+		traverseSetup(tree.getRoot());
        	threadedTraverse(tree.getRoot());
 
        	calcLogP();
-//        System.err.println(Arrays.toString(m_fRootPartials));
-//        System.err.println(Arrays.toString(m_fPatternLogLikelihoods));
-//        System.err.println(logP);
-//        m_nScale++;
-//        if (logP > 0 || (m_likelihoodCore.getUseScaling() && m_nScale > X)) {
-//            System.err.println("Switch off scaling");
-//            m_likelihoodCore.setUseScaling(1.0);
-//            m_likelihoodCore.unstore();
-//            m_nHasDirt = Tree.IS_FILTHY;
-//            X *= 2;
-//           	threadedTraverse(tree.getRoot());
-//            calcLogP();
-//            return logP;
-//        } else if (logP == Double.NEGATIVE_INFINITY && m_fScale < 10) { // && !m_likelihoodCore.getUseScaling()) {
-//        	m_nScale = 0;
-//        	m_fScale *= 1.01;
-//            System.err.println("Turning on scaling to prevent numeric instability " + m_fScale);
-//            m_likelihoodCore.setUseScaling(m_fScale);
-//            m_likelihoodCore.unstore();
-//            m_nHasDirt = Tree.IS_FILTHY;
-//           	threadedTraverse(tree.getRoot());
-//            calcLogP();
-//            return logP;
-//        }
+        System.err.println(Arrays.toString(m_fRootPartials));
+        System.err.println(Arrays.toString(m_fPatternLogLikelihoods));
+        System.err.println(logP);
+        m_nScale++;
+        if (logP > 0 || (m_likelihoodCore.getUseScaling() && m_nScale > X)) {
+            System.err.println("Switch off scaling");
+            m_likelihoodCore.setUseScaling(1.0);
+            m_likelihoodCore.unstore();
+            m_nHasDirt = Tree.IS_FILTHY;
+            X *= 2;
+    		traverseSetup(tree.getRoot());
+           	threadedTraverse(tree.getRoot());
+            calcLogP();
+            return logP;
+        } else if (logP == Double.NEGATIVE_INFINITY && m_fScale < 10) { // && !m_likelihoodCore.getUseScaling()) {
+        	m_nScale = 0;
+        	m_fScale *= 1.01;
+            System.err.println("Turning on scaling to prevent numeric instability " + m_fScale);
+            m_likelihoodCore.setUseScaling(m_fScale);
+            m_likelihoodCore.unstore();
+            m_nHasDirt = Tree.IS_FILTHY;
+    		traverseSetup(tree.getRoot());
+           	threadedTraverse(tree.getRoot());
+            calcLogP();
+            return logP;
+        }
         return logP;
     }
 
@@ -324,7 +332,7 @@ public class ThreadedTreeLikelihood extends Distribution {
         }
     }
 
-	Lock [] m_lock;
+	//Lock [] m_lock;
 	class CoreRunnable implements Runnable {
 		int m_iThread;
 		private Node m_root;
@@ -341,7 +349,6 @@ public class ThreadedTreeLikelihood extends Distribution {
 		}
 
         public void run() {
- 		  	m_lock[m_iThread].lock();
   		  	try {
   		  		traverse(m_root, m_iFrom, m_iTo, m_core, m_iThread);
   		  	} catch (Exception e) {
@@ -349,54 +356,40 @@ public class ThreadedTreeLikelihood extends Distribution {
 				e.printStackTrace();
 				System.exit(0);
 			}
-  		  	m_lock[m_iThread].unlock();
-  		  	m_nTODO--;
-//  		  	synchronized (this) {
-//  	  		  	notify();				
-//			}
+  		    m_nCountDown.countDown();
         }
 
 	} // CoreRunnable
 
-	int m_nTODO;
+	CountDownLatch m_nCountDown;
+	
 	void threadedTraverse(Node root) throws Exception {
-		traverseSetup(root);
-		
-    	int nThreads = BeastMCMC.m_nThreads;
-		m_lock = new ReentrantLock[nThreads];
-    	m_nTODO = nThreads - 1;
-		int nPatterns = m_fPatternLogLikelihoods.length;
-		int iFrom = 0;
-		int nRange = nPatterns / nThreads;
-		// kick off the threads
-    	for (int iThread = 1; iThread < nThreads; iThread++) {
-    		int iTo = iFrom + nRange; 
-    		m_lock[iThread] = new ReentrantLock();
-    		CoreRunnable coreRunnable = new CoreRunnable(iThread, root, iFrom, iTo, m_likelihoodCore[iThread * 0]);
-    		//coreRunnable.run();
-			BeastMCMC.g_exec.execute(coreRunnable);
-			iFrom = iTo;
-    	}
-    	traverse(root, iFrom, nPatterns, m_likelihoodCore[0], 0);
-    	
-    	while (m_nTODO > 0) {
-    	for (int iThread = 1; iThread < nThreads; iThread++) {
-			m_lock[iThread].lock();
+		try {
+			if (m_nThreads > 1) {
+				m_nCountDown = new CountDownLatch(m_nThreads - 1);
+			}
+			int nPatterns = m_fPatternLogLikelihoods.length;
+			int iFrom = 0;
+			int nRange = nPatterns / m_nThreads;
+			// kick off the threads
+	    	for (int iThread = 1; iThread < m_nThreads; iThread++) {
+	    		int iTo = iFrom + nRange; 
+	    		CoreRunnable coreRunnable = new CoreRunnable(iThread, root, iFrom, iTo, m_likelihoodCore);
+				BeastMCMC.g_exec.execute(coreRunnable);
+				iFrom = iTo;
+	    	}
+	    	traverse(root, iFrom, nPatterns, m_likelihoodCore, 0);
+	    	
+			if (m_nThreads > 1) {
+				m_nCountDown.await();
+			}
+		} catch (RejectedExecutionException e) {
+			m_nThreads--;
+			System.err.println("Reducing nr of threads to " + m_nThreads);
+			// refresh thread pool
+			BeastMCMC.g_exec = Executors.newFixedThreadPool(BeastMCMC.m_nThreads);
+			threadedTraverse(root);
 		}
-//    	boolean bDone = false;
-//    	do {
-//	    	for (int iThread = 1; iThread < nThreads; iThread++) {
-//	    		bDone |= m_bDone[iThread];
-//	    	}
-//    	} while (!bDone);
-    	if (m_nTODO > 0) {
-        	for (int iThread = 1; iThread < nThreads; iThread++) {
-    			m_lock[iThread].unlock();
-    		}
-    	}
-    	//	wait();
-    		//Thread.yield();
-    	}
     }
     
 	
@@ -416,12 +409,12 @@ public class ThreadedTreeLikelihood extends Distribution {
         // First update the transition probability matrix(ices) for this branch
         if (!node.isRoot() && (update != Tree.IS_CLEAN || branchTime != m_StoredBranchLengths[iNode])) {
             Node parent = node.getParent();
-            m_likelihoodCore[0].setNodeMatrixForUpdate(iNode);
+            m_likelihoodCore.setNodeMatrixForUpdate(iNode);
             synchronized (this) {
 	            for (int i = 0; i < m_siteModel.getCategoryCount(); i++) {
 	                double jointBranchRate = m_siteModel.getRateForCategory(i, node) * branchRate;
 	            	m_substitutionModel.getTransitionProbabilities(node, parent.getHeight(), node.getHeight(), jointBranchRate, m_fProbabilities);
-                	m_likelihoodCore[0].setNodeMatrix(iNode, i, m_fProbabilities);
+                	m_likelihoodCore.setNodeMatrix(iNode, i, m_fProbabilities);
 	            }
             }
             update |= Tree.IS_DIRTY;
@@ -440,13 +433,10 @@ public class ThreadedTreeLikelihood extends Distribution {
             // If either child node was updated then update this node too
             if (update1 != Tree.IS_CLEAN || update2 != Tree.IS_CLEAN) {
 
-                int childNum1 = child1.getNr();
-                int childNum2 = child2.getNr();
-
-                m_likelihoodCore[0].setNodePartialsForUpdate(iNode);
+                m_likelihoodCore.setNodePartialsForUpdate(iNode);
                 update |= (update1|update2);
                 if (update >= Tree.IS_FILTHY) {
-                	m_likelihoodCore[0].setNodeStatesForUpdate(iNode);
+                	m_likelihoodCore.setNodeStatesForUpdate(iNode);
                 }
             }
         }
@@ -559,7 +549,7 @@ public class ThreadedTreeLikelihood extends Distribution {
     		return;
     	}
     	if (m_likelihoodCore != null) {
-    		m_likelihoodCore[0].store();
+    		m_likelihoodCore.store();
     	}
         super.store();
         System.arraycopy(m_branchLengths, 0, m_StoredBranchLengths, 0, m_branchLengths.length);
@@ -572,7 +562,7 @@ public class ThreadedTreeLikelihood extends Distribution {
     		return;
     	}
     	if (m_likelihoodCore != null) {
-       		m_likelihoodCore[0].restore();
+       		m_likelihoodCore.restore();
     	}
         super.restore();
         double [] tmp = m_branchLengths;
