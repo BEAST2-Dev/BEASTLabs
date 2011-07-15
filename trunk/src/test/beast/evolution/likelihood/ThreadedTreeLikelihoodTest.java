@@ -46,7 +46,7 @@ public class ThreadedTreeLikelihoodTest extends TestCase {
 
     @Test
 	public void testJC69Likelihood() throws Exception {
-    	for (int i = 0; i < 1; i++) {
+    	for (int i = 0; i < 1000; i++) {
 		// Set up JC69 model: uniform freqs, kappa = 1, 0 gamma categories	
 		Alignment data = BEASTTestCase.getAlignment();
 		Tree tree = BEASTTestCase.getTree(data);
