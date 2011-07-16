@@ -26,54 +26,17 @@
         </sequence>
     </data>
 
-    <!-- The HKY substitution model (Hasegawa, Kishino & Yano, 1985)             -->
-    <input spec='HKY' id="hky">
-        <parameter name='kappa' idref='hky.kappa'/>
-        <input id='freqs' name='frequencies' spec='Frequencies' frequencies='@hky.frequencies'/>
-    </input>
-
-    <!-- site model                                                              -->
-    <input spec='SiteModel' id="siteModel">
-        <!--<parameter name='mutationRate'>1.0</parameter>-->
-        <substModel idref='hky'/>
-    </input>
-
-    <input spec='TreeLikelihood' id="treeLikelihood">
-        <data idref="alignment"/>
-        <tree idref="tree"/>
-        <siteModel idref="siteModel"/>
-    </input>
-
-    <input spec='beast.util.ClusterTree' id='tree' clusterType='upgma'>
-        <taxa idref='alignment'/>
-    </input>
-
-    <!--<tree spec='beast.evolution.tree.RandomTree' id='coalescentSimulator' initial='@tree' taxa='@alignment'>
-        <populationModel spec='ConstantPopulation'>
-		<popSize spec='parameter.RealParameter' value='1'/>
-	</populationModel>
-    </tree>-->
-
-    <parameter id="hky.kappa" value="2.0" lower="0.0"/>
-    <parameter id="hky.frequencies" value="0.25" dimension="4" lower='0.0'/>
-    <parameter id="popSize" value="17" lower="0.0"/>
-
-    <taxa spec='TaxonSet' id='human,chimp'>
-        <taxon spec='Taxon' id='human'/>
-        <taxon spec='Taxon' id='chimp'/>
-    </taxa>
 
     <run spec="MCMC" id="mcmc" chainLength="10000000"> <!--autoOptimize="true"-->
         <init spec='beast.evolution.tree.RandomTree' id='randomTree' initial='@tree' taxa='@alignment'>
             <populationModel spec='ConstantPopulation' popSize='@popSize'/>
-            <constraint idref='mrcaPrior'/>
         </init>
-        
+
         <state>
-            <stateNode idref='hky.kappa'/>
-            <stateNode idref='hky.frequencies'/>
-            <stateNode idref='popSize'/>
-            <stateNode idref='tree'/>
+            <stateNode spec='parameter.RealParameter' id="hky.kappa" value="2.0" lower="0.0"/>
+            <stateNode spec='parameter.RealParameter' id="hky.frequencies" value="0.25" dimension="4" lower='0.0'/>
+            <stateNode spec='parameter.RealParameter' id="popSize" value="17" lower="0.0"/>
+            <stateNode spec='beast.evolution.tree.Tree' id='tree'/>
         </state>
 
         <distribution spec='CompoundDistribution' id='posterior'>
@@ -89,8 +52,7 @@
                     <distr id="OneOnX" offset="0.0" spec="beast.math.distributions.OneOnX"/>
                 </distribution>
 
-                <distribution spec='beast.math.distributions.MRCAPrior' tree='@tree' id='mrcaPrior'
-                              taxonset='@human,chimp' monophyletic='true'>
+                <distribution spec='beast.math.distributions.MRCAPrior' tree='@tree' id='mrcaPrior2' taxonset='@human,chimp' monophyletic='true'>
                     <distr spec='beast.math.distributions.Normal'>
                         <parameter name='mean' value='6.0'/>
                         <parameter name='sigma' value='0.5'/>
@@ -106,7 +68,15 @@
                     </populationModel>
                 </distribution>
             </distribution>
-            <distribution id='likelihood' idref="treeLikelihood"/>
+
+            <distribution spec='TreeLikelihood' id="likelihood" data='@alignment' tree='@tree'>
+                <siteModel id="siteModel" spec='SiteModel'>
+                    <substModel spec='HKY' id="hky">
+                        <parameter name='kappa' idref='hky.kappa'/>
+                        <frequencies id='freqs' spec='Frequencies' frequencies='@hky.frequencies'/>
+                    </substModel>
+                </siteModel>
+            </distribution>
         </distribution>
 
         <operator id='kappaScaler' spec='ScaleOperator' scaleFactor="0.75" weight="0.1" parameter="@hky.kappa"/>
@@ -126,17 +96,21 @@
             <log idref="posterior"/>
             <log idref="prior"/>
             <log spec='beast.evolution.tree.TreeHeightLogger' tree='@tree'/>
-            <log spec='beast.evolution.tree.MRCATime' tree='@tree' data='@alignment' taxa='@human,chimp'
-                 id='HumanChimpMRCA'/>
+            <log spec='beast.math.distributions.MRCAPrior' tree='@tree' id='HumanChimpMRCA'>
+                <taxonset spec='TaxonSet' id='human,chimp'>
+                    <taxon spec='Taxon' id='human'/>
+                    <taxon spec='Taxon' id='chimp'/>
+                </taxonset>
+            </log>
             <log idref="popSize"/>
             <log idref="hky.kappa"/>
             <log idref="hky.frequencies"/>
             <log idref="likelihood"/>
             <log idref="coalescent"/>
         </logger>
-        <!--         <logger logEvery="1000" fileName="test.$(seed).trees">
-     <log idref="tree"/>
- </logger>       -->
+        <logger logEvery="1000" fileName="test.$(seed).trees">
+            <log idref="tree"/>
+        </logger>
         <logger logEvery="100000">
             <model idref='posterior'/>
             <log idref="posterior"/>
