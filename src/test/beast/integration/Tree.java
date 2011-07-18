@@ -33,7 +33,7 @@ public class Tree extends TestFramework {
                 addExpIntoList(expList, "hky.frequencies1", 0.2569, 5.0647E-4);
                 addExpIntoList(expList, "hky.frequencies2", 0.1552, 4.4638E-4);
                 addExpIntoList(expList, "hky.frequencies3", 0.2617, 5.1085E-4);
-                addExpIntoList(expList, "treeLikelihood", -1816.6943, 5.8444E-2);
+                addExpIntoList(expList, "likelihood", -1816.6943, 5.8444E-2);
                 addExpIntoList(expList, "coalescent", 7.2378, 9.1912E-3);
                 break;
 
@@ -49,7 +49,7 @@ public class Tree extends TestFramework {
                 addExpIntoList(expList, "hky.frequencies1", 0.2573, 5.4356E-4);
                 addExpIntoList(expList, "hky.frequencies2", 0.1548, 4.2604E-4);
                 addExpIntoList(expList, "hky.frequencies3", 0.2599, 6.0174E-4);
-                addExpIntoList(expList, "treeLikelihood", -1828.7667, 6.527E-2);
+                addExpIntoList(expList, "likelihood", -1828.7667, 6.527E-2);
                 addExpIntoList(expList, "coalescent", 6.864, 9.7699E-3);
                 break;
 
