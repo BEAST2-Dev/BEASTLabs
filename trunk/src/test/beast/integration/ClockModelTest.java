@@ -94,14 +94,14 @@ public class ClockModelTest extends TestFramework {
                 addExpIntoList(expList, "hky.frequencies3", 0.2611, 5.7794E-4);
                 addExpIntoList(expList, "S", 0.1818, 2.8047E-3);
                 addExpIntoList(expList, "coalescent", 7.2662, 1.2231E-2);
-                addExpIntoList(expList, "rateCategories1", 0.1818, 2.8047E-3);
-                addExpIntoList(expList, "rateCategories2", 0.1818, 2.8047E-3);
-                addExpIntoList(expList, "rateCategories3", 0.1818, 2.8047E-3);
-                addExpIntoList(expList, "rateCategories4", 0.1818, 2.8047E-3);
-                addExpIntoList(expList, "rateCategories5", 0.1818, 2.8047E-3);
-                addExpIntoList(expList, "rateCategories6", 0.1818, 2.8047E-3);
-                addExpIntoList(expList, "rateCategories7", 0.1818, 2.8047E-3);
-                addExpIntoList(expList, "rateCategories8", 0.1818, 2.8047E-3);
+//                addExpIntoList(expList, "rateCategories1", 0.1818, 2.8047E-3);
+//                addExpIntoList(expList, "rateCategories2", 0.1818, 2.8047E-3);
+//                addExpIntoList(expList, "rateCategories3", 0.1818, 2.8047E-3);
+//                addExpIntoList(expList, "rateCategories4", 0.1818, 2.8047E-3);
+//                addExpIntoList(expList, "rateCategories5", 0.1818, 2.8047E-3);
+//                addExpIntoList(expList, "rateCategories6", 0.1818, 2.8047E-3);
+//                addExpIntoList(expList, "rateCategories7", 0.1818, 2.8047E-3);
+//                addExpIntoList(expList, "rateCategories8", 0.1818, 2.8047E-3);
                 break;
 //mean	0.1818	-1816.4663	7.2662	4.7099	3.9852	5.3233	4.7279	4.9415	5.2705	4.1057	4.0044	4.2019	4.051
 //st	2.8047E-3	6.4309E-2	1.2231E-2	2.9611E-2	3.0658E-2	3.179E-2	3.0321E-2	3.5701E-2	2.9287E-2	3.1264E-2	3.257E-2	3.0458E-2	3.0499E-2
