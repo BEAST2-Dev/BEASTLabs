@@ -8,15 +8,28 @@ import java.util.List;
 /**
  * @author Walter Xie
  */
-public class ClockModel extends TestFramework {
+public class ClockModelTest extends TestFramework {
 
     private final String[] XML_FILES = new String[]{"testStrictClock.xml", "testStrictClock2.xml", "testRandomLocalClock.xml"};
 //            "testUCRelaxedClockLogNormal.xml"};
 
-    protected void analyseXMLsAndLogs() throws Exception {
-        super.analyseXMLsAndLogs(XML_FILES);
+    public void testStrictClock() throws Exception {
+        analyse(0);
     }
-    
+
+    public void testStrictClock2() throws Exception {
+        analyse(1);
+    }
+
+    public void testRandomLocalClock() throws Exception {
+        analyse(2);
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp(XML_FILES);
+    }
+
     protected List<Expectation> giveExpectations(int index_XML) throws Exception {
         List<Expectation> expList = new ArrayList<Expectation>();
 
@@ -76,7 +89,7 @@ public class ClockModel extends TestFramework {
                 addExpIntoList(expList, "coalescent", 7.2815, 1.3472E-2);
                 break;
 
-           default:
+            default:
                 throw new Exception("No such XML");
         }
 

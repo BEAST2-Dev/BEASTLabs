@@ -8,17 +8,61 @@ import java.util.List;
 /**
  * @author Walter Xie
  */
-public class TreePrior extends TestFramework {
+public class TreePriorTest extends TestFramework {
     private final String[] XML_FILES = new String[]{"testCoalescentNoClock.xml", "testCoalescentNoClock1.xml",
             "testCoalescentTipDates.xml", "testCoalescentTipDates1.xml", "testCoalescentTipDates2.xml",
             "testExponentialGrowth.xml", "testYuleModel_10taxa.xml", "testBirthDeathModel_10taxa.xml",
-            "testBirthDeathAsYule.xml"};// ,"testBSP.xml"};
+            "testBirthDeathAsYule.xml", "testEBSP.xml", "testBSP.xml"};
 
-
-    protected void analyseXMLsAndLogs() throws Exception {
-        super.analyseXMLsAndLogs(XML_FILES);
+    public void testCoalescentNoClock() throws Exception {
+        analyse(0);
     }
-    
+
+    public void testCoalescentNoClock1() throws Exception {
+        analyse(1);
+    }
+
+    public void testCoalescentTipDates() throws Exception {
+        analyse(2);
+    }
+
+    public void testCoalescentTipDates1() throws Exception {
+        analyse(3);
+    }
+
+    public void testCoalescentTipDates2() throws Exception {
+        analyse(4);
+    }
+
+    public void testExponentialGrowth() throws Exception {
+        analyse(5);
+    }
+
+    public void testYuleModel_10taxa() throws Exception {
+        analyse(6);
+    }
+
+    public void testBirthDeathModel_10taxa() throws Exception {
+        analyse(7);
+    }
+
+    public void testBirthDeathAsYule() throws Exception {
+        analyse(8);
+    }
+
+    public void testEBSP() throws Exception {
+        analyse(9);
+    }
+
+    public void testBSP() throws Exception {
+        analyse(10);
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp(XML_FILES);
+    }
+
     protected List<Expectation> giveExpectations(int index_XML) throws Exception {
         List<Expectation> expList = new ArrayList<Expectation>();
 
@@ -105,7 +149,27 @@ public class TreePrior extends TestFramework {
                 addExpIntoList(expList, "birthRate", 1.1636, 3.8458E-3);
                 break;
 
-            case 9: // testBSP.xml
+            case 9: // testEBSP.xml
+//        BEAST 1 testEBSP.xml
+                addExpIntoList(expList, "posterior", -1826.2014, 0.1562);
+                addExpIntoList(expList, "prior", -9.4517, 0.1782);
+                addExpIntoList(expList, "tree.height", 6.3528E-2, 7.0709E-5);
+                addExpIntoList(expList, "popSizes1", 2435.0409, 132.4556);
+                addExpIntoList(expList, "popSizes2", 2195.7116, 156.2106);
+                addExpIntoList(expList, "popSizes3", 1065.3511, 119.8768);
+                addExpIntoList(expList, "indicators", 1.3275, 2.1211E-2);
+                addExpIntoList(expList, "indicators", 1.5219, 2.9634E-2);
+                addExpIntoList(expList, "indicators", 2.1505, 3.8185E-2);
+                addExpIntoList(expList, "hky.kappa", 26.4814, 0.2725);
+                addExpIntoList(expList, "hky.frequencies0", 0.3252, 7.7972E-4);
+                addExpIntoList(expList, "hky.frequencies1", 0.2581, 5.685E-4);
+                addExpIntoList(expList, "hky.frequencies2", 0.1553, 4.3071E-4);
+                addExpIntoList(expList, "hky.frequencies3", 0.2614, 6.1733E-4);
+                addExpIntoList(expList, "treeLikelihood", -1816.7497, 5.4764E-2);
+                addExpIntoList(expList, "populationMean", -3.4472, 0.1802);
+                break;
+
+            case 10: // testBSP.xml
 //        BEAST 1 testBSPNoClock.xml
                 addExpIntoList(expList, "posterior", -1826.2014, 0.1562);
                 addExpIntoList(expList, "prior", -9.4517, 0.1782);
