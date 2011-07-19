@@ -8,14 +8,18 @@ import java.util.List;
 /**
  * @author Walter Xie
  */
-public class SubstitutionModel extends TestFramework {
+public class SubstitutionModelTest extends TestFramework {
 
     private final String[] XML_FILES = new String[]{"testHKY.xml"}; //, "testTipDates.xml"};
 
-    protected void analyseXMLsAndLogs() throws Exception {
-        super.analyseXMLsAndLogs(XML_FILES);
+    public void testHKY() throws Exception {
+        analyse(0);
     }
 
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp(XML_FILES);
+    }
     protected List<Expectation> giveExpectations(int index_XML) throws Exception {
         List<Expectation> expList = new ArrayList<Expectation>();
 

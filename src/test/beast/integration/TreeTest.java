@@ -8,12 +8,21 @@ import java.util.List;
 /**
  * @author Walter Xie
  */
-public class Tree extends TestFramework {
+public class TreeTest extends TestFramework {
 
-    private final String[] XML_FILES = new String[]{"testCalibration.xml", "testCalibrationMono.xml"};
+    String[] XML_FILES = new String[]{"testCalibration.xml", "testCalibrationMono.xml"};
 
-    protected void analyseXMLsAndLogs() throws Exception {
-        super.analyseXMLsAndLogs(XML_FILES);
+    public void testCalibration() throws Exception {
+        analyse(0);
+    }
+
+    public void testCalibrationMono() throws Exception {
+        analyse(1);
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp(XML_FILES);
     }
 
     protected List<Expectation> giveExpectations(int index_XML) throws Exception {
