@@ -124,8 +124,12 @@ public class ParticleFilter extends beast.core.Runnable {
 		
 		// sample new state with probability proportional to posterior
 		double fMax = m_fPosteriors[0];
+		int iMax = 0;
 		for (int i = 0; i < m_nParticles; i++) {
-			fMax = Math.max(m_fPosteriors[i], fMax);
+			if (fMax < m_fPosteriors[i]) {
+				fMax = m_fPosteriors[i];
+				iMax = i;
+			}
 		}
 		double [] fPosteriors = new double[m_nParticles];
 		for (int i = 0; i < m_nParticles; i++) {
@@ -141,15 +145,19 @@ public class ParticleFilter extends beast.core.Runnable {
 			fRand -= fPosteriors[iNewState];
 			iNewState++;
 		}
+
+		//iNewState = iMax;
+		m_fPosteriors[iParticle] = m_fPosteriors[iNewState];
+		m_sStates[iParticle] = m_sStates[iNewState];
 		
-		// write state
+		// write stat
     	FileOutputStream xmlFile = new FileOutputStream(sStateFileName);
     	PrintStream out = new PrintStream(xmlFile);
         out.print(m_sStates[iNewState]);
 		out.close();
 
 		// report some statistics
-		System.out.print(iParticle); 
+		System.out.print(iParticle + "=" + m_fPosteriors[iNewState] + " "); 
 		if (iParticle == m_nParticles-1) {
 			System.out.print(" " + DiscreteStatistics.mean(m_fPosteriors) + " " + DiscreteStatistics.variance(m_fPosteriors));
 			System.out.print(" " + Arrays.toString(m_fPosteriors));
