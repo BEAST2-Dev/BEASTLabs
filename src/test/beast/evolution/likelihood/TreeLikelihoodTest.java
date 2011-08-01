@@ -11,7 +11,6 @@ import beast.evolution.alignment.Alignment;
 import beast.evolution.alignment.AscertainedAlignment;
 import beast.evolution.alignment.Sequence;
 import beast.evolution.likelihood.ExperimentalTreeLikelihood;
-import beast.evolution.likelihood.TreeLikelihoodX;
 import beast.evolution.sitemodel.SiteModel;
 import beast.evolution.substitutionmodel.Frequencies;
 import beast.evolution.substitutionmodel.GeneralSubstitutionModel;
