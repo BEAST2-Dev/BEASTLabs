@@ -10,7 +10,8 @@ import org.junit.Test;
 import beast.evolution.alignment.Alignment;
 import beast.evolution.alignment.AscertainedAlignment;
 import beast.evolution.alignment.Sequence;
-import beast.evolution.likelihood.TreeLikelihood;
+import beast.evolution.likelihood.ExperimentalTreeLikelihood;
+import beast.evolution.likelihood.TreeLikelihoodX;
 import beast.evolution.sitemodel.SiteModel;
 import beast.evolution.substitutionmodel.Frequencies;
 import beast.evolution.substitutionmodel.GeneralSubstitutionModel;
@@ -29,8 +30,8 @@ public class TreeLikelihoodTest extends TestCase {
 		super();
 	}
 	
-	protected TreeLikelihood newTreeLikelihood() {
-		return new TreeLikelihood();
+	protected ExperimentalTreeLikelihood newTreeLikelihood() {
+		return new ExperimentalTreeLikelihood();
 	}
 	
 	
@@ -98,7 +99,7 @@ public class TreeLikelihoodTest extends TestCase {
 		SiteModel siteModel = new SiteModel();
 		siteModel.initByName("mutationRate", "1.0", "gammaCategoryCount", 1, "substModel", hky);
 
-		TreeLikelihood likelihood = newTreeLikelihood();
+		ExperimentalTreeLikelihood likelihood = newTreeLikelihood();
 		likelihood.initByName("data",data, "tree",tree, "siteModel", siteModel);
 		double fLogP = 0;
 		fLogP = likelihood.calculateLogP();
@@ -129,7 +130,7 @@ public class TreeLikelihoodTest extends TestCase {
 		SiteModel siteModel = new SiteModel();
 		siteModel.initByName("mutationRate", "1.0", "gammaCategoryCount", 1, "substModel", hky);
 
-		TreeLikelihood likelihood = newTreeLikelihood();
+		ExperimentalTreeLikelihood likelihood = newTreeLikelihood();
 		likelihood.initByName("data",data, "tree",tree, "siteModel", siteModel);
 
 		double fLogP = 0;
@@ -155,7 +156,7 @@ public class TreeLikelihoodTest extends TestCase {
 		SiteModel siteModel = new SiteModel();
 		siteModel.initByName("mutationRate", "1.0", "gammaCategoryCount", 1, "substModel", hky);
 
-		TreeLikelihood likelihood = newTreeLikelihood();
+		ExperimentalTreeLikelihood likelihood = newTreeLikelihood();
 		likelihood.initByName("data",data, "tree",tree, "siteModel", siteModel);
 
 		double fLogP = 0;
@@ -185,7 +186,7 @@ public class TreeLikelihoodTest extends TestCase {
 		SiteModel siteModel = new SiteModel();
 		siteModel.initByName("mutationRate", "1.0", "gammaCategoryCount", 1, "substModel", hky);
 
-		TreeLikelihood likelihood = newTreeLikelihood();
+		ExperimentalTreeLikelihood likelihood = newTreeLikelihood();
 		likelihood.initByName("data",data, "tree",tree, "siteModel", siteModel);
 
 		double fLogP = 0;
@@ -220,7 +221,7 @@ public class TreeLikelihoodTest extends TestCase {
 				"proportionInvariant", "0.0",
 				"substModel", hky);
 
-		TreeLikelihood likelihood = newTreeLikelihood();
+		ExperimentalTreeLikelihood likelihood = newTreeLikelihood();
 		likelihood.initByName("data",data, "tree",tree, "siteModel", siteModel);
 
 		double fLogP = 0;
@@ -254,7 +255,7 @@ public class TreeLikelihoodTest extends TestCase {
 				"proportionInvariant", "0.701211",
 				"substModel", hky);
 
-		TreeLikelihood likelihood = newTreeLikelihood();
+		ExperimentalTreeLikelihood likelihood = newTreeLikelihood();
 		likelihood.initByName("data",data, "tree",tree, "siteModel", siteModel);
 
 		double fLogP = 0;
@@ -287,7 +288,7 @@ public class TreeLikelihoodTest extends TestCase {
 				"proportionInvariant", "0.486548",
 				"substModel", hky);
 
-		TreeLikelihood likelihood = newTreeLikelihood();
+		ExperimentalTreeLikelihood likelihood = newTreeLikelihood();
 		likelihood.initByName("data",data, "tree",tree, "siteModel", siteModel);
 
 		double fLogP = 0;
@@ -319,7 +320,7 @@ public class TreeLikelihoodTest extends TestCase {
 		siteModel.initByName("mutationRate", "1.0", "gammaCategoryCount", 1,
 				"substModel", gsm);
 
-		TreeLikelihood likelihood = newTreeLikelihood();
+		ExperimentalTreeLikelihood likelihood = newTreeLikelihood();
 		likelihood.initByName("data",data, "tree",tree, "siteModel", siteModel);
 
 		double fLogP = 0;
@@ -350,7 +351,7 @@ public class TreeLikelihoodTest extends TestCase {
 				"substModel", gsm);
 		//siteModel.init("1.0", 1, null, "0.5", gsm);
 
-		TreeLikelihood likelihood = newTreeLikelihood();
+		ExperimentalTreeLikelihood likelihood = newTreeLikelihood();
 		likelihood.initByName("data",data, "tree",tree, "siteModel", siteModel);
 
 		double fLogP = 0;
@@ -380,7 +381,7 @@ public class TreeLikelihoodTest extends TestCase {
 				"shape", "0.5", 
 				"substModel", gsm);
 
-		TreeLikelihood likelihood = newTreeLikelihood();
+		ExperimentalTreeLikelihood likelihood = newTreeLikelihood();
 		likelihood.initByName("data",data, "tree",tree, "siteModel", siteModel);
 
 		double fLogP = 0;
@@ -411,7 +412,7 @@ public class TreeLikelihoodTest extends TestCase {
 				"proportionInvariant", "0.5",
 				"substModel", gsm);
 
-		TreeLikelihood likelihood = newTreeLikelihood();
+		ExperimentalTreeLikelihood likelihood = newTreeLikelihood();
 		likelihood.initByName("data",data, "tree",tree, "siteModel", siteModel);
 
 		double fLogP = 0;
