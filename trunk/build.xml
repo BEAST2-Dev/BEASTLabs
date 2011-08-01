@@ -25,6 +25,7 @@
 	<path id="classpath">
         <pathelement path="${buildii}"/>
 		<fileset dir="${libii}" includes="junit-4.8.2.jar"/>
+		<fileset dir="${beast2path}/lib" includes="jam.jar"/>
         <pathelement path="${beast2classpath}"/>
 	</path>
 
