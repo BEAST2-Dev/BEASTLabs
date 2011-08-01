@@ -1,9 +1,11 @@
 package beast.inference;
 
+import beast.core.Description;
 import beast.core.MCMC;
 import beast.core.Operator;
 import beast.util.Randomizer;
 
+@Description("Maximum likelihood throught simple random hill climbing")
 public class ML extends MCMC {
 	
 	@Override
