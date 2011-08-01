@@ -1,164 +1,196 @@
 package beast.inference;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.text.DecimalFormat;
+import java.util.Arrays;
+import java.util.concurrent.CountDownLatch;
+
+
 import beast.core.Description;
-import beast.core.Distribution;
 import beast.core.Input;
+import beast.core.Input.Validate;
 import beast.core.Logger;
 import beast.core.MCMC;
-import beast.core.Operator;
+import beast.math.statistic.DiscreteStatistics;
 import beast.util.Randomizer;
+import beast.util.XMLProducer;
 
 @Description("MCMC Inference by particle filter approach. This works only when run with many threads, one per particle is optimal.")
-public class ParticleFilter extends MCMC {
+public class ParticleFilter extends beast.core.Runnable {
 
-	public Input<Integer> m_nParticles = new Input<Integer>("nrofparticles", "the number of particles to use, default 100", 100);
-	public Input<Integer> m_nStepSize = new Input<Integer>("stepsize", "number of steps after which a new particle set is determined during burn in, default 100", 100);
+	String DEFAULT_PARTICLE_LAUNCER = ParticleLauncher.class.getName();
+	String POSTERIOR_LOG_FILE = "posterior.log";
 
+	
+	public Input<Integer> m_nParticlesInput = new Input<Integer>("nrofparticles", "the number of particles to use, default 100", 100);
+	public Input<Integer> m_nStepSizeInput = new Input<Integer>("stepsize", "number of steps after which a new particle set is determined during burn in, default 100", 100);
+	public Input<String> m_sRootDir = new Input<String>("rootdir", "root directory for storing particle states and log files (default /tmp)", "/tmp");
+	public Input<MCMC> m_mcmc = new Input<MCMC>("mcmc", "MCMC analysis used to specify model and operations in each of the particles", Validate.REQUIRED);
+	public Input<String> m_sParticleLauncher = new Input<String>("launcher", "class name for particle launcher, default " + DEFAULT_PARTICLE_LAUNCER, DEFAULT_PARTICLE_LAUNCER);
+
+	int m_nParticles;
+	// nr of steps = MCMC.chainLength / step size
+	int m_nSteps;
+	
+	/** states and associated posteriors. Used to sample next state from **/
+	String [] m_sStates;
+	double [] m_fPosteriors;
+	/** flag used to initialise states and posteriors properly **/
+	boolean m_bFirstParticle = true;
+
+	CountDownLatch m_nCountDown;
+
+	
+	DecimalFormat formatter;
+	String getParticleDir(int iParticle) {
+		return m_sRootDir.get() + "/particle" + formatter.format(iParticle);
+	}
+
+
+	@Override
+	public void initAndValidate() throws Exception {
+		m_nParticles = m_nParticlesInput.get();
+		int nStepSize = m_nStepSizeInput.get();
+		
+		File rootDir = new File(m_sRootDir.get());
+		if (!rootDir.exists()) {
+			throw new Exception("Directory " + m_sRootDir.get() + " does not exist.");
+		}
+		if (!rootDir.isDirectory()) {
+			throw new Exception(m_sRootDir.get() + " is not a directory.");
+		}
+		
+		// initialise MCMC
+		MCMC mcmc = m_mcmc.get();
+		// set up chain length for a single step
+		mcmc.m_oBurnIn.setValue(0, mcmc);
+		m_nSteps = mcmc.m_oChainLength.get() / nStepSize;
+		mcmc.m_oChainLength.setValue(nStepSize, mcmc);
+		// add posterior logger
+		Logger logger = new Logger();
+		logger.initByName("fileName", POSTERIOR_LOG_FILE, "log", mcmc.posteriorInput.get(), "logEvery", nStepSize);
+		mcmc.m_loggers.setValue(logger, mcmc);
+
+		// set up directories with beast.xml files in each of them
+		String sFormat = "";
+		for (int i = m_nParticles; i > 0; i /= 10) {
+			sFormat += "#";
+		}
+		formatter = new DecimalFormat(sFormat);
+		
+		XMLProducer producer = new XMLProducer();
+		String sXML = producer.toXML(m_mcmc.get());
+		for (int i = 0; i < m_nParticles; i++) {
+			File particleDir = new File(getParticleDir(i));
+			if (!particleDir.exists() && !particleDir.mkdir()) {
+				throw new Exception("Failed to make directory " + particleDir.getName());
+			}
+        	FileOutputStream xmlFile = new FileOutputStream(particleDir.getAbsoluteFile() + "/beast.xml");
+        	PrintStream out = new PrintStream(xmlFile);
+            out.print(sXML);
+			out.close();
+		}
+		
+		m_sStates = new String[m_nParticles];
+		m_fPosteriors = new double[m_nParticles];
+	} // initAndValidate
+
+	
+	synchronized void updateState(int iParticle) throws Exception {
+		
+		// load state
+		String sStateFileName = getParticleDir(iParticle) + "/beast.xml.state";
+		m_sStates[iParticle] = getTextFile(sStateFileName);
+		
+		// load posterior
+		String sLog = getTextFile(getParticleDir(iParticle) + "/" + POSTERIOR_LOG_FILE);
+		String [] sLogs = sLog.split("\n");
+		String sPosterior = sLogs[sLogs.length-1].split("\t")[1];
+		m_fPosteriors[iParticle] = Double.parseDouble(sPosterior);
+		
+		if (m_bFirstParticle) {
+			// make sure the states and posteriors are initialised
+			for (int i = 0; i < m_nParticles; i++) {
+				m_sStates[i] = m_sStates[iParticle];
+				m_fPosteriors[i] = m_fPosteriors[iParticle];
+			}			
+			m_bFirstParticle = false;
+		}
+		
+		// sample new state with probability proportional to posterior
+		double fMax = m_fPosteriors[0];
+		for (int i = 0; i < m_nParticles; i++) {
+			fMax = Math.max(m_fPosteriors[i], fMax);
+		}
+		double [] fPosteriors = new double[m_nParticles];
+		for (int i = 0; i < m_nParticles; i++) {
+			fPosteriors[i] = Math.exp(m_fPosteriors[i] - fMax);
+		}
+		double fSum = 0;
+		for (int i = 0; i < m_nParticles; i++) {
+			fSum += fPosteriors[i];
+		}
+		double fRand = Randomizer.nextDouble() * fSum;
+		int iNewState = 0;
+		while (fRand > fPosteriors[iNewState]) {
+			fRand -= fPosteriors[iNewState];
+			iNewState++;
+		}
+		
+		// write state
+    	FileOutputStream xmlFile = new FileOutputStream(sStateFileName);
+    	PrintStream out = new PrintStream(xmlFile);
+        out.print(m_sStates[iNewState]);
+		out.close();
+
+		// report some statistics
+		System.out.print(iParticle); 
+		if (iParticle == m_nParticles-1) {
+			System.out.print(" " + DiscreteStatistics.mean(m_fPosteriors) + " " + DiscreteStatistics.variance(m_fPosteriors));
+			System.out.print(" " + Arrays.toString(m_fPosteriors));
+			System.out.println();
+		}
+	
+	}
+
+	private String getTextFile(String sFileName) throws IOException {
+		BufferedReader fin = new BufferedReader(new FileReader(sFileName));
+		StringBuffer buf = new StringBuffer();
+		while (fin.ready()) {
+			String sStr = fin.readLine();
+			buf.append(sStr);
+			buf.append('\n');
+		}
+		fin.close();
+		return buf.toString();
+	}
+	
+	
     @Override
     public void run() throws Exception {
-        // initialises log so that log file headers are written, etc.
-        for (Logger log : m_loggers.get()) {
-            log.init();
-        }
-    	// set up state (again). Other plugins may have manipulated the
-    	// StateNodes, e.g. set up bounds or dimensions
-    	state.initAndValidate();
-    	// also, initialise state with the file name to store and set-up whether to resume from file
-    	state.setStateFileName(m_sStateFile);
-        int nBurnIn = m_oBurnIn.get();
-        int nChainLength = m_oChainLength.get();
-        if (m_bRestoreFromFile) {
-        	state.restoreFromFile();
-        	nBurnIn = 0;
-        }
-        long tStart = System.currentTimeMillis();
+		m_nCountDown = new CountDownLatch(m_nParticles);
 
-        System.err.println("Start state:");
-        System.err.println(state.toString());
-
-        state.setEverythingDirty(true);
-        Distribution posterior = posteriorInput.get();
-
-        // do the sampling
-        double logAlpha = 0;
-
-        boolean bDebug = true;
-        state.setEverythingDirty(true);
-        state.checkCalculationNodesDirtiness();
-        double fOldLogLikelihood = robustlyCalcPosterior(posterior); 
-        System.err.println("Start likelihood: " + fOldLogLikelihood);
-        
-        
-        double fBestLogLikelihood = fOldLogLikelihood;
-        String sBestXML = state.toXML();
-        String sStartXML = state.toXML();
-        
-        int nParticles = m_nParticles.get();
-        int nStepSize = m_nStepSize.get();
-
-        // main MCMC loop 
-        for (int iSample = 0; iSample <= nBurnIn + nChainLength; iSample++) {
-            state.store(iSample);
-
-            Operator operator = operatorSet.selectOperator();
-            //System.out.print("\n" + iSample + " " + operator.getName()+ ":");
-            double fLogHastingsRatio = operator.proposal();
-            if (fLogHastingsRatio != Double.NEGATIVE_INFINITY) {
-            	state.storeCalculationNodes();
-                state.checkCalculationNodesDirtiness();
-
-                double fNewLogLikelihood = posterior.calculateLogP();
-
-                logAlpha = fNewLogLikelihood - fOldLogLikelihood + fLogHastingsRatio; //CHECK HASTINGS
-                //System.out.println(logAlpha + " " + fNewLogLikelihood + " " + fOldLogLikelihood);
-                if (logAlpha >= 0 || Randomizer.nextDouble() < Math.exp(logAlpha)) {
-                    // accept
-                    fOldLogLikelihood = fNewLogLikelihood;
-                    state.acceptCalculationNodes();
-
-                    if (iSample >= 0) {
-                        operator.accept();
-                    }
-                    //System.out.print(" accept");
-                } else {
-                    // reject
-                    if (iSample >= 0) {
-                        operator.reject();
-                    }
-                    state.restore();
-                    state.restoreCalculationNodes();
-                    //System.out.print(" reject");
-                }
-                state.setEverythingDirty(false);
-            } else {
-                // operation failed
-                if (iSample > 0) {
-                    operator.reject();
-                }
-                state.restore();
-                //System.out.print(" direct reject");
-            }
-            log(iSample);
-            
-            if (iSample < nBurnIn) {
-            	if (iSample % nStepSize == 0) {
-	                // during burn-in
-	            	if (fOldLogLikelihood > fBestLogLikelihood) {
-		            	sBestXML = state.toXML();
-		            	fBestLogLikelihood = fOldLogLikelihood;
-	                }
-	            	// go to best state, after all particles have reported
-	            	if (iSample % (nStepSize * nParticles) == 0) {
-	            		sStartXML = sBestXML;
-	            	}
-	            	state.fromXML(sStartXML);
-            	}
-            } else if (iSample == nBurnIn) {
-            	// switch to reporting chain each of the particles
-            	nStepSize = nChainLength/nParticles;
-            } else {
-            	if (iSample % nStepSize == 0) {
-                	// go to next particle
-	            	state.fromXML(sStartXML);
-            	}            	
-            }
-            
-
-//            if (iSample % 10000 == 0) {
-//                state.store(-1);
-//                state.setEverythingDirty(true);
-//                state.checkCalculationNodesDirtiness();
-//                posterior.calculateLogP();
-//            }
-            
-            if (bDebug && iSample % 3 == 0) { // || iSample % 10000 == 0) {
-            	//System.out.print("*");
-            	// check that the posterior is correctly calculated
-                state.store(-1);
-                state.setEverythingDirty(true);
-                state.checkCalculationNodesDirtiness();
-
-                double fLogLikelihood = posterior.calculateLogP();
-
-                if (Math.abs(fLogLikelihood - fOldLogLikelihood) > 1e-6) {
-                    throw new Exception("At sample "+ iSample + "\nLikelihood incorrectly calculated: " + fOldLogLikelihood + " != " + fLogLikelihood);
-                }
-                if (iSample > NR_OF_DEBUG_SAMPLES * 3) {
-                    bDebug = false;
-                }
-                state.setEverythingDirty(false);
-            } else {
-                operator.optimize(logAlpha);
-            }
-        }
-        operatorSet.showOperatorRates(System.out);
-        long tEnd = System.currentTimeMillis();
-        System.out.println("Total calculation time: " + (tEnd - tStart) / 1000.0 + " seconds");
-        close();
-
-        System.err.println("End likelihood: " + fOldLogLikelihood);
-        System.err.println(state);
-        state.storeToFile();
+		for (int i = 0; i < m_nParticles; i++) {
+	    	Object o = Class.forName(m_sParticleLauncher.get()).newInstance();
+	    	if (!(o instanceof ParticleLauncher)) {
+	    		throw new Exception(m_sParticleLauncher.get() + " is not a particle launcher.");
+	    	}
+	    	ParticleLauncher launcher = (ParticleLauncher) o;
+	    	launcher.setParticle(i, this);
+			launcher.start();
+		}
+		
+		m_nCountDown.await();
     } // run;	
+
+
+	public boolean isResuming() {
+		return m_bRestoreFromFile;
+	}
 	
 }
