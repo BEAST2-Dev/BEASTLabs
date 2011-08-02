@@ -42,7 +42,7 @@ package beast.evolution.likelihood;
  *   
  */
 
-abstract public class LikelihoodCore {
+abstract public class ExperimentalLikelihoodCore {
 
 	/** reserve memory for partials, indices and other 
 	 * data structures required by the core 

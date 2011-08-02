@@ -33,7 +33,7 @@
 
 package beast.evolution.likelihood;
 
-public class BeerLikelihoodCoreNative extends LikelihoodCore {
+public class BeerLikelihoodCoreNative extends ExperimentalLikelihoodCore {
 	int m_nPatterns;
 	int m_nStates;
 	int m_nNodes;
