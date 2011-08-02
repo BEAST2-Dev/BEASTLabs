@@ -41,7 +41,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import beast.app.BeastMCMC;
 import beast.evolution.sitemodel.SiteModel;
 
-public class BeerLikelihoodCore extends ExperimentalLikelihoodCore {
+public class ExpBeerLikelihoodCore extends ExperimentalLikelihoodCore {
 	double SCALE = 10;
 //	int u, v, w, v1, v2;
     protected int m_nStates;
@@ -107,7 +107,7 @@ public class BeerLikelihoodCore extends ExperimentalLikelihoodCore {
     double[] m_fPatternLogLikelihoods;      
     int [] m_nPatternWeights;
     
-	public BeerLikelihoodCore(int nStateCount) {
+	public ExpBeerLikelihoodCore(int nStateCount) {
 		this.m_nStates = nStateCount;
 	} // c'tor
 
