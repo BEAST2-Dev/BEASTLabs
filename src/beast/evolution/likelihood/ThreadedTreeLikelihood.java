@@ -289,9 +289,9 @@ public class ThreadedTreeLikelihood extends Distribution {
        	threadedTraverse(tree.getRoot());
 
        	calcLogP();
-        System.err.println(Arrays.toString(m_fRootPartials));
-        System.err.println(Arrays.toString(m_fPatternLogLikelihoods));
-        System.err.println(logP);
+//        System.err.println(Arrays.toString(m_fRootPartials));
+//        System.err.println(Arrays.toString(m_fPatternLogLikelihoods));
+//        System.err.println(logP);
         m_nScale++;
         if (logP > 0 || (m_likelihoodCore.getUseScaling() && m_nScale > X)) {
             System.err.println("Switch off scaling");
@@ -402,21 +402,19 @@ public class ThreadedTreeLikelihood extends Distribution {
 
         double branchRate = m_branchRateModel.getRateForBranch(node);
         double branchTime = node.getLength() * branchRate;
-        synchronized (this) {
-        	m_branchLengths[iNode] = branchTime;
-        }
+       	m_branchLengths[iNode] = branchTime;
         
         // First update the transition probability matrix(ices) for this branch
         if (!node.isRoot() && (update != Tree.IS_CLEAN || branchTime != m_StoredBranchLengths[iNode])) {
             Node parent = node.getParent();
             m_likelihoodCore.setNodeMatrixForUpdate(iNode);
-            synchronized (this) {
+//            synchronized (this) {
 	            for (int i = 0; i < m_siteModel.getCategoryCount(); i++) {
 	                double jointBranchRate = m_siteModel.getRateForCategory(i, node) * branchRate;
 	            	m_substitutionModel.getTransitionProbabilities(node, parent.getHeight(), node.getHeight(), jointBranchRate, m_fProbabilities);
                 	m_likelihoodCore.setNodeMatrix(iNode, i, m_fProbabilities);
 	            }
-            }
+//            }
             update |= Tree.IS_DIRTY;
         }
 
@@ -450,11 +448,12 @@ public class ThreadedTreeLikelihood extends Distribution {
 
         int iNode = node.getNr();
 
-        double branchRate = m_branchRateModel.getRateForBranch(node);
-        double branchTime = node.getLength() * branchRate;
-        synchronized (this) {
-        	m_branchLengths[iNode] = branchTime;
-        }
+//        double branchRate = m_branchRateModel.getRateForBranch(node);
+//        double branchTime = node.getLength() * branchRate;
+//        synchronized (this) {
+//        	m_branchLengths[iNode] = branchTime;
+//        }
+        double branchTime = m_branchLengths[iNode];
         
         // First update the transition probability matrix(ices) for this branch
         if (!node.isRoot() && (update != Tree.IS_CLEAN || branchTime != m_StoredBranchLengths[iNode])) {
