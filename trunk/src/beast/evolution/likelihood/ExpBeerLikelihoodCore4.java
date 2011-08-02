@@ -43,9 +43,9 @@
 package beast.evolution.likelihood;
 
 
-public class BeerLikelihoodCore4 extends BeerLikelihoodCore {
+public class ExpBeerLikelihoodCore4 extends ExpBeerLikelihoodCore {
 
-	public BeerLikelihoodCore4() {
+	public ExpBeerLikelihoodCore4() {
 		super(4);
 	} // c'tor
 
