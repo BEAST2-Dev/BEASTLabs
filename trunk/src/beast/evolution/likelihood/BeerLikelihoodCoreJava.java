@@ -4,7 +4,7 @@ import beast.evolution.sitemodel.SiteModel;
 
 
 /** standard likelihood core, uses no caching **/
-public class BeerLikelihoodCoreJava extends LikelihoodCore {
+public class BeerLikelihoodCoreJava extends ExperimentalLikelihoodCore {
     protected int m_nStates;
     protected int m_nNodes;
     protected int m_nPatterns;

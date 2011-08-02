@@ -60,7 +60,7 @@ public class ExperimentalTreeLikelihood extends Distribution {
     public Input<Boolean> m_useAmbiguities = new Input<Boolean>("useAmbiguities", "flag to indicate leafs that sites containing ambigue states should be handled instead of ignored (the default)", false);
 
     /** calculation engine **/
-    LikelihoodCore m_likelihoodCore;
+    ExperimentalLikelihoodCore m_likelihoodCore;
     
     /** Plugin associated with inputs. Since none of the inputs are StateNodes, it
      * is safe to link to them only once, during initAndValidate.

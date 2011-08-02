@@ -34,7 +34,7 @@ package beast.evolution.likelihood;
 import beast.evolution.sitemodel.SiteModel;
 
 
-public class BeerLikelihoodCoreSimple extends LikelihoodCore {
+public class BeerLikelihoodCoreSimple extends ExperimentalLikelihoodCore {
 	/** various counts **/
 	protected int m_nStates;
     protected int m_nNodes;
