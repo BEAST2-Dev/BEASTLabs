@@ -23,9 +23,9 @@
 		B  = 5000,
 		C  = 0,
 		D  = 0'>
-            <taxa idref='alignment'/>
+			<taxa spec='beast.evolution.alignment.TaxonSet' alignment='@alignment'/>
         </trait>
-		<taxa spec='beast.evolution.alignment.TaxonSet' alignment='@alignment'/>
+        <taxa idref='alignment'/>
     </tree>
 
     <parameter id="popSize" value="10000" lower="0.0"/>
