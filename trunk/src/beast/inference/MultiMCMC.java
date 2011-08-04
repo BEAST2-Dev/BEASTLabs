@@ -287,7 +287,9 @@ public class MultiMCMC extends MCMC {
 					}
 				} while (!sStr.matches("tree STATE.*")); // ignore non-tree lines
 				sStr = sStr.substring(sStr.indexOf("("));
-				Node tree = new TreeParser().parseNewick(sStr);
+				TreeParser parser = new TreeParser();
+				parser.m_nOffset.setValue(0, parser);
+				Node tree = parser.parseNewick(sStr);
 				List<String> sClades = new ArrayList<String>();
 				traverse(tree, sClades);
 				HashMap<String, Integer> cladeMap = m_cladeMaps[iThread];

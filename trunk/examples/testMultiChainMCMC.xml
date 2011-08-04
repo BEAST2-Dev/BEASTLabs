@@ -49,7 +49,9 @@
 
     <tree spec='beast.util.ClusterTree' id='tree' clusterType='upgma'>
         <taxa idref='alignment'/>
+		<taxonset spec='beast.evolution.alignment.TaxonSet' alignment='@alignment'/>
     </tree>
+
 
 
     <run spec="beast.inference.MultiMCMC" id="mcmc" chainLength="1000000">
