@@ -78,7 +78,7 @@ abstract public class ThreadedLikelihoodCore {
 	abstract public void setNodeMatrix(int iNode, int iMatrixIndex, double[] fMatrix);
     /** assign values of states for probability transition matrices 
      * padded with 1s for dealing with unknown characters for node with number iNode **/
-	abstract public void setPaddedNodeMatrices(int iNode, double[] fMatrix);
+	//abstract public void setPaddedNodeMatrices(int iNode, double[] fMatrix);
 
 
     
@@ -113,13 +113,13 @@ abstract public class ThreadedLikelihoodCore {
 	abstract public void calculateLogLikelihoods(double[] fPartials, double[] fFrequencies, double[] fOutLogLikelihoods, int iFrom, int iTo);
 	
     
-    public void processStack() {}
-	abstract protected void calculateIntegratePartials(double[] fInPartials, double[] fProportions, double[] fOutPartials, int iFrom, int iTo);
-    abstract public void calcRootPsuedoRootPartials(double[] fFrequencies, int iNode, double [] fPseudoPartials);
-    abstract public void calcNodePsuedoRootPartials(double[] fInPseudoPartials, int iNode, double [] fOutPseudoPartials);
-    abstract public void calcPsuedoRootPartials(double [] fParentPseudoPartials, int iNode, double [] fPseudoPartials);
-    abstract void integratePartialsP(double [] fInPartials, double [] fProportions, double [] m_fRootPartials, int iFrom, int iTo);
-    abstract void calculateLogLikelihoodsP(double[] fPartials,double[] fOutLogLikelihoods, int iFrom, int iTo);
+//    public void processStack() {}
+//	abstract protected void calculateIntegratePartials(double[] fInPartials, double[] fProportions, double[] fOutPartials, int iFrom, int iTo);
+//    abstract public void calcRootPsuedoRootPartials(double[] fFrequencies, int iNode, double [] fPseudoPartials);
+//    abstract public void calcNodePsuedoRootPartials(double[] fInPseudoPartials, int iNode, double [] fOutPseudoPartials);
+//    abstract public void calcPsuedoRootPartials(double [] fParentPseudoPartials, int iNode, double [] fPseudoPartials);
+//    abstract void integratePartialsP(double [] fInPartials, double [] fProportions, double [] m_fRootPartials, int iFrom, int iTo);
+//    abstract void calculateLogLikelihoodsP(double[] fPartials,double[] fOutLogLikelihoods, int iFrom, int iTo);
     
     /** store current state **/
     abstract public void store();
