@@ -48,6 +48,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
@@ -110,11 +111,14 @@ public class ThreadedTreeLikelihood extends Distribution {
     List<Integer> m_iConstantPattern = null;
     
     /** number of threads to use, changes when threading causes problems **/
-    
 	int m_nThreads;
+	double [] logPByThread;
+	
+	
     @Override
     public void initAndValidate() throws Exception {
 		m_nThreads = BeastMCMC.m_nThreads;
+		logPByThread = new double[m_nThreads];
 
     	// sanity check: alignment should have same #taxa as tree
     	if (m_data.get().getNrTaxa() != m_tree.get().getLeafNodeCount()) {
@@ -150,6 +154,7 @@ public class ThreadedTreeLikelihood extends Distribution {
         } else {
         	m_likelihoodCore = new ThreadedBeerLikelihoodCore(nStateCount);
         }
+    	//m_likelihoodCore = new ThreadedLikelihoodCoreNative(nStateCount);
         System.err.println("TreeLikelihood uses " + m_likelihoodCore.getClass().getName());
 
         m_fProportionInvariant = m_siteModel.getProportianInvariant();
@@ -289,7 +294,7 @@ public class ThreadedTreeLikelihood extends Distribution {
        	threadedTraverse(tree.getRoot());
 
        	calcLogP();
-//        System.err.println(Arrays.toString(m_fRootPartials));
+//        System.err.println(Arrays.toString(m_fRootPartials[0]));
 //        System.err.println(Arrays.toString(m_fPatternLogLikelihoods));
 //        System.err.println(logP);
         m_nScale++;
@@ -326,12 +331,63 @@ public class ThreadedTreeLikelihood extends Distribution {
             	logP += (m_fPatternLogLikelihoods[i] - ascertainmentCorrection) * m_data.get().getPatternWeight(i);
             }
         } else {
-	        for (int i = 0; i < m_data.get().getPatternCount(); i++) {
-	            logP += m_fPatternLogLikelihoods[i] * m_data.get().getPatternWeight(i);
-	        }
+        	for (int i = 0; i < m_nThreads; i++) {
+        		logP += logPByThread[i];
+        	}
+//	        for (int i = 0; i < m_data.get().getPatternCount(); i++) {
+//	            logP += m_fPatternLogLikelihoods[i] * m_data.get().getPatternWeight(i);
+//	        }
         }
     }
 
+    private double calcPartialLogP(int iFrom, int iTo) throws Exception {
+        double logP = 0.0;
+        if (m_bAscertainedSitePatterns) {
+        	return 0;
+//            double ascertainmentCorrection = ((AscertainedAlignment)m_data.get()).getAscertainmentCorrection(m_fPatternLogLikelihoods);
+//            for (int i = iFrom; i < iTo; i++) {
+//            	logP += (m_fPatternLogLikelihoods[i] - ascertainmentCorrection) * m_data.get().getPatternWeight(i);
+//            }
+        } else {
+            for (int i = iFrom; i < iTo; i++) {
+	            logP += m_fPatternLogLikelihoods[i] * m_data.get().getPatternWeight(i);
+	        }
+        }
+        return logP;
+    }
+    
+    
+    private final List<Callable<Double>> coreCallers = new ArrayList<Callable<Double>>();
+
+	Node m_root;
+    class CoreCaller implements Callable<Double> {
+
+    	public CoreCaller(int iThread, Node root, int iFrom, int iTo, ThreadedLikelihoodCore core) {
+		    m_iThread = iThread;
+			m_root = root;
+			m_iFrom = iFrom;
+			m_iTo = iTo;
+			m_core = core;
+    	}
+
+        public Double call() throws Exception {
+  		  	try {
+  		  		traverse(m_root, m_iFrom, m_iTo, m_core, m_iThread);
+  		  	} catch (Exception e) {
+  		  		System.err.println("Something went wrong in a traversal thread from " + m_iFrom + " to " + m_iTo);
+				e.printStackTrace();
+				System.exit(0);
+			}
+  		  	return 0.0;
+        }
+
+		int m_iThread;
+		private int m_iFrom;
+		private int m_iTo;
+		ThreadedLikelihoodCore m_core;
+    }
+
+    
 	//Lock [] m_lock;
 	class CoreRunnable implements Runnable {
 		int m_iThread;
@@ -365,23 +421,55 @@ public class ThreadedTreeLikelihood extends Distribution {
 	
 	void threadedTraverse(Node root) throws Exception {
 		try {
-			if (m_nThreads > 1) {
-				m_nCountDown = new CountDownLatch(m_nThreads - 1);
-			}
+//			if (m_nThreads > 1) {
+//				int nPatterns = m_fPatternLogLikelihoods.length;
+//				int nRange = nPatterns / m_nThreads;
+//				//coreCallers.clear();
+//				m_root = root;
+//				if (coreCallers.size() == 0) {
+//					int iFrom = 0;
+//					// kick off the threads
+//			    	for (int iThread = 1; iThread < m_nThreads; iThread++) {
+//			    		int iTo = iFrom + nRange; 
+//			    		CoreCaller coreCaller = new CoreCaller(iThread, root, iFrom, iTo, m_likelihoodCore);
+//			    		coreCallers.add(coreCaller);
+//						iFrom = iTo;
+//			    	}
+//		    		CoreCaller coreCaller = new CoreCaller(0, root, iFrom, nPatterns, m_likelihoodCore);
+//		    		coreCallers.add(coreCaller);
+//				}
+////				int iFrom = nRange * (m_nThreads - 1);
+//                List<Future<Double>> results = BeastMCMC.g_exec.invokeAll(coreCallers);
+//
+////		    	traverse(root, iFrom, nPatterns, m_likelihoodCore, 0);
+//		    	// wait for all other threads to join
+//		    	logP = 0;
+//                for (Future<Double> result : results) {
+//                	logP += result.get();
+//                }
+//			} else {
+//				int nPatterns = m_fPatternLogLikelihoods.length;
+//		    	traverse(root, 0, nPatterns, m_likelihoodCore, 0);
+//			}
 			int nPatterns = m_fPatternLogLikelihoods.length;
-			int iFrom = 0;
-			int nRange = nPatterns / m_nThreads;
-			// kick off the threads
-	    	for (int iThread = 1; iThread < m_nThreads; iThread++) {
-	    		int iTo = iFrom + nRange; 
-	    		CoreRunnable coreRunnable = new CoreRunnable(iThread, root, iFrom, iTo, m_likelihoodCore);
-				BeastMCMC.g_exec.execute(coreRunnable);
-				iFrom = iTo;
-	    	}
-	    	traverse(root, iFrom, nPatterns, m_likelihoodCore, 0);
-	    	
 			if (m_nThreads > 1) {
+				m_nCountDown = new CountDownLatch(m_nThreads);
+				int iFrom = 0;
+				int nRange = nPatterns / m_nThreads;
+				// kick off the threads
+		    	for (int iThread = 1; iThread < m_nThreads; iThread++) {
+		    		int iTo = iFrom + nRange; 
+		    		CoreRunnable coreRunnable = new CoreRunnable(iThread, root, iFrom, iTo, m_likelihoodCore);
+					BeastMCMC.g_exec.execute(coreRunnable);
+					iFrom = iTo;
+		    	}
+	    		CoreRunnable coreRunnable = new CoreRunnable(0, root, iFrom, nPatterns, m_likelihoodCore);
+				BeastMCMC.g_exec.execute(coreRunnable);
+		    	//traverse(root, iFrom, nPatterns, m_likelihoodCore, 0);
+	    	
 				m_nCountDown.await();
+			} else {
+		    	traverse(root, 0, nPatterns, m_likelihoodCore, 0);
 			}
 		} catch (RejectedExecutionException e) {
 			m_nThreads--;
@@ -506,6 +594,7 @@ public class ThreadedTreeLikelihood extends Distribution {
 	                    	}
 	                    }
 	                    core.calculateLogLikelihoods(m_fRootPartials[iThread], frequencies, m_fPatternLogLikelihoods, iFrom, iTo);
+	                    logPByThread[iThread] = calcPartialLogP(iFrom, iTo);
 					}
                 }
 
