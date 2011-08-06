@@ -30,6 +30,9 @@ public class ThreadedBeerLikelihoodCore extends ThreadedLikelihoodCore {
     private double m_fScalingThreshold = 1.0E-100;
     double SCALE = 2;
 
+    int [] weights;
+    double [] m_fPatternLogLikelihoods;
+    
 	public ThreadedBeerLikelihoodCore(int nStateCount) {
 		this.m_nStates = nStateCount;
 	} // c'tor
@@ -382,7 +385,7 @@ public class ThreadedBeerLikelihoodCore extends ThreadedLikelihoodCore {
 	 * @param fOutLogLikelihoods an array into which the likelihoods will go
 	 */
 	@Override
-	public void calculateLogLikelihoods(double[] fPartials, double[] fFrequencies, double[] fOutLogLikelihoods, int iFrom, int iTo)
+	public void calculateLogLikelihoods(double[] fPartials, double[] fFrequencies, int iFrom, int iTo)
 	{
         int v = m_nStates * iFrom;
 		for (int k = iFrom; k < iTo; k++) {
@@ -393,7 +396,7 @@ public class ThreadedBeerLikelihoodCore extends ThreadedLikelihoodCore {
 				sum += fFrequencies[i] * fPartials[v];
 				v++;
 			}
-            fOutLogLikelihoods[k] = Math.log(sum) + getLogScalingFactor(k);
+            m_fPatternLogLikelihoods[k] = Math.log(sum) + getLogScalingFactor(k);
 		}
 	}
 
@@ -407,8 +410,10 @@ public class ThreadedBeerLikelihoodCore extends ThreadedLikelihoodCore {
      * @param nMatrixCount         the number of matrices (i.e., number of categories)
      * @param bIntegrateCategories whether sites are being integrated over all matrices
      */
-    public void initialize(int nNodeCount, int nPatternCount, int nMatrixCount, boolean bIntegrateCategories) {
+	@Override
+    public void initialize(int nNodeCount, int nPatternCount, int nMatrixCount, int [] weights, boolean bIntegrateCategories) {
 
+		this.weights = weights;
         this.m_nNodes = nNodeCount;
         this.m_nPatterns = nPatternCount;
         this.m_nMatrices = nMatrixCount;
@@ -441,6 +446,7 @@ public class ThreadedBeerLikelihoodCore extends ThreadedLikelihoodCore {
         m_nMatrixSize = m_nStates * m_nStates;
 
         m_fMatrices = new double[2][nNodeCount][nMatrixCount * m_nMatrixSize];
+        m_fPatternLogLikelihoods = new double[nPatternCount];
     }
 
     /**
@@ -799,6 +805,29 @@ public class ThreadedBeerLikelihoodCore extends ThreadedLikelihoodCore {
         System.arraycopy(m_iCurrentPartials, 0, m_iStoredPartials, 0, m_nNodes);
     }
 
+
+	@Override
+	public double calcPartialLogP(int iFrom, int iTo) {
+        double logP = 0.0;
+//        if (m_bAscertainedSitePatterns) {
+//        	return 0;
+////            double ascertainmentCorrection = ((AscertainedAlignment)m_data.get()).getAscertainmentCorrection(m_fPatternLogLikelihoods);
+////            for (int i = iFrom; i < iTo; i++) {
+////            	logP += (m_fPatternLogLikelihoods[i] - ascertainmentCorrection) * m_data.get().getPatternWeight(i);
+////            }
+//        } else {
+            for (int i = iFrom; i < iTo; i++) {
+	            logP += m_fPatternLogLikelihoods[i] * weights[i];
+	        }
+//        }
+        return logP;
+	}
+
+	
+	@Override
+	public double [] getPatternLogLikelihoods() {
+		return m_fPatternLogLikelihoods;
+	}
 
 //	@Override
 //    public void calcRootPsuedoRootPartials(double[] fFrequencies, int iNode, double [] fPseudoPartials) {

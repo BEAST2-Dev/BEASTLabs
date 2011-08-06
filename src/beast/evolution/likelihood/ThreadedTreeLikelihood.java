@@ -159,7 +159,7 @@ public class ThreadedTreeLikelihood extends Distribution {
         } else {
         	m_likelihoodCore = new ThreadedBeerLikelihoodCore(nStateCount);
         }
-    	//m_likelihoodCore = new ThreadedLikelihoodCoreNative(nStateCount);
+    	m_likelihoodCore = new ThreadedLikelihoodCoreNative(nStateCount);
         System.err.println("TreeLikelihood uses " + m_likelihoodCore.getClass().getName());
 
         m_fProportionInvariant = m_siteModel.getProportianInvariant();
@@ -223,6 +223,7 @@ public class ThreadedTreeLikelihood extends Distribution {
 	        nodeCount,
 	        m_data.get().getPatternCount(),
 	        m_siteModel.getCategoryCount(),
+	        m_data.get().getWeights(),
 	        true
         );
         int extNodeCount = nodeCount / 2 + 1;
@@ -291,6 +292,9 @@ public class ThreadedTreeLikelihood extends Distribution {
     double m_fScale = 1.01;
     int m_nScale = 0;
     int X = 100;
+    double[] frequencies;
+    double[] proportions;
+
     @Override
     public double calculateLogP() throws Exception {
     	if (m_beagle != null) {
@@ -301,10 +305,14 @@ public class ThreadedTreeLikelihood extends Distribution {
 
        
         cacheNodeCount = 0;
-        traverseSetup(tree.getRoot());
-       	threadedTraverse(tree.getRoot());
+        m_root = tree.getRoot();
+        frequencies = m_substitutionModel.getFrequencies();
+        proportions = m_siteModel.getCategoryProportions(m_root);
 
+        traverseSetup(m_root);
+       	threadedTraverse(m_root);
        	calcLogP();
+
 //        System.err.println(Arrays.toString(m_fRootPartials[0]));
 //        System.err.println(Arrays.toString(m_fPatternLogLikelihoods));
 //        System.err.println(logP);
@@ -316,8 +324,8 @@ public class ThreadedTreeLikelihood extends Distribution {
             m_nHasDirt = Tree.IS_FILTHY;
             X *= 2;
             cacheNodeCount = 0;
-    		traverseSetup(tree.getRoot());
-           	threadedTraverse(tree.getRoot());
+            traverseSetup(m_root);
+           	threadedTraverse(m_root);
             calcLogP();
             return logP;
         } else if (logP == Double.NEGATIVE_INFINITY && m_fScale < 10) { // && !m_likelihoodCore.getUseScaling()) {
@@ -328,8 +336,8 @@ public class ThreadedTreeLikelihood extends Distribution {
             m_likelihoodCore.unstore();
             m_nHasDirt = Tree.IS_FILTHY;
             cacheNodeCount = 0;
-    		traverseSetup(tree.getRoot());
-           	threadedTraverse(tree.getRoot());
+            traverseSetup(m_root);
+           	threadedTraverse(m_root);
             calcLogP();
             return logP;
         }
@@ -339,6 +347,7 @@ public class ThreadedTreeLikelihood extends Distribution {
     private void calcLogP() throws Exception {
         logP = 0.0;
         if (m_bAscertainedSitePatterns) {
+        	m_fPatternLogLikelihoods = m_likelihoodCore.getPatternLogLikelihoods();
             double ascertainmentCorrection = ((AscertainedAlignment)m_data.get()).getAscertainmentCorrection(m_fPatternLogLikelihoods);
             for (int i = 0; i < m_data.get().getPatternCount(); i++) {
             	logP += (m_fPatternLogLikelihoods[i] - ascertainmentCorrection) * m_data.get().getPatternWeight(i);
@@ -419,7 +428,24 @@ public class ThreadedTreeLikelihood extends Distribution {
 
         public void run() {
   		  	try {
-  		  		traverse(m_root, m_iFrom, m_iTo, m_core, m_iThread);
+  		    	for (int i = 0; i < cacheNodeCount; i++) {
+  		        	m_core.calculatePartials(cacheNode1[i], cacheNode2[i], cacheNode3[i], m_iFrom, m_iTo);
+  		    	}
+	            // process root of the beast.tree -
+	            m_core.integratePartials(m_root.getNr(), proportions, m_fRootPartials[m_iThread], m_iFrom, m_iTo);
+
+	            if (m_iConstantPattern != null) { // && !SiteModel.g_bUseOriginal) {
+	            	m_fProportionInvariant = m_siteModel.getProportianInvariant();
+	            	// some portion of sites is invariant, so adjust root partials for this
+	            	double [] fRootPartials = m_fRootPartials[m_iThread];
+	            	for (int i : m_iConstantPattern) {
+	            		if (fRootPartials[i] != 0) {
+	            			fRootPartials[i] += m_fProportionInvariant;
+	            		}
+	            	}
+	            }
+	            m_core.calculateLogLikelihoods(m_fRootPartials[m_iThread], frequencies, m_iFrom, m_iTo);
+	            logPByThread[m_iThread] = m_core.calcPartialLogP(m_iFrom, m_iTo);
   		  	} catch (Exception e) {
   		  		System.err.println("Something went wrong in a traversal thread from " + m_iFrom + " to " + m_iTo);
 				e.printStackTrace();
@@ -555,36 +581,6 @@ public class ThreadedTreeLikelihood extends Distribution {
 	
     /* Assumes there IS a branch rate model as opposed to traverse() */
     int traverse(Node node, int iFrom, int iTo, ThreadedLikelihoodCore core, int iThread) throws Exception {
-    	for (int i = 0; i < cacheNodeCount; i++) {
-        	core.calculatePartials(cacheNode1[i], cacheNode2[i], cacheNode3[i], iFrom, iTo);
-    	}
-        synchronized (this) {
-            // No parent this is the root of the beast.tree -
-            // calculate the pattern likelihoods
-            double[] frequencies = //m_pFreqs.get().
-                    m_substitutionModel.getFrequencies();
-
-            double[] proportions = m_siteModel.getCategoryProportions(node);
-            core.integratePartials(node.getNr(), proportions, m_fRootPartials[iThread], iFrom, iTo);
-
-            if (m_iConstantPattern != null) { // && !SiteModel.g_bUseOriginal) {
-            	m_fProportionInvariant = m_siteModel.getProportianInvariant();
-            	// some portion of sites is invariant, so adjust root partials for this
-            	double [] fRootPartials = m_fRootPartials[iThread];
-            	for (int i : m_iConstantPattern) {
-            		if (fRootPartials[i] != 0) {
-            			fRootPartials[i] += m_fProportionInvariant;
-            		}
-            	}
-            }
-            core.calculateLogLikelihoods(m_fRootPartials[iThread], frequencies, m_fPatternLogLikelihoods, iFrom, iTo);
-            logPByThread[iThread] = calcPartialLogP(iFrom, iTo);
-		}
-        if (true) {
-        	return 0;
-        }
-        
-
         int update = (node.isDirty()| m_nHasDirt);
 
         int iNode = node.getNr();
@@ -646,8 +642,8 @@ public class ThreadedTreeLikelihood extends Distribution {
 	                    		}
 	                    	}
 	                    }
-	                    core.calculateLogLikelihoods(m_fRootPartials[iThread], frequencies, m_fPatternLogLikelihoods, iFrom, iTo);
-	                    logPByThread[iThread] = calcPartialLogP(iFrom, iTo);
+	                    core.calculateLogLikelihoods(m_fRootPartials[iThread], frequencies, iFrom, iTo);
+	                    logPByThread[iThread] = core.calcPartialLogP(iFrom, iTo);
 					}
                 }
 

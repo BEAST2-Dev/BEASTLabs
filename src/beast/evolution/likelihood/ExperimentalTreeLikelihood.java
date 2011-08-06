@@ -131,12 +131,14 @@ public class ExperimentalTreeLikelihood extends Distribution {
             //m_likelihoodCore = new BeerLikelihoodCoreJava4();
         	//m_likelihoodCore = new BeerLikelihoodCoreNative(4);
             m_likelihoodCore = new BeerLikelihoodCoreSimple4();
+        	//m_likelihoodCore = new BeerLikelihoodCoreCached4();
         } else {
             //m_likelihoodCore = new BeerLikelihoodCore(nStateCount);
             m_likelihoodCore = new BeerLikelihoodCoreCnG(nStateCount);
             m_likelihoodCore = new BeerLikelihoodCoreSimple(nStateCount);
             //m_likelihoodCore = new BeerLikelihoodCoreJava(nStateCount);
         }
+    	m_likelihoodCore = new BeerLikelihoodCoreCnG(4);
         //m_likelihoodCore = new BeerLikelihoodCoreSimpleNative(nStateCount);
         //m_likelihoodCore = new BeerLikelihoodCoreSimpleGPU(nStateCount);
         System.err.println("TreeLikelihood uses " + m_likelihoodCore.getClass().getName());
