@@ -159,7 +159,7 @@ public class ThreadedTreeLikelihood extends Distribution {
         } else {
         	m_likelihoodCore = new ThreadedBeerLikelihoodCore(nStateCount);
         }
-    	m_likelihoodCore = new ThreadedLikelihoodCoreNative(nStateCount);
+    	//m_likelihoodCore = new ThreadedLikelihoodCoreNative(nStateCount);
         System.err.println("TreeLikelihood uses " + m_likelihoodCore.getClass().getName());
 
         m_fProportionInvariant = m_siteModel.getProportianInvariant();
