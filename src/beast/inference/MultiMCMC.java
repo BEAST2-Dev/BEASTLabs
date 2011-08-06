@@ -149,6 +149,9 @@ public class MultiMCMC extends MCMC {
 				e.printStackTrace();
 			}
 		}
+		
+		// wait 5 seconds for the log to complete
+		Thread.sleep(5000);
 	} // run
 	
 	/** Represents class that tails all logs files and tree log files.
@@ -505,13 +508,15 @@ public class MultiMCMC extends MCMC {
 			}
 		}
         long nLogTime = System.currentTimeMillis();
-        int nSecondsPerMSamples = (int) ((nLogTime - m_nStartLogTime) * 1000.0 / (fLine[0] + 1.0));
-        String sTimePerMSamples =
-                (nSecondsPerMSamples >= 3600 ? nSecondsPerMSamples / 3600 + "h" : "") +
-                        (nSecondsPerMSamples >= 60 ? (nSecondsPerMSamples % 3600) / 60 + "m" : "") +
-                        (nSecondsPerMSamples % 60 + "s");
-        System.out.print(sTimePerMSamples + "/Msamples ");
-
+        int nOffset = Logger.getSampleOffset();
+        if (nOffset < fLine[0]) {
+	        int nSecondsPerMSamples = (int) ((nLogTime - m_nStartLogTime) * 1000.0 / (fLine[0] - nOffset + 1.0));
+	        String sTimePerMSamples =
+	                (nSecondsPerMSamples >= 3600 ? nSecondsPerMSamples / 3600 + "h" : "") +
+	                        (nSecondsPerMSamples >= 60 ? (nSecondsPerMSamples % 3600) / 60 + "m" : "") +
+	                        (nSecondsPerMSamples % 60 + "s");
+	        System.out.print(sTimePerMSamples + "/Msamples ");
+        }
 		String sStr = m_fMaxCladeProbDiffs.get(m_nLastReported) + "";
 		if (sStr.length() > 5) {
 			sStr = sStr.substring(0, 5);
