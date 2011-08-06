@@ -46,7 +46,7 @@ abstract public class ThreadedLikelihoodCore {
 
 	/** reserve memory for partials, indices and other 
 	 * data structures required by the core **/
-	abstract public void initialize(int nNodeCount, int nPatternCount, int nMatrixCount, boolean bIntegrateCategories);
+	abstract public void initialize(int nNodeCount, int nPatternCount, int nMatrixCount, int [] weights, boolean bIntegrateCategories);
 	
 	/** clean up after last likelihood calculation, if at all required **/
 	abstract public void finalize() throws java.lang.Throwable;
@@ -110,7 +110,7 @@ abstract public class ThreadedLikelihoodCore {
      * using fFrequencies as root node distribution.
      * fOutLogLikelihoods contains the resulting probabilities for each of 
      * the patterns **/
-	abstract public void calculateLogLikelihoods(double[] fPartials, double[] fFrequencies, double[] fOutLogLikelihoods, int iFrom, int iTo);
+	abstract public void calculateLogLikelihoods(double[] fPartials, double[] fFrequencies, int iFrom, int iTo);
 	
     
 //    public void processStack() {}
@@ -129,4 +129,8 @@ abstract public class ThreadedLikelihoodCore {
     abstract public void restore();
 //    /** do internal diagnosics, and suggest an alternative core if appropriate **/ 
 //    abstract LikelihoodCore feelsGood();
+
+	abstract public double calcPartialLogP(int m_iFrom, int m_iTo);
+
+	abstract public double [] getPatternLogLikelihoods();
 }

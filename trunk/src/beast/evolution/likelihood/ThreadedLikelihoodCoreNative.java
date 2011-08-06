@@ -11,7 +11,7 @@ public class ThreadedLikelihoodCoreNative extends ThreadedLikelihoodCore {
     } // c'tor
     
 	@Override
-	public void initialize(int nNodeCount, int nPatternCount, int nMatrixCount, boolean bIntegrateCategories) {
+	public void initialize(int nNodeCount, int nPatternCount, int nMatrixCount, int [] weights, boolean bIntegrateCategories) {
 		try {
 	        System.loadLibrary("BEER");
 			m_pBEER = createCppBEERObject(m_nStates);
@@ -21,9 +21,9 @@ public class ThreadedLikelihoodCoreNative extends ThreadedLikelihoodCore {
 		}
 		m_nNodes = nNodeCount;
 		
-		initializeC(m_pBEER, nNodeCount, nPatternCount, nMatrixCount, bIntegrateCategories);
+		initializeC(m_pBEER, nNodeCount, nPatternCount, nMatrixCount, weights, bIntegrateCategories);
 	}
-	native boolean initializeC(long pBeer, int nNodeCount, int nPatternCount, int nMatrixCount, boolean bIntegrateCategories);
+	native boolean initializeC(long pBeer, int nNodeCount, int nPatternCount, int nMatrixCount, int [] weights,  boolean bIntegrateCategories);
     
 	native long createCppBEERObject(int nStateCount);
     
@@ -99,11 +99,11 @@ public class ThreadedLikelihoodCoreNative extends ThreadedLikelihoodCore {
 	native void integratePartialsC(long pBEER, int iNode, double[] fProportions, double[] fOutPartials, int iFrom, int iTo);
 
 	@Override
-	public void calculateLogLikelihoods(double[] fPartials, double[] fFrequencies, double[] fOutLogLikelihoods,
+	public void calculateLogLikelihoods(double[] fPartials, double[] fFrequencies,
 			int iFrom, int iTo) {
-		calculateLogLikelihoodsC(m_pBEER, fPartials, fFrequencies, fOutLogLikelihoods, iFrom, iTo);
+		calculateLogLikelihoodsC(m_pBEER, fPartials, fFrequencies, iFrom, iTo);
 	}
-	native void calculateLogLikelihoodsC(long pBEER, double[] fPartials, double[] fFrequencies, double[] fOutLogLikelihoods,
+	native void calculateLogLikelihoodsC(long pBEER, double[] fPartials, double[] fFrequencies, 
 			int iFrom, int iTo);
 
 	@Override
@@ -124,4 +124,18 @@ public class ThreadedLikelihoodCoreNative extends ThreadedLikelihoodCore {
 	}
 	native void restoreC(long pBEER);
 
+	@Override
+	public double calcPartialLogP(int m_iFrom, int m_iTo) {
+		return calcPartialLogPC(m_pBEER, m_iFrom, m_iTo);
+	}
+
+	native double calcPartialLogPC(long pBEER, int m_iFrom, int m_iTo);
+
+	@Override
+	public double[] getPatternLogLikelihoods() {
+		//throw new RuntimeException("not implemented yet");
+		return getPatternLogLikelihoodsC(m_pBEER);
+	}
+
+	native double [] getPatternLogLikelihoodsC(long pBEER);
 }
