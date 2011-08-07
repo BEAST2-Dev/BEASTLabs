@@ -1,5 +1,7 @@
 package beast.evolution.likelihood;
 
+import java.util.List;
+
 public class ThreadedLikelihoodCoreNative extends ThreadedLikelihoodCore {
     long m_pBEER = 0;
 	int m_nStates;
@@ -11,7 +13,8 @@ public class ThreadedLikelihoodCoreNative extends ThreadedLikelihoodCore {
     } // c'tor
     
 	@Override
-	public void initialize(int nNodeCount, int nPatternCount, int nMatrixCount, int [] weights, boolean bIntegrateCategories) {
+	public void initialize(int nNodeCount, int nPatternCount, int nMatrixCount, int[] weights,
+			List<Integer> iConstantPatterns, int nThreads, boolean bIntegrateCategories) {
 		try {
 	        System.loadLibrary("BEER");
 			m_pBEER = createCppBEERObject(m_nStates);
@@ -21,9 +24,25 @@ public class ThreadedLikelihoodCoreNative extends ThreadedLikelihoodCore {
 		}
 		m_nNodes = nNodeCount;
 		
-		initializeC(m_pBEER, nNodeCount, nPatternCount, nMatrixCount, weights, bIntegrateCategories);
+		
+		int [] iConstantPatterns2;
+		int nConstantPatterns;
+		if (iConstantPatterns != null) {
+			nConstantPatterns = iConstantPatterns.size();
+			iConstantPatterns2 = new int[nConstantPatterns];
+			for (int i = 0; i < iConstantPatterns2.length; i++) {
+				iConstantPatterns2[i] = iConstantPatterns.get(i);
+			}
+		} else {
+			iConstantPatterns2 = new int[0];
+			nConstantPatterns = 0;
+		}
+		
+		initializeC(m_pBEER, nNodeCount, nPatternCount, nMatrixCount, weights, 
+				iConstantPatterns2, nConstantPatterns, nThreads, bIntegrateCategories);
 	}
-	native boolean initializeC(long pBeer, int nNodeCount, int nPatternCount, int nMatrixCount, int [] weights,  boolean bIntegrateCategories);
+	native boolean initializeC(long m_pBEER2, int nNodeCount, int nPatternCount, int nMatrixCount, int[] weights,
+			int[] iConstantPatterns2, int nConstantPatterns, int nThreads, boolean bIntegrateCategories);
     
 	native long createCppBEERObject(int nStateCount);
     
@@ -39,11 +58,11 @@ public class ThreadedLikelihoodCoreNative extends ThreadedLikelihoodCore {
 	}
 	native void createNodePartialsC(long pBeer, int iNode);
 
-	@Override
-	public void setNodePartialsForUpdate(int iNode) {
-		setNodePartialsForUpdateC(m_pBEER, iNode);
-	}
-	native void setNodePartialsForUpdateC(long pBEER, int iNode);
+//	@Override
+//	public void setNodePartialsForUpdate(int iNode) {
+//		setNodePartialsForUpdateC(m_pBEER, iNode);
+//	}
+//	native void setNodePartialsForUpdateC(long pBEER, int iNode);
 
 	@Override
 	public void setNodePartials(int iNode, double[] fPartials) {
@@ -92,19 +111,19 @@ public class ThreadedLikelihoodCoreNative extends ThreadedLikelihoodCore {
 	}
 	native void calculatePartialsC(long pBEER, int iNode1, int iNode2, int iNode3, int iFrom, int iTo);
 
-	@Override
-	public void integratePartials(int iNode, double[] fProportions, double[] fOutPartials, int iFrom, int iTo) {
-		integratePartialsC(m_pBEER, iNode, fProportions, fOutPartials, iFrom, iTo);
-	}
-	native void integratePartialsC(long pBEER, int iNode, double[] fProportions, double[] fOutPartials, int iFrom, int iTo);
+	//@Override
+//	public void integratePartials(int iNode, double[] fProportions, double[] fOutPartials, int iFrom, int iTo) {
+//		integratePartialsC(m_pBEER, iNode, fProportions, fOutPartials, iFrom, iTo);
+//	}
+//	native void integratePartialsC(long pBEER, int iNode, double[] fProportions, double[] fOutPartials, int iFrom, int iTo);
 
-	@Override
-	public void calculateLogLikelihoods(double[] fPartials, double[] fFrequencies,
-			int iFrom, int iTo) {
-		calculateLogLikelihoodsC(m_pBEER, fPartials, fFrequencies, iFrom, iTo);
-	}
-	native void calculateLogLikelihoodsC(long pBEER, double[] fPartials, double[] fFrequencies, 
-			int iFrom, int iTo);
+	//@Override
+//	public void calculateLogLikelihoods(double[] fPartials, double[] fFrequencies,
+//			int iFrom, int iTo) {
+//		calculateLogLikelihoodsC(m_pBEER, fPartials, fFrequencies, iFrom, iTo);
+//	}
+//	native void calculateLogLikelihoodsC(long pBEER, double[] fPartials, double[] fFrequencies, 
+//			int iFrom, int iTo);
 
 	@Override
 	public void store() {
@@ -138,4 +157,26 @@ public class ThreadedLikelihoodCoreNative extends ThreadedLikelihoodCore {
 	}
 
 	native double [] getPatternLogLikelihoodsC(long pBEER);
+
+
+	@Override
+	double calcLogP(int iThread, 
+			int [] cacheNode1, int [] cacheNode2, int [] cacheNode3, int cacheNodeCount, 
+			int iFrom, int iTo, int rootNodeNr, double[] proportions, double fProportionInvariant,
+			double[] frequencies) {
+		return calcLogPC(m_pBEER, iThread, cacheNode1, cacheNode2, cacheNode3, cacheNodeCount, iFrom, iTo, rootNodeNr, proportions, fProportionInvariant, frequencies);
+	}
+
+	native double calcLogPC(long pBEER, int iThread, 
+			int [] cacheNode1, int [] cacheNode2, int [] cacheNode3, int cacheNodeCount, 
+			int iFrom, int iTo, int rootNodeNr, double[] proportions, double fProportionInvariant,
+			double[] frequencies);
+
+	@Override
+	public void calculateAllPartials(int[] iNode1, int[] iNode2, int[] iNode3, int nCacheCount, int iFrom, int iTo) {
+		calculateAllPartialsC(m_pBEER, iNode1, iNode2, iNode3, nCacheCount, iFrom, iTo);
+	}
+	
+	native void calculateAllPartialsC(long pBEER, int[] iNode1, int[] iNode2, int[] iNode3, int nCacheCount, int iFrom, int iTo);
+
 }

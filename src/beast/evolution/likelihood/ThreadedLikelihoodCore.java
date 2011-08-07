@@ -25,6 +25,8 @@
  */
 package beast.evolution.likelihood;
 
+import java.util.List;
+
 /** The likelihood core is the class that performs the calculations
  * in the peeling algorithm (see Felsenstein, Joseph (1981). 
  * Evolutionary trees from DNA sequences: a maximum likelihood approach. 
@@ -46,7 +48,11 @@ abstract public class ThreadedLikelihoodCore {
 
 	/** reserve memory for partials, indices and other 
 	 * data structures required by the core **/
-	abstract public void initialize(int nNodeCount, int nPatternCount, int nMatrixCount, int [] weights, boolean bIntegrateCategories);
+	abstract public void initialize(int nNodeCount, int nPatternCount, int nMatrixCount, 
+			int [] weights,
+			List<Integer> iConstantPatterns,
+			int nThreads,
+			boolean bIntegrateCategories);
 	
 	/** clean up after last likelihood calculation, if at all required **/
 	abstract public void finalize() throws java.lang.Throwable;
@@ -58,7 +64,7 @@ abstract public class ThreadedLikelihoodCore {
 	/** indicate that the partials for node 
 	 * iNode is about the be changed, that is, that the stored
 	 * state for node iNode cannot be reused **/
-	abstract public void setNodePartialsForUpdate(int iNode);
+	//abstract public void setNodePartialsForUpdate(int iNode);
 	/** assign values of partials for node with number iNode **/
 	abstract public void setNodePartials(int iNode, double[] fPartials);
     //abstract public void setCurrentNodePartials(int iNode, double[] fPartials);
@@ -102,15 +108,16 @@ abstract public class ThreadedLikelihoodCore {
      * NB Depending on whether the child nodes contain states or partials, the
      * calculation differs-**/
     abstract public void calculatePartials(int iNode1, int iNode2, int iNode3, int iFrom, int iTo);
+    abstract public void calculateAllPartials(int [] iNode1, int [] iNode2, int [] iNode3, int nCacheCount, int iFrom, int iTo);
     //abstract public void calculatePartials(int iNode1, int iNode2, int iNode3, int[] iMatrixMap);
     /** integrate partials over categories (if any). **/
-    abstract public void integratePartials(int iNode, double[] fProportions, double[] fOutPartials, int iFrom, int iTo);
+//    abstract public void integratePartials(int iNode, double[] fProportions, int iThread, int iFrom, int iTo);
 
     /** calculate log likelihoods at the root of the tree,
      * using fFrequencies as root node distribution.
      * fOutLogLikelihoods contains the resulting probabilities for each of 
      * the patterns **/
-	abstract public void calculateLogLikelihoods(double[] fPartials, double[] fFrequencies, int iFrom, int iTo);
+//	abstract public void calculateLogLikelihoods(int iThread, double[] fFrequencies, int iFrom, int iTo);
 	
     
 //    public void processStack() {}
@@ -130,7 +137,15 @@ abstract public class ThreadedLikelihoodCore {
 //    /** do internal diagnosics, and suggest an alternative core if appropriate **/ 
 //    abstract LikelihoodCore feelsGood();
 
-	abstract public double calcPartialLogP(int m_iFrom, int m_iTo);
+	abstract public double calcPartialLogP(int iFrom, int iTo);
 
 	abstract public double [] getPatternLogLikelihoods();
+
+//	abstract void calcInvarCorrection(double fProportionInvariant, int iThread);
+
+	abstract double calcLogP(int iThread, 
+			int [] cacheNode1, int [] cacheNode2, int [] cacheNode3, int cacheNodeCount, 
+			int iFrom, int iTo,	int rootNodeNr,
+			double[] proportions, double fProportionInvariant,
+			double[] frequencies);
 }
