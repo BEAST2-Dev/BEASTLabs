@@ -1,5 +1,7 @@
 package beast.evolution.likelihood;
 
+import java.util.List;
+
 
 /** standard likelihood core, uses no caching **/
 public class ThreadedBeerLikelihoodCore extends ThreadedLikelihoodCore {
@@ -32,6 +34,10 @@ public class ThreadedBeerLikelihoodCore extends ThreadedLikelihoodCore {
 
     int [] weights;
     double [] m_fPatternLogLikelihoods;
+    List<Integer> m_iConstantPattern;
+    /** memory allocation for the root partials **/
+    double[][] m_fRootPartials;
+
     
 	public ThreadedBeerLikelihoodCore(int nStateCount) {
 		this.m_nStates = nStateCount;
@@ -384,9 +390,10 @@ public class ThreadedBeerLikelihoodCore extends ThreadedLikelihoodCore {
 	 * @param fFrequencies an array of state frequencies
 	 * @param fOutLogLikelihoods an array into which the likelihoods will go
 	 */
-	@Override
-	public void calculateLogLikelihoods(double[] fPartials, double[] fFrequencies, int iFrom, int iTo)
+	//@Override
+	public void calculateLogLikelihoods(int iThread, double[] fFrequencies, int iFrom, int iTo)
 	{
+		double[] fPartials = m_fRootPartials[iThread];
         int v = m_nStates * iFrom;
 		for (int k = iFrom; k < iTo; k++) {
 
@@ -411,9 +418,14 @@ public class ThreadedBeerLikelihoodCore extends ThreadedLikelihoodCore {
      * @param bIntegrateCategories whether sites are being integrated over all matrices
      */
 	@Override
-    public void initialize(int nNodeCount, int nPatternCount, int nMatrixCount, int [] weights, boolean bIntegrateCategories) {
+    public void initialize(int nNodeCount, int nPatternCount, int nMatrixCount, 
+    		int [] weights, 
+    		List<Integer> iConstantPattern,
+			int nThreads,
+    		boolean bIntegrateCategories) {
 
 		this.weights = weights;
+		m_iConstantPattern = iConstantPattern;;
         this.m_nNodes = nNodeCount;
         this.m_nPatterns = nPatternCount;
         this.m_nMatrices = nMatrixCount;
@@ -447,6 +459,8 @@ public class ThreadedBeerLikelihoodCore extends ThreadedLikelihoodCore {
 
         m_fMatrices = new double[2][nNodeCount][nMatrixCount * m_nMatrixSize];
         m_fPatternLogLikelihoods = new double[nPatternCount];
+        m_fRootPartials = new double[nThreads][nPatternCount * m_nStates];
+
     }
 
     /**
@@ -561,10 +575,10 @@ public class ThreadedBeerLikelihoodCore extends ThreadedLikelihoodCore {
                 iMatrixIndex * m_nMatrixSize, fMatrix, 0, m_nMatrixSize);
     }
 
-    @Override
-    public void setNodePartialsForUpdate(int iNodeIndex) {
-        m_iCurrentPartials[iNodeIndex] = 1 - m_iCurrentPartials[iNodeIndex];
-    }
+//    @Override
+//    public void setNodePartialsForUpdate(int iNodeIndex) {
+//        m_iCurrentPartials[iNodeIndex] = 1 - m_iCurrentPartials[iNodeIndex];
+//    }
 
     /**
      * Sets the currently updating node partials for node nodeIndex. This may
@@ -589,7 +603,15 @@ public class ThreadedBeerLikelihoodCore extends ThreadedLikelihoodCore {
      * @param iNodeIndex2 the 'child 2' node
      * @param iNodeIndex3 the 'parent' node
      */
+    public void calculateAllPartials(int [] cacheNode1, int [] cacheNode2, int [] cacheNode3, int cacheNodeCount, int iFrom, int iTo) {
+    	for (int i = 0; i < cacheNodeCount; i++) {
+    		calculatePartials(cacheNode1[i], cacheNode2[i], cacheNode3[i], iFrom, iTo);
+    	}
+    }
+    
     public void calculatePartials(int iNodeIndex1, int iNodeIndex2, int iNodeIndex3, int iFrom, int iTo) {
+        m_iCurrentPartials[iNodeIndex3] = 1 - m_iStoredPartials[iNodeIndex3];
+        
         if (m_iStates[iNodeIndex1] != null) {
             if (m_iStates[iNodeIndex2] != null) {
                 calculateStatesStatesPruning(
@@ -674,7 +696,8 @@ public class ThreadedBeerLikelihoodCore extends ThreadedLikelihoodCore {
 
 
 
-    public void integratePartials(int iNodeIndex, double[] fProportions, double[] fOutPartials, int iFrom, int iTo) {
+    public void integratePartials(int iNodeIndex, double[] fProportions, int iThread, int iFrom, int iTo) {
+    	double [] fOutPartials = m_fRootPartials[iThread];
         calculateIntegratePartials(m_fPartials[m_iCurrentPartials[iNodeIndex]][iNodeIndex], fProportions, fOutPartials, iFrom, iTo);
     }
 
@@ -827,6 +850,38 @@ public class ThreadedBeerLikelihoodCore extends ThreadedLikelihoodCore {
 	@Override
 	public double [] getPatternLogLikelihoods() {
 		return m_fPatternLogLikelihoods;
+	}
+
+
+	//@Override
+	void calcInvarCorrection(double fProportionInvariant, int iThread) {
+    	double [] fRootPartials = m_fRootPartials[iThread];
+    	for (int i : m_iConstantPattern) {
+    		if (fRootPartials[i] != 0) {
+    			fRootPartials[i] += fProportionInvariant;
+    		}
+    	}
+	}
+
+
+	@Override
+	double calcLogP(int iThread, 
+			int [] cacheNode1, int [] cacheNode2, int [] cacheNode3, int cacheNodeCount, 
+			int iFrom, int iTo,	int rootNodeNr,
+			double[] proportions, double fProportionInvariant,
+			double[] frequencies) {
+		calculateAllPartials(cacheNode1, cacheNode2, cacheNode3, cacheNodeCount, iFrom, iTo);
+        // process root of the beast.tree -
+        integratePartials(rootNodeNr, proportions, iThread, iFrom, iTo);
+
+        if (m_iConstantPattern != null) { // && !SiteModel.g_bUseOriginal) {
+        	//double [] fRootPartials = m_fRootPartials[m_iThread];
+        	// some portion of sites is invariant, so adjust root partials for this
+        	calcInvarCorrection(fProportionInvariant, iThread);
+        }
+        calculateLogLikelihoods(iThread, frequencies, iFrom, iTo);
+        double logP = calcPartialLogP(iFrom, iTo);
+        return logP;
 	}
 
 //	@Override
