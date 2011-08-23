@@ -636,7 +636,7 @@ public class ThreadedBeerLikelihoodCore extends ThreadedLikelihoodCore {
         }
 
         if (m_bUseScaling) {
-            scalePartials(iNodeIndex3);
+            scalePartials(iNodeIndex3, iFrom, iTo);
         }
 
 //
@@ -690,7 +690,7 @@ public class ThreadedBeerLikelihoodCore extends ThreadedLikelihoodCore {
         }
 
         if (m_bUseScaling) {
-            scalePartials(iNodeIndex3);
+            scalePartials(iNodeIndex3, iFrom, iTo);
         }
     }
 
@@ -717,7 +717,7 @@ public class ThreadedBeerLikelihoodCore extends ThreadedLikelihoodCore {
      *
      * @param iNodeIndex
      */
-    protected void scalePartials(int iNodeIndex) {
+    protected void scalePartials(int iNodeIndex, int iFrom, int iTo) {
 //        int v = 0;
 //    	double [] fPartials = m_fPartials[m_iCurrentPartialsIndices[iNodeIndex]][iNodeIndex];
 //        for (int i = 0; i < m_nPatternCount; i++) {
@@ -728,9 +728,9 @@ public class ThreadedBeerLikelihoodCore extends ThreadedLikelihoodCore {
 //                }
 //            }
 //        }
-        int u = 0;
+        int u = m_nStates * iFrom;
 
-        for (int i = 0; i < m_nPatterns; i++) {
+        for (int i = iFrom; i < iTo; i++) {
 
             double scaleFactor = 0.0;
             int v = u;
