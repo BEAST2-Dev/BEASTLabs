@@ -25,8 +25,6 @@ public class RandomLocalYuleModel extends UltrametricSpeciationModel {
     public Input<Boolean> ratesAreMultipliersInput =
             new Input<Boolean>("ratesAreMultipliers", "birth rates are multipliers (default false)", false);
 //    public Input<Integer> mfDigitsInput = new Input<Integer>("mfDigits", "maximum fraction digits (default 4)", 4);
-    public Input<Tree> treeInput =
-            new Input<Tree>("tree", "the tree this random local yule model is associated with.", Input.Validate.REQUIRED);
     
     protected Tree tree;
     protected double[] birthRates;
@@ -34,10 +32,15 @@ public class RandomLocalYuleModel extends UltrametricSpeciationModel {
     private boolean calculateAllBirthRates = false;
 //    private NumberFormat format = NumberFormat.getNumberInstance(Locale.ENGLISH);
     
+    public RandomLocalYuleModel() {
+        super();
+        m_tree.setRule(Input.Validate.REQUIRED); // new Input<Tree>("tree", "the tree this random local yule model is associated with.", Input.Validate.REQUIRED);
+    }
+    
     @Override
     public void initAndValidate() throws Exception {
 //        super.initAndValidate();
-        tree = treeInput.get();
+        tree = m_tree.get();
         this.birthRates = new double[tree.getNodeCount()];
         
         RealParameter rates = birthRatesParameter.get();
