@@ -21,7 +21,7 @@ public class RandomLocalYuleModel extends UltrametricSpeciationModel {
             "the indicators associated with nodes in the tree for sampling of individual rate of birth changes among branches.",
             Validate.REQUIRED);
     public Input<RealParameter> meanRateParameter = new Input<RealParameter>("meanRate",
-            "an optional parameter to set the mean rate of birth across the whole tree", Validate.REQUIRED);
+            "an parameter to set the mean rate of birth across the whole tree", Validate.REQUIRED);
     public Input<Boolean> ratesAreMultipliersInput =
             new Input<Boolean>("ratesAreMultipliers", "birth rates are multipliers (default false)", false);
 //    public Input<Integer> mfDigitsInput = new Input<Integer>("mfDigits", "maximum fraction digits (default 4)", 4);
@@ -31,12 +31,7 @@ public class RandomLocalYuleModel extends UltrametricSpeciationModel {
     protected boolean ratesAreMultipliers;
     private boolean calculateAllBirthRates = false;
 //    private NumberFormat format = NumberFormat.getNumberInstance(Locale.ENGLISH);
-    
-    public RandomLocalYuleModel() {
-        super();
-        m_tree.setRule(Input.Validate.REQUIRED); // new Input<Tree>("tree", "the tree this random local yule model is associated with.", Input.Validate.REQUIRED);
-    }
-    
+ 
     @Override
     public void initAndValidate() throws Exception {
 //        super.initAndValidate();
