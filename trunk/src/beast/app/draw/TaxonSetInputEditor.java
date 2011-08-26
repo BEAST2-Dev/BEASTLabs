@@ -7,6 +7,7 @@ import java.awt.datatransfer.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.*;
+import java.util.regex.PatternSyntaxException;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -137,8 +138,15 @@ public class TaxonSetInputEditor extends ListInputEditor implements TreeModelLis
 				processFilter();
 			}
 			private void processFilter() {
-				m_sFilter = ".*" + filterEntry.getText() + ".*";
-				m_tree.repaint();
+				String sFilter = ".*" + filterEntry.getText() + ".*";
+				try {
+					// sanity check: make sure the filter is legit
+					sFilter.matches(sFilter);
+					m_sFilter = sFilter;
+					m_tree.repaint();
+				} catch (PatternSyntaxException e) {
+					// ignore
+				}
 			}
 		});
 		return filterBox;

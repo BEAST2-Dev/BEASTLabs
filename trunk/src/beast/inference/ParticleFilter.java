@@ -41,7 +41,7 @@ public class ParticleFilter extends beast.core.Runnable {
 	String [] m_sStates;
 	double [] m_fPosteriors;
 	/** flag used to initialise states and posteriors properly **/
-	boolean m_bFirstParticle = true;
+//	boolean m_bFirstParticle = true;
 
 	CountDownLatch m_nCountDown;
 
@@ -98,29 +98,105 @@ public class ParticleFilter extends beast.core.Runnable {
 		
 		m_sStates = new String[m_nParticles];
 		m_fPosteriors = new double[m_nParticles];
+		String sState = mcmc.m_startState.get().toXML();
+		double fPosterior = mcmc.robustlyCalcPosterior(mcmc.posteriorInput.get());
+		for (int i = 0; i < m_nParticles; i++) {
+			m_sStates[i] = sState;
+			m_fPosteriors[i] = fPosterior;
+		}
+		
+		
+		
 	} // initAndValidate
 
+	synchronized void updateStates(int step) throws Exception {
+		for (int iParticle = 0; iParticle < m_nParticles; iParticle++) {
+			// load state
+			String sStateFileName = getParticleDir(iParticle) + "/beast.xml.state";
+			if (new File(sStateFileName).exists()) {
+				m_sStates[iParticle] = getTextFile(sStateFileName);
+				
+				// load posterior
+				String sLog = getTextFile(getParticleDir(iParticle) + "/" + POSTERIOR_LOG_FILE);
+				String [] sLogs = sLog.split("\n");
+				String sPosterior = sLogs[sLogs.length-1].split("\t")[1];
+				m_fPosteriors[iParticle] = Double.parseDouble(sPosterior);
+			}
+		}
+
+		System.out.print(" " + DiscreteStatistics.mean(m_fPosteriors) + " " + DiscreteStatistics.variance(m_fPosteriors));
+		System.out.print(" " + Arrays.toString(m_fPosteriors));
+		System.out.println();
+
+		// sample new states
+		double fMax = m_fPosteriors[0];
+		int iMax = 0;
+		for (int i = 0; i < m_nParticles; i++) {
+			if (fMax < m_fPosteriors[i]) {
+				fMax = m_fPosteriors[i];
+				iMax = i;
+			}
+		}
+		double [] fPosteriors = new double[m_nParticles];
+		for (int i = 0; i < m_nParticles; i++) {
+			fPosteriors[i] = Math.exp(m_fPosteriors[i] - fMax);
+		}
+		double fSum = 0;
+		for (int i = 0; i < m_nParticles; i++) {
+			fSum += fPosteriors[i];
+		}
+		
+		double [] fNewPosteriors = new double[m_nParticles];
+		String [] sNewStates = new String[m_nParticles];
+		
+		for (int iParticle = 0; iParticle < m_nParticles; iParticle++) {
+			double fRand = Randomizer.nextDouble() * fSum;
+			int iNewState = 0;
+			while (fRand > fPosteriors[iNewState]) {
+				fRand -= fPosteriors[iNewState];
+				iNewState++;
+			}
+			fNewPosteriors[iParticle] = m_fPosteriors[iNewState];
+			sNewStates[iParticle] = m_sStates[iNewState];
+		}	
+
+		
+		m_fPosteriors = fNewPosteriors;
+		m_sStates = sNewStates;
+		// write state files
+		for (int iParticle = 0; iParticle < m_nParticles; iParticle++) {
+			String sStateFileName = getParticleDir(iParticle) + "/beast.xml.state";
+	    	FileOutputStream xmlFile = new FileOutputStream(sStateFileName);
+	    	PrintStream out = new PrintStream(xmlFile);
+	        out.print(m_sStates[iParticle]);
+			out.close();
+		}
+
+		System.out.print((step+1) * m_nStepSizeInput.get() + " " + Arrays.toString(m_fPosteriors));
+		System.out.println();
+	}
 	
 	synchronized void updateState(int iParticle) throws Exception {
 		
 		// load state
 		String sStateFileName = getParticleDir(iParticle) + "/beast.xml.state";
-		m_sStates[iParticle] = getTextFile(sStateFileName);
-		
-		// load posterior
-		String sLog = getTextFile(getParticleDir(iParticle) + "/" + POSTERIOR_LOG_FILE);
-		String [] sLogs = sLog.split("\n");
-		String sPosterior = sLogs[sLogs.length-1].split("\t")[1];
-		m_fPosteriors[iParticle] = Double.parseDouble(sPosterior);
-		
-		if (m_bFirstParticle) {
-			// make sure the states and posteriors are initialised
-			for (int i = 0; i < m_nParticles; i++) {
-				m_sStates[i] = m_sStates[iParticle];
-				m_fPosteriors[i] = m_fPosteriors[iParticle];
-			}			
-			m_bFirstParticle = false;
+		if (new File(sStateFileName).exists()) {
+			m_sStates[iParticle] = getTextFile(sStateFileName);
+			
+			// load posterior
+			String sLog = getTextFile(getParticleDir(iParticle) + "/" + POSTERIOR_LOG_FILE);
+			String [] sLogs = sLog.split("\n");
+			String sPosterior = sLogs[sLogs.length-1].split("\t")[1];
+			m_fPosteriors[iParticle] = Double.parseDouble(sPosterior);
 		}
+//		if (m_bFirstParticle) {
+//			// make sure the states and posteriors are initialised
+//			for (int i = 0; i < m_nParticles; i++) {
+//				m_sStates[i] = m_sStates[iParticle];
+//				m_fPosteriors[i] = m_fPosteriors[iParticle];
+//			}			
+//			m_bFirstParticle = false;
+//		}
 		
 		// sample new state with probability proportional to posterior
 		double fMax = m_fPosteriors[0];
@@ -181,6 +257,7 @@ public class ParticleFilter extends beast.core.Runnable {
 	
     @Override
     public void run() throws Exception {
+    	long startTime = System.currentTimeMillis();
 		m_nCountDown = new CountDownLatch(m_nParticles);
 
 		for (int i = 0; i < m_nParticles; i++) {
@@ -194,6 +271,8 @@ public class ParticleFilter extends beast.core.Runnable {
 		}
 		
 		m_nCountDown.await();
+    	long endTime = System.currentTimeMillis();
+    	System.out.println("Total wall time: " + (endTime-startTime)/1000 + " seconds");
     } // run;	
 
 

@@ -290,7 +290,7 @@ public class ThreadedTreeLikelihood extends Distribution {
      */
     double m_fScale = 1.01;
     int m_nScale = 0;
-    int X = 100;
+    int X = 1000;
     double[] frequencies;
     double[] proportions;
 
@@ -480,7 +480,7 @@ public class ThreadedTreeLikelihood extends Distribution {
 //		    	traverse(root, 0, nPatterns, m_likelihoodCore, 0);
 //			}
 			int nPatterns = m_fPatternLogLikelihoods.length;
-			if (m_nThreads > 1) {
+			if (m_nThreads >= 1) {
 				m_nCountDown = new CountDownLatch(m_nThreads);
 				int iFrom = 0;
 				int nRange = nPatterns / m_nThreads;
