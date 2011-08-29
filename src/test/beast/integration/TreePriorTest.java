@@ -10,7 +10,6 @@ import java.util.List;
  */
 public class TreePriorTest extends TestFramework {
     private final String[] XML_FILES = new String[]{"testCoalescentNoClock.xml", "testCoalescentNoClock1.xml",
-            "testCoalescentTipDates.xml", "testCoalescentTipDates1.xml", "testCoalescentTipDates2.xml",
             "testExponentialGrowth.xml", "testYuleModel_10taxa.xml", "testBirthDeathModel_10taxa.xml",
             "testBirthDeathAsYule.xml", "testEBSP.xml", "testBSP.xml"};
 
@@ -22,40 +21,28 @@ public class TreePriorTest extends TestFramework {
         analyse(1);
     }
 
-    public void testCoalescentTipDates() throws Exception {
+    public void testExponentialGrowth() throws Exception {
         analyse(2);
     }
 
-    public void testCoalescentTipDates1() throws Exception {
+    public void testYuleModel_10taxa() throws Exception {
         analyse(3);
     }
 
-    public void testCoalescentTipDates2() throws Exception {
+    public void testBirthDeathModel_10taxa() throws Exception {
         analyse(4);
     }
 
-    public void testExponentialGrowth() throws Exception {
+    public void testBirthDeathAsYule() throws Exception {
         analyse(5);
     }
 
-    public void testYuleModel_10taxa() throws Exception {
+    public void testEBSP() throws Exception {
         analyse(6);
     }
 
-    public void testBirthDeathModel_10taxa() throws Exception {
-        analyse(7);
-    }
-
-    public void testBirthDeathAsYule() throws Exception {
-        analyse(8);
-    }
-
-    public void testEBSP() throws Exception {
-        analyse(9);
-    }
-
     public void testBSP() throws Exception {
-        analyse(10);
+        analyse(7);
     }
 
     @Override
@@ -97,24 +84,7 @@ public class TreePriorTest extends TestFramework {
                 addExpIntoList(expList, "coalescent", 6.948, 1.24E-02);
                 break;
 
-            case 2: // testCoalescentTipDates.xml
-//        BEAST 1 testCoalescent.xml
-                addExpIntoList(expList, "tree.height", 19361.1519, 66.3224);
-                addExpIntoList(expList, "popSize", 10000.0, 0.0);
-                addExpIntoList(expList, "coalescent", -30.6263, 1.2747E-2);
-                break;
-
-            case 3: // testCoalescentTipDates1.xml
-//        BEAST 1 testCoalescent.xml
-                addExpIntoList(expList, "tree.height", 15000.0, 70.0);
-                addExpIntoList(expList, "coalescent", -30.6163, 1.3415E-2);
-                break;
-
-            case 4: // testCoalescentTipDates2.xml
-                addExpIntoList(expList, "tree.height", 20000.0, 70.0); // BEAST 2 report root height not tree height.
-                break;
-
-            case 5: // testExponentialGrowth.xml
+            case 2: // testExponentialGrowth.xml
 //        BEAST 1 testExponentialGrowthNoClock1.xml
                 addExpIntoList(expList, "posterior", -1818.4448, 6.3697E-2);
                 addExpIntoList(expList, "prior", -1.726, 3.6124E-2);
@@ -130,26 +100,26 @@ public class TreePriorTest extends TestFramework {
                 addExpIntoList(expList, "coalescent", 9.4203, 1.31E-2);
                 break;
 
-            case 6: // testYuleModel_10taxa.xml
+            case 3: // testYuleModel_10taxa.xml
 //        BEAST 1 testYuleModel_10taxa.xml
                 addExpIntoList(expList, "yule", -2.8068, 3.894E-2); // speciationLikelihood
                 addExpIntoList(expList, "tree.height", 0.9702, 4.2554E-3);
                 break;
 
-            case 7: // testBirthDeathModel_10taxa.xml
+            case 4: // testBirthDeathModel_10taxa.xml
 //        BEAST 1 testBirthDeathModel_10taxa.xml
                 addExpIntoList(expList, "birthDeath", 0.981, 4.9536E-2); // speciationLikelihood
                 addExpIntoList(expList, "tree.height", 0.7017, 3.9048E-3);
                 break;
 
-            case 8: // testBirthDeathAsYule.xml
+            case 5: // testBirthDeathAsYule.xml
 //        BEAST 1 testBirthDeathAsYule.xml
                 addExpIntoList(expList, "posterior", -84.941, 2.3521E-2);
                 addExpIntoList(expList, "birthDeath", -84.7945, 2.3471E-2); // speciationLikelihood
                 addExpIntoList(expList, "birthRate", 1.1636, 3.8458E-3);
                 break;
 
-            case 9: // testEBSP.xml
+            case 6: // testEBSP.xml
 //        BEAST 1 testEBSP.xml
                 addExpIntoList(expList, "posterior", -1826.2014, 0.1562);
                 addExpIntoList(expList, "prior", -9.4517, 0.1782);
@@ -169,7 +139,7 @@ public class TreePriorTest extends TestFramework {
                 addExpIntoList(expList, "populationMean", -3.4472, 0.1802);
                 break;
 
-            case 10: // testBSP.xml
+            case 7: // testBSP.xml
 //        BEAST 1 testBSPNoClock.xml
                 addExpIntoList(expList, "posterior", -1826.2014, 0.1562);
                 addExpIntoList(expList, "prior", -9.4517, 0.1782);
