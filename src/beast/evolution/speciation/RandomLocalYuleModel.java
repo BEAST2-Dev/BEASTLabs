@@ -109,7 +109,7 @@ public class RandomLocalYuleModel extends UltrametricSpeciationModel {
      */
     private void calculateBirthRates(Node node, double rate, BooleanParameter indicators, RealParameter rates) {
         
-        int nodeNumber = node.getNr();
+        int nodeNumber = getNr(node);
 
         if (node.isRoot()) {
             rate = meanRateParameter.get().getValue();
@@ -129,6 +129,14 @@ public class RandomLocalYuleModel extends UltrametricSpeciationModel {
             calculateBirthRates(node.m_right, rate, indicators, rates);
         }
 
+    }
+    
+    private int getNr(Node node) {
+        int nNodeNr = node.getNr();
+        if (nNodeNr > tree.getRoot().getNr()) {
+            nNodeNr--;
+        }
+        return nNodeNr;
     }
 
 //    /**
