@@ -10,7 +10,7 @@ import java.util.List;
  */
 public class SubstitutionModelTest extends TestFramework {
 
-    private final String[] XML_FILES = new String[]{"testHKY.xml"}; //, "testTipDates.xml"};
+    private final String[] XML_FILES = new String[]{"testHKY.xml"}; 
 
     public void testHKY() throws Exception {
         analyse(0);
@@ -34,13 +34,6 @@ public class SubstitutionModelTest extends TestFramework {
                 addExpIntoList(expList, "tree.height", 6.42E-02, 6.53E-05);
                 addExpIntoList(expList, "hky.kappa", 33.019, 0.1157);
                 break;
-
-//
-//            case 8: // testTipDates.xml
-//                addExpIntoList(expList, "treeLikelihood", -15000.435271635279);
-//                addExpIntoList(expList, "tree.height", 38.6109296447932);
-//                addExpIntoList(expList, "hky.kappa", 2179.425239015365);
-//                break;
 
 
             default:
