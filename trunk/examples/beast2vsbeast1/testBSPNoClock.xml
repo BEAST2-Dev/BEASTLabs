@@ -50,7 +50,7 @@
 
     <parameter id="hky.kappa" value="2.0" lower="0.0"/>
     <parameter id="hky.frequencies" value="0.25" dimension="4" lower='0.0'/>
-    <parameter id="popSizes" dimension="3" value="0.077" lower="0.0"/>
+    <parameter id="popSizes" dimension="3" value="380.0" lower="0.0" upper="38000.0"/>
     <input name="groupSizes" spec='IntegerParameter' id='groupSizes' dimension="3" value="0" lower='0'/>
 
     <run spec="MCMC" id="mcmc" chainLength="10000000"> <!--autoOptimize="true"-->
@@ -66,21 +66,18 @@
             <distribution spec="CompoundDistribution" id="prior">
                 <distribution id="hky.kappa.prior" spec="beast.math.distributions.Prior" x="@hky.kappa">
                     <distr id="LogNormalDistributionModel" M="1.0" S="1.25" meanInRealSpace="false"
-                                  spec="beast.math.distributions.LogNormalDistributionModel"/>
+                           spec="beast.math.distributions.LogNormalDistributionModel"/>
                 </distribution>
                 <distribution id="hky.frequencies.prior" spec="beast.math.distributions.Prior" x="@hky.frequencies">
                     <distr id="Uniform" lower="0.0" upper="1.0" spec="beast.math.distributions.Uniform"/>
                 </distribution>
 
-                <distribution id="skyline" spec="Coalescent">
+                <distribution spec="BayesianSkyline" id='skyline'>
+                    <popSizes idref="popSizes"/>
+                    <groupSizes idref='groupSizes'/>
                     <treeIntervals spec='TreeIntervals' id='TreeIntervals'>
                         <tree idref="tree"/>
                     </treeIntervals>
-                    <populationModel spec="BayesianSkyline">
-                        <popSizes idref="popSizes"/>
-                        <groupSizes idref='groupSizes'/>
-                        <treeIntervals idref='TreeIntervals'/>
-                    </populationModel>
                 </distribution>
             </distribution>
             <distribution id='likelihood' idref="treeLikelihood"/>
@@ -111,6 +108,8 @@
             <log idref="hky.frequencies"/>
             <log idref="likelihood"/>
             <log idref="skyline"/>
+            <!--<log idref="hky.kappa.prior"/>-->
+            <!--<log idref="hky.frequencies.prior"/>-->
         </logger>
         <!--        <logger logEvery="1000" fileName="test.$(seed).trees">
  <log idref="tree"/>
