@@ -79,6 +79,10 @@
                         <tree idref="tree"/>
                     </treeIntervals>
                 </distribution>
+
+                <distribution id='eml1' spec="beast.math.distributions.MarkovChainDistribution"
+				jeffreys="true"
+				parameter="@popSizes"/>
             </distribution>
             <distribution id='likelihood' idref="treeLikelihood"/>
         </distribution>
@@ -108,6 +112,7 @@
             <log idref="hky.frequencies"/>
             <log idref="likelihood"/>
             <log idref="skyline"/>
+            <log idref="eml1"/>
             <!--<log idref="hky.kappa.prior"/>-->
             <!--<log idref="hky.frequencies.prior"/>-->
         </logger>
