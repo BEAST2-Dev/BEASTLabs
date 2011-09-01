@@ -62,10 +62,10 @@ public class TipTimeTest extends TestFramework {
                 addExpIntoList(expList, "tree.height", 68.2541, 8.7152E-2);
                 addExpIntoList(expList, "popSize", 33.9172, 0.1266);
                 addExpIntoList(expList, "hky.kappa", 17.2562, 7.7984E-2);
-                addExpIntoList(expList, "hky.frequencies0", 0.2838, 4.3904E-4);
-                addExpIntoList(expList, "hky.frequencies1", 0.2116, 3.8223E-4);
-                addExpIntoList(expList, "hky.frequencies2", 0.2516, 4.0877E-4);
-                addExpIntoList(expList, "hky.frequencies3", 0.253, 4.1631E-4);
+                addExpIntoList(expList, "hky.frequencies1", 0.2838, 4.3904E-4);
+                addExpIntoList(expList, "hky.frequencies2", 0.2116, 3.8223E-4);
+                addExpIntoList(expList, "hky.frequencies3", 0.2516, 4.0877E-4);
+                addExpIntoList(expList, "hky.frequencies4", 0.253, 4.1631E-4);
                 addExpIntoList(expList, "clockRate", 8.1277E-4, 1.405E-6);
                 addExpIntoList(expList, "treeLikelihood", -3850.8083, 6.0429E-2);
                 addExpIntoList(expList, "coalescent", -71.6925, 3.5705E-2);
