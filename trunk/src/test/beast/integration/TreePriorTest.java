@@ -125,47 +125,49 @@ public class TreePriorTest extends TestFramework {
 
             case 6: // testBSP1.xml
 //        BEAST 1 testBSP1.xml
-                addExpIntoList(expList, "posterior", -3849.428, 0.1743);
-                addExpIntoList(expList, "prior", -76.253, 0.1631);
-                addExpIntoList(expList, "siteModel.alpha", 5.434E-2, 5.0295E-4);
-                addExpIntoList(expList, "clock.rate", 8.8911E-4, 2.0136E-6);
-                addExpIntoList(expList, "skyline.popSize1", 5623.12, 207.941);
-                addExpIntoList(expList, "skyline.popSize2", 1085.8982, 120.6415);
-                addExpIntoList(expList, "skyline.popSize3", 2991.2196, 159.7476);
-                addExpIntoList(expList, "skyline.popSize4", 3223.5275, 191.6626);
-                addExpIntoList(expList, "skyline.popSize5", 1882.3835, 147.9595);
-                addExpIntoList(expList, "skyline.groupSize1", 1.8675, 0.1262);
-                addExpIntoList(expList, "skyline.groupSize2", 5.0423, 0.1292);
-                addExpIntoList(expList, "skyline.groupSize3", 3.0782, 9.7576E-2);
-                addExpIntoList(expList, "skyline.groupSize4", 2.7686, 0.1004);
-                addExpIntoList(expList, "skyline.groupSize5", 3.2434, 9.905E-2);
-                addExpIntoList(expList, "hky.kappa", 21.6604, 0.2725);
-                addExpIntoList(expList, "treeModel.rootHeight", 74.2761, 0.1275);
-                addExpIntoList(expList, "treeLikelihood", -3773.175, 4.2857E-2);
-                addExpIntoList(expList, "skyline", -76.253, 0.1631);
+                addExpIntoList(expList, "posterior", -3865.3635, 8.2236E-2);
+                addExpIntoList(expList, "prior", -92.178, 7.5174E-2);
+                addExpIntoList(expList, "siteModel.alpha", 5.4354E-2, 5.2519E-4);
+                addExpIntoList(expList, "clock.rate", 9.4858E-4, 1.9706E-6);
+                addExpIntoList(expList, "skyline.popSize1", 67.8827, 2.2639);
+                addExpIntoList(expList, "skyline.popSize2", 25.4281, 0.3165);
+                addExpIntoList(expList, "skyline.popSize3", 31.9271, 0.3819);
+                addExpIntoList(expList, "skyline.popSize4", 41.6596, 0.3976);
+                addExpIntoList(expList, "skyline.popSize5", 33.5967, 0.3554);
+                addExpIntoList(expList, "skyline.groupSize1", 2.4686, 4.0465E-2);
+                addExpIntoList(expList, "skyline.groupSize2", 3.3671, 3.9454E-2);
+                addExpIntoList(expList, "skyline.groupSize3", 3.181, 3.3807E-2);
+                addExpIntoList(expList, "skyline.groupSize4", 3.723, 5.0187E-2);
+                addExpIntoList(expList, "skyline.groupSize5", 3.2603, 5.9824E-2);
+                addExpIntoList(expList, "hky.kappa", 21.6911, 5.2142E-2);
+                addExpIntoList(expList, "treeModel.rootHeight", 70.3393, 0.1057);
+                addExpIntoList(expList, "treeLikelihood", -3773.1854, 3.9474E-2);
+                addExpIntoList(expList, "skyline", -69.725, 5.435E-2);
+                addExpIntoList(expList, "eml1", -22.453, 3.1115E-2);
                 break;
 
             case 7: // testBSPNoClock.xml
 //        BEAST 1 testBSPNoClock.xml
-                addExpIntoList(expList, "posterior", -1826.0627, 0.1605);
-                addExpIntoList(expList, "prior", -9.3047, 0.1419);
-                addExpIntoList(expList, "tree.height", 6.3543E-2, 6.5911E-5);
-//                addExpIntoList(expList, "popSizes1", 2555.892, 136.7415);
-//                addExpIntoList(expList, "popSizes2", 1806.3325, 128.1372);
-//                addExpIntoList(expList, "popSizes3", 1031.222, 115.9877);
-                addExpIntoList(expList, "groupSizes1", 1.3147, 2.2938E-2);
-                addExpIntoList(expList, "groupSizes2", 1.5633, 3.2899E-2);
-                addExpIntoList(expList, "groupSizes3", 2.122, 4.0359E-2);
-                addExpIntoList(expList, "hky.kappa", 26.1996, 0.2017);
-                addExpIntoList(expList, "hky.frequencies1", 0.3269, 6.8444E-4);
-                addExpIntoList(expList, "hky.frequencies2", 0.2569, 6.0224E-4);
-                addExpIntoList(expList, "hky.frequencies3", 0.1547, 4.6258E-4);
-                addExpIntoList(expList, "hky.frequencies4", 0.2615, 6.4427E-4);
-                addExpIntoList(expList, "treeLikelihood", -1816.758, 7.8396E-2);
-                addExpIntoList(expList, "skyline", -3.3184, 0.1425);
+                addExpIntoList(expList, "posterior", -1809.8121, 7.6417E-2);
+                addExpIntoList(expList, "prior", 7.0426, 3.7042E-2);
+                addExpIntoList(expList, "tree.height", 6.2187E-2, 6.4148E-5);
+                addExpIntoList(expList, "popSizes1", 0.2084, 4.4215E-3);
+                addExpIntoList(expList, "popSizes2", 0.1012, 1.1132E-3);
+                addExpIntoList(expList, "popSizes3", 5.0552E-2, 7.8572E-4);
+                addExpIntoList(expList, "groupSizes1", 1.7396, 8.2581E-3);
+                addExpIntoList(expList, "groupSizes2", 1.78, 8.3052E-3);
+                addExpIntoList(expList, "groupSizes3", 1.4804, 7.7151E-3);
+                addExpIntoList(expList, "hky.kappa", 26.0187, 0.2286);
+                addExpIntoList(expList, "hky.frequencies1", 0.3262, 7.0596E-4);
+                addExpIntoList(expList, "hky.frequencies2", 0.2571, 5.876E-4);
+                addExpIntoList(expList, "hky.frequencies3", 0.1546, 4.8206E-4);
+                addExpIntoList(expList, "hky.frequencies4", 0.262, 5.9621E-4);
+                addExpIntoList(expList, "treeLikelihood", -1816.8547, 6.3527E-2);
+                addExpIntoList(expList, "skyline", 7.9513, 1.6384E-2);
+                addExpIntoList(expList, "eml1", 5.059, 2.1669E-2);
                 break;
 
-           case 8: // testEBSP.xml
+            case 8: // testEBSP.xml
 //        BEAST 1 testEBSP.xml
                 addExpIntoList(expList, "posterior", -1826.2014, 0.1562);
                 addExpIntoList(expList, "prior", -9.4517, 0.1782);

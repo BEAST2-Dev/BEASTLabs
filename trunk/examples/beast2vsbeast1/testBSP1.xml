@@ -74,6 +74,10 @@
         </sequence>
     </data>
 
+
+
+
+
     <tree spec='beast.util.ClusterTree' id='tree' clusterType='upgma'>
         <trait spec='beast.evolution.tree.TraitSet' traitname='date-forward' units='year'
                value='
@@ -101,7 +105,7 @@
 
     <distribution spec="CompoundDistribution" id="posterior">
         <distribution spec="CompoundDistribution" id="prior">
-<!--
+<!--	
             <distribution id="hky.kappa.prior" spec="beast.math.distributions.Prior" x="@hky.kappa">
                 <distr id="LogNormalDistributionModel" M="1.0" S="1.25" meanInRealSpace="false"
                               spec="beast.math.distributions.LogNormalDistributionModel"/>
@@ -118,15 +122,20 @@
                     <tree idref="tree"/>
                 </treeIntervals>
             </distribution>
+            
+            <distribution id='eml1' spec="beast.math.distributions.MarkovChainDistribution"
+				jeffreys="true"
+				parameter="@skyline.popSize"/>
         </distribution>
 
-		<distribution spec='TreeLikelihood' id="treeLikelihood">
+		<distribution spec='TreeLikelihood' id="likelihood">
 		    <data idref="alignment"/>
 		    <tree idref="tree"/>
 			<siteModel spec='SiteModel' id="siteModel" gammaCategoryCount="4">
-				<parameter id='siteModel.alpha' name='shape' value='5.40372E-2'/>
+				<parameter id='siteModel.alpha' name='shape' value="5.40372E-2" lower="0.0" upper="100.0"/>
+
 				<substModel spec='HKY' id="hky">
-					<parameter name='kappa' id="hky.kappa" value="21.5056" lower="0.0"/>
+					<parameter name='kappa' id="hky.kappa" value="21.5056" lower="0.0" upper="100.0"/>
 					<frequencies id='freqs' spec='Frequencies' data="@alignment"/>
 				</substModel>
 			</siteModel>
@@ -147,22 +156,19 @@
         </state>
 
         <distribution idref="posterior"/>
-        <operator id='kappaScaler' spec='ScaleOperator' scaleFactor="0.75" weight="0.1" parameter="@hky.kappa"/>
-        <operator id='clockRateScaler' spec='ScaleOperator' scaleFactor="0.75" weight="0.1" parameter="@clock.rate"/>
-        <operator id='shapeScaler' spec='ScaleOperator' scaleFactor="0.75" weight="0.1" parameter="@siteModel.alpha"/>
-<!--
-        <operator id='frequenciesDelta' spec='DeltaExchangeOperator' delta="0.01" weight="0.1"
-                  parameter="@hky.frequencies"/>
--->
+        <operator id='kappaScaler' spec='ScaleOperator' scaleFactor="0.75" weight="1" parameter="@hky.kappa"/>
+        <operator id='clockRateScaler' spec='ScaleOperator' scaleFactor="0.75" weight="3" parameter="@clock.rate"/>
+        <operator id='shapeScaler' spec='ScaleOperator' scaleFactor="0.75" weight="1" parameter="@siteModel.alpha"/>
         <operator id='treeScaler' spec='ScaleOperator' scaleFactor="0.75" weight="3" tree="@tree"/>
         <operator spec='Uniform' weight="30" tree="@tree"/>
-        <operator spec='SubtreeSlide' weight="15" gaussian="true" size="38" tree="@tree"/>
+        <operator spec='SubtreeSlide' weight="15" gaussian="true" tree="@tree"/>
         <operator id='narrow' spec='Exchange' isNarrow='true' weight="15" tree="@tree"/>
         <operator id='wide' spec='Exchange' isNarrow='false' weight="3" tree="@tree"/>
         <operator spec='WilsonBalding' weight="3" tree="@tree"/>
+        <operator spec='UpDownOperator' scaleFactor="0.75" weight="3" up="@clock.rate" down="@tree"/>
 
         <operator id='popSizesScaler' spec='ScaleOperator' scaleFactor="0.75" weight="15" parameter="@skyline.popSize"/>
-        <operator id='groupSizesDelta' spec='DeltaExchangeOperator' delta="1" weight="3" integer="true"
+        <operator id='groupSizesDelta' spec='DeltaExchangeOperator' delta="1" weight="6" integer="true"
                   intparameter="@skyline.groupSize"/>
 
         <logger logEvery="1000" fileName="test.$(seed).log">
@@ -174,17 +180,18 @@
             <log idref="skyline.groupSize"/>
             <log idref="hky.kappa"/>
             <log spec='beast.evolution.tree.TreeHeightLogger' tree='@tree' id='treeModel.rootHeight'/>
-            <log idref="treeLikelihood"/>
+            <log idref="likelihood"/>
             <log idref="skyline"/>
+            <log idref="eml1"/>
         </logger>
 
         <logger logEvery="1000" fileName="test.$(seed).trees">
 			<log idref="tree"/>
-		</logger>
+		</logger>              
 
         <logger logEvery="100000">
             <log idref="posterior"/>
-            <log idref="treeLikelihood"/>
+            <log idref="likelihood"/>
             <log idref="prior"/>
             <log spec='beast.evolution.tree.TreeHeightLogger' tree='@tree'/>
         </logger>
