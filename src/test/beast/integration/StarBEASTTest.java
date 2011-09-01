@@ -36,10 +36,10 @@ public class StarBEASTTest extends TestFramework {
                 addExpIntoList(expList, "mrcatime(human,chimp)", 2.0326E-2, 3.5906E-5);
                 addExpIntoList(expList, "popSize", 9.7862E-2, 6.2387E-4);
                 addExpIntoList(expList, "hky.kappa", 25.8288, 0.1962);
-                addExpIntoList(expList, "hky.frequencies0", 0.3262, 5.9501E-4);
-                addExpIntoList(expList, "hky.frequencies1", 0.2569, 5.0647E-4);
-                addExpIntoList(expList, "hky.frequencies2", 0.1552, 4.4638E-4);
-                addExpIntoList(expList, "hky.frequencies3", 0.2617, 5.1085E-4);
+                addExpIntoList(expList, "hky.frequencies1", 0.3262, 5.9501E-4);
+                addExpIntoList(expList, "hky.frequencies2", 0.2569, 5.0647E-4);
+                addExpIntoList(expList, "hky.frequencies3", 0.1552, 4.4638E-4);
+                addExpIntoList(expList, "hky.frequencies4", 0.2617, 5.1085E-4);
                 addExpIntoList(expList, "likelihood", -1816.6943, 5.8444E-2);
                 addExpIntoList(expList, "coalescent", 7.2378, 9.1912E-3);
                 break;
