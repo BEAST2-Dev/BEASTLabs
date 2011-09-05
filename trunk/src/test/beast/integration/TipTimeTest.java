@@ -10,7 +10,7 @@ import java.util.List;
  */
 public class TipTimeTest extends TestFramework {
     private final String[] XML_FILES = new String[]{"testCoalescentTipDates.xml", "testCoalescentTipDates1.xml", 
-            "testCoalescentTipDates2.xml", "testStrictClockTipTime.xml"};//, "testTipDates.xml"};
+            "testCoalescentTipDatesSampling.xml", "testStrictClockTipTime.xml"};//, "testTipDates.xml"};
 
     public void testCoalescentTipDates() throws Exception {
         analyse(0);
@@ -20,7 +20,7 @@ public class TipTimeTest extends TestFramework {
         analyse(1);
     }
 
-    public void testCoalescentTipDates2() throws Exception {
+    public void testCoalescentTipDatesSampling() throws Exception {
         analyse(2);
     }
 
@@ -51,8 +51,12 @@ public class TipTimeTest extends TestFramework {
                 addExpIntoList(expList, "coalescent", -30.6163, 1.3415E-2);
                 break;
 
-            case 2: // testCoalescentTipDates2.xml
-                addExpIntoList(expList, "tree.height", 20000.0, 70.0); // BEAST 2 report root height not tree height.
+            case 2: // testCoalescentTipDatesSampling.xml
+//                addExpIntoList(expList, "root.height", 20000.0, 70.0); // root height. //TODO
+                addExpIntoList(expList, "tree.height", 15000.0, 70.0); // tree height.
+                addExpIntoList(expList, "coalescent", -30.6342, 1.6585E-2);
+                addExpIntoList(expList, "height(A)", 5000.0, 0.01);
+                addExpIntoList(expList, "height(B)", 5000.0, 0.01);
                 break;
 
             case 3: // testStrictClockTipTime.xml
