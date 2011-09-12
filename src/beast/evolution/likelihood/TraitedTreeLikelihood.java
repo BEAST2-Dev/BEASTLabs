@@ -101,6 +101,9 @@ public class TraitedTreeLikelihood extends TreeLikelihood {
             int[] states = new int[patternCount];
     		DataType dataType = m_dataTypeInput.get();
         	String sValue = m_traitSet.get().getStringValue(node.getNr());
+        	if (sValue == null) {
+        		throw new Exception("Trait not specified for " + node.getID());
+        	}
         	List<Integer> iStates = dataType.string2state(sValue);
         	for (int iPattern = 0; iPattern < patternCount; iPattern++) {
             	int nState = iStates.get(iPattern);
@@ -127,6 +130,9 @@ public class TraitedTreeLikelihood extends TreeLikelihood {
             double[] partials = new double[patternCount * nStates];
 
         	String sValue = m_traitSet.get().getStringValue(node.getNr());
+        	if (sValue == null) {
+        		throw new Exception("Trait not specified for " + node.getID());
+        	}
         	List<Integer> iStates = dataType.string2state(sValue);
 
         	int k = 0;
