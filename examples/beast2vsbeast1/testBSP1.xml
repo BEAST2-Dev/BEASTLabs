@@ -74,10 +74,6 @@
         </sequence>
     </data>
 
-
-
-
-
     <tree spec='beast.util.ClusterTree' id='tree' clusterType='upgma'>
         <trait spec='beast.evolution.tree.TraitSet' traitname='date-forward' units='year'
                value='
@@ -174,7 +170,7 @@
         <logger logEvery="1000" fileName="test.$(seed).log">
             <log idref="posterior"/>
             <log idref="prior"/>
-            <log idref="siteModel.alpha"/>
+            <!--<log idref="siteModel.alpha"/>-->
             <log idref="clock.rate"/>
             <log idref="skyline.popSize"/>
             <log idref="skyline.groupSize"/>
@@ -185,9 +181,9 @@
             <log idref="eml1"/>
         </logger>
 
-        <logger logEvery="1000" fileName="test.$(seed).trees">
-			<log idref="tree"/>
-		</logger>              
+        <!--<logger logEvery="1000" fileName="test.$(seed).trees">-->
+			<!--<log idref="tree"/>-->
+		<!--</logger>              -->
 
         <logger logEvery="100000">
             <log idref="posterior"/>
