@@ -59,15 +59,10 @@
                 <distr id="Noraml0" offset="0.0" spec="distributions.Normal" mean="5000" sigma="1"/>
             </distribution>
 
-            <!--<distribution id="rootHeight" monophyletic="false" spec="distributions.MRCAPrior" tipsonly="true" tree="@tree">-->
-                <!--<taxonset id="TaxonSetAll" spec="TaxonSet">-->
-                    <!--<taxon idref="A" spec="Taxon"/>-->
-                    <!--<taxon idref="B" spec="Taxon"/>-->
-                    <!--<taxon id="C" spec="Taxon"/>-->
-                    <!--<taxon id="D" spec="Taxon"/>-->
-                <!--</taxonset>-->
-                <!--<distr id="Noraml1" offset="0.0" spec="distributions.Normal" mean="20000" sigma="1"/>-->
-            <!--</distribution>-->
+            <distribution id="rootHeight" monophyletic="false" spec="distributions.MRCAPrior" tipsonly="false" tree="@tree">
+                <taxonset id="TaxonSetAll" spec="TaxonSet" alignment="@alignment"/>
+                <distr id="Noraml1" offset="0.0" spec="distributions.Normal" mean="20000" sigma="1"/>
+            </distribution>
 
             <!--<distribution id="tipDateD" monophyletic="false" spec="distributions.MRCAPrior" tipsonly="true" tree="@tree">-->
                 <!--<taxonset id="TaxonSetD" spec="TaxonSet">-->
@@ -88,7 +83,7 @@
             <log idref="popSize"/>
             <log idref='tipDateA'/>
 			<log idref='tipDateB'/>
-            <!--<log idref='rootHeight'/>-->
+            <log idref='rootHeight'/>
         </logger>
 <!--        <logger logEvery="100" fileName="test.$(seed).trees">
             <log idref="tree"/>
@@ -98,7 +93,7 @@
             <log idref="posterior"/>
             <log idref="coalescent"/>
             <log spec='beast.evolution.tree.TreeHeightLogger' tree='@tree'/>
-            <!--<log idref='rootHeight'/>-->
+            <log idref='rootHeight'/>
             <log idref="popSize"/>
         </logger>
     </run>
