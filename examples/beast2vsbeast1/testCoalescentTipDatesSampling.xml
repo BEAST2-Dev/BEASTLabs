@@ -17,7 +17,7 @@
     </data>
 
    <tree spec='beast.util.ClusterTree' id='tree' clusterType='upgma'>
-        <trait spec='beast.evolution.tree.TraitSet' traitname='date-forward' units='day'
+        <trait spec='beast.evolution.tree.TraitSet' traitname='date-backward' units='day'
                value='
 		A  = 5000,
 		B  = 5000,
@@ -28,9 +28,9 @@
 		<taxa idref='alignment'/>
     </tree>
 
-    <parameter id="popSize" value="10000" lower="0.0"/>
+    <parameter id="popSize" value="1000000" lower="0.0"/>
 
-    <run spec="MCMC" id="mcmc" chainLength="1000000"> <!--autoOptimize="true"-->
+    <run spec="MCMC" id="mcmc" chainLength="10000000"> <!--autoOptimize="true"-->
         <state>
             <stateNode idref='tree'/>
         </state>
@@ -75,7 +75,7 @@
         <operator id="TipDatesRandomWalkerA" windowSize="1" spec="TipDatesRandomWalker" taxonset="@TaxonSetA" tree="@tree" weight="1.0"/>
         <operator id="TipDatesRandomWalkerB" windowSize="1" spec="TipDatesRandomWalker" taxonset="@TaxonSetB" tree="@tree" weight="1.0"/>
 
-        <logger logEvery="5" fileName="test.$(seed).log">
+        <logger logEvery="1000" fileName="test.$(seed).log">
    	        <model idref='posterior'/>
             <log idref="posterior"/>
             <log spec='beast.evolution.tree.TreeHeightLogger' tree='@tree'/>
@@ -88,7 +88,7 @@
 <!--        <logger logEvery="100" fileName="test.$(seed).trees">
             <log idref="tree"/>
         </logger>  -->
-        <logger logEvery="5000">
+        <logger logEvery="10000">
 	        <model idref='posterior'/>
             <log idref="posterior"/>
             <log idref="coalescent"/>
