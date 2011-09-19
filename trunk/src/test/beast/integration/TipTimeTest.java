@@ -52,9 +52,9 @@ public class TipTimeTest extends TestFramework {
                 break;
 
             case 2: // testCoalescentTipDatesSampling.xml
-//                addExpIntoList(expList, "root.height", 20000.0, 70.0); // root height. //TODO
-                addExpIntoList(expList, "tree.height", 15000.0, 70.0); // tree height.
-                addExpIntoList(expList, "coalescent", -30.6342, 1.6585E-2);
+                addExpIntoList(expList, "coalescent", -41.4962, 1.6251E-4);
+                addExpIntoList(expList, "mrcatime(TaxonSetAll)", 20000.0, 8.9215E-2); // root height.
+                addExpIntoList(expList, "tree.height", 15000.0, 8.9215E-2); // tree height.
                 addExpIntoList(expList, "height(A)", 5000.0, 0.01);
                 addExpIntoList(expList, "height(B)", 5000.0, 0.01);
                 break;
