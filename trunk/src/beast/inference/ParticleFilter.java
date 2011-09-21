@@ -13,6 +13,7 @@ import java.util.concurrent.CountDownLatch;
 
 import beast.core.Description;
 import beast.core.Input;
+import beast.core.Operator;
 import beast.core.Input.Validate;
 import beast.core.Logger;
 import beast.core.MCMC;
@@ -32,10 +33,14 @@ public class ParticleFilter extends beast.core.Runnable {
 	public Input<String> m_sRootDir = new Input<String>("rootdir", "root directory for storing particle states and log files (default /tmp)", "/tmp");
 	public Input<MCMC> m_mcmc = new Input<MCMC>("mcmc", "MCMC analysis used to specify model and operations in each of the particles", Validate.REQUIRED);
 	public Input<String> m_sParticleLauncher = new Input<String>("launcher", "class name for particle launcher, default " + DEFAULT_PARTICLE_LAUNCER, DEFAULT_PARTICLE_LAUNCER);
+	public Input<String> m_sScriptInput = new Input<String>("value", "script for launching a job. " +
+			"$(dir) is replaced by the directory associated with the particle " +
+			"$(seed) is replaced by a random number seed that differs with every launch", Validate.REQUIRED);
 
 	int m_nParticles;
 	// nr of steps = MCMC.chainLength / step size
 	int m_nSteps;
+	String m_sScript;
 	
 	/** states and associated posteriors. Used to sample next state from **/
 	String [] m_sStates;
@@ -55,6 +60,7 @@ public class ParticleFilter extends beast.core.Runnable {
 	@Override
 	public void initAndValidate() throws Exception {
 		m_nParticles = m_nParticlesInput.get();
+		m_sScript = m_sScriptInput.get();
 		int nStepSize = m_nStepSizeInput.get();
 		
 		File rootDir = new File(m_sRootDir.get());
@@ -108,7 +114,7 @@ public class ParticleFilter extends beast.core.Runnable {
 		
 		
 	} // initAndValidate
-
+	
 	synchronized void updateStates(int step) throws Exception {
 		for (int iParticle = 0; iParticle < m_nParticles; iParticle++) {
 			// load state
@@ -160,6 +166,50 @@ public class ParticleFilter extends beast.core.Runnable {
 			sNewStates[iParticle] = m_sStates[iNewState];
 		}	
 
+		
+		final double DELTA = 0.0025;
+		
+		// slightly perturb weights of operators
+		for (int iParticle = 0; iParticle < m_nParticles; iParticle++) {
+			String [] sXML = m_sStates[iParticle].split("</itsabeastystatewerein>\n");
+			String [] sStrs = sXML[1].split("\n");
+			int nOperators = sStrs.length - 3; 
+			double [] fWeights = new double[nOperators];
+            for (int i = 0; i < nOperators; i++) {
+            	String [] sStrs2 = sStrs[i+2].split(" ");
+            	fWeights[i] = Double.parseDouble(sStrs2[1]);
+            }
+            // convert from cumulative weights
+            for (int i = nOperators - 1; i > 0; i--) {
+            	fWeights[i] -= fWeights[i - 1];
+            }
+            // delta exchange
+            for (int i = 0; i < nOperators; i++) {
+            	double fDelta = Randomizer.nextDouble() * DELTA;
+            	int iFrom = Randomizer.nextInt(nOperators);
+            	int iTo = Randomizer.nextInt(nOperators);
+            	if (iFrom != iTo && fWeights[iFrom] > fDelta && fWeights[iTo] < 1.0 - fDelta) {
+            		fWeights[iFrom] -= fDelta;
+            		fWeights[iTo] += fDelta;
+            	}
+            }
+            // convert to cumulative weights
+            for (int i = 1; i < nOperators; i++) {
+            	fWeights[i] += fWeights[i - 1];
+            }
+            fWeights[nOperators-1] = 1.0;
+            
+            String sStates = sXML[0] + "</itsabeastystatewerein>\n";
+            sStates += "<!--\nID Weight Paramvalue #Accepted #Rejected #CorrectionAccepted #CorrectionRejected\n";
+            for (int i = 0; i < nOperators; i++) {
+            	String [] sStrs2 = sStrs[i+2].split(" ");
+            	String sStr = sStrs2[0] + " " + fWeights[i] + " " + sStrs2[2] + " " + sStrs2[3] + " " + sStrs2[4] + " " + sStrs2[5] + " " + sStrs2[6] + "\n";
+            	sStates += sStr;
+            }
+            sStates += "-->";
+            sNewStates[iParticle] = sStates;
+		}
+		
 		
 		m_fPosteriors = fNewPosteriors;
 		m_sStates = sNewStates;
