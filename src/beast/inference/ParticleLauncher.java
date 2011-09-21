@@ -43,11 +43,21 @@ public class ParticleLauncher extends Thread {
 			for (int k = 0; k < m_filter.m_nSteps; k++) {
 				FileOutputStream sScriptFile = new FileOutputStream(sParticleDir + "/run2.sh");
 				PrintStream out = new PrintStream(sScriptFile);
-				String sCommand = "#!/bin/sh\nchdir " + sParticleDir + "\n" +
-				// " -Djava.only=true "
-						"java -Dbeast.debug=false -Djava.library.path=" + System.getProperty("java.library.path") + 
-						" -cp " + System.getProperty("java.class.path") + " beast.app.BeastMCMC -resume -seed " + Randomizer.nextInt()+ " " + sParticleDir + "/beast.xml >> " + sParticleDir + "/beast.log 2>&1 \n" +
-						"exit\n";
+				String sCommand = m_filter.m_sScript.replaceAll("\\$\\(dir\\)", sParticleDir);
+				//while (sCommand.matches("$(seed)")) {
+					sCommand = sCommand.replaceAll("\\$\\(seed\\)", Randomizer.nextInt()+"");
+				//}
+				sCommand = sCommand.replaceAll("\\$\\(java.library.path\\)", System.getProperty("java.library.path"));
+				sCommand = sCommand.replaceAll("\\$\\(java.class.path\\)", System.getProperty("java.class.path"));
+				
+				
+//				String sCommand = "#!/bin/sh\nchdir " + sParticleDir + "\n" +
+//				// " -Djava.only=true "
+//						"java -Dbeast.debug=false -Djava.library.path=" + System.getProperty("java.library.path") + 
+//						" -cp " + System.getProperty("java.class.path") + " beast.app.BeastMCMC -resume " +
+//						"-seed " + Randomizer.nextInt()+ " " + sParticleDir + "/beast.xml >> " +
+//						sParticleDir + "/beast.log 2>&1 \n" +
+//						"exit\n";
 	            out.print(sCommand);
 				out.close();
 
