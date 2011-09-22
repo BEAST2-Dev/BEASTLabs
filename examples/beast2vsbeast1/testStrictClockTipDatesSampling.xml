@@ -126,11 +126,6 @@
     <parameter id="popSize" value="380.0" lower="0.0" upper="38000.0"/>
     <parameter id='clockRate' value="2.3E-5" lower="0.0" upper="100.0"/>
 
-    <distribution id="tipDateA" monophyletic="false" spec="distributions.MRCAPrior" tipsonly="true" tree="@tree">
-        <taxonset id="age(TREESPARROW_HENAN_1_2004)" spec="TaxonSet">
-            <taxon id="TREESPARROW_HENAN_1_2004" spec="Taxon"/>
-        </taxonset>
-    </distribution>
     <distribution id="tipDateB" monophyletic="false" spec="distributions.MRCAPrior" tipsonly="true" tree="@tree">
         <taxonset id="age(CHICKEN_HONGKONG_915_1997)" spec="TaxonSet">
             <taxon id="CHICKEN_HONGKONG_915_1997" spec="Taxon"/>
@@ -159,8 +154,16 @@
                     <distr id="OneOnX" offset="0.0" spec="beast.math.distributions.OneOnX"/>
                 </distribution>
                 <!--<distribution id="clockRate.prior" spec="beast.math.distributions.Prior" x="@clockRate">-->
-                    <!--<distr id="Uniform2" lower="0.0" upper="100.0" spec="beast.math.distributions.Uniform"/>-->
+                <!--<distr id="Uniform2" lower="0.0" upper="100.0" spec="beast.math.distributions.Uniform"/>-->
                 <!--</distribution>-->
+
+                <distribution id="tipDateA" monophyletic="false" spec="distributions.MRCAPrior" tipsonly="true"
+                              tree="@tree">
+                    <taxonset id="age(TREESPARROW_HENAN_1_2004)" spec="TaxonSet">
+                        <taxon id="TREESPARROW_HENAN_1_2004" spec="Taxon"/>
+                    </taxonset>
+                    <distr id="Uniform0" offset="0.0" spec="distributions.Uniform" upper="2005"/>
+                </distribution>
 
                 <distribution id="coalescent" spec="Coalescent">
                     <treeIntervals spec='TreeIntervals' id='TreeIntervals'>
