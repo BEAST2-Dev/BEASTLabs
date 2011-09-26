@@ -1,8 +1,10 @@
 package beast.evolution.speciation;
 
+import beast.core.Description;
 import beast.evolution.tree.Node;
 import beast.evolution.tree.Tree;
 
+@Description("Experimental code with unknown use. If you know, fill this in.")
 public abstract class UltrametricSpeciationModel extends SpeciesTreeDistribution {
 
     public UltrametricSpeciationModel() {
