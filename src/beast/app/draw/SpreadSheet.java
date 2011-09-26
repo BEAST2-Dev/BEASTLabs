@@ -85,7 +85,7 @@ import beast.core.Plugin;
 import beast.core.StateNode;
 import beast.evolution.alignment.Alignment;
 import beast.evolution.alignment.Sequence;
-import beast.util.ClassDiscovery;
+import beast.util.AddOnManager;
 
 import beast.util.XMLParser;
 import beast.util.XMLProducer;
@@ -147,7 +147,7 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 	
 	/** constructor **/
 	SpreadSheet() {
-        List<String> sPlugInNames = ClassDiscovery.find(beast.core.Plugin.class, ClassDiscovery.IMPLEMENTATION_DIR);
+        List<String> sPlugInNames = AddOnManager.find(beast.core.Plugin.class, AddOnManager.IMPLEMENTATION_DIR);
         m_sPlugInNames = sPlugInNames.toArray(new String[0]);
         headers = new String[MAX_COL];
 		m_objects = new Object[MAX_ROW][MAX_COL];
@@ -346,7 +346,8 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 					PluginDialog dlg = new PluginDialog(plugin, plugin.getClass());
 					dlg.setVisible(true);
 					if (dlg.getOK()) {
-						plugin = dlg.m_panel.m_plugin;
+						dlg.accept(plugin);
+						//plugin = dlg.m_panel.m_plugin;
 						m_objects[m_iRow][m_iCol] = plugin;
 						m_table.repaint();
 					}
@@ -1851,7 +1852,7 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 	 **/
 	public static void main(String args[]) {
 		try { 
-        	BeastMCMC.loadExternalJars();
+			AddOnManager.loadExternalJars();
 
 			Logger.FILE_MODE = Logger.FILE_OVERWRITE;
 			SpreadSheet spreadSheet = new SpreadSheet();
