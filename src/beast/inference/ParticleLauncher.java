@@ -23,6 +23,19 @@ public class ParticleLauncher extends Thread {
 		}
 	}
 	
+	String getCommand(String sParticleDir) {
+		String sCommand = m_filter.m_sScript.replaceAll("\\$\\(dir\\)", sParticleDir);
+		//while (sCommand.matches("$(seed)")) {
+			sCommand = sCommand.replaceAll("\\$\\(seed\\)", Randomizer.nextInt()+"");
+		//}
+		sCommand = sCommand.replaceAll("\\$\\(java.library.path\\)", System.getProperty("java.library.path"));
+		sCommand = sCommand.replaceAll("\\$\\(java.class.path\\)", System.getProperty("java.class.path"));
+		if (m_filter.m_sHosts != null) {
+			sCommand = sCommand.replaceAll("\\$\\(host\\)", m_filter.m_sHosts[m_iParticle % m_filter.m_sHosts.length]);
+		}
+		return sCommand;
+	}
+	
 	@Override
 	public void run() {
 		try {
@@ -43,12 +56,13 @@ public class ParticleLauncher extends Thread {
 			for (int k = 0; k < m_filter.m_nSteps; k++) {
 				FileOutputStream sScriptFile = new FileOutputStream(sParticleDir + "/run2.sh");
 				PrintStream out = new PrintStream(sScriptFile);
-				String sCommand = m_filter.m_sScript.replaceAll("\\$\\(dir\\)", sParticleDir);
-				//while (sCommand.matches("$(seed)")) {
-					sCommand = sCommand.replaceAll("\\$\\(seed\\)", Randomizer.nextInt()+"");
-				//}
-				sCommand = sCommand.replaceAll("\\$\\(java.library.path\\)", System.getProperty("java.library.path"));
-				sCommand = sCommand.replaceAll("\\$\\(java.class.path\\)", System.getProperty("java.class.path"));
+				String sCommand = getCommand(sParticleDir);
+//				String sCommand = m_filter.m_sScript.replaceAll("\\$\\(dir\\)", sParticleDir);
+//				//while (sCommand.matches("$(seed)")) {
+//					sCommand = sCommand.replaceAll("\\$\\(seed\\)", Randomizer.nextInt()+"");
+//				//}
+//				sCommand = sCommand.replaceAll("\\$\\(java.library.path\\)", System.getProperty("java.library.path"));
+//				sCommand = sCommand.replaceAll("\\$\\(java.class.path\\)", System.getProperty("java.class.path"));
 				
 				
 //				String sCommand = "#!/bin/sh\nchdir " + sParticleDir + "\n" +

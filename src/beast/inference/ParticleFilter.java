@@ -35,12 +35,18 @@ public class ParticleFilter extends beast.core.Runnable {
 	public Input<String> m_sParticleLauncher = new Input<String>("launcher", "class name for particle launcher, default " + DEFAULT_PARTICLE_LAUNCER, DEFAULT_PARTICLE_LAUNCER);
 	public Input<String> m_sScriptInput = new Input<String>("value", "script for launching a job. " +
 			"$(dir) is replaced by the directory associated with the particle " +
-			"$(seed) is replaced by a random number seed that differs with every launch", Validate.REQUIRED);
+			"$(seed) is replaced by a random number seed that differs with every launch " +
+			"$(host) is replaced by a host from the list of hosts", Validate.REQUIRED);
+	public Input<String> m_sHostsInput = new Input<String>("hosts", "comma separated list of hosts. " +
+			"If there are k hosts in the list, for particle i the term $(host) in the script will be replaced " +
+			"by the (i modulo k) host in the list. " +
+			"Note that whitespace is removed");
 
 	int m_nParticles;
 	// nr of steps = MCMC.chainLength / step size
 	int m_nSteps;
 	String m_sScript;
+	String [] m_sHosts;
 	
 	/** states and associated posteriors. Used to sample next state from **/
 	String [] m_sStates;
@@ -62,6 +68,13 @@ public class ParticleFilter extends beast.core.Runnable {
 		m_nParticles = m_nParticlesInput.get();
 		m_sScript = m_sScriptInput.get();
 		int nStepSize = m_nStepSizeInput.get();
+		if (m_sHostsInput.get() != null) {
+			m_sHosts = m_sHostsInput.get().split(",");
+			// remove whitespace
+			for (int i = 0; i < m_sHosts.length; i++) {
+				m_sHosts[i] = m_sHosts[i].replaceAll("\\s", "");
+			}
+		}
 		
 		File rootDir = new File(m_sRootDir.get());
 		if (!rootDir.exists()) {
@@ -76,7 +89,12 @@ public class ParticleFilter extends beast.core.Runnable {
 		// set up chain length for a single step
 		mcmc.m_oBurnIn.setValue(0, mcmc);
 		m_nSteps = mcmc.m_oChainLength.get() / nStepSize;
-		mcmc.m_oChainLength.setValue(nStepSize, mcmc);
+		if (mcmc instanceof MCMCParticle) {
+			((MCMCParticle)mcmc).m_stepSize.setValue(nStepSize, mcmc);
+		} else {
+			mcmc.m_oChainLength.setValue(nStepSize, mcmc);
+		}
+		
 		// add posterior logger
 		Logger logger = new Logger();
 		logger.initByName("fileName", POSTERIOR_LOG_FILE, "log", mcmc.posteriorInput.get(), "logEvery", nStepSize);
