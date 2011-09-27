@@ -3,9 +3,11 @@ package beast.inference;
 import java.io.File;
 import java.io.PrintStream;
 
+import beast.core.Description;
 import beast.core.Input;
 import beast.core.MCMC;
 
+@Description("MCMC chain that synchronises through files. Can be used with ParticleFilter instead of plain MCMC.")
 public class MCMCParticle extends MCMC {
 	public Input<Integer> m_stepSize = new Input<Integer>("stepsize", "number of samples before switching state (default 10000)", 10000);
 
