@@ -5,11 +5,9 @@ import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.util.concurrent.CountDownLatch;
 
-import beast.util.Randomizer;
-
 public class ParticleLauncherByFile extends ParticleLauncher {
 
-	
+	final public static int TIMEOUT = 200;
 	
 	
 	@Override
@@ -25,16 +23,17 @@ public class ParticleLauncherByFile extends ParticleLauncher {
 			out.close();
 
 			Process p = Runtime.getRuntime().exec("sh " + sParticleDir + "/run2.sh");
-			File f = new File(sParticleDir + "/particlelock");
-			File f2 = new File(sParticleDir + "/threadlock");
 
 			for (int k = 0; k < m_filter.m_nSteps; k++) {
+				File f = new File(sParticleDir + "/particlelock" + k);
+				File f2 = new File(sParticleDir + "/threadlock" + k);
 				while (!f.exists()) {
-					Thread.sleep(100);
+					System.out.println(m_iParticle + ": waiting for " + f.getAbsolutePath());
+					Thread.sleep(TIMEOUT);
 				}
-				//System.out.println(m_iParticle + ": " + f.getAbsolutePath() + " exists");
+				System.out.println(m_iParticle + ": " + f.getAbsolutePath() + " exists");
 				if (f.delete()) {
-					//System.out.println(m_iParticle + ": " + f.getAbsolutePath() + " deleted");
+					System.out.println(m_iParticle + ": " + f.getAbsolutePath() + " deleted");
 				}
 				
 				// synchronise

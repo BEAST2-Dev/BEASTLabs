@@ -8,15 +8,21 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.text.DecimalFormat;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 
 import beast.core.Description;
 import beast.core.Input;
-import beast.core.Operator;
 import beast.core.Input.Validate;
 import beast.core.Logger;
 import beast.core.MCMC;
+import beast.core.Operator;
+import beast.core.Plugin;
+import beast.core.State;
+import beast.core.StateNode;
+import beast.core.StateNodeInitialiser;
 import beast.math.statistic.DiscreteStatistics;
 import beast.util.Randomizer;
 import beast.util.XMLProducer;
@@ -122,7 +128,29 @@ public class ParticleFilter extends beast.core.Runnable {
 		
 		m_sStates = new String[m_nParticles];
 		m_fPosteriors = new double[m_nParticles];
-		String sState = mcmc.m_startState.get().toXML();
+		for (StateNodeInitialiser init : mcmc.m_initilisers.get()) {
+			init.initStateNodes();
+		}
+		State state = mcmc.m_startState.get();
+		if (state == null) {
+	        // State initialisation
+	        HashSet<StateNode> operatorStateNodes = new HashSet<StateNode>();
+	        for (Operator op : mcmc.operatorsInput.get()) {
+	        	for (Plugin o : op.listActivePlugins()) {
+	        		if (o instanceof StateNode) {
+	        			operatorStateNodes.add((StateNode) o);
+	        		}
+	        	}
+	        }
+            // create state from scratch by collecting StateNode inputs from Operators
+            state = new State();
+            for (StateNode stateNode : operatorStateNodes) {
+            	state.stateNodeInput.setValue(stateNode, state);
+            }
+            state.m_storeEvery.setValue(mcmc.m_storeEvery.get(), state);
+	        state.initialise();
+	    }
+		String sState = state.toXML();
 		double fPosterior = mcmc.robustlyCalcPosterior(mcmc.posteriorInput.get());
 		for (int i = 0; i < m_nParticles; i++) {
 			m_sStates[i] = sState;
