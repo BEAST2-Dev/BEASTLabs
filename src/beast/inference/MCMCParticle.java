@@ -52,10 +52,12 @@ public class MCMCParticle extends MCMC {
 					System.out.println(iSample + ": " + f.getAbsolutePath() + " deleted");
 				}
 				
+				Randomizer.setSeed(Randomizer.getSeed());
 	        	System.out.println("Seed = " + Randomizer.getSeed());
+	        	
 				state.restoreFromFile();
 				operatorSet.restoreFromFile();
-				robustlyCalcPosterior(posterior);
+				fOldLogLikelihood = robustlyCalcPosterior(posterior);
 			} catch (Exception e) {
 				e.printStackTrace();
 				System.exit(0);
