@@ -27,13 +27,13 @@ public class ParticleLauncherByFile extends ParticleLauncher {
 			for (int k = 0; k < m_filter.m_nSteps; k++) {
 				File f = new File(sParticleDir + "/particlelock" + k);
 				File f2 = new File(sParticleDir + "/threadlock" + k);
+				System.out.println(m_iParticle + ": waiting for " + f.getAbsolutePath());
 				while (!f.exists()) {
-					System.out.println(m_iParticle + ": waiting for " + f.getAbsolutePath());
 					Thread.sleep(TIMEOUT);
 				}
-				System.out.println(m_iParticle + ": " + f.getAbsolutePath() + " exists");
+				//System.out.println(m_iParticle + ": " + f.getAbsolutePath() + " exists");
 				if (f.delete()) {
-					System.out.println(m_iParticle + ": " + f.getAbsolutePath() + " deleted");
+					//System.out.println(m_iParticle + ": " + f.getAbsolutePath() + " deleted");
 				}
 				
 				// synchronise

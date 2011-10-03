@@ -7,9 +7,11 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
 
 
@@ -201,7 +203,9 @@ public class ParticleFilter extends beast.core.Runnable {
 		double [] fNewPosteriors = new double[m_nParticles];
 		String [] sNewStates = new String[m_nParticles];
 		
-		for (int iParticle = 0; iParticle < m_nParticles; iParticle++) {
+		fNewPosteriors[0] = m_fPosteriors[0];
+		sNewStates[0] = m_sStates[0];
+		for (int iParticle = 1; iParticle < m_nParticles; iParticle++) {
 			double fRand = Randomizer.nextDouble() * fSum;
 			int iNewState = 0;
 			while (fRand > fPosteriors[iNewState]) {
@@ -216,8 +220,8 @@ public class ParticleFilter extends beast.core.Runnable {
 		final double DELTA = 0.0025;
 		
 		// slightly perturb weights of operators
-		for (int iParticle = 0; iParticle < m_nParticles; iParticle++) {
-			String [] sXML = m_sStates[iParticle].split("</itsabeastystatewerein>\n");
+		for (int iParticle = 1; iParticle < m_nParticles; iParticle++) {
+			String [] sXML = sNewStates[iParticle].split("</itsabeastystatewerein>\n");
 			String [] sStrs = sXML[1].split("\n");
 			int nOperators = sStrs.length - 3; 
 			double [] fWeights = new double[nOperators];
@@ -260,7 +264,7 @@ public class ParticleFilter extends beast.core.Runnable {
 		m_fPosteriors = fNewPosteriors;
 		m_sStates = sNewStates;
 		// write state files
-		for (int iParticle = 0; iParticle < m_nParticles; iParticle++) {
+		for (int iParticle = 1; iParticle < m_nParticles; iParticle++) {
 			String sStateFileName = getParticleDir(iParticle) + "/beast.xml.state";
 	    	FileOutputStream xmlFile = new FileOutputStream(sStateFileName);
 	    	PrintStream out = new PrintStream(xmlFile);
