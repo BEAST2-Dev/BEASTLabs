@@ -9,9 +9,14 @@ public class ParticleLauncherByFile extends ParticleLauncher {
 
 	final public static int TIMEOUT = 200;
 	
+	File stopFile;
 	
 	@Override
 	public void run() {
+		if (stopFile == null) {
+			stopFile = new File(m_filter. m_sRootDir.get() + "/stop");
+		}
+
 		try {
 			String sParticleDir = m_filter.getParticleDir(m_iParticle);
 			m_filter.updateState(m_iParticle);
@@ -28,7 +33,13 @@ public class ParticleLauncherByFile extends ParticleLauncher {
 				File f = new File(sParticleDir + "/particlelock" + k);
 				File f2 = new File(sParticleDir + "/threadlock" + k);
 				System.out.println(m_iParticle + ": waiting for " + f.getAbsolutePath());
+				if (checkstop(f, f2)) { 
+					return;
+				}
 				while (!f.exists()) {
+					if (checkstop(f, f2)) { 
+						return;
+					}
 					Thread.sleep(TIMEOUT);
 				}
 				//System.out.println(m_iParticle + ": " + f.getAbsolutePath() + " exists");
@@ -58,6 +69,21 @@ public class ParticleLauncherByFile extends ParticleLauncher {
 			e.printStackTrace();
 		}
 		m_filter.m_nCountDown.countDown();
+	}
+
+
+	private boolean checkstop(File f, File f2) {
+		if (stopFile.exists()) {
+			System.out.println("Stopped by " + stopFile.getAbsolutePath());
+			if (f2.exists()) {
+				f2.delete();
+			}
+			if (f.exists()) {
+				f.delete();
+			}
+			return true;
+		}
+		return false;
 	}
 
 }
