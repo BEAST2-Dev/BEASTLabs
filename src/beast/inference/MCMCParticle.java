@@ -17,6 +17,7 @@ public class MCMCParticle extends MCMC {
 	int k;
 	File f;
 	File f2;
+	File stopFile;
 	
 	@Override
 	public void initAndValidate() throws Exception {
@@ -24,7 +25,6 @@ public class MCMCParticle extends MCMC {
 		m_sParticleDir = System.getProperty("beast.particle.dir");
 		System.err.println("MCMCParticle living in " + m_sParticleDir);
 		
-
 		super.initAndValidate();
 		k = 0;
 	}
@@ -32,6 +32,10 @@ public class MCMCParticle extends MCMC {
 	
 	@Override
 	protected void callUserFunction(int iSample) {
+		if (stopFile == null) {
+			File dir = new File(m_sParticleDir);
+			stopFile = new File(dir.getParentFile().getAbsoluteFile() + "/stop");
+		}
 		if (iSample % m_nStepSize == 0) {
 			if (iSample == 0) {
 				return;
@@ -46,9 +50,15 @@ public class MCMCParticle extends MCMC {
 				PrintStream out = new PrintStream(f2);
 				out.print("X");
 				out.close();
+				if (checkstop()) {
+					return;
+				}
+				System.out.println(iSample + ": waiting for " + f.getAbsolutePath());
 				while (!f.exists()) {
 					Thread.sleep(ParticleLauncherByFile.TIMEOUT);
-					System.out.println(iSample + ": waiting for " + f.getAbsolutePath());
+					if (checkstop()) {
+						return;
+					}
 				}
 				System.out.println(iSample + ": " + f.getAbsolutePath() + " exists");
 				if (f.delete()) {
@@ -66,5 +76,20 @@ public class MCMCParticle extends MCMC {
 				System.exit(0);
 			}
 		}
+	}
+
+
+	private boolean checkstop() {
+		if (stopFile.exists()) {
+			System.out.println("Stopped by " + stopFile.getAbsolutePath());
+			if (f2.exists()) {
+				f2.delete();
+			}
+			if (f.exists()) {
+				f.delete();
+			}
+			return true;
+		}
+		return false;
 	}
 }

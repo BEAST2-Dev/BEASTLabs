@@ -122,6 +122,7 @@ public class ParticleFilter extends beast.core.Runnable {
 			if (!particleDir.exists() && !particleDir.mkdir()) {
 				throw new Exception("Failed to make directory " + particleDir.getName());
 			}
+			particleDir.setWritable(true, false);
         	FileOutputStream xmlFile = new FileOutputStream(particleDir.getAbsoluteFile() + "/beast.xml");
         	PrintStream out = new PrintStream(xmlFile);
             out.print(sXML);
@@ -205,7 +206,7 @@ public class ParticleFilter extends beast.core.Runnable {
 		
 		fNewPosteriors[0] = m_fPosteriors[0];
 		sNewStates[0] = m_sStates[0];
-		for (int iParticle = 1; iParticle < m_nParticles; iParticle++) {
+		for (int iParticle = 0; iParticle < m_nParticles; iParticle++) {
 			double fRand = Randomizer.nextDouble() * fSum;
 			int iNewState = 0;
 			while (fRand > fPosteriors[iNewState]) {
@@ -220,7 +221,7 @@ public class ParticleFilter extends beast.core.Runnable {
 		final double DELTA = 0.0025;
 		
 		// slightly perturb weights of operators
-		for (int iParticle = 1; iParticle < m_nParticles; iParticle++) {
+		for (int iParticle = 0; iParticle < m_nParticles; iParticle++) {
 			String [] sXML = sNewStates[iParticle].split("</itsabeastystatewerein>\n");
 			String [] sStrs = sXML[1].split("\n");
 			int nOperators = sStrs.length - 3; 
