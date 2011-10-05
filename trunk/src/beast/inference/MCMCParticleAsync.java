@@ -15,9 +15,12 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 
+import beast.core.Description;
 import beast.math.statistic.DiscreteStatistics;
 import beast.util.Randomizer;
 
+@Description("MCMC chain to be launched by ParticleFilter. It updates its state without " +
+		"synchronisation with any of the other particles.")
 public class MCMCParticleAsync extends MCMCParticle {
 	
 	/** states and associated posteriors. Used to sample next state from **/
