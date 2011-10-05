@@ -1,5 +1,6 @@
 package beast.inference;
 
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -33,7 +34,7 @@ import beast.util.XMLProducer;
 public class ParticleFilter extends beast.core.Runnable {
 
 	String DEFAULT_PARTICLE_LAUNCER = ParticleLauncher.class.getName();
-	String POSTERIOR_LOG_FILE = "posterior.log";
+	public static String POSTERIOR_LOG_FILE = "posterior.log";
 
 	
 	public Input<Integer> m_nParticlesInput = new Input<Integer>("nrofparticles", "the number of particles to use, default 100", 100);
@@ -265,7 +266,7 @@ public class ParticleFilter extends beast.core.Runnable {
 		m_fPosteriors = fNewPosteriors;
 		m_sStates = sNewStates;
 		// write state files
-		for (int iParticle = 1; iParticle < m_nParticles; iParticle++) {
+		for (int iParticle = 0; iParticle < m_nParticles; iParticle++) {
 			String sStateFileName = getParticleDir(iParticle) + "/beast.xml.state";
 	    	FileOutputStream xmlFile = new FileOutputStream(sStateFileName);
 	    	PrintStream out = new PrintStream(xmlFile);
@@ -275,7 +276,7 @@ public class ParticleFilter extends beast.core.Runnable {
 
 		System.out.print((step+1) * m_nStepSizeInput.get() + " " + Arrays.toString(m_fPosteriors));
 		System.out.println();
-	}
+	} // updateStates
 	
 	synchronized void updateState(int iParticle) throws Exception {
 		
@@ -332,6 +333,9 @@ public class ParticleFilter extends beast.core.Runnable {
     	PrintStream out = new PrintStream(xmlFile);
         out.print(m_sStates[iNewState]);
 		out.close();
+		File stateFile = new File(sStateFileName);
+		stateFile.setWritable(true, false);
+
 
 		// report some statistics
 		System.out.print(iParticle + "=" + m_fPosteriors[iNewState] + " "); 
@@ -373,7 +377,7 @@ public class ParticleFilter extends beast.core.Runnable {
 		
 		m_nCountDown.await();
     	long endTime = System.currentTimeMillis();
-    	System.out.println("Total wall time: " + (endTime-startTime)/1000 + " seconds");
+    	System.out.println("\n\nTotal wall time: " + (endTime-startTime)/1000 + " seconds\nDone");
     } // run;	
 
 
