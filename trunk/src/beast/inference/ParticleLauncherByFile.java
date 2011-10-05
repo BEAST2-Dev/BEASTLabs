@@ -7,15 +7,11 @@ import java.util.concurrent.CountDownLatch;
 
 public class ParticleLauncherByFile extends ParticleLauncher {
 
-	final public static int TIMEOUT = 200;
+	final public static int TIMEOUT = 1000;
 	
-	File stopFile;
 	
 	@Override
 	public void run() {
-		if (stopFile == null) {
-			stopFile = new File(m_filter. m_sRootDir.get() + "/stop");
-		}
 
 		try {
 			String sParticleDir = m_filter.getParticleDir(m_iParticle);
@@ -28,6 +24,11 @@ public class ParticleLauncherByFile extends ParticleLauncher {
 			out.close();
 
 			Process p = Runtime.getRuntime().exec("sh " + sParticleDir + "/run2.sh");
+			if (m_filter.m_mcmc.get() instanceof MCMCParticleAsync) {
+				p.waitFor();
+				m_filter.m_nCountDown.countDown();
+				return;
+			}
 
 			for (int k = 0; k < m_filter.m_nSteps; k++) {
 				File f = new File(sParticleDir + "/particlelock" + k);
@@ -41,7 +42,10 @@ public class ParticleLauncherByFile extends ParticleLauncher {
 						return;
 					}
 					Thread.sleep(TIMEOUT);
+					f = new File(sParticleDir + "/particlelock" + k);
 				}
+				// delay 50ms to prevent the file system getting confused?!?
+				Thread.sleep(50);
 				//System.out.println(m_iParticle + ": " + f.getAbsolutePath() + " exists");
 				if (f.delete()) {
 					//System.out.println(m_iParticle + ": " + f.getAbsolutePath() + " deleted");
@@ -59,9 +63,24 @@ public class ParticleLauncherByFile extends ParticleLauncher {
 				if (m_iParticle == 0) {
 					barrier2 = new CountDownLatch(m_filter.m_nParticles);
 				}
+				
 				PrintStream lockout = new PrintStream(f2);
 				lockout.print("X");
 				lockout.close();
+				boolean bStale = false;
+				do {
+					Thread.sleep(5000);
+					// see if the threadlock file still exists.
+					// if so, refresh the file.
+					if (f2.exists()) {
+						bStale = !f2.delete();
+						Thread.sleep(50);
+						lockout = new PrintStream(f2);
+						lockout.print("X");
+						lockout.close();
+					}
+				} while (bStale);
+				
 				
 				//m_filter.updateState(m_iParticle);
 			}
@@ -73,6 +92,7 @@ public class ParticleLauncherByFile extends ParticleLauncher {
 
 
 	private boolean checkstop(File f, File f2) {
+		File stopFile = new File(m_filter. m_sRootDir.get() + "/stop");
 		if (stopFile.exists()) {
 			System.out.println("Stopped by " + stopFile.getAbsolutePath());
 			if (f2.exists()) {
@@ -81,6 +101,7 @@ public class ParticleLauncherByFile extends ParticleLauncher {
 			if (f.exists()) {
 				f.delete();
 			}
+			m_filter.m_nCountDown.countDown();
 			return true;
 		}
 		return false;

@@ -5,6 +5,7 @@ import java.io.PrintStream;
 
 import beast.core.Description;
 import beast.core.Input;
+import beast.core.Logger;
 import beast.core.MCMC;
 import beast.util.Randomizer;
 
@@ -15,15 +16,20 @@ public class MCMCParticle extends MCMC {
 	int m_nStepSize;
 	String m_sParticleDir;
 	int k;
-	File f;
-	File f2;
-	File stopFile;
 	
 	@Override
 	public void initAndValidate() throws Exception {
 		m_nStepSize = m_stepSize.get();
 		m_sParticleDir = System.getProperty("beast.particle.dir");
 		System.err.println("MCMCParticle living in " + m_sParticleDir);
+		
+		if (m_sParticleDir != null) {
+			for (Logger logger : m_loggers.get()) {
+				if (logger.m_pFileName.get() != null) {
+					logger.m_pFileName.setValue(m_sParticleDir + "/" + logger.m_pFileName.get(), logger);
+				}
+			}
+		}
 		
 		super.initAndValidate();
 		k = 0;
@@ -32,64 +38,116 @@ public class MCMCParticle extends MCMC {
 	
 	@Override
 	protected void callUserFunction(int iSample) {
-		if (stopFile == null) {
-			File dir = new File(m_sParticleDir);
-			stopFile = new File(dir.getParentFile().getAbsoluteFile() + "/stop");
-		}
 		if (iSample % m_nStepSize == 0) {
 			if (iSample == 0) {
 				return;
 			}
-			f2 = new File(m_sParticleDir + "/particlelock" + k);
-			f = new File(m_sParticleDir + "/threadlock" + k);
-			k++;
-			try {
-				state.storeToFile();
-				operatorSet.storeToFile();
-
-				PrintStream out = new PrintStream(f2);
-				out.print("X");
-				out.close();
-				if (checkstop()) {
-					return;
-				}
-				System.out.println(iSample + ": waiting for " + f.getAbsolutePath());
-				while (!f.exists()) {
-					Thread.sleep(ParticleLauncherByFile.TIMEOUT);
-					if (checkstop()) {
-						return;
-					}
-				}
-				System.out.println(iSample + ": " + f.getAbsolutePath() + " exists");
-				if (f.delete()) {
-					System.out.println(iSample + ": " + f.getAbsolutePath() + " deleted");
-				}
-				
-				Randomizer.setSeed(Randomizer.getSeed());
-	        	System.out.println("Seed = " + Randomizer.getSeed());
-	        	
-				state.restoreFromFile();
-				operatorSet.restoreFromFile();
-				fOldLogLikelihood = robustlyCalcPosterior(posterior);
-			} catch (Exception e) {
-				e.printStackTrace();
-				System.exit(0);
-			}
+			doUpdateState(iSample);
 		}
 	}
+	
+	protected void doUpdateState(int iSample) {
+		File f2 = new File(m_sParticleDir + "/particlelock" + k);
+		File f = new File(m_sParticleDir + "/threadlock" + k);
+		try {
+			state.storeToFile();
+			operatorSet.storeToFile();
 
-
-	private boolean checkstop() {
-		if (stopFile.exists()) {
-			System.out.println("Stopped by " + stopFile.getAbsolutePath());
-			if (f2.exists()) {
-				f2.delete();
+			System.out.println(iSample + ": writing " + f2.getAbsolutePath());
+			PrintStream out = new PrintStream(f2);
+			out.print("X");
+			out.close();
+			if (checkstop(f, f2)) {
+				System.exit(0);
 			}
-			if (f.exists()) {
-				f.delete();
+			System.out.println(iSample + ": waiting for " + f.getAbsolutePath());
+			while (!lockExists()) {
+				Thread.sleep(ParticleLauncherByFile.TIMEOUT);
+				if (checkstop(f, f2)) {
+					System.exit(0);
+				}
+				f = new File(m_sParticleDir + "/threadlock" + k);
 			}
-			return true;
+			// delay 50ms to prevent the file system getting confused?!?
+			Thread.sleep(50);
+			System.out.println(iSample + ": " + f.getAbsolutePath() + " exists");
+			if (f.delete()) {
+				System.out.println(iSample + ": " + f.getAbsolutePath() + " deleted");
+			}
+			
+			Randomizer.setSeed(Randomizer.getSeed());
+        	System.out.println("Seed = " + Randomizer.getSeed());
+        	
+			state.restoreFromFile();
+			operatorSet.restoreFromFile();
+			fOldLogLikelihood = robustlyCalcPosterior(posterior);
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.exit(0);
 		}
+		k++;
+	}
+	
+	boolean lockExists() {
+		File dir = new File(m_sParticleDir);
+		String sLockFile = "threadlock" + k;
+		for (String sFile : dir.list()) {
+			if (sFile.endsWith(sLockFile)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	final int UNKNOWN = 0, YES = 1, NO = 2;
+	int isStopped = UNKNOWN;
+	
+	protected boolean checkstop(File f, File f2) {
+		
+		Thread t = new Thread() {
+			public void run() {
+				try {
+					File dir = new File(m_sParticleDir);
+					File stopFile = new File(dir.getParentFile().getAbsoluteFile() + "/stop");
+					if (stopFile.exists()) {
+						System.out.println("Stopped by " + stopFile.getAbsolutePath());
+						isStopped = YES;
+					} else { 
+						isStopped = NO;
+					}
+				} catch (Exception e) {
+					// TODO: handle exception
+				}
+				
+			}
+		};
+		
+
+		isStopped = 0;
+		t.start();
+		
+		for (int i = 0; i < 10; i++) {
+			if (isStopped == YES) {
+				if (f2.exists()) {
+					f2.delete();
+				}
+				if (f.exists()) {
+					f.delete();
+				}
+				return true;
+			}
+			if (isStopped == NO) {
+				return false;
+			}
+			try {
+				Thread.sleep(100);
+			} catch (Exception e) {
+				// TODO: handle exception
+			}
+		}
+		System.err.println("Checking for stopfile got stuck, stopping check");
+		t.stop();
+		System.err.println("Resume normal run");
 		return false;
 	}
 }
