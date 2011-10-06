@@ -37,12 +37,17 @@ public class ParticleLauncherByFile extends ParticleLauncher {
 				if (checkstop(f, f2)) { 
 					return;
 				}
+				int sleepCount = 0;
 				while (!f.exists()) {
 					if (checkstop(f, f2)) { 
 						return;
 					}
 					Thread.sleep(TIMEOUT);
 					f = new File(sParticleDir + "/particlelock" + k);
+					sleepCount++;
+					if (sleepCount % 100 == 0) {
+						System.out.print(" " + m_iParticle);
+					}
 				}
 				// delay 50ms to prevent the file system getting confused?!?
 				Thread.sleep(50);

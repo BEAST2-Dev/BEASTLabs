@@ -54,9 +54,18 @@ public class MCMCParticle extends MCMC {
 			operatorSet.storeToFile();
 
 			System.out.println(iSample + ": writing " + f2.getAbsolutePath());
-			PrintStream out = new PrintStream(f2);
-			out.print("X");
-			out.close();
+			boolean bLockReady = false;
+			while (!bLockReady) {
+				try {
+					PrintStream out = new PrintStream(f2);
+					out.print("X");
+					out.close();
+					bLockReady = true;
+				} catch (Exception e) {
+					System.out.println("Attempt to write lock failed: " + e.getMessage());
+					Thread.sleep(1000);
+				}
+			}
 			if (checkstop(f, f2)) {
 				System.exit(0);
 			}
@@ -71,15 +80,23 @@ public class MCMCParticle extends MCMC {
 			// delay 50ms to prevent the file system getting confused?!?
 			Thread.sleep(50);
 			System.out.println(iSample + ": " + f.getAbsolutePath() + " exists");
-			if (f.delete()) {
-				System.out.println(iSample + ": " + f.getAbsolutePath() + " deleted");
+			try {
+				if (f.delete()) {
+					System.out.println(iSample + ": " + f.getAbsolutePath() + " deleted");
+				}
+			} catch (Exception e) {
+				System.out.println("could not delete " + f.getAbsolutePath() + ": " + e.getMessage());
 			}
 			
 			Randomizer.setSeed(Randomizer.getSeed());
         	System.out.println("Seed = " + Randomizer.getSeed());
         	
-			state.restoreFromFile();
-			operatorSet.restoreFromFile();
+			try {
+				state.restoreFromFile();
+				operatorSet.restoreFromFile();
+			} catch (Exception e) {
+				System.out.println("Restoring state failed: " + e.getMessage());
+			}
 			fOldLogLikelihood = robustlyCalcPosterior(posterior);
 		} catch (Exception e) {
 			e.printStackTrace();
