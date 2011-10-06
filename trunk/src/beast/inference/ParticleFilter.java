@@ -180,7 +180,7 @@ public class ParticleFilter extends beast.core.Runnable {
 			}
 		}
 
-		System.out.print(" " + DiscreteStatistics.mean(m_fPosteriors) + " " + DiscreteStatistics.variance(m_fPosteriors));
+		System.out.print("\n" + DiscreteStatistics.mean(m_fPosteriors) + " " + DiscreteStatistics.variance(m_fPosteriors));
 		System.out.print(" " + Arrays.toString(m_fPosteriors));
 		System.out.println();
 
@@ -373,6 +373,8 @@ public class ParticleFilter extends beast.core.Runnable {
 	    	ParticleLauncher launcher = (ParticleLauncher) o;
 	    	launcher.setParticle(i, this);
 			launcher.start();
+			// wait a second to ensure threads are not all launced at the same time, which can cause problems.
+			Thread.sleep(1000);
 		}
 		
 		m_nCountDown.await();
