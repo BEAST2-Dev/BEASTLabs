@@ -428,7 +428,7 @@
             <genetree idref='tree29'/>
         </operator>
 
-        <logger fileName="z$(seed).log" id="Logger0" logEvery="1000" mode="autodetect" model="@posterior">
+        <logger fileName="test.$(seed).log" id="Logger0" logEvery="1000" mode="autodetect" model="@posterior">
             <log idref="posterior"/>
             <log idref="prior"/>
             <log idref="speciesCoalescent"/>
@@ -448,15 +448,15 @@
             <log id="TreeHeight29" spec="beast.evolution.tree.TreeHeightLogger" tree="@tree29"/>
         </logger>
 
-        <logger fileName="z$(seed).sp.trees" id="Logger4" logEvery="1000" mode="tree">
+        <logger fileName="test.$(seed).sp.trees" id="Logger4" logEvery="1000" mode="tree">
             <log spec='SpeciesTreeLogger' popSize='@popSize' tree="@speciesTree"/>
         </logger>
 
-        <logger fileName="z$(seed).26.trees" id="Logger2" logEvery="1000" mode="autodetect">
+        <logger fileName="test.$(seed).26.trees" id="Logger2" logEvery="1000" mode="autodetect">
             <log idref="tree26"/>
         </logger>
 
-        <logger fileName="z$(seed).29.trees" id="Logger3" logEvery="1000" mode="autodetect">
+        <logger fileName="test.$(seed).29.trees" id="Logger3" logEvery="1000" mode="autodetect">
             <log idref="tree29"/>
         </logger>
 
