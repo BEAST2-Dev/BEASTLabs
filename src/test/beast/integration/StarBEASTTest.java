@@ -6,6 +6,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Due to different naming, *BEAST 2 speciesCoalescent != *BEAST 1 species.coalescent
+ *
+ * beast 2 has:
+ * speciesCoalescent	             : the total multispecies coalescent and pop sizes (sum of the next 3)
+ * SpeciesTreePopSizePrior          : prior on population sizes parameters
+ * tree.prior.26	                 : multispecies coalescent  per specific tree (26)
+ * tree.prior.29	                 : multispecies coalescent  per specific tree (29)
+ * SpeciesTreeDivergenceTimesPrior  : overall tree prior (Yule, BD etc)
+ *
+ * beast 1 has:
+ * species.coalescent               : the total multispecies coalescent
+ * species.popSizesLikelihood       : prior on population sizes parameters
+ * speciation.likelihood           : overall tree prior (Yule, BD etc)
+ *
  * @author Walter Xie
  */
 public class StarBEASTTest extends TestFramework {
@@ -91,7 +105,7 @@ public class StarBEASTTest extends TestFramework {
             addExpIntoList(expList, "treelikelihood.26", -1267.2603, 0.1345);
             addExpIntoList(expList, "treelikelihood.29", -1246.5396, 0.1015);
             break;
-            
+
         // case 0: // testStarBEAST.xml
         // // BEAST 1 testStarBEAST.xml
         // addExpIntoList(expList, "posterior", -1884.6966, 6.3796E-2);
