@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<beast namespace="beast.core:beast.evolution.tree.coalescent:beast.core.util:beast.evolution.nuc:beast.evolution.operators:beast.evolution.sitemodel:beast.evolution.substitutionmodel:beast.evolution.likelihood"
+<beast namespace="beast.core:beast.evolution.tree.coalescent:beast.core.util:beast.evolution.nuc:beast.evolution.operators:beast.evolution.sitemodel:beast.evolution.substitutionmodel:beast.evolution.likelihood:beast.evolution.branchratemodel"
        version="2.0">
     <!-- SRD06 model: split sequences in first together with seconds and thirds of all sites -->
     <data id="alignment" dataType="nucleotide">
@@ -78,18 +78,18 @@
         <distribution spec="CompoundDistribution" id="posterior">
             <distribution spec="CompoundDistribution" id="prior">
                 <distribution id="CP12.hky.kappa.prior" spec="beast.math.distributions.Prior" x="@CP12.hky.kappa">
-                    <distr id="LogNormalDistributionModel" M="1.0" S="1.25" meanInRealSpace="false"
+                    <distr id="CP12.LogNormalDistributionModel" M="1.0" S="1.25" meanInRealSpace="false"
                            spec="beast.math.distributions.LogNormalDistributionModel"/>
                 </distribution>
                 <distribution id="CP12.hky.frequencies.prior" spec="beast.math.distributions.Prior" x="@CP12.frequencies">
-                    <distr id="Uniform" lower="0.0" upper="1.0" spec="beast.math.distributions.Uniform"/>
+                    <distr id="CP12.Uniform" lower="0.0" upper="1.0" spec="beast.math.distributions.Uniform"/>
                 </distribution>
                 <distribution id="CP3.hky.kappa.prior" spec="beast.math.distributions.Prior" x="@CP3.hky.kappa">
-                    <distr id="LogNormalDistributionModel" M="1.0" S="1.25" meanInRealSpace="false"
+                    <distr id="CP3.LogNormalDistributionModel" M="1.0" S="1.25" meanInRealSpace="false"
                            spec="beast.math.distributions.LogNormalDistributionModel"/>
                 </distribution>
                 <distribution id="CP3.hky.frequencies.prior" spec="beast.math.distributions.Prior" x="@CP3.frequencies">
-                    <distr id="Uniform" lower="0.0" upper="1.0" spec="beast.math.distributions.Uniform"/>
+                    <distr id="CP3.Uniform" lower="0.0" upper="1.0" spec="beast.math.distributions.Uniform"/>
                 </distribution>
                 <distribution id="popSize.prior" spec="beast.math.distributions.Prior" x="@popSize">
                     <distr id="OneOnX" offset="0.0" spec="beast.math.distributions.OneOnX"/>
@@ -109,6 +109,11 @@
                 <distribution idref="CP3.treeLikelihood"/>
             </distribution>
         </distribution>
+
+        <operator id='compMuDelta' spec='DeltaExchangeOperator' delta="0.75" weightvector="512 256" weight="2">
+            <parameter idref="CP12.mutationRate"/>
+            <parameter idref="CP3.mutationRate"/>
+        </operator>
 
         <operator id='CP12kappaScaler' spec='ScaleOperator' scaleFactor="0.75" weight="0.1" parameter="@CP12.hky.kappa"/>
         <operator id='CP12frequenciesDelta' spec='DeltaExchangeOperator' delta="0.01" weight="0.1"
