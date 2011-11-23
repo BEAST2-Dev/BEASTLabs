@@ -154,7 +154,7 @@ public class ParticleFilter extends beast.core.Runnable {
             state.m_storeEvery.setValue(mcmc.m_storeEvery.get(), state);
 	        state.initialise();
 	    }
-		String sState = state.toXML();
+		String sState = state.toXML(0);
 		double fPosterior = mcmc.robustlyCalcPosterior(mcmc.posteriorInput.get());
 		for (int i = 0; i < m_nParticles; i++) {
 			m_sStates[i] = sState;

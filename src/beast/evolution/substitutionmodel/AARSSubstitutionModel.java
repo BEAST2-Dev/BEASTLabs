@@ -235,6 +235,8 @@ public class AARSSubstitutionModel extends GeneralSubstitutionModel {
 			m_eigenDecompositon[i] = calcEigenDecomposition(m_fQ[i]);
 		}
 		
+		
+		
 		/** calc transition probability matrices, one for each node **/
 		for (int iNode = 0; iNode < nodes.length; iNode++) {
 			Node node = nodes[iNode];
@@ -258,49 +260,50 @@ public class AARSSubstitutionModel extends GeneralSubstitutionModel {
 					iTo = -iTo-1;
 				}
 				double d = node.getHeight();
-				for (int k = iFrom; k < iTo; k++) {
+				for (int k = iFrom; k <= Math.min(iTo, m_nStates - 2); k++) {
 					Node u = V.get(k);
 					Node v = V.get(k + 1);
 					
 					// A. t = min(d − d[k], d − depth(u))
 					double t = Math.min(parent.getHeight() - d, v.getHeight() - d);
-					
-					// B. P = exp(Q[k] ∗ t) ∗ P
-//					((AARSFrequencies)frequencies.get()).setFreqs(m_fFreqs[u.getNr()]);
-//					exponentiate(m_fQ[u.getNr()], fP, t);
-					((AARSFrequencies)m_frequencies).setFreqs(m_fFreqs[k]);
-					//exponentiate(m_fQ[k], fP, t);
-					exponentiate(m_eigenDecompositon[k], fP, t);
-					
-					// C. let i be the state of V [k] and let j be the state of its child that is different from	i.
-//					int iStateLeft = m_nStateOfEpoch[v.m_left.getNr()];
-//					int iStateRight = m_nStateOfEpoch[v.m_right.getNr()];
-//					int i = Math.min(iStateLeft, iStateRight);
-//					int j = Math.max(iStateLeft, iStateRight);
-					int j = m_nStateOfEpoch[u.getNr()];
-					int i = m_nStateOfEpoch[v.getNr()];
-
-					// D. replace row i of P with the sum of π[k + 1]i /π[k]i times row i 
-					// and π[k + 1]j /π[k]i times row j.
-					
-					// TODO: note maybe these freqs should be swapped
-//					double[] fNewFreqs = m_fFreqs[v.getNr()];
-//					double[] fOldFreqs = m_fFreqs[u.getNr()];
-					double[] fNewFreqs = m_fFreqs[k+1];
-					double[] fOldFreqs = m_fFreqs[k];
-					for (int iCol = 0; iCol < m_nStates; iCol++) {
-						fP[i*m_nStates + iCol] =  fOldFreqs[i] * fP[i*m_nStates + iCol]/ fNewFreqs[i] + 
-							fOldFreqs[j] * fP[j*m_nStates + iCol]/ fNewFreqs[i];
+					if (t > 0) {
+						
+						// B. P = exp(Q[k] ∗ t) ∗ P
+	//					((AARSFrequencies)frequencies.get()).setFreqs(m_fFreqs[u.getNr()]);
+	//					exponentiate(m_fQ[u.getNr()], fP, t);
+						((AARSFrequencies)m_frequencies).setFreqs(m_fFreqs[k]);
+						//exponentiate(m_fQ[k], fP, t);
+						exponentiate(m_eigenDecompositon[k], fP, t);
+						
+						// C. let i be the state of V [k] and let j be the state of its child that is different from	i.
+						int iStateLeft = m_nStateOfEpoch[v.m_left.getNr()];
+						int iStateRight = m_nStateOfEpoch[v.m_right.getNr()];
+						int i = Math.min(iStateLeft, iStateRight);
+						int j = Math.max(iStateLeft, iStateRight);
+						
+	
+						// D. replace row i of P with the sum of π[k + 1]i /π[k]i times row i 
+						// and π[k + 1]j /π[k]i times row j.
+						
+						// TODO: note maybe these freqs should be swapped
+	//					double[] fNewFreqs = m_fFreqs[v.getNr()];
+	//					double[] fOldFreqs = m_fFreqs[u.getNr()];
+						double[] fNewFreqs = m_fFreqs[k+1];
+						double[] fOldFreqs = m_fFreqs[k];
+						for (int iCol = 0; iCol < m_nStates; iCol++) {
+							fP[i*m_nStates + iCol] =  fOldFreqs[i] * fP[i*m_nStates + iCol]/ fNewFreqs[i] + 
+								fOldFreqs[j] * fP[j*m_nStates + iCol]/ fNewFreqs[i];
+						}
+						
+						// E. zero row j of P and set Pjj = 1.
+						for (int iCol = 0; iCol < m_nStates; iCol++) {
+							fP[j*m_nStates + iCol] = 0;
+						}
+						fP[j*m_nStates + j] = 1.0;
+	
+						// F. d = d − t.
+						d = d + t;
 					}
-					
-					// E. zero row j of P and set Pjj = 1.
-					for (int iCol = 0; iCol < m_nStates; iCol++) {
-						fP[j*m_nStates + iCol] = 0;
-					}
-					fP[j*m_nStates + j] = 1.0;
-
-					// F. d = d − t.
-					d = d + t;
 				}
 				
 			}
