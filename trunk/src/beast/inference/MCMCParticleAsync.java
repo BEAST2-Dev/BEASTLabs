@@ -81,7 +81,7 @@ public class MCMCParticleAsync extends MCMCParticle {
 			f.renameTo(oldF);
 
 			// write new state file
-			state.storeToFile();
+			state.storeToFile(iSample);
 			operatorSet.storeToFile();
 
 			updateStates(iSample);
@@ -124,7 +124,7 @@ public class MCMCParticleAsync extends MCMCParticle {
 			String sState = getTextFile(sStateFileName);
 			if (sState == null) {
 				System.out.println("State == null, retrying");
-				state.storeToFile();
+				state.storeToFile(iSample);
 				operatorSet.storeToFile();
 				Thread.sleep(1000);
 				sState = getTextFile(sStateFileName);

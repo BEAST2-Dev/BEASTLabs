@@ -11,7 +11,7 @@ public class ML extends MCMC {
 	@Override
     /** main MCMC loop **/ 
     protected void doLoop() throws Exception {
-        String sBestXML = state.toXML();
+        String sBestXML = state.toXML(0);
         double fBestLogLikelihood = fOldLogLikelihood;
 		
         for (int iSample = -nBurnIn; iSample <= nChainLength; iSample++) {
@@ -58,12 +58,12 @@ public class ML extends MCMC {
             }
             
             if (fOldLogLikelihood > fBestLogLikelihood) {
-                sBestXML = state.toXML();
+                sBestXML = state.toXML(iSample);
                 fBestLogLikelihood = fOldLogLikelihood;
             }
             
             if (iSample % 1000 == 0) {
-                String sXML = state.toXML();
+                String sXML = state.toXML(iSample);
             	state.fromXML(sBestXML);
             	fOldLogLikelihood = robustlyCalcPosterior(posterior); 
             	log(iSample);

@@ -30,7 +30,7 @@ public class SimulatedAnnealing extends MCMC implements Loggable {
 	@Override
     /** main MCMC loop **/ 
     protected void doLoop() throws Exception {
-        String sBestXML = state.toXML();
+        String sBestXML = state.toXML(0);
         double fBestLogLikelihood = fOldLogLikelihood;
 		double fTemp0 = startTemp.get();
 		fTemp = fTemp0;
@@ -87,14 +87,14 @@ public class SimulatedAnnealing extends MCMC implements Loggable {
             }
             
             if (fOldLogLikelihood > fBestLogLikelihood) {
-                sBestXML = state.toXML();
+                sBestXML = state.toXML(iSample);
                 fBestLogLikelihood = fOldLogLikelihood;
             }
             
             
             
             if (iSample % nLogEvery == 0) {
-                String sXML = state.toXML();
+                String sXML = state.toXML(iSample);
             	state.fromXML(sBestXML);
             	fOldLogLikelihood = robustlyCalcPosterior(posterior); 
             	log(iSample);

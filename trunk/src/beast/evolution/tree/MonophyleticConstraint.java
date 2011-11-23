@@ -74,8 +74,10 @@ public class MonophyleticConstraint extends Distribution {
 //		}
 //		return 0.0;
 		if (isMonoPhyletic(m_tree.get().getRoot())) {
+			logP = 0.0;
 			return 0.0;			
 		}
+		logP = Double.NEGATIVE_INFINITY;
 		return Double.NEGATIVE_INFINITY;
 	}
 

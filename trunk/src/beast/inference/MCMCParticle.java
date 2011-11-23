@@ -50,7 +50,7 @@ public class MCMCParticle extends MCMC {
 		File f2 = new File(m_sParticleDir + "/particlelock" + k);
 		File f = new File(m_sParticleDir + "/threadlock" + k);
 		try {
-			state.storeToFile();
+			state.storeToFile(iSample);
 			operatorSet.storeToFile();
 
 			System.out.println(iSample + ": writing " + f2.getAbsolutePath());

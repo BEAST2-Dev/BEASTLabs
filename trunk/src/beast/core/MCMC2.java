@@ -222,7 +222,7 @@ public class MCMC2 extends Runnable {
 
         System.err.println("End likelihood: " + fOldLogLikelihood);
         System.err.println(state);
-        state.storeToFile();
+        state.storeToFile(nChainLength);
     } // run;
 
     
