@@ -343,9 +343,9 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 					((JTextField)component).setText("");
 				} else if (value instanceof Plugin) {
 					Plugin plugin = (Plugin) value;
-					PluginDialog dlg = new PluginDialog(plugin, plugin.getClass());
+					PluginDialog dlg = new PluginDialog(plugin, plugin.getClass(), null);
 					dlg.setVisible(true);
-					if (dlg.getOK()) {
+					if (dlg.getOK(null)) {
 						dlg.accept(plugin);
 						//plugin = dlg.m_panel.m_plugin;
 						m_objects[m_iRow][m_iCol] = plugin;
