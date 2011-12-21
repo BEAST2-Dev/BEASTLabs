@@ -5,6 +5,7 @@ import java.util.List;
 
 import javax.swing.Box;
 
+import beast.app.beauti.BeautiDoc;
 import beast.app.draw.InputEditor;
 import beast.app.draw.ListInputEditor;
 import beast.app.draw.PluginPanel;
@@ -23,11 +24,11 @@ public class NeighborInputEditor extends ListInputEditor {
     protected void addPluginItem(Box itemBox, Plugin plugin) {
     	Neighbor neighbor = (Neighbor) plugin;
     	try {
-    		InputEditor inputEditor = PluginPanel.createInputEditor(neighbor.m_neighborsInput, plugin, true, EXPAND.FALSE, BUTTONSTATUS.ALL, this);
+    		InputEditor inputEditor = PluginPanel.createInputEditor(neighbor.m_neighborsInput, plugin, true, EXPAND.FALSE, BUTTONSTATUS.ALL, this, doc);
     		inputEditor.addValidationListener(this);
 			itemBox.add(inputEditor);
 
-			inputEditor = PluginPanel.createInputEditor(neighbor.m_migrationRateInput, plugin, true, EXPAND.FALSE, BUTTONSTATUS.ALL, this); 
+			inputEditor = PluginPanel.createInputEditor(neighbor.m_migrationRateInput, plugin, true, EXPAND.FALSE, BUTTONSTATUS.ALL, this, doc); 
 			itemBox.add(inputEditor);
     		inputEditor.addValidationListener(this);
     		
@@ -41,7 +42,7 @@ public class NeighborInputEditor extends ListInputEditor {
 	@Override
     public List<Plugin> pluginSelector(Input<?> input, Plugin parent, List<String> sTabuList) {
         Plugin plugin = new Neighbor();
-        PluginPanel.addPluginToMap(plugin);
+        PluginPanel.addPluginToMap(plugin, null);
     	List<Plugin> selectedPlugins = new ArrayList<Plugin>();
     	selectedPlugins.add(plugin);
 		return selectedPlugins; 
