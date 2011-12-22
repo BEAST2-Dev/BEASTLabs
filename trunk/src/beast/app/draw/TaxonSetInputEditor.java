@@ -35,19 +35,19 @@ public class TaxonSetInputEditor extends ListInputEditor implements TreeModelLis
 	public Class<?> type() {
 		return List.class;
 	}
-	
+
 	@Override
 	public Class<?> baseType() {
 		return TaxonSet.class;
 	}
-	
+
 	@Override
-	public void init(Input<?> input, Plugin plugin, EXPAND bExpand, boolean bAddButtons) {
-		List<TaxonSet> taxonset = (List<TaxonSet>) input.get(); 
+	public void init(Input<?> input, Plugin plugin, ExpandOption bExpand, boolean bAddButtons) {
+		List<TaxonSet> taxonset = (List<TaxonSet>) input.get();
 		add(getContent(taxonset));
 	}
-	
-	
+
+
 	private Component getContent(List<TaxonSet> taxonset) {
 		m_taxonset = taxonset;
 		m_taxonMap = new HashMap<String, Taxon>();
@@ -56,11 +56,11 @@ public class TaxonSetInputEditor extends ListInputEditor implements TreeModelLis
 				m_taxonMap.put(taxon.getID(), taxon);
 			}
 		}
-		
+
 		DefaultMutableTreeNode Node = new DefaultMutableTreeNode("Taxon sets");
 		m_treemodel = new DefaultTreeModel(Node);
 		m_treemodel.addTreeModelListener(this);
-		
+
 		taxonSetToModel();
 
 		m_tree = new JTree(m_treemodel);
@@ -71,7 +71,7 @@ public class TaxonSetInputEditor extends ListInputEditor implements TreeModelLis
 		m_tree.setTransferHandler(new TreeTransferHandler());
 		m_tree.getSelectionModel().setSelectionMode(TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
 		expandTree(m_tree);
-		
+
 		m_tree.setCellRenderer(new DefaultTreeCellRenderer() {
 		      public Component getTreeCellRendererComponent(JTree tree,
 		          Object value, boolean sel, boolean expanded, boolean leaf,
@@ -79,7 +79,7 @@ public class TaxonSetInputEditor extends ListInputEditor implements TreeModelLis
 			        super.getTreeCellRendererComponent(tree, value, sel, expanded,
 				            leaf, row, hasFocus);
 				DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
-		        if (node != m_treemodel.getRoot() && 
+		        if (node != m_treemodel.getRoot() &&
 		        		node.getParent() != m_treemodel.getRoot() && !node.toString().matches(m_sFilter)) {
 		          setForeground(Color.lightGray);
 		        }
@@ -112,7 +112,7 @@ public class TaxonSetInputEditor extends ListInputEditor implements TreeModelLis
 		box.add(createButtonBox());
 		return box;
 	}
-	
+
 	private Component createFilterBox() {
 		Box filterBox = Box.createHorizontalBox();
 		filterBox.add(new JLabel("filter: "));
@@ -155,7 +155,7 @@ public class TaxonSetInputEditor extends ListInputEditor implements TreeModelLis
 	/** for adding and deleting taxon sets **/
 	private Box createButtonBox() {
 		Box buttonBox = Box.createHorizontalBox();
-		
+
 		JButton delButton = new JButton("Delete");
 		delButton.addActionListener(new ActionListener() {
 			@Override
@@ -186,7 +186,7 @@ public class TaxonSetInputEditor extends ListInputEditor implements TreeModelLis
 		buttonBox.add(delButton);
 		buttonBox.add(Box.createHorizontalGlue());
 
-		
+
 		JButton addButton = new JButton("New");
 		addButton.addActionListener(new ActionListener() {
 			@Override
@@ -210,7 +210,7 @@ public class TaxonSetInputEditor extends ListInputEditor implements TreeModelLis
 			DefaultMutableTreeNode child = (DefaultMutableTreeNode) root.getChildAt(i);
 			m_treemodel.removeNodeFromParent(child);
 		}
-		
+
 		for (int i = 0; i < taxonsets.size(); i++) {
 			DefaultMutableTreeNode Kid = new DefaultMutableTreeNode(taxonsets.get(i).getID());
 			m_treemodel.insertNodeInto(Kid, root, i);
@@ -227,7 +227,7 @@ public class TaxonSetInputEditor extends ListInputEditor implements TreeModelLis
 	private void modelToTaxonset() {
 		List<TaxonSet> taxonsets = m_taxonset;
 		taxonsets.clear();
-		
+
 		DefaultMutableTreeNode root = (DefaultMutableTreeNode) m_treemodel.getRoot();
 		for (int i = 0; i < root.getChildCount(); i++) {
 			DefaultMutableTreeNode child = (DefaultMutableTreeNode) root.getChildAt(i);
@@ -248,8 +248,8 @@ public class TaxonSetInputEditor extends ListInputEditor implements TreeModelLis
 		//System.err.println(new XMLProducer().toXML(m_taxonset));
 
 	}
-	
-	
+
+
 	private void expandTree(JTree tree) {
 		DefaultMutableTreeNode root = (DefaultMutableTreeNode) tree.getModel().getRoot();
 		Enumeration<?> e = root.breadthFirstEnumeration();
@@ -315,8 +315,8 @@ public class TaxonSetInputEditor extends ListInputEditor implements TreeModelLis
 			}
 		}
 
-		
-		
+
+
 		public boolean canImport(TransferHandler.TransferSupport support) {
 			if (!support.isDrop()) {
 				return false;
@@ -426,7 +426,7 @@ public class TaxonSetInputEditor extends ListInputEditor implements TreeModelLis
 			}
 			modelToTaxonset();
 		}
-		
+
 
 		public int getSourceActions(JComponent c) {
 			return COPY_OR_MOVE;
@@ -486,7 +486,7 @@ public class TaxonSetInputEditor extends ListInputEditor implements TreeModelLis
 
 			return true;
 		}
-		
+
 
 		public String toString() {
 			return getClass().getName();

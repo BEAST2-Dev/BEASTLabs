@@ -19,24 +19,24 @@ public class NeighborInputEditor extends ListInputEditor {
 	public Class<?> baseType() {
 		return Neighbor.class;
 	}
-    
+
 	@Override
     protected void addPluginItem(Box itemBox, Plugin plugin) {
     	Neighbor neighbor = (Neighbor) plugin;
     	try {
-    		InputEditor inputEditor = PluginPanel.createInputEditor(neighbor.m_neighborsInput, plugin, true, EXPAND.FALSE, BUTTONSTATUS.ALL, this, doc);
+    		InputEditor inputEditor = PluginPanel.createInputEditor(neighbor.m_neighborsInput, plugin, true, ExpandOption.FALSE, ButtonStatus.ALL, this, doc);
     		inputEditor.addValidationListener(this);
 			itemBox.add(inputEditor);
 
-			inputEditor = PluginPanel.createInputEditor(neighbor.m_migrationRateInput, plugin, true, EXPAND.FALSE, BUTTONSTATUS.ALL, this, doc); 
+			inputEditor = PluginPanel.createInputEditor(neighbor.m_migrationRateInput, plugin, true, ExpandOption.FALSE, ButtonStatus.ALL, this, doc);
 			itemBox.add(inputEditor);
     		inputEditor.addValidationListener(this);
-    		
+
 			itemBox.add(Box.createVerticalGlue());
     	} catch (Exception e) {
 			e.printStackTrace();
 		}
-    	
+
     }
 
 	@Override
@@ -45,6 +45,6 @@ public class NeighborInputEditor extends ListInputEditor {
         PluginPanel.addPluginToMap(plugin, null);
     	List<Plugin> selectedPlugins = new ArrayList<Plugin>();
     	selectedPlugins.add(plugin);
-		return selectedPlugins; 
+		return selectedPlugins;
 	}
 }
