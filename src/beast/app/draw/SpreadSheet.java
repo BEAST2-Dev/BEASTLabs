@@ -128,7 +128,7 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 	/** list of borders to choose from **/
 	Border [] m_borders;
 	Icon [] m_borderIcons;
-	
+
     /** nr of rows and columns in the spreadsheet **/
 	static int MAX_ROW = 255;
 	int MAX_COL = 32;
@@ -139,12 +139,12 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 	int m_iTopUndoAction;
 	/** string for recording edit actions **/
 	String m_sCellSpecs;
-	/** for recording row, column and type of action, while edit action is in progress **/ 
+	/** for recording row, column and type of action, while edit action is in progress **/
 	ArrayList<Integer> m_iEditRows;
 	ArrayList<Integer> m_iEditCols;
 	/** encodes type of edit action 'o' for object, 'f' for cell format, 'h' for row height, 'w' for column width **/
-	ArrayList<String> m_iEditActions; 
-	
+	ArrayList<String> m_iEditActions;
+
 	/** constructor **/
 	SpreadSheet() {
         List<String> sPlugInNames = AddOnManager.find(beast.core.Plugin.class, AddOnManager.IMPLEMENTATION_DIR);
@@ -244,7 +244,7 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 				}
 			}
 		});
-		
+
 //		m_table.addKeyListener(new KeyListener() {
 //			@Override
 //			public void keyTyped(KeyEvent e) {
@@ -294,40 +294,40 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 				endEditAction();
 				return true;
 			}
-			
+
 			@Override
 			public boolean shouldSelectCell(EventObject anEvent) {
 				System.err.println("shouldSelectCell");
 				return true;
 			}
-			
+
 			@Override
 			public void removeCellEditorListener(CellEditorListener l) {
 				System.err.println("removeCellEditorListener");
 			}
-			
+
 			@Override
 			public boolean isCellEditable(EventObject anEvent) {
 				System.err.println("isCellEditable");
 				return true;
 			}
-			
+
 			@Override
 			public Object getCellEditorValue() {
 				System.err.println("getCellEditorValue");
 				return null;
 			}
-			
+
 			@Override
 			public void cancelCellEditing() {
 				System.err.println("cancelCellEditing");
 			}
-			
+
 			@Override
 			public void addCellEditorListener(CellEditorListener l) {
 				System.err.println("addCellEditorListener");
 			}
-			
+
 			@Override
 			public Component getTableCellEditorComponent(JTable table, Object value,
 					boolean isSelected, int row, int column) {
@@ -352,14 +352,14 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 						m_table.repaint();
 					}
 					return null;
-				
-				
+
+
 				} else if (value instanceof FormulaCell) {
 					((JTextField)component).setText("=" + ((FormulaCell)value).m_sFormula);
 				} else if (value instanceof String) {
 					((JTextField)component).setText((String)value);
 				}
-				return component; 
+				return component;
 			}
 		});
 		JScrollPane scrollPane = new JScrollPane(m_table);
@@ -432,7 +432,7 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 		this.add(scrollPane, BorderLayout.CENTER);
 		m_toolBar = createToolBar();
 		this.add(m_toolBar, BorderLayout.NORTH);
-		
+
 		// handle change of selection
 		m_table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
 			@Override
@@ -453,8 +453,8 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 			public void columnMarginChanged(ChangeEvent e) {}
 			@Override
 			public void columnAdded(TableColumnModelEvent e) {}
-		});	
-		
+		});
+
 		// override m_table actions
 		m_table.getActionMap().put("copy",a_copy);
 		m_table.getActionMap().put("paste",a_paste);
@@ -500,7 +500,7 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 					}
 				}
 			}
-			
+
 			if (!bProgress) {
 				System.err.println("Cycle in cell references. Cannot recalculate!");
 				m_table.repaint();
@@ -508,7 +508,7 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 		}
 		m_table.repaint();
 	} // recalculate
-	
+
 	/**************************************************************************************/
 	/** undo/redo stuff **/
 	class UndoAction {
@@ -527,7 +527,7 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 		m_iEditCols = new ArrayList<Integer>();
 		m_iEditActions = new ArrayList<String>();
 	}
-	
+
 	void editObject(int iRow, int iCol) {
 		m_sCellSpecs += getCellAsText(iRow, iCol);
 		if (m_iEditActions != null) {
@@ -536,7 +536,7 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 			m_iEditCols.add(iCol);
 		}
 	}
-	
+
 	void editFormat(int iRow, int iCol) {
 		m_sCellSpecs += iRow + " " + iCol + " {} y:";
 		if (m_cellFormat[iRow][iCol] == null) {
@@ -550,7 +550,7 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 			m_iEditCols.add(iCol);
 		}
 	}
-	
+
 	void editWidth(int iCol) {
 		int nWidth = m_table.getColumn(headers[iCol]).getWidth();
 		m_sCellSpecs += nWidth + " " + iCol + " {} w:\n";
@@ -560,7 +560,7 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 			m_iEditCols.add(iCol);
 		}
 	}
-	
+
 	void editHeight(int iRow) {
 		int nHeight = m_rowHeaderTable.getRowHeight(iRow);
 		m_sCellSpecs += iRow + " " + nHeight + " {} h:\n";
@@ -570,7 +570,7 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 			m_iEditCols.add(-1);
 		}
 	}
-	
+
 	/** end recording edit actions, and create new action on undo stack **/
 	void endEditAction() {
 		while (m_iTopUndoAction > m_actions.size()) {
@@ -608,7 +608,7 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 		updateActions();
 		recalculate();
 	} // endEditAction
-	
+
 	void undo() {
 		if (m_iTopUndoAction == 0) {
 			return;
@@ -618,7 +618,7 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 		processSpreadSheetAsText(sOldSpecs, 0, 0);
 		updateActions();
 	} // undo
-			
+
 	void redo() {
 		if (m_iTopUndoAction >= m_actions.size()) {
 			return;
@@ -628,7 +628,7 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 		m_iTopUndoAction++;
 		updateActions();
 	} // redo
-	
+
 	public class CellFormat {
 		Color m_bgColor;
 		Color m_fgColor;
@@ -636,7 +636,7 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 		Border m_border;
 		int m_alignment = SwingConstants.LEFT;
 		public CellFormat() {}
-		
+
 		public String toString() {
 			String sStr = "";
 			if (m_bgColor != null) {
@@ -657,7 +657,7 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 			return sStr;
 		}
 	} // class CellFormat
-	
+
 	/** reconstruct a CellFormat from a string that a CellFormat.toString() produces **/
 	void parseCellFormat(String sStr, int iRow, int iCol) {
 		if (sStr.equals("null")) {
@@ -685,7 +685,7 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 			}
 		}
 	} // parseCellFormat
-	
+
 	/** reconstruct a Plugin from a string that toString(Plugin) produces **/
 	void parsePlugin(String sStr, int iRow, int iCol) {
 		try {
@@ -730,7 +730,7 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 			e.printStackTrace();
 		}
 	} // parsePlugin
-	
+
 	Object parseObject(String sStr) {
 		if (sStr.equals("null")) {
 			return null;
@@ -741,9 +741,9 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 			if (cellMatcher.matches()) {
 				String sCol = cellMatcher.group(1).toUpperCase();
 				String sRow = cellMatcher.group(2);
-				int iCol = sCol.charAt(0) - 'A'; 
+				int iCol = sCol.charAt(0) - 'A';
 				for (int i = 1;i < sCol.length(); i++) {
-					iCol = (iCol+1) * 26 + sCol.charAt(i) - 'A'; 
+					iCol = (iCol+1) * 26 + sCol.charAt(i) - 'A';
 				}
 				int iRow = Integer.parseInt(sRow) - 1;
 				return m_objects[iRow][iCol];
@@ -752,38 +752,38 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 		return sStr;
 	} // parseObject
 
-	
+
 
 	/** file menu actions **/
 	Action a_new = new MyAction("New", "New spreadsheet file", "new", "ctrl N") {
 		public void actionPerformed(ActionEvent ae) {
 			newSpreadsheet();
-		}			
+		}
 	};
 	Action a_open = new MyAction("Open", "Open spreadsheet file or Import beast xml specification", "open", "ctrl O") {
 		public void actionPerformed(ActionEvent ae) {
 			openSpreadsheet();
-		}			
+		}
 	};
 	Action a_save = new MyAction("Save", "Save spreadsheet file", "save", "ctrl S") {
 		public void actionPerformed(ActionEvent ae) {
 			saveSpreadsheet();
-		}			
+		}
 	};
 	Action a_saveas = new MyAction("Save As", "Save spreadsheet file under new name", "saveas", "") {
 		public void actionPerformed(ActionEvent ae) {
 			saveSpreadsheetAs();
-		}			
+		}
 	};
 	Action a_export = new MyAction("Export", "Export beast xml specification", "export", "") {
 		public void actionPerformed(ActionEvent ae) {
 			exportBeast();
-		}			
+		}
 	};
 	Action a_exit = new MyAction("Exit", "Exit program", "exit", "ctrl Q") {
 		public void actionPerformed(ActionEvent ae) {
 			System.exit(0);
-		}			
+		}
 	};
 
 	/** edit menu actions **/
@@ -791,32 +791,32 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 		public void actionPerformed(ActionEvent ae) {
 			copy();
 			delete();
-		}			
+		}
 	};
 	Action a_copy = new MyAction("Copy", "Copy", "copy", "ctrl C") {
 		public void actionPerformed(ActionEvent ae) {
 			copy();
-		}			
+		}
 	};
 	Action a_del = new MyAction("Delete", "Delete", "del", "del") {
 		public void actionPerformed(ActionEvent ae) {
 			delete();
-		}			
+		}
 	};
 	Action a_paste = new MyAction("Paste", "Paste", "paste", "ctrl V") {
 		public void actionPerformed(ActionEvent ae) {
 			paste();
-		}			
+		}
 	};
 	Action a_undo = new MyAction("Undo", "Undo", "undo", "ctrl Z") {
 		public void actionPerformed(ActionEvent ae) {
 			undo();
-		}			
+		}
 	};
 	Action a_redo = new MyAction("Redo", "Redo", "redo", "ctrl Y") {
 		public void actionPerformed(ActionEvent ae) {
 			redo();
-		}			
+		}
 	};
 	/** window actions **/
     Action a_viewtoolbar = new MyAction("View toolbar", "View toolbar", "toolbar", "") {
@@ -830,9 +830,9 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
             JOptionPane.showMessageDialog(null, "Beast II Spreadsheet\nRemco Bouckaert\nrrb@xm.co.nz\n2010\nGPL licence", "About Message", JOptionPane.PLAIN_MESSAGE);
         }
     };
-	
-	
-	
+
+
+
 	/** file action implementations **/
 	void newSpreadsheet() {
 		m_plugins = new ArrayList<Plugin>();
@@ -897,7 +897,7 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 			}
 		}
 	}
-	
+
 	void saveSpreadsheet() {
 		if (m_sSpreadsheetFileName == null) {
 			saveSpreadsheetAs();
@@ -912,7 +912,7 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
     		// first the contents
     		out.print(getSpreadsheetAsText());
     		// then the cell widths & heights if any
-    		int iRowEnd = m_table.getSelectionModel().getMaxSelectionIndex(); 
+    		int iRowEnd = m_table.getSelectionModel().getMaxSelectionIndex();
     		for (int iRow = m_table.getSelectedRow(); iRow < iRowEnd; iRow++) {
     			int nHeight = m_rowHeaderTable.getRowHeight(iRow);
     			if (nHeight != m_rowHeaderTable.getRowHeight()) {
@@ -931,7 +931,7 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 			e.printStackTrace();
 		}
 	}
-	
+
 	void saveSpreadsheetAs() {
         JFileChooser fc = new JFileChooser(m_sDir);
 		fc.addChoosableFileFilter(new FileFilter() {
@@ -955,9 +955,9 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 			}
 		}
 	}
-	
+
 	void exportBeast() {
-		int iRow = m_table.getSelectedRow(); 
+		int iRow = m_table.getSelectedRow();
 		int iCol = m_table.getSelectedColumn();
 		if (iRow < 0 || iCol < 0 || m_objects[iRow][iCol] == null || !(m_objects[iRow][iCol] instanceof beast.core.Runnable)) {
 			JOptionPane.showMessageDialog(this, "Select a runnable plugin to export as Beast II xml file");
@@ -992,31 +992,31 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 		}
 
 	}
-	
-	
+
+
 	/** edit action implementations **/
-	
-	
+
+
 	void copy() {
-		// Get the min and max ranges of selected cells 
+		// Get the min and max ranges of selected cells
 		String sClipboardText = getSpreadsheetAsText();
 	    StringSelection stringSelection = new StringSelection( sClipboardText );
 	    Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 	    clipboard.setContents( stringSelection, this );
 		updateActions();
 	} // copy
-	
-	
+
+
 	void delete() {
 		beginEditAction();
-		// Get the min and max ranges of selected cells 
-		int iRowStart = m_table.getSelectedRow(); 
-		int iRowEnd = m_table.getSelectionModel().getMaxSelectionIndex(); 
-		int iColStart = m_table.getSelectedColumn(); 
-		int iColEnd = m_table.getColumnModel().getSelectionModel().getMaxSelectionIndex(); 
+		// Get the min and max ranges of selected cells
+		int iRowStart = m_table.getSelectedRow();
+		int iRowEnd = m_table.getSelectionModel().getMaxSelectionIndex();
+		int iColStart = m_table.getSelectedColumn();
+		int iColEnd = m_table.getColumnModel().getSelectionModel().getMaxSelectionIndex();
 		// Check each cell in the range
-		for (int iRow = iRowStart; iRow <= iRowEnd; iRow++) { 
-			for (int iCol = iColStart; iCol <= iColEnd; iCol++) { 
+		for (int iRow = iRowStart; iRow <= iRowEnd; iRow++) {
+			for (int iCol = iColStart; iCol <= iColEnd; iCol++) {
 				if (m_table.isCellSelected(iRow, iCol)) {
 					editObject(iRow,iCol);
 					if (m_objects[iRow][iCol] instanceof Plugin) {
@@ -1033,7 +1033,7 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 		m_table.repaint();
 		endEditAction();
 	} // delete
-	
+
 	void paste() {
 		String sClipboard = "";
 	    Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
@@ -1051,9 +1051,9 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 	        ex.printStackTrace();
 	      }
 	    }
-	    
-		int iRowStart = m_table.getSelectedRow(); 
-		int iColStart = m_table.getSelectedColumn(); 
+
+		int iRowStart = m_table.getSelectedRow();
+		int iColStart = m_table.getSelectedColumn();
 		if (iRowStart < 0 || iColStart < 0) {
 			return;
 		}
@@ -1062,16 +1062,16 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 		m_table.repaint();
         endEditAction();
 	} // paste
-	
+
 	String getSpreadsheetAsText() {
-		int iRowStart = m_table.getSelectedRow(); 
-		int iRowEnd = m_table.getSelectionModel().getMaxSelectionIndex(); 
-		int iColStart = m_table.getSelectedColumn(); 
+		int iRowStart = m_table.getSelectedRow();
+		int iRowEnd = m_table.getSelectionModel().getMaxSelectionIndex();
+		int iColStart = m_table.getSelectedColumn();
 		int iColEnd = m_table.getColumnModel().getSelectionModel().getMaxSelectionIndex();
 		// Check each cell in the range
 		String sClipboardText = iRowStart +" " + iColStart +" {} o:\n";
-		for (int iRow = iRowStart; iRow <= iRowEnd; iRow++) { 
-			for (int iCol = iColStart; iCol <= iColEnd; iCol++) { 
+		for (int iRow = iRowStart; iRow <= iRowEnd; iRow++) {
+			for (int iCol = iColStart; iCol <= iColEnd; iCol++) {
 				if (m_table.isCellSelected(iRow, iCol) && m_objects[iRow][iCol] != null) {
 					sClipboardText += getCellAsText(iRow, iCol);
 				}
@@ -1080,7 +1080,7 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 		return sClipboardText;
 	}
 
-	
+
 	String getCellAsText(int iRow, int iCol) {
 		Object o = m_objects[iRow][iCol];
 		String sText = iRow + " " + iCol + " ";
@@ -1096,8 +1096,8 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 		}
 		sText += "\n";
 		return sText;
-	}	
-	
+	}
+
 	/** try to paste contents of sText into the spreadsheet
 	 * @param sText: string of cell-specs, line by line, as produced by getSpreadsheetAsText()
 	 * @param iRow0, iCol0: relative cell position
@@ -1125,7 +1125,7 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
     			} else if (aType == 'n') {
     				// null object
 					editFormat(iRow + iRow0, iCol + iCol0);
-    				m_objects[iRow + iRow0][iCol + iCol0] = null; 
+    				m_objects[iRow + iRow0][iCol + iCol0] = null;
     			} else if (aType == 'y') {
     				// cell format
 					editFormat(iRow + iRow0, iCol + iCol0);
@@ -1145,7 +1145,7 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
     				// cell width
     				int nWidth = iRow;
 					editWidth(iCol);
-    				m_table.getColumnModel().getColumn(iCol).setPreferredWidth(nWidth); 
+    				m_table.getColumnModel().getColumn(iCol).setPreferredWidth(nWidth);
     			} else if (aType == 'h') {
     				// cell height
     				int nHeight = iCol;
@@ -1165,25 +1165,25 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
     		}
     	}
 	} // processSpreadSheetAsText
-	
+
 	/** enable/disable actions depending on the state of the system **/
 	void updateActions() {
-		int iRow = m_table.getSelectedRow(); 
+		int iRow = m_table.getSelectedRow();
 		int iCol = m_table.getSelectedColumn();
 		boolean bSelected = iRow >= 0 && iCol >= 0 && m_objects[iRow][iCol] != null;
 		a_copy.setEnabled(bSelected);
 		a_cut.setEnabled(bSelected);
-		
+
 	    Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 	    Transferable contents = clipboard.getContents(null);
 	    boolean hasTransferableText = (contents != null) &&  contents.isDataFlavorSupported(DataFlavor.stringFlavor);
 	    a_paste.setEnabled(hasTransferableText);
-	    
+
 	    a_undo.setEnabled(m_iTopUndoAction > 0);
 	    a_redo.setEnabled(m_iTopUndoAction < m_actions.size());
 	    m_table.repaint();
 	} // updateActions
-	
+
 	JToolBar createToolBar() {
 		JToolBar toolBar = new JToolBar();
 		toolBar.add(a_new);
@@ -1204,7 +1204,7 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 	        }
 		});
 		toolBar.add(new MyAction("Color", "Text color", "tcolor", "") {
-			
+
 
 			public void actionPerformed(ActionEvent ae) {
 				setColor(false);
@@ -1212,34 +1212,34 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 		});
 		toolBar.addSeparator();
 		toolBar.add(new MyAction("Bold", "Toggle boldness of text", "bold", "") {
-			
+
 
 			public void actionPerformed(ActionEvent ae) {
 	        	toggleFontProperty(null,Font.BOLD,0);
 	        }
 		});
 		toolBar.add(new MyAction("Italic", "Toggle italicness of text", "italic", "") {
-			
+
 
 			public void actionPerformed(ActionEvent ae) {
 	        	toggleFontProperty(null,Font.ITALIC,0);
 	        }
 		});
 		toolBar.add(new MyAction("Bigger", "Increase size of font", "bigger", "") {
-			
+
 
 			public void actionPerformed(ActionEvent ae) {
 	        	toggleFontProperty(null, -1, 1);
 	        }
 		});
 		toolBar.add(new MyAction("Smaller", "Decrease size of font", "smaller", "") {
-			
+
 
 			public void actionPerformed(ActionEvent ae) {
 	        	toggleFontProperty(null, -1, 3);
 	        }
 		});
-		
+
 		GraphicsEnvironment env = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		JComboBox combo = new JComboBox(env.getAvailableFontFamilyNames());
 	    combo.addActionListener(new ActionListener() {
@@ -1249,33 +1249,33 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 	    });
 	    toolBar.add(combo);
 		combo.setMaximumSize(new Dimension(350, 20));
-		
+
 		toolBar.addSeparator();
 		toolBar.add(new MyAction("Left", "Align left", "left", "") {
-			
+
 
 			public void actionPerformed(ActionEvent ae) {
 	        	setAlignemnt(SwingConstants.LEFT);
 	        }
 		});
 		toolBar.add(new MyAction("Right", "Align right", "right", "") {
-			
+
 
 			public void actionPerformed(ActionEvent ae) {
 	        	setAlignemnt(SwingConstants.RIGHT);
 	        }
 		});
 		toolBar.add(new MyAction("Center", "Align center", "center", "") {
-			
+
 
 			public void actionPerformed(ActionEvent ae) {
 	        	setAlignemnt(SwingConstants.CENTER);
 	        }
 		});
 		toolBar.addSeparator();
-		
-		
-		
+
+
+
 		JComboBox combo2 = new JComboBox(m_borderIcons);
 		combo2.setRenderer(new DefaultListCellRenderer() {
 			@Override
@@ -1283,7 +1283,7 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 					boolean cellHasFocus) {
 				    JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 			        label.setIcon(m_borderIcons[Math.max(index, 0)]);
-			        return label;				
+			        return label;
 			}
 		});
 		combo2.setMaximumSize(new Dimension(40, 20));
@@ -1295,21 +1295,21 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 	           }
 	    });
 	    toolBar.add(combo2);
-		
+
 		return toolBar;
 	} // createToolBar
 
 	void setBorderProperty(int iBorder) {
 		beginEditAction();
-		// Get the min and max ranges of selected cells 
-		int iRowStart = m_table.getSelectedRow(); 
-		int iRowEnd = m_table.getSelectionModel().getMaxSelectionIndex(); 
-		int iColStart = m_table.getSelectedColumn(); 
-		int iColEnd = m_table.getColumnModel().getSelectionModel().getMaxSelectionIndex(); 
-		// Check each cell in the range 
-		for (int iRow = iRowStart; iRow <= iRowEnd; iRow++) { 
-			for (int iCol = iColStart; iCol <= iColEnd; iCol++) { 
-				if (m_table.isCellSelected(iRow, iCol)) {  
+		// Get the min and max ranges of selected cells
+		int iRowStart = m_table.getSelectedRow();
+		int iRowEnd = m_table.getSelectionModel().getMaxSelectionIndex();
+		int iColStart = m_table.getSelectedColumn();
+		int iColEnd = m_table.getColumnModel().getSelectionModel().getMaxSelectionIndex();
+		// Check each cell in the range
+		for (int iRow = iRowStart; iRow <= iRowEnd; iRow++) {
+			for (int iCol = iColStart; iCol <= iColEnd; iCol++) {
+				if (m_table.isCellSelected(iRow, iCol)) {
 					if (m_cellFormat[iRow][iCol] == null) {
 						m_cellFormat[iRow][iCol] = new CellFormat();
 					}
@@ -1324,9 +1324,9 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 	/** choose colour for foreground or background of selected cells **/
 	void setColor(boolean bForeground) {
 		beginEditAction();
-		// Get the min and max ranges of selected cells 
-		int iRowStart = m_table.getSelectedRow(); 
-		int iColStart = m_table.getSelectedColumn(); 
+		// Get the min and max ranges of selected cells
+		int iRowStart = m_table.getSelectedRow();
+		int iColStart = m_table.getSelectedColumn();
     	if (iRowStart < 0 || iColStart < 0) {
     		return;
     	}
@@ -1336,12 +1336,12 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
     	}
         Color color = JColorChooser.showDialog(null, "Select Text color", initialColor);
         if (color != null) {
-		
-	    	int iRowEnd = m_table.getSelectionModel().getMaxSelectionIndex(); 
-			int iColEnd = m_table.getColumnModel().getSelectionModel().getMaxSelectionIndex(); 
-			// Check each cell in the range 
-			for (int iRow = iRowStart; iRow <= iRowEnd; iRow++) { 
-				for (int iCol = iColStart; iCol <= iColEnd; iCol++) { 
+
+	    	int iRowEnd = m_table.getSelectionModel().getMaxSelectionIndex();
+			int iColEnd = m_table.getColumnModel().getSelectionModel().getMaxSelectionIndex();
+			// Check each cell in the range
+			for (int iRow = iRowStart; iRow <= iRowEnd; iRow++) {
+				for (int iCol = iColStart; iCol <= iColEnd; iCol++) {
 					if (m_table.isCellSelected(iRow, iCol)) {
 						editFormat(iRow, iCol);
 						if (m_cellFormat[iRow][iCol] == null) {
@@ -1359,18 +1359,18 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 		m_table.repaint();
 		endEditAction();
 	}
-	
+
 	/** set alignment of selected cells **/
 	void setAlignemnt(int nAlignment) {
 		beginEditAction();
-		// Get the min and max ranges of selected cells 
-		int iRowStart = m_table.getSelectedRow(); 
-		int iRowEnd = m_table.getSelectionModel().getMaxSelectionIndex(); 
-		int iColStart = m_table.getSelectedColumn(); 
-		int iColEnd = m_table.getColumnModel().getSelectionModel().getMaxSelectionIndex(); 
-		// Check each cell in the range 
-		for (int iRow = iRowStart; iRow <= iRowEnd; iRow++) { 
-			for (int iCol = iColStart; iCol <= iColEnd; iCol++) { 
+		// Get the min and max ranges of selected cells
+		int iRowStart = m_table.getSelectedRow();
+		int iRowEnd = m_table.getSelectionModel().getMaxSelectionIndex();
+		int iColStart = m_table.getSelectedColumn();
+		int iColEnd = m_table.getColumnModel().getSelectionModel().getMaxSelectionIndex();
+		// Check each cell in the range
+		for (int iRow = iRowStart; iRow <= iRowEnd; iRow++) {
+			for (int iCol = iColStart; iCol <= iColEnd; iCol++) {
 				if (m_table.isCellSelected(iRow, iCol)) {
 					editFormat(iRow, iCol);
 					if (m_cellFormat[iRow][iCol] == null) {
@@ -1387,21 +1387,21 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 	/** set font properties of selected cells **/
 	void toggleFontProperty(String sFontName, int nFontStyle, int nFontSize) {
 		beginEditAction();
-		// Get the min and max ranges of selected cells 
-		int iRowStart = m_table.getSelectedRow(); 
-		int iRowEnd = m_table.getSelectionModel().getMaxSelectionIndex(); 
-		int iColStart = m_table.getSelectedColumn(); 
-		int iColEnd = m_table.getColumnModel().getSelectionModel().getMaxSelectionIndex(); 
-		// Check each cell in the range 
-		for (int iRow = iRowStart; iRow <= iRowEnd; iRow++) { 
-			for (int iCol = iColStart; iCol <= iColEnd; iCol++) { 
+		// Get the min and max ranges of selected cells
+		int iRowStart = m_table.getSelectedRow();
+		int iRowEnd = m_table.getSelectionModel().getMaxSelectionIndex();
+		int iColStart = m_table.getSelectedColumn();
+		int iColEnd = m_table.getColumnModel().getSelectionModel().getMaxSelectionIndex();
+		// Check each cell in the range
+		for (int iRow = iRowStart; iRow <= iRowEnd; iRow++) {
+			for (int iCol = iColStart; iCol <= iColEnd; iCol++) {
 				if (m_table.isCellSelected(iRow, iCol)) {
 					editFormat(iRow, iCol);
 			       	if (m_cellFormat[iRow][iCol] == null) {
 			       		m_cellFormat[iRow][iCol] = new CellFormat();
 			       	}
 			   		if (m_cellFormat[iRow][iCol].m_font == null) {
-			   	       	Font font = m_table.getFont(); 
+			   	       	Font font = m_table.getFont();
 			   			m_cellFormat[iRow][iCol].m_font = new Font(font.getName(), font.getStyle(), font.getSize());
 			   		}
 			       	Font font = m_cellFormat[iRow][iCol].m_font;
@@ -1416,13 +1416,13 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 	    m_table.repaint();
 	} // toggleFontProperty
 
-	void readXML(String sFile) throws Exception {
+	void readXML(String fileName) throws Exception {
 		XMLParser parser = new XMLParser();
 		Random rand = new Random(127);
-		
+
 
 		Plugin plugin0 = null;
-		plugin0 = parser.parseFile(sFile);
+		plugin0 = parser.parseFile(new File(fileName));
 		// collect all objects and store in m_plugins
 		m_plugins = new ArrayList<Plugin>();
 		collectPlugins(plugin0);
@@ -1451,13 +1451,13 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 			m_objects[i][0] = sID;
 			m_objects[i][1] = plugin;
 			CellFormat format = new CellFormat();
-			format.m_bgColor = color; 
+			format.m_bgColor = color;
 			m_cellFormat[i][1] = format;
-			
+
 			plugin.setID("B"+(i+1));
 			m_pluginLocation.put(plugin, i + MAX_ROW);
 			if (plugin instanceof StateNode || plugin instanceof Distribution) {
-				FormulaCell formula = new FormulaCell("=$B"+(i+1)); 
+				FormulaCell formula = new FormulaCell("=$B"+(i+1));
 				m_objects[i][2] = formula;
 				m_formulas.add(formula);
 				m_formulaLocation.put(formula, i + MAX_ROW * 2);
@@ -1605,7 +1605,7 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 		// formula split up in tokens consisting of cell references and non-cell reference parts
 		List<String> m_sTokens;
 		List<Integer> m_nTokens;
-		
+
 		FormulaCell(String sFormula) {
 			m_sFormula = sFormula.substring(1);
 			try {
@@ -1616,7 +1616,7 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 				m_sValue = "NaN";
 			}
 		}
-			
+
 		Object getCellRef(int nCode) {
 			int iRow = nCode & MAX_ROW;
 			int iCol = nCode / MAX_ROW;
@@ -1636,7 +1636,7 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 			}
 			return Double.NaN;
 		}
-			
+
 		Object value() {
 			String sFormula = "with (Math) {";
 			for (int i = 0; i < m_nTokens.size(); i++) {
@@ -1656,11 +1656,11 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 				return es.getMessage();
 			}
 		}
-		
+
 		public String toString() {
 			return m_sValue;
 		}
-		
+
 		/**splits the formula in tokens of cell-refs and non-cell refs **/
 		void parse(String sFormula) throws Exception {
 			m_sTokens = new ArrayList<String>();
@@ -1680,9 +1680,9 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 					if (cellMatcher.matches()) {
 						String sCol = cellMatcher.group(1).toUpperCase();
 						String sRow = cellMatcher.group(2);
-						int nCellReff = sCol.charAt(0) - 'A'; 
+						int nCellReff = sCol.charAt(0) - 'A';
 						for (int i = 1;i < sCol.length(); i++) {
-							nCellReff = (nCellReff+1) * 26 + sCol.charAt(i) - 'A'; 
+							nCellReff = (nCellReff+1) * 26 + sCol.charAt(i) - 'A';
 						}
 						nCellReff = nCellReff * (MAX_ROW+1) + Integer.parseInt(sRow) - 1;
 						m_sTokens.add(sCellRef);
@@ -1746,15 +1746,15 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 	        return this;
 	    }
 	} // class ColoredTableCellRenderer
-	
 
-	public class CellBorder extends AbstractBorder implements SwingConstants { 
+
+	public class CellBorder extends AbstractBorder implements SwingConstants {
 		protected int m_nNorthThickness;
 		protected int m_nSouthThickness;
 		protected int m_nEastThickness;
-		protected int m_nWestThickness;  
+		protected int m_nWestThickness;
 		protected Color m_color;
-	  
+
 	    public CellBorder(int nNorth, int nEast, int nSouth, int nWest) {
 		    m_nNorthThickness = nNorth;
 		    m_nEastThickness = nEast;
@@ -1765,7 +1765,7 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 
 	    public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
 	    	Color oldColor = g.getColor();
-	    
+
 	    	g.setColor(m_color);
 	    	for (int i = 0; i < m_nNorthThickness; i++)  {
 	    		g.drawLine(x, y+i, x+width-1, y+i);
@@ -1779,7 +1779,7 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 	    	for (int i = 0; i < m_nEastThickness; i++)  {
 	    		g.drawLine(x+width-i-1, y, x+width-i-1, y+height-1);
 	    	}
-	 
+
 	    	g.setColor(oldColor);
 	    }
 	} // class CellBorder
@@ -1790,8 +1790,8 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 		m_table.addColumnSelectionInterval(iCol, iCol);
 	}
 
-	
-	
+
+
 	protected JMenuBar getMenuBar() {
 		JMenuBar m_menuBar = new JMenuBar();
 		JMenu fileMenu = new JMenu("File");
@@ -1824,7 +1824,7 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 		editMenu.add(a_copy);
 		editMenu.add(a_del);
 		editMenu.add(a_paste);
-		
+
 
 		// ----------------------------------------------------------------------
 		// Window menu */
@@ -1843,15 +1843,15 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 		helpMenu.add(a_about);
 		return m_menuBar;
 	} // makeMenuBar
-	
-	
-	
+
+
+
 	/**
 	 * Rudimentary test of this panel, takes a Beast II xml file as argument and
 	 * opens it
 	 **/
 	public static void main(String args[]) {
-		try { 
+		try {
 			AddOnManager.loadExternalJars();
 
 			Logger.FILE_MODE = Logger.FILE_OVERWRITE;
