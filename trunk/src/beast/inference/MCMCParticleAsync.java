@@ -175,6 +175,11 @@ public class MCMCParticleAsync extends MCMCParticle {
 					String [] sLogs = sLog.split("\n");
 					String sPosterior = sLogs[sLogs.length-1].split("\t")[1];
 					m_fPosteriors[iParticle] = Double.parseDouble(sPosterior);
+				} else {
+					if (m_sStates[iParticle] == null) {
+						m_sStates[iParticle] = m_sStates[0];
+						m_fPosteriors[iParticle] = m_fPosteriors[0];
+					}
 				}
 			}
 	
