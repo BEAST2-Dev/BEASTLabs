@@ -48,7 +48,7 @@
     
 
 
-    <run spec="MCMC" id="mcmc" chainLength="10000000">
+    <run spec="MCMC" id="mcmc" chainLength="100000">
         <state storeEvery='100000'>
             <stateNode spec='RealParameter' id="beta" value='1'/>
             <stateNode spec='RealParameter' id="gamma" value='.2'/>
@@ -60,7 +60,7 @@
 
         <distribution spec='CompoundDistribution' id='posterior'>
             <distribution spec='CompoundDistribution' id='prior'>
-                <distribution spec='PrevalenceLikelihood' id='prevlikelihood' beta='@beta' gamma='@gamma' popSize='@popSize' list='@list'/>
+                <!--distribution spec='PrevalenceLikelihood' id='prevlikelihood' beta='@beta' gamma='@gamma' popSize='@popSize' list='@list'/-->
                 <distribution spec='TreeForPrevalenceLikelihood' id='treeprior' tree='@tree' list='@list'/>
             </distribution>
             <distribution id='likelihood' idref="treeLikelihood"/>
@@ -98,10 +98,10 @@
             <log idref="tree"/>
         </logger>
 
-        <logger logEvery="1">
+        <logger logEvery="1000">
 	        <model idref='posterior'/>
             <log idref="treeprior"/>
-            <log idref="prevlikelihood"/>
+            <!--log idref="prevlikelihood"/-->
             <log idref="prior"/>
             <log idref="likelihood"/>
             <log idref="posterior"/>

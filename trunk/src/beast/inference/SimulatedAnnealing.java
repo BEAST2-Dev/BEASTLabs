@@ -44,7 +44,7 @@ public class SimulatedAnnealing extends MCMC implements Loggable {
         for (int iSample = -nBurnIn; iSample <= nChainLength; iSample++) {
             state.store(iSample);
 
-            Operator operator = operatorSet.selectOperator();
+            Operator operator = operatorSchedule.selectOperator();
             //System.out.print("\n" + iSample + " " + operator.getName()+ ":");
             double fLogHastingsRatio = operator.proposal();
             

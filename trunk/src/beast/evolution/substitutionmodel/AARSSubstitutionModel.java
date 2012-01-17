@@ -449,7 +449,8 @@ public class AARSSubstitutionModel extends GeneralSubstitutionModel {
             }	
         }
         
-        multiply(expQt, fP, m_nStates);
+        //multiply(expQt, fP, m_nStates);
+        multiply2(expQt, fP, m_nStates);
 	}
 
 	
@@ -472,7 +473,27 @@ public class AARSSubstitutionModel extends GeneralSubstitutionModel {
 	    }
 	    System.arraycopy(C, 0, B, 0, C.length);
 	}
-	
+
+	/** matrix multiplication B = A times B **/
+	void multiply2(double [] B, double [] A, int n){
+		double [] C = new double[A.length];
+
+		double[] Bcolj = new double[n];
+	    for (int j = 0; j < n; j++) {
+	      for (int k = 0; k < n; k++) {
+	        Bcolj[k] = B[k*n+j];
+	      }
+	      for (int i = 0; i < n; i++) {
+	        double s = 0;
+	        for (int k = 0; k < n; k++) {
+	          s += A[i * n +k]*Bcolj[k];
+	        }
+	        C[i*n+j] = s;
+	      }
+	    }
+	    System.arraycopy(C, 0, A, 0, C.length);
+	}
+
 	
 	/** class to sort internal nodes by height **/
 	class NodeComparator implements Comparator<Node> {
