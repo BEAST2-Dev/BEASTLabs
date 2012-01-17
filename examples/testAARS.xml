@@ -3,10 +3,11 @@
 
     <data dataType="aminoacid" id="AARS_sim" name="taxa">
 <!--
-                    <sequence id="AARS_V_1" taxon="AARS_V_1" totalcount="20" value="NMQAFAVNCFIIGDWKKQGWYMVIFCEDVWIKEFLAKFKYTATGQVFQWYSVFYQIGCGFDREYWIQGEMIKGQSNFVWCGSSMYTEEQFYYYYIYAEFN"/>
                     <sequence id="AARS_E_1" taxon="AARS_E_1" totalcount="20" value="TNQSYAENYGVWDQYNWYVFEYLIDCVKMMYNSFYRFQNYPVRFFEFCYQSTGFYVFYFFKQSGQEYIYIVNDVTVNSQCNHFAQTGVENIEGIRSGHGI"/>
-                    <sequence id="AARS_L_1" taxon="AARS_L_1" totalcount="20" value="TTKNFPGDVYVQKQWDVLFFVQLQDQQGVRWFSFFTFVGPSRGKGAYSGCEYFIQEYVYFYYAGEEQRMWHFKMAVNLMYKAFQYIFYQFCEDEMRHMSK"/>
+                    <sequence id="AARS_V_1" taxon="AARS_V_1" totalcount="20" value="NMQAFAVNCFIIGDWKKQGWYMVIFCEDVWIKEFLAKFKYTATGQVFQWYSVFYQIGCGFDREYWIQGEMIKGQSNFVWCGSSMYTEEQFYYYYIYAEFN"/>
                     <sequence id="AARS_R_1" taxon="AARS_R_1" totalcount="20" value="IMMTKTRNYFCQQQVDDMDGYIYQFCQFMRENTFLSDLDVSTKNFYKQEWMVFRSMNYGENVTVQIEVQMWFFQARGYVYNHFECTDQEYFVNYETSVYF"/>
+                    <sequence id="AARS_L_1" taxon="AARS_L_1" totalcount="20" value="TTKNFPGDVYVQKQWDVLFFVQLQDQQGVRWFSFFTFVGPSRGKGAYSGCEYFIQEYVYFYYAGEEQRMWHFKMAVNLMYKAFQYIFYQFCEDEMRHMSK"/>
+
                     <sequence id="AARS_I_1" taxon="AARS_I_1" totalcount="20" value="TDQADTQNNYVENWYGNCVFMYLQPRVNQWFNWKRQKCGCTVYKNSFYRESAFQYVFVGDKIPNMYMQCVVNYIPQGTMCDPPEMTYLQFQMDYMSSCFK"/>
                     <sequence id="AARS_Q_1" taxon="AARS_Q_1" totalcount="20" value="ENEAGKMFFNVENEYNFYVFVRLIDYVDQWYGSNYSFYMCPTCGDVDRFQAPNYFVKCFFGISTKVMIRVVNGVSQNADMKAGWMTFLIKQMIYETSYGN"/>
                     <sequence id="AARS_C_1" taxon="AARS_C_1" totalcount="20" value="SEESFSYNYFGQKQIEDENKCICQGYQGIRIGTFLPQLYVSTFRERFQEQEWFRWEKCFDGVAVQIMVQMEFGQSMFRIYAAAWCSVQMNKVFYMTAIKN"/>
@@ -96,7 +97,6 @@
                     <sequence id="_AARS_w_5" taxon="AARS_w_5" totalcount="20" value="anqrgtqggkvwdqyngyaneeiivcvymfwgsnyanqfypvrnfencyqsafyymmyfnnqsnhnyiyvvgdvamksqckiqqqagvqfiigfqstqkn"/>
                     <sequence id="_AARS_w_6" taxon="AARS_w_6" totalcount="20" value="anqsgtqggkvwdqyygyvdeyivdcvfmiygfnyanqfypvrnfeqcyqsafwymkyynkqsnhwyvyvvgdaamksqckanqqagveciegyqstqdn"/>
                     <sequence id="_AARS_w_7" taxon="AARS_w_7" totalcount="20" value="anqsgtqggkvwqqyngyaneeiidcvfmfwgsnlanqfypirnfencyqsafymmiyfnnqsnheyiyvvgdvamksqckiqqqagvefmikfqstnkn"/>
--->
 <!-- class ii -->
                     <sequence id="_AARS_g_1" taxon="AARS_g_1" totalcount="20" value="tkyprfndvpiqctgnkmnatfwteaqrfyqsevnqavynfymqmkgatqkivdiqqtvtyedfeycmsntervcfvwqeyvcqkwwyhevqvqnpiyfe"/>
                     <sequence id="_AARS_g_2" taxon="AARS_g_2" totalcount="20" value="tkwarftdvpitctgnkmnatfwteaqrfyesevkqavynfymnvkgavrkivdiqqevthedfaycmsrtervcfiwqeyvcqkwwyhevqiqnpvywe"/>
@@ -172,6 +172,7 @@
                 </data>
 
 
+    <substModel spec="WAG" id="substmodel2"/>
     
     <substModel spec="AARSSubstitutionModel" id="substmodel" tree="@tree">
         <frequencies spec='AARSFrequencies'>
@@ -228,38 +229,55 @@
 
 
     <distribution id="posterior" spec="util.CompoundDistribution">
-        <distribution spec='beast.evolution.tree.MonophyleticConstraint' tree='@tree' taxa='@AARS_sim'>
-            <set spec='TaxonSet'><taxon id='AARS_a_1'/><taxon id='AARS_a_2'/><taxon id='AARS_a_3'/><taxon id='AARS_a_4'/><taxon id='AARS_a_5'/><taxon id='AARS_a_6'/><taxon id='AARS_a_7'/></set>
-            <set spec='TaxonSet'><taxon id='AARS_c_1'/><taxon id='AARS_c_2'/><taxon id='AARS_c_3'/><taxon id='AARS_c_4'/><taxon id='AARS_c_5'/><taxon id='AARS_c_6'/><taxon id='AARS_c_7'/></set>
-            <set spec='TaxonSet'><taxon id='AARS_d_1'/><taxon id='AARS_d_2'/><taxon id='AARS_d_3'/><taxon id='AARS_d_4'/><taxon id='AARS_d_5'/><taxon id='AARS_d_6'/><taxon id='AARS_d_7'/></set>
-            <set spec='TaxonSet'><taxon id='AARS_e_1'/><taxon id='AARS_e_2'/><taxon id='AARS_e_3'/><taxon id='AARS_e_4'/><taxon id='AARS_e_5'/><taxon id='AARS_e_6'/><taxon id='AARS_e_7'/></set>
-            <set spec='TaxonSet'><taxon id='AARS_f_1'/><taxon id='AARS_f_2'/><taxon id='AARS_f_3'/><taxon id='AARS_f_4'/><taxon id='AARS_f_5'/><taxon id='AARS_f_6'/><taxon id='AARS_f_7'/></set>
-            <set spec='TaxonSet'><taxon id='AARS_g_1'/><taxon id='AARS_g_2'/><taxon id='AARS_g_3'/><taxon id='AARS_g_4'/><taxon id='AARS_g_5'/><taxon id='AARS_g_6'/><taxon id='AARS_g_7'/></set>
-            <set spec='TaxonSet'><taxon id='AARS_h_1'/><taxon id='AARS_h_2'/><taxon id='AARS_h_3'/><taxon id='AARS_h_4'/><taxon id='AARS_h_5'/><taxon id='AARS_h_6'/><taxon id='AARS_h_7'/></set>
-            <set spec='TaxonSet'><taxon id='AARS_i_1'/><taxon id='AARS_i_2'/><taxon id='AARS_i_3'/><taxon id='AARS_i_4'/><taxon id='AARS_i_5'/><taxon id='AARS_i_6'/><taxon id='AARS_i_7'/></set>
-            <set spec='TaxonSet'><taxon id='AARS_k_1'/><taxon id='AARS_k_2'/><taxon id='AARS_k_3'/><taxon id='AARS_k_4'/><taxon id='AARS_k_5'/><taxon id='AARS_k_6'/><taxon id='AARS_k_7'/></set>
-            <set spec='TaxonSet'><taxon id='AARS_l_1'/><taxon id='AARS_l_2'/><taxon id='AARS_l_3'/><taxon id='AARS_l_4'/><taxon id='AARS_l_5'/><taxon id='AARS_l_6'/><taxon id='AARS_l_7'/></set>
-            <set spec='TaxonSet'><taxon id='AARS_m_1'/><taxon id='AARS_m_2'/><taxon id='AARS_m_3'/><taxon id='AARS_m_4'/><taxon id='AARS_m_5'/><taxon id='AARS_m_6'/><taxon id='AARS_m_7'/></set>
-            <set spec='TaxonSet'><taxon id='AARS_n_1'/><taxon id='AARS_n_2'/><taxon id='AARS_n_3'/><taxon id='AARS_n_4'/><taxon id='AARS_n_5'/><taxon id='AARS_n_6'/><taxon id='AARS_n_7'/></set>
-            <set spec='TaxonSet'><taxon id='AARS_p_1'/><taxon id='AARS_p_2'/><taxon id='AARS_p_3'/><taxon id='AARS_p_4'/><taxon id='AARS_p_5'/><taxon id='AARS_p_6'/><taxon id='AARS_p_7'/></set>
-            <set spec='TaxonSet'><taxon id='AARS_q_1'/><taxon id='AARS_q_2'/><taxon id='AARS_q_3'/><taxon id='AARS_q_4'/><taxon id='AARS_q_5'/><taxon id='AARS_q_6'/><taxon id='AARS_q_7'/></set>
-            <set spec='TaxonSet'><taxon id='AARS_r_1'/><taxon id='AARS_r_2'/><taxon id='AARS_r_3'/><taxon id='AARS_r_4'/><taxon id='AARS_r_5'/><taxon id='AARS_r_6'/><taxon id='AARS_r_7'/></set>
-            <set spec='TaxonSet'><taxon id='AARS_s_1'/><taxon id='AARS_s_2'/><taxon id='AARS_s_3'/><taxon id='AARS_s_4'/><taxon id='AARS_s_5'/><taxon id='AARS_s_6'/><taxon id='AARS_s_7'/></set>
-            <set spec='TaxonSet'><taxon id='AARS_t_1'/><taxon id='AARS_t_2'/><taxon id='AARS_t_3'/><taxon id='AARS_t_4'/><taxon id='AARS_t_5'/><taxon id='AARS_t_6'/><taxon id='AARS_t_7'/></set>
-            <set spec='TaxonSet'><taxon id='AARS_v_1'/><taxon id='AARS_v_2'/><taxon id='AARS_v_3'/><taxon id='AARS_v_4'/><taxon id='AARS_v_5'/><taxon id='AARS_v_6'/><taxon id='AARS_v_7'/></set>
-            <set spec='TaxonSet'><taxon id='AARS_w_1'/><taxon id='AARS_w_2'/><taxon id='AARS_w_3'/><taxon id='AARS_w_4'/><taxon id='AARS_w_5'/><taxon id='AARS_w_6'/><taxon id='AARS_w_7'/></set>
-            <set spec='TaxonSet'><taxon id='AARS_y_1'/><taxon id='AARS_y_2'/><taxon id='AARS_y_3'/><taxon id='AARS_y_4'/><taxon id='AARS_y_5'/><taxon id='AARS_y_6'/><taxon id='AARS_y_7'/></set>
-        </distribution>
-<!--
         <distribution id="prior" spec="util.CompoundDistribution">
+            <distribution spec='beast.evolution.tree.MonophyleticConstraint' tree='@tree' taxa='@AARS_sim'>
+                <set spec='TaxonSet'><taxon id='AARS_a_1'/><taxon id='AARS_a_2'/><taxon id='AARS_a_3'/><taxon id='AARS_a_4'/><taxon id='AARS_a_5'/><taxon id='AARS_a_6'/><taxon id='AARS_a_7'/></set>
+                <set spec='TaxonSet'><taxon id='AARS_c_1'/><taxon id='AARS_c_2'/><taxon id='AARS_c_3'/><taxon id='AARS_c_4'/><taxon id='AARS_c_5'/><taxon id='AARS_c_6'/><taxon id='AARS_c_7'/></set>
+                <set spec='TaxonSet'><taxon id='AARS_d_1'/><taxon id='AARS_d_2'/><taxon id='AARS_d_3'/><taxon id='AARS_d_4'/><taxon id='AARS_d_5'/><taxon id='AARS_d_6'/><taxon id='AARS_d_7'/></set>
+                <set spec='TaxonSet'><taxon id='AARS_e_1'/><taxon id='AARS_e_2'/><taxon id='AARS_e_3'/><taxon id='AARS_e_4'/><taxon id='AARS_e_5'/><taxon id='AARS_e_6'/><taxon id='AARS_e_7'/></set>
+                <set spec='TaxonSet'><taxon id='AARS_f_1'/><taxon id='AARS_f_2'/><taxon id='AARS_f_3'/><taxon id='AARS_f_4'/><taxon id='AARS_f_5'/><taxon id='AARS_f_6'/><taxon id='AARS_f_7'/></set>
+                <set spec='TaxonSet'><taxon id='AARS_g_1'/><taxon id='AARS_g_2'/><taxon id='AARS_g_3'/><taxon id='AARS_g_4'/><taxon id='AARS_g_5'/><taxon id='AARS_g_6'/><taxon id='AARS_g_7'/></set>
+                <set spec='TaxonSet'><taxon id='AARS_h_1'/><taxon id='AARS_h_2'/><taxon id='AARS_h_3'/><taxon id='AARS_h_4'/><taxon id='AARS_h_5'/><taxon id='AARS_h_6'/><taxon id='AARS_h_7'/></set>
+                <set spec='TaxonSet'><taxon id='AARS_i_1'/><taxon id='AARS_i_2'/><taxon id='AARS_i_3'/><taxon id='AARS_i_4'/><taxon id='AARS_i_5'/><taxon id='AARS_i_6'/><taxon id='AARS_i_7'/></set>
+                <set spec='TaxonSet'><taxon id='AARS_k_1'/><taxon id='AARS_k_2'/><taxon id='AARS_k_3'/><taxon id='AARS_k_4'/><taxon id='AARS_k_5'/><taxon id='AARS_k_6'/><taxon id='AARS_k_7'/></set>
+                <set spec='TaxonSet'><taxon id='AARS_l_1'/><taxon id='AARS_l_2'/><taxon id='AARS_l_3'/><taxon id='AARS_l_4'/><taxon id='AARS_l_5'/><taxon id='AARS_l_6'/><taxon id='AARS_l_7'/></set>
+                <set spec='TaxonSet'><taxon id='AARS_m_1'/><taxon id='AARS_m_2'/><taxon id='AARS_m_3'/><taxon id='AARS_m_4'/><taxon id='AARS_m_5'/><taxon id='AARS_m_6'/><taxon id='AARS_m_7'/></set>
+                <set spec='TaxonSet'><taxon id='AARS_n_1'/><taxon id='AARS_n_2'/><taxon id='AARS_n_3'/><taxon id='AARS_n_4'/><taxon id='AARS_n_5'/><taxon id='AARS_n_6'/><taxon id='AARS_n_7'/></set>
+                <set spec='TaxonSet'><taxon id='AARS_p_1'/><taxon id='AARS_p_2'/><taxon id='AARS_p_3'/><taxon id='AARS_p_4'/><taxon id='AARS_p_5'/><taxon id='AARS_p_6'/><taxon id='AARS_p_7'/></set>
+                <set spec='TaxonSet'><taxon id='AARS_q_1'/><taxon id='AARS_q_2'/><taxon id='AARS_q_3'/><taxon id='AARS_q_4'/><taxon id='AARS_q_5'/><taxon id='AARS_q_6'/><taxon id='AARS_q_7'/></set>
+                <set spec='TaxonSet'><taxon id='AARS_r_1'/><taxon id='AARS_r_2'/><taxon id='AARS_r_3'/><taxon id='AARS_r_4'/><taxon id='AARS_r_5'/><taxon id='AARS_r_6'/><taxon id='AARS_r_7'/></set>
+                <set spec='TaxonSet'><taxon id='AARS_s_1'/><taxon id='AARS_s_2'/><taxon id='AARS_s_3'/><taxon id='AARS_s_4'/><taxon id='AARS_s_5'/><taxon id='AARS_s_6'/><taxon id='AARS_s_7'/></set>
+                <set spec='TaxonSet'><taxon id='AARS_t_1'/><taxon id='AARS_t_2'/><taxon id='AARS_t_3'/><taxon id='AARS_t_4'/><taxon id='AARS_t_5'/><taxon id='AARS_t_6'/><taxon id='AARS_t_7'/></set>
+                <set spec='TaxonSet'><taxon id='AARS_v_1'/><taxon id='AARS_v_2'/><taxon id='AARS_v_3'/><taxon id='AARS_v_4'/><taxon id='AARS_v_5'/><taxon id='AARS_v_6'/><taxon id='AARS_v_7'/></set>
+                <set spec='TaxonSet'><taxon id='AARS_w_1'/><taxon id='AARS_w_2'/><taxon id='AARS_w_3'/><taxon id='AARS_w_4'/><taxon id='AARS_w_5'/><taxon id='AARS_w_6'/><taxon id='AARS_w_7'/></set>
+                <set spec='TaxonSet'><taxon id='AARS_y_1'/><taxon id='AARS_y_2'/><taxon id='AARS_y_3'/><taxon id='AARS_y_4'/><taxon id='AARS_y_5'/><taxon id='AARS_y_6'/><taxon id='AARS_y_7'/></set>
+            </distribution>
+
+<!--
             <distribution spec="Coalescent">
                 <populationModel spec="ConstantPopulation">
                     <parameter dimension="1" estimate="true" id="popSize" name="popSize" value="1.0"/>
                 </populationModel>
                 <treeIntervals spec="TreeIntervals" tree="@tree"/>
             </distribution>
-        </distribution>
 -->
+    <!-- A prior on the distribution node heights defined given                  -->
+    <!-- a Yule speciation process (a pure birth process).                       -->
+            <distribution spec='beast.evolution.speciation.YuleModel' id="yule" tree='@tree'>
+                <birthDiffRate spec='parameter.RealParameter' id="birthDiffRate" value="0.00525252643949277"/>
+<!--
+The birthDiffRate is
+
+1/(nr) \sum_{k=1}^{n-1} k/(n-k)
+
+where r is the expected root height (= 861).
+n = # taxa = 140
+-->
+            </distribution>
+
+
+        </distribution>
+
         <distribution id="likelihood" spec="util.CompoundDistribution">
             <distribution data="@AARS_sim" id="AARS_sim1" spec="TreeLikelihood" tree="@tree" useAmbiguities="false">
                 <siteModel gammaCategoryCount="0" spec="SiteModel" substModel='@substmodel'/>
@@ -278,9 +296,11 @@
                 <trait id="TraitSet0" spec="beast.evolution.tree.TraitSet" taxa="@AARS_sim" traitname="date" units="year" value=""/>
             </tree>
         </tree>
+<!--
         <parameter dimension="1" estimate="true" id="birthRate" lower="0.0" name="stateNode" upper="100.0" value="1.0"/>
         <parameter dimension="1" estimate="true" id="growthRate" name="stateNode" value="1.0"/>
         <stateNode dimension="11" estimate="true" id="rateCategories" spec="parameter.IntegerParameter" value="1"/>
+-->
     </state>
 
 
@@ -291,18 +311,22 @@
     <operator id="wide" isNarrow="false" spec="Exchange" tree="@tree" weight="1.0"/>
     <operator id="WilsonBalding0" spec="WilsonBalding" tree="@tree" weight="1.0"/>
 
-    <logger fileName="$(seed).log" id="Logger1" logEvery="1000" mode="autodetect" model="@posterior">
+    <logger fileName="AARS.WAG.$(seed).log" id="Logger1" logEvery="1000" mode="autodetect" model="@posterior">
+        <log idref="posterior"/>
+        <log idref="prior"/>
         <log idref="likelihood"/>
         <log id="TreeHeightLogger0" spec="beast.evolution.tree.TreeHeightLogger" tree="@tree"/>
     </logger>
 
-    <logger fileName="$(seed).trees" id="Logger2" logEvery="1000" mode="autodetect">
+    <logger fileName="AARS.WAG.$(seed).trees" id="Logger2" logEvery="1000" mode="autodetect">
         <log idref="tree"/>
     </logger>
 
-    <logger id="Logger0" logEvery="1000" mode="autodetect" model="@posterior">
+    <logger id="Logger0" logEvery="1" mode="autodetect" model="@posterior">
+        <log idref="posterior"/>
+        <log idref="prior"/>
         <log idref="likelihood"/>
-        <log arg="@likelihood" id="ESS0" spec="util.ESS"/>
+        <log arg="@posterior" id="ESS0" spec="util.ESS"/>
     </logger>
 </run>
 

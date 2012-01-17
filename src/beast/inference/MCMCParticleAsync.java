@@ -82,13 +82,13 @@ public class MCMCParticleAsync extends MCMCParticle {
 
 			// write new state file
 			state.storeToFile(iSample);
-			operatorSet.storeToFile();
+			operatorSchedule.storeToFile();
 
 			updateStates(iSample);
 
 			try {        	
 				state.restoreFromFile();
-				operatorSet.restoreFromFile();
+				operatorSchedule.restoreFromFile();
 				fOldLogLikelihood = robustlyCalcPosterior(posterior);
 			} catch (Exception e) {
 				System.out.println("Could not restore from state " + e.getMessage() + " trying to go back to old state");
@@ -100,7 +100,7 @@ public class MCMCParticleAsync extends MCMCParticle {
 				out.close();
 				Thread.sleep(4000);
 				state.restoreFromFile();
-				operatorSet.restoreFromFile();
+				operatorSchedule.restoreFromFile();
 				fOldLogLikelihood = robustlyCalcPosterior(posterior);
 			}
 		} catch (Exception e) {
@@ -125,7 +125,7 @@ public class MCMCParticleAsync extends MCMCParticle {
 			if (sState == null) {
 				System.out.println("State == null, retrying");
 				state.storeToFile(iSample);
-				operatorSet.storeToFile();
+				operatorSchedule.storeToFile();
 				Thread.sleep(1000);
 				sState = getTextFile(sStateFileName);
 			}

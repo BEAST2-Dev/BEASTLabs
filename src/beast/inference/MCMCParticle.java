@@ -51,7 +51,7 @@ public class MCMCParticle extends MCMC {
 		File f = new File(m_sParticleDir + "/threadlock" + k);
 		try {
 			state.storeToFile(iSample);
-			operatorSet.storeToFile();
+			operatorSchedule.storeToFile();
 
 			System.out.println(iSample + ": writing " + f2.getAbsolutePath());
 			boolean bLockReady = false;
@@ -93,7 +93,7 @@ public class MCMCParticle extends MCMC {
         	
 			try {
 				state.restoreFromFile();
-				operatorSet.restoreFromFile();
+				operatorSchedule.restoreFromFile();
 			} catch (Exception e) {
 				System.out.println("Restoring state failed: " + e.getMessage());
 			}
