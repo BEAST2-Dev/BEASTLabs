@@ -115,6 +115,9 @@
 			</manifest>
 			<fileset dir="${build}">
 				<include name="beast/**/*.class" />
+				<exclude name="**/**/Sequence.class"/>
+				<exclude name="**/**/Prior.class"/>
+				<exclude name="**/**/SkyrideBlockOperator.class"/>
 				<include name="**/*.properties" />
 			</fileset>
 		</jar>
