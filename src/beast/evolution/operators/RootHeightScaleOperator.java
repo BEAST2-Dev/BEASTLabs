@@ -22,7 +22,7 @@ public class RootHeightScaleOperator extends TreeOperator {
         double hastingsRatio = -Math.log(scale);
         Node root = m_tree.get().getRoot();
         double fNewHeight = root.getHeight() * scale;
-        if (fNewHeight < Math.max(root.m_left.getHeight(), root.m_right.getHeight())) {
+        if (fNewHeight < Math.max(root.getLeft().getHeight(), root.getRight().getHeight())) {
         	return Double.NEGATIVE_INFINITY;
         }
         root.setHeight(fNewHeight);

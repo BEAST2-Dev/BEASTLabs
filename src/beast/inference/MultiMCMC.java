@@ -319,8 +319,8 @@ public class MultiMCMC extends MCMC {
 			clade = new int[1];
 			clade[0] = node.getNr();
 		} else {
-			int [] leftClade = traverse(node.m_left, sClades);
-			int [] rightClade = traverse(node.m_right, sClades);
+			int [] leftClade = traverse(node.getLeft(), sClades);
+			int [] rightClade = traverse(node.getRight(), sClades);
 			
 			// merge clade with rightClade
 			clade = new int[leftClade.length + rightClade.length];

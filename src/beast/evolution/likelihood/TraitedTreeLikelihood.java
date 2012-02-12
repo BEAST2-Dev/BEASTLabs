@@ -117,8 +117,8 @@ public class TraitedTreeLikelihood extends TreeLikelihood {
             m_likelihoodCore.setNodeStates(node.getNr(), states);
 
         } else {
-        	setTraitStates(node.m_left, patternCount);
-            setTraitStates(node.m_right, patternCount);
+        	setTraitStates(node.getLeft(), patternCount);
+            setTraitStates(node.getRight(), patternCount);
         }
     }
 	
@@ -146,8 +146,8 @@ public class TraitedTreeLikelihood extends TreeLikelihood {
             m_likelihoodCore.setNodePartials(node.getNr(), partials);
 
         } else {
-        	setTraitPartials(node.m_left, patternCount);
-        	setTraitPartials(node.m_right, patternCount);
+        	setTraitPartials(node.getLeft(), patternCount);
+        	setTraitPartials(node.getRight(), patternCount);
         }
     }
 	

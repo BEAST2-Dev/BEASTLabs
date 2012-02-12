@@ -56,8 +56,8 @@ public class InitParamFromTree extends beast.core.Plugin implements StateNodeIni
             }
         }		
 		if (!node.isLeaf()) {
-			traverse(node.m_left, fValues, sPattern);
-			traverse(node.m_right, fValues, sPattern);
+			traverse(node.getLeft(), fValues, sPattern);
+			traverse(node.getRight(), fValues, sPattern);
 		}
 	}
 

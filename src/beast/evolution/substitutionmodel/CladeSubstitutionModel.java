@@ -128,7 +128,7 @@ public class CladeSubstitutionModel extends SubstitutionModel.Base {
 			for (Integer i : set) {
 				Node node = nodes[i];
 				Node parent = node.getParent();
-				if (parent != null && isInClade[parent.m_left.getNr()] && isInClade[parent.m_right.getNr()]) {
+				if (parent != null && isInClade[parent.getLeft().getNr()] && isInClade[parent.getRight().getNr()]) {
 					iNextNode = i;
 					m_nodeToModelMap[parent.getNr()] = nModelNr;
 					break;
@@ -139,8 +139,8 @@ public class CladeSubstitutionModel extends SubstitutionModel.Base {
 				Node parent = nodes[iNextNode].getParent();
 				isInClade[parent.getNr()] = true;
 				set.add(parent.getNr());
-				set.remove(parent.m_left.getNr());
-				set.remove(parent.m_right.getNr());
+				set.remove(parent.getLeft().getNr());
+				set.remove(parent.getRight().getNr());
 			} else {
 				// no candidate found; this tree is not monophyletic
 				return;

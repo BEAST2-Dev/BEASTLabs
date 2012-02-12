@@ -37,8 +37,8 @@ public class TreeForPrevalenceLikelihood extends Distribution {
 	void addInfections(Node node, PrevalenceList list) {
 		if (!node.isLeaf()) {
 			list.add(node.getHeight(), PrevalenceList.Action.INFECTED, node.getNr());
-			addInfections(node.m_left, list);
-			addInfections(node.m_right, list);
+			addInfections(node.getLeft(), list);
+			addInfections(node.getRight(), list);
 		}
 	}
 
