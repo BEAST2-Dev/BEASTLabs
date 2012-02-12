@@ -125,8 +125,8 @@ public class RandomLocalYuleModel extends UltrametricSpeciationModel {
         birthRates[nodeNumber] = rate;
 
         if (!node.isLeaf()) {
-            calculateBirthRates(node.m_left, rate, indicators, rates);
-            calculateBirthRates(node.m_right, rate, indicators, rates);
+            calculateBirthRates(node.getLeft(), rate, indicators, rates);
+            calculateBirthRates(node.getRight(), rate, indicators, rates);
         }
 
     }

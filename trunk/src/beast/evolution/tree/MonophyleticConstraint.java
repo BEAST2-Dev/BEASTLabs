@@ -92,9 +92,9 @@ public class MonophyleticConstraint extends Distribution {
 			setNr[0] = m_leafConstraintNr[iNode];
 			return true;
 		} else {
-			boolean bIsMono = isMonoPhyletic(node.m_left, setNr, nDone);
+			boolean bIsMono = isMonoPhyletic(node.getLeft(), setNr, nDone);
 			int nSetLeft = setNr[0];
-			boolean bIsMono2 = isMonoPhyletic(node.m_right, setNr, nDone);
+			boolean bIsMono2 = isMonoPhyletic(node.getRight(), setNr, nDone);
 			int nSetRight = setNr[0];
 			if (nSetLeft == nSetRight) {
 				if (nSetLeft >= 0) {

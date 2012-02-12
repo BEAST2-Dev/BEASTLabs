@@ -142,8 +142,8 @@ public class AARSSubstitutionModel extends GeneralSubstitutionModel {
 		//m_fFreqs[0] = new double[m_nStates];
 		for (int v = 1; v < V.size(); v++) {
 			Node node = V.get(v);
-			int iStateLeft = m_nStateOfEpoch[node.m_left.getNr()];
-			int iStateRight = m_nStateOfEpoch[node.m_right.getNr()];
+			int iStateLeft = m_nStateOfEpoch[node.getLeft().getNr()];
+			int iStateRight = m_nStateOfEpoch[node.getRight().getNr()];
 			int i = Math.min(iStateLeft, iStateRight);
 			int j = Math.max(iStateLeft, iStateRight);
 
@@ -276,8 +276,8 @@ public class AARSSubstitutionModel extends GeneralSubstitutionModel {
 						exponentiate(m_eigenDecompositon[k], fP, t);
 						
 						// C. let i be the state of V [k] and let j be the state of its child that is different from	i.
-						int iStateLeft = m_nStateOfEpoch[v.m_left.getNr()];
-						int iStateRight = m_nStateOfEpoch[v.m_right.getNr()];
+						int iStateLeft = m_nStateOfEpoch[v.getLeft().getNr()];
+						int iStateRight = m_nStateOfEpoch[v.getRight().getNr()];
 						int i = Math.min(iStateLeft, iStateRight);
 						int j = Math.max(iStateLeft, iStateRight);
 						
@@ -513,8 +513,8 @@ public class AARSSubstitutionModel extends GeneralSubstitutionModel {
 		if (node.isLeaf()) {
 			m_nStateOfEpoch[node.getNr()] = (int) m_traits.get().getValue(node.getNr());
 		} else {
-			int iStateLeft = calcStates(node.m_left, V);
-			int iStateRight = calcStates(node.m_right, V);
+			int iStateLeft = calcStates(node.getLeft(), V);
+			int iStateRight = calcStates(node.getRight(), V);
 			m_nStateOfEpoch[node.getNr()] = Math.min(iStateLeft, iStateRight);
 			if (iStateLeft != iStateRight) {
 				V.add(node);
