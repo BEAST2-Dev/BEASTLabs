@@ -18,6 +18,7 @@ import java.util.List;
 @Description("A tree generated randomly from the structured coalescent process, with the given population sizes, migration rates and per-deme sample sizes.")
 public class StructuredCoalescentTree extends Tree {
 
+    // off-diagonal migration rates are in units of expected migrants per generation
     public Input<RealParameter> popSizesMigrationRates = new Input<RealParameter>("popSizesMigrationRates", "A matrix of migration rates and population sizes. Population sizes occupy the diagonal and migration rates occupy the off-diagonals");
     public Input<IntegerParameter> sampleSizes = new Input<IntegerParameter>("sampleSizes", "The sample sizes for each population");
 
@@ -138,7 +139,6 @@ public class StructuredCoalescentTree extends Tree {
 
         double U = Randomizer.nextDouble() * totalRate;
 
-        double cumulativeRate = 0.0;
         for (int i = 0; i < rates.length; i++) {
             for (int j = 0; j < rates.length; j++) {
                 if (U > rates[i][j]) {
@@ -153,6 +153,7 @@ public class StructuredCoalescentTree extends Tree {
                         event.type = EventType.migration;
                     }
 
+                    // I use below instead of "double V = Randomizer.nextDouble();" for speed
                     double V = U / rates[i][j];
 
                     event.time = time + (-Math.log(V) / totalRate);
@@ -170,12 +171,14 @@ public class StructuredCoalescentTree extends Tree {
 
         // coalescent rates
         for (int i = 0; i < rates.length; i++) {
+            double popSizei = popSizesMigrationRates.getMatrixValue(i, i);
             for (int j = 0; j < rates.length; j++) {
                 double popSizej = popSizesMigrationRates.getMatrixValue(j, j);
                 if (i == j) {
-                    rates[i][i] = Binomial.choose2(nodes.get(i).size()) / popSizej;
+                    rates[i][i] = Binomial.choose2(nodes.get(i).size()) / popSizei;
                 } else {
-                    rates[i][j] = popSizesMigrationRates.getMatrixValue(i, j) * popSizej * nodes.get(i).size();
+                    // off-diagonal migration rates are in units of expected migrants per generation (thus division by popSizei)
+                    rates[i][j] = nodes.get(i).size() * (popSizesMigrationRates.getMatrixValue(i, j) * popSizej) / popSizei;
                 }
                 totalRate += rates[i][j];
             }
