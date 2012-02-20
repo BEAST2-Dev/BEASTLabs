@@ -100,6 +100,7 @@
 				<include name="beagle/**/*.class" />
 				<include name="org/**/*.class" />
 			</fileset>
+			<zipgroupfileset dir="${beast2path}/lib" includes="jam.jar" />
 			<!--zipgroupfileset dir="${lib}" includes="commons-math-II.0.jar" /-->
 		</jar>
 		<jar jarfile="${distii}/BEASTii.src.jar">
