@@ -36,6 +36,7 @@ import beast.core.State;
 import beast.core.Input.Validate;
 import beast.evolution.alignment.Alignment;
 import beast.evolution.alignment.AscertainedAlignment;
+import beast.evolution.alignment.FilteredAlignment;
 import beast.evolution.branchratemodel.BranchRateModel;
 import beast.evolution.branchratemodel.StrictClockModel;
 import beast.evolution.sitemodel.SiteModel;
@@ -67,7 +68,7 @@ public class ThreadedTreeLikelihood extends Distribution {
 
     /** calculation engine **/
     ThreadedLikelihoodCore m_likelihoodCore;
-    BeagleTreeLikelihood m_beagle;
+    BeagleTreeLikelihood [] m_beagle;
     
     /** Plugin associated with inputs. Since none of the inputs are StateNodes, it
      * is safe to link to them only once, during initAndValidate.
@@ -127,13 +128,24 @@ public class ThreadedTreeLikelihood extends Distribution {
     	if (m_data.get().getNrTaxa() != m_tree.get().getLeafNodeCount()) {
     		throw new Exception("The number of nodes in the tree does not match the number of sequences");
     	}
-//    	m_beagle = null;
-//    	m_beagle = new BeagleTreeLikelihood();
-//    	m_beagle.initByName("data", m_data.get(), "tree", m_tree.get(), "siteModel", m_pSiteModel.get(), "branchRateModel", m_pBranchRateModel.get(), "useAmbiguities", m_useAmbiguities.get());
-//    	if (m_beagle.beagle != null) {
-//    		//a Beagle instance was found, so we use it
-//    		return;
-//    	}
+    	
+    	m_beagle = new BeagleTreeLikelihood[m_nThreads];
+    	if (m_nThreads == 1) {
+    		m_beagle[0] = new BeagleTreeLikelihood();
+    		m_beagle[0].initByName("data", m_data.get(), "tree", m_tree.get(), "siteModel", m_pSiteModel.get(), "branchRateModel", m_pBranchRateModel.get(), "useAmbiguities", m_useAmbiguities.get());
+    	} else {
+        	for (int i = 0; i < m_nThreads; i++) {
+        		m_beagle[i] = new BeagleTreeLikelihood();
+        		FilteredAlignment filter = new FilteredAlignment();
+        		filter.initByName("data", m_data.get(), "userDataType", m_data.get().getDataType(), "filter", (i+1)+"::"+m_nThreads);
+        		m_beagle[i].initByName("data", filter, "tree", m_tree.get(), "siteModel", m_pSiteModel.get(), "branchRateModel", m_pBranchRateModel.get(), "useAmbiguities", m_useAmbiguities.get());
+        	}
+    	}
+
+    	if (m_beagle[0].beagle != null) {
+    		//a Beagle instance was found, so we use it
+    		return;
+    	}
 //		// No Beagle instance was found, so we use the good old java likelihood core
     	m_beagle = null;
     	
@@ -297,7 +309,7 @@ public class ThreadedTreeLikelihood extends Distribution {
     @Override
     public double calculateLogP() throws Exception {
     	if (m_beagle != null) {
-    		logP =  m_beagle.calculateLogP();
+    		logP =  calculateLogPByBeagle();
     		return logP;
     	}
         Tree tree = m_tree.get();
@@ -343,7 +355,9 @@ public class ThreadedTreeLikelihood extends Distribution {
         return logP;
     }
 
-    private void calcLogP() throws Exception {
+
+
+	private void calcLogP() throws Exception {
         logP = 0.0;
         if (m_bAscertainedSitePatterns) {
         	m_fPatternLogLikelihoods = m_likelihoodCore.getPatternLogLikelihoods();
@@ -515,6 +529,54 @@ public class ThreadedTreeLikelihood extends Distribution {
 			threadedTraverse(root);
 		}
     }
+	
+	
+	
+	
+	class BeagleCoreRunnable implements Runnable {
+		int m_iThread;
+		BeagleTreeLikelihood beagle;
+		
+		BeagleCoreRunnable(int iThread, BeagleTreeLikelihood beagle) {
+			    m_iThread = iThread;
+			    this.beagle = beagle;
+		}
+
+        public void run() {
+  		  	try {
+	            logPByThread[m_iThread] = beagle.calculateLogP();
+  		  	} catch (Exception e) {
+  		  		System.err.println("Something went wrong ith thread " + m_iThread);
+				e.printStackTrace();
+				System.exit(0);
+			}
+  		    m_nCountDown.countDown();
+        }
+
+	} // CoreRunnable
+	
+    private double calculateLogPByBeagle() throws Exception {
+		try {
+			if (m_nThreads >= 1) {
+				m_nCountDown = new CountDownLatch(m_nThreads);
+		    	for (int iThread = 0; iThread < m_nThreads; iThread++) {
+		    		BeagleCoreRunnable coreRunnable = new BeagleCoreRunnable(iThread, m_beagle[iThread]);
+					BeastMCMC.g_exec.execute(coreRunnable);
+		    	}
+				m_nCountDown.await();
+		    	logP = 0;
+		    	for (double f : logPByThread) {
+		    		logP += f;
+		    	}
+			} else {
+				logP = m_beagle[0].calculateLogP();
+			}
+		} catch (RejectedExecutionException e) {
+			e.printStackTrace();
+			System.exit(0);
+		}
+		return logP;
+	}
     
 	
     /* Assumes there IS a branch rate model as opposed to traverse() */
@@ -655,7 +717,11 @@ public class ThreadedTreeLikelihood extends Distribution {
     @Override
     protected boolean requiresRecalculation() {
     	if (m_beagle != null) {
-    		return m_beagle.requiresRecalculation();
+    		boolean requiresRecalculation = false;
+    		for (BeagleTreeLikelihood b : m_beagle) {
+    			requiresRecalculation |= b.requiresRecalculation();
+    		}
+    		return requiresRecalculation;
     	}
         m_nHasDirt = Tree.IS_CLEAN;
 
@@ -677,7 +743,9 @@ public class ThreadedTreeLikelihood extends Distribution {
     @Override
     public void store() {
     	if (m_beagle != null) {
-    		m_beagle.store();
+    		for (BeagleTreeLikelihood b : m_beagle) {
+    			b.store();
+    		}
     		return;
     	}
     	if (m_likelihoodCore != null) {
@@ -690,7 +758,9 @@ public class ThreadedTreeLikelihood extends Distribution {
     @Override
     public void restore() {
     	if (m_beagle != null) {
-    		m_beagle.restore();
+    		for (BeagleTreeLikelihood b : m_beagle) {
+    			b.restore();
+    		}
     		return;
     	}
     	if (m_likelihoodCore != null) {

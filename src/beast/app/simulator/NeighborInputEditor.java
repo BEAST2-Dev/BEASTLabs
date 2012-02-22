@@ -1,5 +1,6 @@
 package beast.app.simulator;
 
+import java.awt.Component;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,6 +14,10 @@ import beast.core.Input;
 import beast.core.Plugin;
 
 public class NeighborInputEditor extends ListInputEditor {
+	public NeighborInputEditor(BeautiDoc doc) {
+		super(doc);
+	}
+
 	private static final long serialVersionUID = 1L;
 
 	@Override
@@ -26,10 +31,10 @@ public class NeighborInputEditor extends ListInputEditor {
     	try {
     		InputEditor inputEditor = PluginPanel.createInputEditor(neighbor.m_neighborsInput, plugin, true, ExpandOption.FALSE, ButtonStatus.ALL, this, doc);
     		inputEditor.addValidationListener(this);
-			itemBox.add(inputEditor);
+			itemBox.add((Component) inputEditor);
 
 			inputEditor = PluginPanel.createInputEditor(neighbor.m_migrationRateInput, plugin, true, ExpandOption.FALSE, ButtonStatus.ALL, this, doc);
-			itemBox.add(inputEditor);
+			itemBox.add((Component) inputEditor);
     		inputEditor.addValidationListener(this);
 
 			itemBox.add(Box.createVerticalGlue());
