@@ -16,6 +16,7 @@ import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
 import javax.swing.tree.*;
 
+import beast.app.beauti.BeautiDoc;
 import beast.core.Input;
 import beast.core.Plugin;
 import beast.evolution.alignment.Alignment;
@@ -23,6 +24,10 @@ import beast.evolution.alignment.Taxon;
 import beast.evolution.alignment.TaxonSet;
 
 public class TaxonSetInputEditor extends ListInputEditor implements TreeModelListener {
+	public TaxonSetInputEditor(BeautiDoc doc) {
+		super(doc);
+	}
+
 	private static final long serialVersionUID = 1L;
 	List<TaxonSet> m_taxonset;
 	Map<String,Taxon> m_taxonMap;
