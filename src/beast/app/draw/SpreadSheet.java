@@ -21,6 +21,7 @@ import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
@@ -755,77 +756,77 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 
 
 	/** file menu actions **/
-	Action a_new = new MyAction("New", "New spreadsheet file", "new", "ctrl N") {
+	Action a_new = new MyAction("New", "New spreadsheet file", "new", KeyEvent.VK_N) {
 		public void actionPerformed(ActionEvent ae) {
 			newSpreadsheet();
 		}
 	};
-	Action a_open = new MyAction("Open", "Open spreadsheet file or Import beast xml specification", "open", "ctrl O") {
+	Action a_open = new MyAction("Open", "Open spreadsheet file or Import beast xml specification", "open", KeyEvent.VK_O) {
 		public void actionPerformed(ActionEvent ae) {
 			openSpreadsheet();
 		}
 	};
-	Action a_save = new MyAction("Save", "Save spreadsheet file", "save", "ctrl S") {
+	Action a_save = new MyAction("Save", "Save spreadsheet file", "save", KeyEvent.VK_S) {
 		public void actionPerformed(ActionEvent ae) {
 			saveSpreadsheet();
 		}
 	};
-	Action a_saveas = new MyAction("Save As", "Save spreadsheet file under new name", "saveas", "") {
+	Action a_saveas = new MyAction("Save As", "Save spreadsheet file under new name", "saveas", -1) {
 		public void actionPerformed(ActionEvent ae) {
 			saveSpreadsheetAs();
 		}
 	};
-	Action a_export = new MyAction("Export", "Export beast xml specification", "export", "") {
+	Action a_export = new MyAction("Export", "Export beast xml specification", "export", -1) {
 		public void actionPerformed(ActionEvent ae) {
 			exportBeast();
 		}
 	};
-	Action a_exit = new MyAction("Exit", "Exit program", "exit", "ctrl Q") {
+	Action a_exit = new MyAction("Exit", "Exit program", "exit", KeyEvent.VK_Q) {
 		public void actionPerformed(ActionEvent ae) {
 			System.exit(0);
 		}
 	};
 
 	/** edit menu actions **/
-	Action a_cut = new MyAction("Cut", "Cut", "cut", "ctrl X") {
+	Action a_cut = new MyAction("Cut", "Cut", "cut", KeyEvent.VK_X) {
 		public void actionPerformed(ActionEvent ae) {
 			copy();
 			delete();
 		}
 	};
-	Action a_copy = new MyAction("Copy", "Copy", "copy", "ctrl C") {
+	Action a_copy = new MyAction("Copy", "Copy", "copy", KeyEvent.VK_C) {
 		public void actionPerformed(ActionEvent ae) {
 			copy();
 		}
 	};
-	Action a_del = new MyAction("Delete", "Delete", "del", "del") {
+	Action a_del = new MyAction("Delete", "Delete", "del", KeyEvent.VK_DELETE) {
 		public void actionPerformed(ActionEvent ae) {
 			delete();
 		}
 	};
-	Action a_paste = new MyAction("Paste", "Paste", "paste", "ctrl V") {
+	Action a_paste = new MyAction("Paste", "Paste", "paste", KeyEvent.VK_V) {
 		public void actionPerformed(ActionEvent ae) {
 			paste();
 		}
 	};
-	Action a_undo = new MyAction("Undo", "Undo", "undo", "ctrl Z") {
+	Action a_undo = new MyAction("Undo", "Undo", "undo", KeyEvent.VK_Z) {
 		public void actionPerformed(ActionEvent ae) {
 			undo();
 		}
 	};
-	Action a_redo = new MyAction("Redo", "Redo", "redo", "ctrl Y") {
+	Action a_redo = new MyAction("Redo", "Redo", "redo", KeyEvent.VK_Y) {
 		public void actionPerformed(ActionEvent ae) {
 			redo();
 		}
 	};
 	/** window actions **/
-    Action a_viewtoolbar = new MyAction("View toolbar", "View toolbar", "toolbar", "") {
+    Action a_viewtoolbar = new MyAction("View toolbar", "View toolbar", "toolbar", -1) {
         public void actionPerformed(ActionEvent ae) {
         	m_toolBar.setVisible(!m_toolBar.isVisible());
         }
     };
 	/** help actions **/
-    Action a_about = new MyAction("About", "Help about", "about", "") {
+    Action a_about = new MyAction("About", "Help about", "about", -1) {
         public void actionPerformed(ActionEvent ae) {
             JOptionPane.showMessageDialog(null, "Beast II Spreadsheet\nRemco Bouckaert\nrrb@xm.co.nz\n2010\nGPL licence", "About Message", JOptionPane.PLAIN_MESSAGE);
         }
@@ -1198,12 +1199,12 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 		toolBar.add(a_undo);
 		toolBar.add(a_redo);
 		toolBar.addSeparator();
-		toolBar.add(new MyAction("Background", "Background color", "color", "") {
+		toolBar.add(new MyAction("Background", "Background color", "color", -1) {
 			public void actionPerformed(ActionEvent ae) {
 				setColor(true);
 	        }
 		});
-		toolBar.add(new MyAction("Color", "Text color", "tcolor", "") {
+		toolBar.add(new MyAction("Color", "Text color", "tcolor", -1) {
 
 
 			public void actionPerformed(ActionEvent ae) {
@@ -1211,28 +1212,28 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 	        }
 		});
 		toolBar.addSeparator();
-		toolBar.add(new MyAction("Bold", "Toggle boldness of text", "bold", "") {
+		toolBar.add(new MyAction("Bold", "Toggle boldness of text", "bold", -1) {
 
 
 			public void actionPerformed(ActionEvent ae) {
 	        	toggleFontProperty(null,Font.BOLD,0);
 	        }
 		});
-		toolBar.add(new MyAction("Italic", "Toggle italicness of text", "italic", "") {
+		toolBar.add(new MyAction("Italic", "Toggle italicness of text", "italic", -1) {
 
 
 			public void actionPerformed(ActionEvent ae) {
 	        	toggleFontProperty(null,Font.ITALIC,0);
 	        }
 		});
-		toolBar.add(new MyAction("Bigger", "Increase size of font", "bigger", "") {
+		toolBar.add(new MyAction("Bigger", "Increase size of font", "bigger", -1) {
 
 
 			public void actionPerformed(ActionEvent ae) {
 	        	toggleFontProperty(null, -1, 1);
 	        }
 		});
-		toolBar.add(new MyAction("Smaller", "Decrease size of font", "smaller", "") {
+		toolBar.add(new MyAction("Smaller", "Decrease size of font", "smaller", -1) {
 
 
 			public void actionPerformed(ActionEvent ae) {
@@ -1251,21 +1252,21 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 		combo.setMaximumSize(new Dimension(350, 20));
 
 		toolBar.addSeparator();
-		toolBar.add(new MyAction("Left", "Align left", "left", "") {
+		toolBar.add(new MyAction("Left", "Align left", "left", -1) {
 
 
 			public void actionPerformed(ActionEvent ae) {
 	        	setAlignemnt(SwingConstants.LEFT);
 	        }
 		});
-		toolBar.add(new MyAction("Right", "Align right", "right", "") {
+		toolBar.add(new MyAction("Right", "Align right", "right", -1) {
 
 
 			public void actionPerformed(ActionEvent ae) {
 	        	setAlignemnt(SwingConstants.RIGHT);
 	        }
 		});
-		toolBar.add(new MyAction("Center", "Align center", "center", "") {
+		toolBar.add(new MyAction("Center", "Align center", "center", -1) {
 
 
 			public void actionPerformed(ActionEvent ae) {
