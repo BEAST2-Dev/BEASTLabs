@@ -19,7 +19,7 @@ import java.io.PrintStream;
 public class ParameterConstrainer extends CalculationNode implements Loggable {
 
     public Input<Tree> m_tree =
-            new Input<Tree>("tree", "the phylogenetic tree", Input.Validate.REQUIRED);
+            new Input<Tree>("tree", "The phylogenetic tree to provide treeheight", Input.Validate.REQUIRED);
     public Input<RealParameter> orig_root =
             new Input<RealParameter>("orig_root", "The origin of infection x0", Input.Validate.REQUIRED);
 
