@@ -3,6 +3,7 @@ package beast.core.util;
 import beast.core.Input;
 import beast.core.CalculationNode;
 import beast.core.Loggable;
+import beast.core.Description;
 import beast.core.parameter.RealParameter;
 import beast.evolution.tree.Tree;
 
@@ -13,6 +14,8 @@ import java.io.PrintStream;
  *         Date: Sep 14, 2011
  *         Time: 3:54:16 PM
  */
+
+@Description("Class that filters a parameter that needs to be constrained to 0 for some of it's values, determined by startTime and endTime")
 public class ParameterConstrainer extends CalculationNode implements Loggable {
 
     public Input<Tree> m_tree =
