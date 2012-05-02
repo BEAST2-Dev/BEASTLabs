@@ -47,7 +47,8 @@ public class TaxonSetInputEditor extends ListInputEditor implements TreeModelLis
 	}
 
 	@Override
-	public void init(Input<?> input, Plugin plugin, ExpandOption bExpand, boolean bAddButtons) {
+	public void init(Input<?> input, Plugin plugin, int itemNr, ExpandOption bExpand, boolean bAddButtons) {
+		this.itemNr = itemNr;
 		List<TaxonSet> taxonset = (List<TaxonSet>) input.get();
 		add(getContent(taxonset));
 	}
