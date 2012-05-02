@@ -65,6 +65,8 @@ public class ThreadedTreeLikelihood extends Distribution {
     public Input<BranchRateModel.Base> m_pBranchRateModel = new Input<BranchRateModel.Base>("branchRateModel",
             "A model describing the rates on the branches of the beast.tree.");
     public Input<Boolean> m_useAmbiguities = new Input<Boolean>("useAmbiguities", "flag to indicate leafs that sites containing ambigue states should be handled instead of ignored (the default)", false);
+    
+    public Input<Integer> maxNrOfThreads = new Input<Integer>("threads","maximum number of threads to use, if less than 1 the number of threads in BeastMCMC is used (default -1)", -1);
 
     /** calculation engine **/
     ThreadedLikelihoodCore m_likelihoodCore;
@@ -122,6 +124,9 @@ public class ThreadedTreeLikelihood extends Distribution {
     @Override
     public void initAndValidate() throws Exception {
 		m_nThreads = BeastMCMC.m_nThreads;
+		if (maxNrOfThreads.get() > 0) {
+			m_nThreads = Math.min(maxNrOfThreads.get(), BeastMCMC.m_nThreads);
+		}
 		logPByThread = new double[m_nThreads];
 
     	// sanity check: alignment should have same #taxa as tree
@@ -263,8 +268,9 @@ public class ThreadedTreeLikelihood extends Distribution {
         if (node.isLeaf()) {
             int i;
             int[] states = new int[patternCount];
+            int iTaxon = m_data.get().getTaxonIndex(node.getID());
             for (i = 0; i < patternCount; i++) {
-                states[i] = m_data.get().getPattern(node.getNr(), i);
+                states[i] = m_data.get().getPattern(iTaxon, i);
             }
         	m_likelihoodCore.setNodeStates(node.getNr(), states);
         } else {
@@ -281,8 +287,9 @@ public class ThreadedTreeLikelihood extends Distribution {
             double[] partials = new double[patternCount * nStates];
 
             int k = 0;
+            int iTaxon = m_data.get().getTaxonIndex(node.getID());
             for (int iPattern = 0; iPattern < patternCount; iPattern++) {
-            	int nState = data.getPattern(node.getNr(), iPattern);
+            	int nState = data.getPattern(iTaxon, iPattern);
             	boolean [] stateSet = data.getStateSet(nState);
         		for (int iState = 0; iState < nStates; iState++) {
         			partials[k++] = (stateSet[iState] ? 1.0 : 0.0);
