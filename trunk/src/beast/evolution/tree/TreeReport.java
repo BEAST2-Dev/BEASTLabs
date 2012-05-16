@@ -16,6 +16,7 @@
  */
 package beast.evolution.tree;
 
+import beast.core.Description;
 import beast.core.Input;
 import beast.core.Logger;
 import beast.core.Plugin;
@@ -30,6 +31,8 @@ import java.util.List;
  *
  * @author Tim Vaughan
  */
+@Description("Modified logger which analyses a list of tree states generated"
+		+ "by an MCMC run.")
 public class TreeReport extends Logger {
 
 	public Input<Integer> burninInput = new Input<Integer>("burnin",
