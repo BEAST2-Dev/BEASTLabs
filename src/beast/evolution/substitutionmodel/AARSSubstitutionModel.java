@@ -554,5 +554,9 @@ public class AARSSubstitutionModel extends GeneralSubstitutionModel {
 		//super.restore();
 	}
 	
+	public double [] getFrequencies(Node node) {
+		int i = m_nStateOfEpoch[node.getNr()];
+		return m_fFreqs[i];
+	}
 	
 } // class AARSSubstitutionModel
