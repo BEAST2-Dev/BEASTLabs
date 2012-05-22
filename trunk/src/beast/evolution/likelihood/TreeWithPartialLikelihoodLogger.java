@@ -58,7 +58,9 @@ public class TreeWithPartialLikelihoodLogger extends Plugin implements Loggable 
 
 	@Override
 	public void log(int nSample, PrintStream out) {
+        out.print("tree STATE_" + nSample + " = ");
 		out.append(toNewick(tree.getRoot()));
+        out.print(";");
 	}
 
 	String toNewick(Node node) {
