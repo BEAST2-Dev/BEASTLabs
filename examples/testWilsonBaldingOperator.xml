@@ -35,7 +35,7 @@
 			<tree idref='tree'/>
 		</operator>
 
-		<logger spec='TreeReport' logEvery='100' burnin='1000'>
+		<logger spec='TreeReport' logEvery='100' burninPercentage='10.0'>
 			<log idref='tree'/>
 		</logger>
 	    </run>

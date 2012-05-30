@@ -35,8 +35,8 @@ import java.util.List;
 		+ "by an MCMC run.")
 public class TreeReport extends Logger {
 
-	public Input<Integer> burninInput = new Input<Integer>("burnin",
-			"Number of samples to skip (burn in)");
+	public Input<Double> burninPercentageInput = new Input<Double>("burninPercentage",
+			"PERCENTAGE of samples to skip (burn in)");
 
 	public Input<Double> credibleSetProbInput = new Input<Double>(
 			"credibleSetProb",
@@ -51,7 +51,7 @@ public class TreeReport extends Logger {
 	List<Tree> treeTrace;
 
 	int m_nEvery = 1;
-	int burnin = 0;
+	double burninPercentage = 10.0;
 	double credibleSetProb = 0.95;
 	boolean silent = false;
 
@@ -69,8 +69,8 @@ public class TreeReport extends Logger {
 		if (m_pEvery.get() != null)
 			m_nEvery = m_pEvery.get();
 
-		if (burninInput.get() != null)
-			burnin = burninInput.get();
+		if (burninPercentageInput.get() != null)
+			burninPercentage = burninPercentageInput.get();
 
 		if (credibleSetProbInput.get() != null)
 			credibleSetProb = credibleSetProbInput.get();
@@ -99,7 +99,7 @@ public class TreeReport extends Logger {
 	public void close() {
 
 		traceAnalysis = new TreeTraceAnalysis(treeTrace,
-				burnin, credibleSetProb);
+				burninPercentage, credibleSetProb);
 
 		if (!silent) {
 			System.out.println("\n----- Tree trace analysis -----------------------");
