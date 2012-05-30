@@ -47,7 +47,7 @@ public class TreeTraceAnalysis {
 
 	private int credibleSetTotalFreq;
 
-	public TreeTraceAnalysis(List<Tree> rawTreeList, double burninFraction,
+	public TreeTraceAnalysis(List<Tree> rawTreeList, double burninPercentage,
 			double credSetProbability) {
 
 		// Remove burnin from trace:
@@ -60,7 +60,7 @@ public class TreeTraceAnalysis {
 		}
 
 		// Record original list length and burnin for report:
-		this.burnin = (int)(rawTreeList.size()*burninFraction);
+		this.burnin = (int)(rawTreeList.size()*burninPercentage/100.0);
 		this.totalTrees = rawTreeList.size();
 		this.totalTreesUsed = this.totalTrees-this.burnin;
 
