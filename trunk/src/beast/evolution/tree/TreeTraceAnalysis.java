@@ -18,7 +18,9 @@ package beast.evolution.tree;
 
 import beast.evolution.tree.Node;
 import beast.evolution.tree.Tree;
-import java.io.OutputStream;
+import beast.util.NexusParser;
+
+import java.io.File;
 import java.io.PrintStream;
 import java.util.*;
 
@@ -48,7 +50,9 @@ public class TreeTraceAnalysis {
 	private int credibleSetTotalFreq;
 
 	public TreeTraceAnalysis(List<Tree> rawTreeList, double burninPercentage,
-			double credSetProbability) {
+			double credSetPercentage) {
+		// Record original list length and burnin for report:
+		this.burnin = (int)(rawTreeList.size()*burninPercentage/100.0);
 
 		// Remove burnin from trace:
 		treeList = new ArrayList<Tree>();
@@ -59,16 +63,14 @@ public class TreeTraceAnalysis {
 			treeList.add(rawTreeList.get(i));
 		}
 
-		// Record original list length and burnin for report:
-		this.burnin = (int)(rawTreeList.size()*burninPercentage/100.0);
 		this.totalTrees = rawTreeList.size();
 		this.totalTreesUsed = this.totalTrees-this.burnin;
 
 		// Assemble credible set:
-		this.credSetProbability = credSetProbability;
-		analyzeTopologies();
+		this.credSetProbability = credSetPercentage / 100.0;
+		analyzeTopologies();		
 	}
-
+	
 	/**
 	 * Generate report summarising analysis.
 	 * 
@@ -80,7 +82,7 @@ public class TreeTraceAnalysis {
 		oStream.println("total trees used (total - burnin) = "
 				+ String.valueOf(totalTreesUsed));
 
-		oStream.print("\n" + String.valueOf(100*credSetProbability)
+		oStream.print("\n" + String.valueOf(credSetProbability)
 				+ "% credible set");
 
 		oStream.println(" (" + String.valueOf(credibleSet.size())
@@ -133,12 +135,11 @@ public class TreeTraceAnalysis {
 		credibleSetFreqs = new ArrayList<Integer>();
 
 		for (String topo : topologiesSorted) {
-			credibleSet.add(topo);
-			credibleSetFreqs.add(topologyCounts.get(topo));
-
 			credibleSetTotalFreq += topologyCounts.get(topo);
 			if (credibleSetTotalFreq>credSetProbability*totalFreq)
 				break;
+			credibleSet.add(topo);
+			credibleSetFreqs.add(topologyCounts.get(topo));
 		}
 	}
 
@@ -204,4 +205,14 @@ public class TreeTraceAnalysis {
 		return topologyCounts;
 	}
 
+	public static void main(String[] args) {
+		try {
+			NexusParser parser = new NexusParser();
+			parser.parseFile(new File(args[0]));
+			TreeTraceAnalysis analysis = new TreeTraceAnalysis(parser.m_trees, 0.10, 0.95);
+			analysis.report(System.out);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 }
