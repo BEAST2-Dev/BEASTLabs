@@ -142,7 +142,7 @@ public class ThreadedTreeLikelihood extends Distribution {
         	for (int i = 0; i < m_nThreads; i++) {
         		m_beagle[i] = new BeagleTreeLikelihood();
         		FilteredAlignment filter = new FilteredAlignment();
-        		filter.initByName("data", m_data.get(), "userDataType", m_data.get().getDataType(), "filter", (i+1)+"::"+m_nThreads);
+        		filter.initByName("data", m_data.get()/*, "userDataType", m_data.get().getDataType()*/, "filter", (i+1)+"::"+m_nThreads);
         		m_beagle[i].initByName("data", filter, "tree", m_tree.get(), "siteModel", m_pSiteModel.get(), "branchRateModel", m_pBranchRateModel.get(), "useAmbiguities", m_useAmbiguities.get());
         	}
     	}

@@ -158,15 +158,17 @@ public class TreeTraceAnalysis {
 			StringBuilder builder = new StringBuilder("(");
 
 			List<String> subTrees = new ArrayList<String>();
-			for (int i=0; i<node.getChildCount(); i++)
+			for (int i=0; i<node.getChildCount(); i++) {
 				subTrees.add(uniqueNewick(node.getChild(i)));
+			}
 
 			Collections.sort(subTrees);
 
 			for (int i=0; i<subTrees.size(); i++) {
 				builder.append(subTrees.get(i));
-				if (i<subTrees.size()-1)
+				if (i<subTrees.size()-1) {
 					builder.append(",");
+				}
 			}
 			builder.append(")");
 

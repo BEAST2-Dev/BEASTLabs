@@ -8,9 +8,9 @@
 	</description>
 
 	<!-- set global properties for this build -->
-	<property name="srcii" location="src" />
-	<property name="buildii" location="build" />
-	<property name="libii" location="lib" />
+	<property name="srcii" location="../beastii/src" />
+	<property name="buildii" location="../beastii/build" />
+	<property name="libii" location="../beastii/lib" />
 	<property name="release_dir" value="release" />
 	<property name="distii" location="${buildii}/dist" />
 	<property name="beast2path" location="../beast2" />
