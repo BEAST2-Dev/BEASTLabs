@@ -39,7 +39,7 @@ public class TreeReport extends Logger {
 			"PERCENTAGE of samples to skip (burn in)");
 
 	public Input<Double> credibleSetPercentageInput = new Input<Double>(
-			"credibleSetProb",
+			"credibleSetPercentage",
 			"Probability cutoff defining credible set of tree topologies.",
 			95.0
 			);
