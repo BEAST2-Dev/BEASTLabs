@@ -51,6 +51,7 @@ public class TreeTraceAnalysis {
 
 	public TreeTraceAnalysis(List<Tree> rawTreeList, double burninPercentage,
 			double credSetPercentage) {
+
 		// Record original list length and burnin for report:
 		this.burnin = (int)(rawTreeList.size()*burninPercentage/100.0);
 

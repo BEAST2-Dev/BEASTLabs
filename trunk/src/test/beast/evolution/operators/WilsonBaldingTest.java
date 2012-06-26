@@ -30,6 +30,7 @@ import beast.evolution.tree.coalescent.Coalescent;
 import beast.evolution.tree.coalescent.ConstantPopulation;
 import beast.evolution.tree.coalescent.TreeIntervals;
 import beast.evolution.tree.TreeTraceAnalysis;
+import beast.util.Randomizer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -67,21 +68,21 @@ public class WilsonBaldingTest {
 		// Relative frequencies with which each of the topologies should
 		// occur in trace.
 		double [] probs = {
-			0.133,
-			0.133,
-			0.133,
-			0.067,
-			0.067,
-			0.067,
-			0.067,
-			0.067,
-			0.067,
-			0.067,
-			0.067,
-			0.067,
-			0.067,
-			0.067,
-			0.067
+			1./9,
+			1./9,
+			1./9,
+			1./18,
+			1./18,
+			1./18,
+			1./18,
+			1./18,
+			1./18,
+			1./18,
+			1./18,
+			1./18,
+			1./18,
+			1./18,
+			1./18,
 		};
 
 	/**
@@ -98,6 +99,10 @@ public class WilsonBaldingTest {
 	 */
 	@Test
 	public void topologyDistribution() throws Exception {
+
+		// Fix seed: will hopefully ensure success of test unless something
+		// goes terribly wrong.
+		Randomizer.setSeed(42);
 
 		// Assemble model:
 		
@@ -162,21 +167,24 @@ public class WilsonBaldingTest {
 		int totalTreesUsed = analysis.getTotalTreesUsed();
 
 		// Test topology distribution against ideal:
+
+		double tol = 0.005;
+
 		for (int i=0; i<topologies.length; i++) {
 			double thisProb = topologyCounts.get(topologies[i])
 					/(double)totalTreesUsed;
-			boolean withinTol = (thisProb > probs[i]-0.03
-					&& thisProb < probs[i]+0.03);
+			boolean withinTol = (thisProb > probs[i]-tol
+					&& thisProb < probs[i]+tol);
 
 			Assert.assertTrue(withinTol);
 
 			System.err.format("Topology %s rel. freq. %.3f",
 					topologies[i], thisProb);
 			if (withinTol)
-				System.err.println(" (Within tolerance 0.03 of "
+				System.err.println(" (Within tolerance " + tol + " of "
 						+ String.valueOf(probs[i]) + ")");
 			else
-				System.err.println(" (FAILURE: outside tolerance 0.03 of "
+				System.err.println(" (FAILURE: outside tolerance " + tol + " of "
 						+ String.valueOf(probs[i]) + ")");
 		}
 
