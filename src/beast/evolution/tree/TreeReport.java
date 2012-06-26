@@ -38,10 +38,10 @@ public class TreeReport extends Logger {
 	public Input<Double> burninPercentageInput = new Input<Double>("burninPercentage",
 			"PERCENTAGE of samples to skip (burn in)");
 
-	public Input<Double> credibleSetProbInput = new Input<Double>(
+	public Input<Double> credibleSetPercentageInput = new Input<Double>(
 			"credibleSetProb",
 			"Probability cutoff defining credible set of tree topologies.",
-			0.95
+			95.0
 			);
 
 	public Input<Boolean> silentInput = new Input<Boolean>("silent",
@@ -52,7 +52,7 @@ public class TreeReport extends Logger {
 
 	int m_nEvery = 1;
 	double burninPercentage = 10.0;
-	double credibleSetProb = 0.95;
+	double credibleSetPercentage = 95.0;
 	boolean silent = false;
 
 	TreeTraceAnalysis traceAnalysis;
@@ -72,8 +72,8 @@ public class TreeReport extends Logger {
 		if (burninPercentageInput.get() != null)
 			burninPercentage = burninPercentageInput.get();
 
-		if (credibleSetProbInput.get() != null)
-			credibleSetProb = credibleSetProbInput.get();
+		if (credibleSetPercentageInput.get() != null)
+			credibleSetPercentage = credibleSetPercentageInput.get();
 
 		if (silentInput.get() != null)
 			silent = silentInput.get();
@@ -99,7 +99,7 @@ public class TreeReport extends Logger {
 	public void close() {
 
 		traceAnalysis = new TreeTraceAnalysis(treeTrace,
-				burninPercentage, credibleSetProb);
+				burninPercentage, credibleSetPercentage);
 
 		if (!silent) {
 			System.out.println("\n----- Tree trace analysis -----------------------");
