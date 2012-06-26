@@ -143,7 +143,7 @@ public class WilsonBaldingTest {
 		treeReport.initByName(
 				"logEvery", "100",
 				"burninPercentage", "10.0",
-				"credibleSetProb", "0.95",
+				"credibleSetPercentage", "95.0",
 				"log", tree,
 				"silent", true
 				);
