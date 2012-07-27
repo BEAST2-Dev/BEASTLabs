@@ -43,6 +43,10 @@ public class SimulatedAnnealing extends MCMC implements Loggable {
 			
         for (int iSample = -nBurnIn; iSample <= nChainLength; iSample++) {
             state.store(iSample);
+            if (m_nStoreEvery > 0 && iSample % m_nStoreEvery == 0 && iSample > 0) {
+                state.storeToFile(iSample);
+            	operatorSchedule.storeToFile();
+            }
 
             Operator operator = operatorSchedule.selectOperator();
             //System.out.print("\n" + iSample + " " + operator.getName()+ ":");
