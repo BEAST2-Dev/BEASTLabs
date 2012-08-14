@@ -18,10 +18,8 @@ import java.util.Arrays;
 @Description("Class to constrain a multi-dimensional parameter to have a certain value (like 0) at a certain time range")
 public class ParameterConstrainer extends CalculationNode implements Loggable {
 
-//    public Input<RealParameter> par =
-//            new Input<RealParameter>("parameter", "the parameter to be contstrained", Input.Validate.REQUIRED);
     public Input<Tree> m_tree =
-            new Input<Tree>("tree", "the phylogenetic tree", Input.Validate.REQUIRED);
+            new Input<Tree>("tree", "the phylogenetic tree to provide tree height", Input.Validate.REQUIRED);
     public Input<RealParameter> orig_root =
             new Input<RealParameter>("orig_root", "The origin of infection x0", Input.Validate.REQUIRED);
 
@@ -36,7 +34,7 @@ public class ParameterConstrainer extends CalculationNode implements Loggable {
             new Input<RealParameter>("constrainedParameter", "parameter to be constrained", Input.Validate.REQUIRED);
 
     public Input<RealParameter> baseParameter =
-            new Input<RealParameter>("baseParameter", "the unconstrained parameter", Input.Validate.REQUIRED);
+            new Input<RealParameter>("baseParameter", "the unconstrained base parameter", Input.Validate.REQUIRED);
 
 
     boolean m_bRecompute = true;
