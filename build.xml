@@ -110,11 +110,11 @@
 				<include name="beast/**/*.xsl" />
 			</fileset>
         </jar>
-		<jar jarfile="${dist}/BEASTii.addon.jar">
+		<jar jarfile="${distii}/BEASTii.addon.jar">
 			<manifest>
 				<attribute name="Built-By" value="${user.name}" />
 			</manifest>
-			<fileset dir="${build}">
+			<fileset dir="${buildii}">
 				<include name="beast/**/*.class" />
 				<exclude name="**/**/Sequence.class"/>
 				<exclude name="**/**/Prior.class"/>
@@ -184,17 +184,17 @@
 		</copy>
 
 		<copy todir="${Add_on_dir}/lib">
-			<fileset dir="${dist}" includes="BEASTii.addon.jar" />
+			<fileset  file="${distii}/BEASTii.addon.jar" />
 		</copy>
 		<copy todir="${Add_on_dir}">
-			<fileset dir="${dist}" includes="BEASTii.src.jar" />
+			<fileset file="${distii}/BEASTii.src.jar" />
 		</copy>
 <!--
 		<copy todir="${Add_on_dir}/templates">
 			<fileset file="templates/BEASTii.xml" />
 		</copy>
 -->
-		<jar jarfile="${dist}/BEASTii.addon.zip">
+		<jar jarfile="${distii}/BEASTii.addon.zip">
 			<fileset dir="${Add_on_dir}">
 				<include name="**/*" />
 			</fileset>
