@@ -26,7 +26,7 @@ public class ParticleLauncher extends Thread {
 	String getCommand(String sParticleDir) {
 		String sCommand = m_filter.m_sScript.replaceAll("\\$\\(dir\\)", sParticleDir);
 		//while (sCommand.matches("$(seed)")) {
-			sCommand = sCommand.replaceAll("\\$\\(seed\\)", Randomizer.nextInt()+"");
+			sCommand = sCommand.replaceAll("\\$\\(seed\\)", Math.abs(Randomizer.nextInt())+"");
 		//}
 		sCommand = sCommand.replaceAll("\\$\\(java.library.path\\)", System.getProperty("java.library.path"));
 		sCommand = sCommand.replaceAll("\\$\\(java.class.path\\)", System.getProperty("java.class.path"));

@@ -67,6 +67,7 @@ public class ThreadedTreeLikelihood extends Distribution {
     public Input<Boolean> m_useAmbiguities = new Input<Boolean>("useAmbiguities", "flag to indicate leafs that sites containing ambigue states should be handled instead of ignored (the default)", false);
     
     public Input<Integer> maxNrOfThreads = new Input<Integer>("threads","maximum number of threads to use, if less than 1 the number of threads in BeastMCMC is used (default -1)", -1);
+    public Input<Boolean> useJava = new Input<Boolean>("useJava", "prefer java, even if beagle is available", true);
 
     /** calculation engine **/
     ThreadedLikelihoodCore m_likelihoodCore;
@@ -135,6 +136,11 @@ public class ThreadedTreeLikelihood extends Distribution {
     	}
     	
     	m_beagle = new BeagleTreeLikelihood[m_nThreads];
+    	String sJavaOnly = null;
+    	if (useJava.get()) {
+    		sJavaOnly = System.getProperty("java.only");
+    		System.setProperty("java.only", "" + true);
+    	}
     	if (m_nThreads == 1) {
     		m_beagle[0] = new BeagleTreeLikelihood();
     		m_beagle[0].initByName("data", m_data.get(), "tree", m_tree.get(), "siteModel", m_pSiteModel.get(), "branchRateModel", m_pBranchRateModel.get(), "useAmbiguities", m_useAmbiguities.get());
@@ -145,6 +151,13 @@ public class ThreadedTreeLikelihood extends Distribution {
         		filter.initByName("data", m_data.get()/*, "userDataType", m_data.get().getDataType()*/, "filter", (i+1)+"::"+m_nThreads);
         		m_beagle[i].initByName("data", filter, "tree", m_tree.get(), "siteModel", m_pSiteModel.get(), "branchRateModel", m_pBranchRateModel.get(), "useAmbiguities", m_useAmbiguities.get());
         	}
+    	}
+    	if (useJava.get()) {
+	    	if (sJavaOnly != null) {
+	    		System.setProperty("java.only", sJavaOnly);
+	    	} else {
+	    		System.clearProperty("java.only");
+	    	}
     	}
 
     	if (m_beagle[0].beagle != null) {
