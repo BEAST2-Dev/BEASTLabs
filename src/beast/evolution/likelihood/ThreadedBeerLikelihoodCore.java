@@ -519,10 +519,10 @@ public class ThreadedBeerLikelihoodCore extends ThreadedLikelihoodCore {
         }
     }
 
-//    @Override
-//    public void getNodePartials(int iNodeIndex, double[] fPartials) {
-//        System.arraycopy(m_fPartials[0][m_iCurrentPartials[iNodeIndex]][iNodeIndex], 0, fPartials, 0, fPartials.length);
-//    }
+    @Override
+    public void getNodePartials(int iNodeIndex, double[] fPartials) {
+        System.arraycopy(m_fPartials[m_iCurrentPartials[iNodeIndex]][iNodeIndex], 0, fPartials, 0, fPartials.length);
+    }
 
     
     /**
