@@ -70,7 +70,7 @@ public class ThreadedTreeLikelihood extends Distribution {
     public Input<Boolean> useJava = new Input<Boolean>("useJava", "prefer java, even if beagle is available", true);
 
     /** calculation engine **/
-    ThreadedLikelihoodCore m_likelihoodCore;
+    protected ThreadedLikelihoodCore m_likelihoodCore;
     BeagleTreeLikelihood [] m_beagle;
     
     /** Plugin associated with inputs. Since none of the inputs are StateNodes, it

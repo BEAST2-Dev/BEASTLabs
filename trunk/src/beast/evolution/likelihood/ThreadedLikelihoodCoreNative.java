@@ -220,4 +220,9 @@ public class ThreadedLikelihoodCoreNative extends ThreadedLikelihoodCore {
 	
 	native void calculateAllPartialsC(long pBEER, int[] iNode1, int[] iNode2, int[] iNode3, int nCacheCount, int iFrom, int iTo);
 
+	@Override
+	public void getNodePartials(int iNode, double[] fPartials) {
+		// TODO Auto-generated method stub
+	}
+
 }
