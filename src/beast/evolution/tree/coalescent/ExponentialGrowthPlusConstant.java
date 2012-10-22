@@ -31,21 +31,12 @@ import java.util.List;
 @Description("Population model of the form A*exp(-B*t) + C")
 public class ExponentialGrowthPlusConstant extends PopulationFunction.Abstract {
     
-    /**
-     * Population model parameter.
-     */
     public Input<RealParameter> AInput = new Input<RealParameter>("A",
-            "Parameter A.");
-    /**
-     * Population model parameter.
-     */
+            "Initial population size for model.");
     public Input<RealParameter> BInput = new Input<RealParameter>("B",
-            "Parameter B.");
-    /**
-     * Population model parameter.
-     */
+            "Exponential growth rate of population size.");
     public Input<RealParameter> CInput = new Input<RealParameter>("C",
-            "Parameter C.");
+            "Constant population size offset.");
 
     /**
      * Retrieve list of population model parameter IDs.
