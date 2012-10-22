@@ -18,6 +18,7 @@ package beast.evolution.tree.coalescent;
 
 import beast.core.Description;
 import beast.core.Input;
+import beast.core.Input.Validate;
 import beast.core.parameter.RealParameter;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,12 +33,18 @@ import java.util.List;
 public class ExponentialGrowthPlusConstant extends PopulationFunction.Abstract {
     
     public Input<RealParameter> AInput = new Input<RealParameter>("A",
-            "Initial population size for model.");
+            "Initial population size for model.", Validate.REQUIRED);
     public Input<RealParameter> BInput = new Input<RealParameter>("B",
-            "Exponential growth rate of population size.");
+            "Exponential growth rate of population size.", Validate.REQUIRED);
     public Input<RealParameter> CInput = new Input<RealParameter>("C",
-            "Constant population size offset.");
+            "Constant population size offset.", Validate.REQUIRED);
 
+    /**
+     * Required initAndValidate method.
+     */
+    @Override
+    public void initAndValidate() { }
+    
     /**
      * Retrieve list of population model parameter IDs.
      * 
