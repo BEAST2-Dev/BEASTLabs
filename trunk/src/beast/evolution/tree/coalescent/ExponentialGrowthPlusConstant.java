@@ -24,18 +24,34 @@ import java.util.Collections;
 import java.util.List;
 
 /**
+ * Population growth model with constant offset.
+ * 
  * @author Tim Vaughan <tgvaughan@gmail.com>
  */
 @Description("Population model of the form A*exp(-B*t) + C")
 public class ExponentialGrowthPlusConstant extends PopulationFunction.Abstract {
     
+    /**
+     * Population model parameter.
+     */
     public Input<RealParameter> AInput = new Input<RealParameter>("A",
             "Parameter A.");
+    /**
+     * Population model parameter.
+     */
     public Input<RealParameter> BInput = new Input<RealParameter>("B",
             "Parameter B.");
+    /**
+     * Population model parameter.
+     */
     public Input<RealParameter> CInput = new Input<RealParameter>("C",
             "Parameter C.");
 
+    /**
+     * Retrieve list of population model parameter IDs.
+     * 
+     * @return List of IDs.
+     */
     @Override
     public List<String> getParameterIds() {
         List<String> idList = new ArrayList<String>();
@@ -46,6 +62,12 @@ public class ExponentialGrowthPlusConstant extends PopulationFunction.Abstract {
         return Collections.unmodifiableList(idList);
     }
 
+    /**
+     * Retrieve population size at time t.
+     * 
+     * @param t
+     * @return Population size.
+     */
     @Override
     public double getPopSize(double t) {
         
@@ -60,6 +82,12 @@ public class ExponentialGrowthPlusConstant extends PopulationFunction.Abstract {
         }
     }
 
+    /**
+     * Calculate and return result of integral \int_0^t 1/N(s)ds.
+     * 
+     * @param t
+     * @return Result of integral.
+     */
     @Override
     public double getIntensity(double t) {
 
@@ -74,6 +102,13 @@ public class ExponentialGrowthPlusConstant extends PopulationFunction.Abstract {
         }
     }
     
+    /**
+     * Calculate and return result of integral \int_t1^t2 1/N(s)ds.
+     * 
+     * @param start t1
+     * @param finish t2
+     * @return Result of integral.
+     */
     @Override
     public double getIntegral(double start, double finish) {
         
@@ -88,6 +123,15 @@ public class ExponentialGrowthPlusConstant extends PopulationFunction.Abstract {
         }
     }
 
+    /**
+     * Return inverse of intensity function.  The intensity function
+     * for this population model is not obviously invertable, so this
+     * method isn't implemented.  Not needed for likelihood calculations
+     * anyway.
+     * 
+     * @param x dimensionless time.
+     * @return Real time.
+     */
     @Override
     public double getInverseIntensity(double x) {
         throw new UnsupportedOperationException("Not supported yet.");
