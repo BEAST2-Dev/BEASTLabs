@@ -47,6 +47,8 @@ public class MultiMCMC extends MCMC {
 	Vector<Double> m_fMaxCladeProbDiffs;
 	/** for each thread, keeps track of the frequency of clades **/
 	HashMap<String, Integer> [] m_cladeMaps;
+	/** total nr of clades in a tree **/
+	int m_nClades = 1;
 
 	/** index of log and tree log among the MCMC loggers**/
 	int m_iTreeLog = 0;
@@ -294,7 +296,7 @@ public class MultiMCMC extends MCMC {
 				parser.m_nOffset.setValue(0, parser);
 				Node tree = parser.parseNewick(sStr);
 				List<String> sClades = new ArrayList<String>();
-				traverse(tree, sClades);
+				m_nClades = traverse(tree, sClades).length;
 				HashMap<String, Integer> cladeMap = m_cladeMaps[iThread];
 				for (String sClade : sClades) {
 					if (cladeMap.containsKey(sClade)) {
@@ -374,7 +376,7 @@ public class MultiMCMC extends MCMC {
 			nTotal += i1;
 			nMax = Math.max(nMax, Math.abs(i1 - i2));
 		}
-		return nMax / (double) nTotal;
+		return nMax / (double) (nTotal/m_nClades);
 	} // calcMaxCladeDifference
 
 	
