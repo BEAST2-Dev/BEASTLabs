@@ -521,7 +521,11 @@ public class MultiMCMC extends MCMC {
         }
 		String sStr = m_fMaxCladeProbDiffs.get(m_nLastReported) + "";
 		if (sStr.length() > 5) {
-			sStr = sStr.substring(0, 5);
+			if (m_fMaxCladeProbDiffs.get(m_nLastReported) > 0.001) {
+				sStr = sStr.substring(0, 5);
+			} else {
+				sStr = "<1e-3";
+			}
 		}
 		System.out.print(sStr);
         System.out.println();
