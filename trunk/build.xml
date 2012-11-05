@@ -58,7 +58,7 @@
 	</target>
 
 	<!-- compile Java source code -->
-	<target name="compile-allBEASTii" depends="initBEASTii,compile-all">
+	<target name="compile-allBEASTii" depends="initBEASTii">
 
 
 	    <!-- Capture the path as a delimited property using the refid attribute -->
