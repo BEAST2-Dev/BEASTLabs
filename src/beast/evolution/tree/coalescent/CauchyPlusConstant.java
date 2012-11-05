@@ -100,11 +100,7 @@ public class CauchyPlusConstant extends PopulationFunction.Abstract {
             return (t-B*Math.pow(t0-t,3)/3.0)/A
                     + B*Math.pow(t0,3)/3.0/A;
         }
-        
-        if (t>0) {
-            System.out.println("t="+t);
-        }
-        
+
         return -A*Math.atan(t0*Math.sqrt(B*C/(A + C)))/Math.sqrt(B*Math.pow(C,3)*(A + C))
                 + A*Math.atan(Math.sqrt(B*C/(A + C))*(-t + t0))/Math.sqrt(B*Math.pow(C,3)*(A + C))
                 + t0/C - (-t + t0)/C;
