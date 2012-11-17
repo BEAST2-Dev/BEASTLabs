@@ -8,6 +8,7 @@ import beast.core.Input;
 import beast.core.Input.Validate;
 import beast.evolution.branchratemodel.StrictClockModel;
 import beast.evolution.datatype.DataType;
+import beast.evolution.sitemodel.SiteModel;
 import beast.evolution.tree.Node;
 import beast.evolution.tree.TraitSet;
 import beast.evolution.tree.Tree;
@@ -33,7 +34,10 @@ public class TraitedTreeLikelihood extends TreeLikelihood {
     	m_beagle = null;
     	
         int nodeCount = m_tree.get().getNodeCount();
-        m_siteModel = m_pSiteModel.get();
+        if (!(m_pSiteModel.get() instanceof SiteModel.Base)) {
+        	throw new Exception ("siteModel input should be of type SiteModel.Base");
+        }
+        m_siteModel = (SiteModel.Base) m_pSiteModel.get();
 
 
         int nStateCount = m_dataTypeInput.get().getStateCount();

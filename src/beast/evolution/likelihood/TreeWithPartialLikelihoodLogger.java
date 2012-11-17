@@ -37,7 +37,7 @@ public class TreeWithPartialLikelihoodLogger extends Plugin implements Loggable 
 	public void initAndValidate() throws Exception {
 		likelihood = likelihoodInput.get();
 		tree = likelihood.m_tree.get();
-		siteModel = likelihood.m_pSiteModel.get();
+		siteModel = (SiteModel.Base) likelihood.m_pSiteModel.get();
 		substModel = siteModel.m_pSubstModel.get();
 		data = likelihood.m_data.get();
         stateCount = data.getDataType().getStateCount();
