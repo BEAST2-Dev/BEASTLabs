@@ -24,7 +24,8 @@ import beast.util.Randomizer;
 import beast.util.XMLProducer;
 
 @Description("Calculate marginal likelihood through path sampling. " +
-		"Perform multiple steps and calculate estimate")
+		"Perform multiple steps and calculate estimate." +
+		"Uses multiple threads if specified as command line option to BEAST.")
 public class PathSampler extends beast.core.Runnable {
 	public static String LIKELIHOOD_LOG_FILE = "likelihood.log";
 
@@ -86,14 +87,21 @@ public class PathSampler extends beast.core.Runnable {
 		
 		// initialise MCMC
 		MCMC mcmc = mcmcInput.get();
+		if (!mcmc.getClass().equals(MCMC.class)) {
+			System.out.println("WARNING: class is not beast.core.MCMC, which may result in unexpected behavior ");
+		}
 		PathSamplingStep step = new PathSamplingStep();
 		for (Input<?> input : mcmc.listInputs()) {
-			if (input.get() instanceof List) {
-				for (Object o : (List<?>) input.get()) {
-					step.setInputValue(input.getName(), o);
+			try {
+				if (input.get() instanceof List) {
+					for (Object o : (List<?>) input.get()) {
+						step.setInputValue(input.getName(), o);
+					}
+				} else {
+					step.setInputValue(input.getName(), input.get());
 				}
-			} else {
-				step.setInputValue(input.getName(), input.get());
+			} catch (Exception e) {
+				// TODO: handle exception
 			}
 		}
 		mcmc = step;
@@ -216,8 +224,6 @@ public class PathSampler extends beast.core.Runnable {
     @Override
     public void run() throws Exception {
     	long startTime = System.currentTimeMillis();
-		//m_nCountDown = new CountDownLatch(m_nSteps);
-    	
 
 		for (int i = 0; i < m_nSteps; i++) {
 	    	if (BeastMCMC.m_nThreads > 1) {
@@ -265,9 +271,8 @@ public class PathSampler extends beast.core.Runnable {
     	PathSampleAnalyser analyser = new PathSampleAnalyser();
     	double marginalL = analyser.estimateMarginalLikelihood(m_nSteps, alphaInput.get(), rootDirInput.get(), burnInPercentage);
 		System.out.println("marginal L estimate =" + marginalL);
-    	System.out.println("\n\nTotal wall time: " + (endTime-startTime)/1000 + " seconds\nDone");
-    	
-    	
+
+		System.out.println("\n\nTotal wall time: " + (endTime-startTime)/1000 + " seconds\nDone");
     } // run;	
 	
 } // PathSampler
