@@ -23,14 +23,15 @@ import beast.core.MCMC;
 import beast.util.Randomizer;
 import beast.util.XMLProducer;
 
-@Description("Calculate marginal likelihood through path sampling. " +
+@Description("Calculate marginal likelihood through path/stepping stone sampling. " +
 		"Perform multiple steps and calculate estimate." +
 		"Uses multiple threads if specified as command line option to BEAST.")
 public class PathSampler extends beast.core.Runnable {
 	public static String LIKELIHOOD_LOG_FILE = "likelihood.log";
 
 	public Input<Integer> stepsInput = new Input<Integer>("nrofsteps", "the number of steps to use, default 8", 8);
-	public Input<Double> alphaInput = new Input<Double>("alpha", "alpha parameter of Beta(alpha,1) distribution used to space out steps, default 0.3", 0.3);
+	public Input<Double> alphaInput = new Input<Double>("alpha", "alpha parameter of Beta(alpha,1) distribution used to space out steps, default 0.3" +
+			"If alpha <= 0, uniform intervals are used.", 0.3);
 	public Input<String> rootDirInput = new Input<String>("rootdir", "root directory for storing particle states and log files (default /tmp)", "/tmp");
 	public Input<MCMC> mcmcInput = new Input<MCMC>("mcmc", "MCMC analysis used to specify model and operations in each of the particles", Validate.REQUIRED);
 	public Input<Integer> chainLengthInput = new Input<Integer>("chainLength", "number of sample to run a chain for a single step", 100000);
@@ -72,6 +73,9 @@ public class PathSampler extends beast.core.Runnable {
 		}
 		
 		m_nSteps = stepsInput.get();
+		if (m_nSteps <= 1) {
+			throw new Exception("number of steps should be at least 2");
+		}
 		burnInPercentage = burnInPercentageInput.get();
 		if (burnInPercentage < 0 || burnInPercentage >= 100) {
 			throw new Exception("burnInPercentage should be between 0 and 100");
@@ -125,10 +129,15 @@ public class PathSampler extends beast.core.Runnable {
 		formatter = new DecimalFormat(sFormat);
 		
 		XMLProducer producer = new XMLProducer();
-		BetaDistribution betaDistribution = new BetaDistributionImpl(alphaInput.get(), 1.0);
+		BetaDistribution betaDistribution = null;
+		if (alphaInput.get() > 0){
+			betaDistribution = new BetaDistributionImpl(alphaInput.get(), 1.0);
+		}
 		
 		for (int i = 0; i < m_nSteps; i++) {
-			double beta = betaDistribution.inverseCumulativeProbability((i + 0.0)/ m_nSteps);
+			double beta = betaDistribution != null ?
+					betaDistribution.inverseCumulativeProbability((i + 0.0)/ (m_nSteps - 1)):
+						(i + 0.0)/ (m_nSteps - 1);
 			step.setInputValue("beta", beta);
 			String sXML = producer.toXML(step);
 			File stepDir = new File(getStepDir(i));
@@ -252,14 +261,14 @@ public class PathSampler extends beast.core.Runnable {
 					BufferedReader pout = new BufferedReader((new InputStreamReader(p.getInputStream())));
 					BufferedReader perr = new BufferedReader(new InputStreamReader(p.getErrorStream()));
 					String line;
-					while ((line = pout.readLine()) != null) {
-						System.out.println(line);
-					}
-					pout.close();
 					while ((line = perr.readLine()) != null) {
 						System.err.println(line);
 					}
 					perr.close();
+					while ((line = pout.readLine()) != null) {
+						System.out.println(line);
+					}
+					pout.close();
 					p.waitFor();
 				} catch (Exception e) {
 					e.printStackTrace();

@@ -2,6 +2,9 @@ package beast.inference;
 
 import java.text.DecimalFormat;
 
+import org.apache.commons.math.distribution.BetaDistribution;
+import org.apache.commons.math.distribution.BetaDistributionImpl;
+
 import beast.core.Description;
 import beast.core.Plugin;
 import beast.util.LogAnalyser;
@@ -34,10 +37,20 @@ public class PathSampleAnalyser extends Plugin {
 		
 		// combine steps
 		double marginalL = 0;
-		for (int i = 0; i < nSteps - 1; i++) {
-			marginalL += marginalLs[i] + marginalLs[i + 1]; 
-		}		
-		marginalL = marginalL / (2.0 * (nSteps - 1));
+		if (alpha <= 0) { 
+			for (int i = 0; i < nSteps - 1; i++) {
+				marginalL += (marginalLs[i] + marginalLs[i + 1]); 
+			}		
+			marginalL = marginalL / (2.0 * (nSteps - 1));
+		} else {
+			BetaDistribution betaDistribution = new BetaDistributionImpl(alpha, 1.0);
+			for (int i = 0; i < nSteps - 1; i++) {
+				double beta1 = betaDistribution.inverseCumulativeProbability((i + 0.0)/ (nSteps - 1));
+				double beta2 = betaDistribution.inverseCumulativeProbability((i + 1.0)/ (nSteps - 1));
+				double weight = beta2 - beta1;
+				marginalL += weight * (marginalLs[i] + marginalLs[i + 1]); 
+			}		
+		}
 		return marginalL;
 	}
 
