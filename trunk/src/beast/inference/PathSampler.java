@@ -12,6 +12,7 @@ import java.util.concurrent.CountDownLatch;
 import org.apache.commons.math.distribution.BetaDistribution;
 import org.apache.commons.math.distribution.BetaDistributionImpl;
 
+import beast.app.BeastMCMC;
 import beast.core.Description;
 import beast.core.Distribution;
 import beast.core.Input;
@@ -49,11 +50,11 @@ public class PathSampler extends beast.core.Runnable {
 	String m_sScript;
 	int burnInPercentage;
 
-	//CountDownLatch m_nCountDown;
+	CountDownLatch m_nCountDown;
 
 	
 	DecimalFormat formatter;
-	String getParticleDir(int iParticle) {
+	String getStepDir(int iParticle) {
 		return rootDirInput.get() + "/step" + formatter.format(iParticle);
 	}
 
@@ -85,6 +86,18 @@ public class PathSampler extends beast.core.Runnable {
 		
 		// initialise MCMC
 		MCMC mcmc = mcmcInput.get();
+		PathSamplingStep step = new PathSamplingStep();
+		for (Input<?> input : mcmc.listInputs()) {
+			if (input.get() instanceof List) {
+				for (Object o : (List<?>) input.get()) {
+					step.setInputValue(input.getName(), o);
+				}
+			} else {
+				step.setInputValue(input.getName(), input.get());
+			}
+		}
+		mcmc = step;
+		
 		int chainLength = chainLengthInput.get();
 		// set up chain length for a single step
 		mcmc.m_oBurnIn.setValue(0, mcmc);
@@ -104,34 +117,31 @@ public class PathSampler extends beast.core.Runnable {
 		formatter = new DecimalFormat(sFormat);
 		
 		XMLProducer producer = new XMLProducer();
-		String sXML = producer.toXML(mcmcInput.get());
 		BetaDistribution betaDistribution = new BetaDistributionImpl(alphaInput.get(), 1.0);
 		
 		for (int i = 0; i < m_nSteps; i++) {
 			double beta = betaDistribution.inverseCumulativeProbability((i + 0.0)/ m_nSteps);
-			if (!sXML.contains("spec=\"MCMC\"")) {
-				throw new Exception("Expected to find spec=\"MCMC\" in the XML");
+			step.setInputValue("beta", beta);
+			String sXML = producer.toXML(step);
+			File stepDir = new File(getStepDir(i));
+			if (!stepDir.exists() && !stepDir.mkdir()) {
+				throw new Exception("Failed to make directory " + stepDir.getName());
 			}
-			String sXMLStep = sXML.replaceAll("spec=\"MCMC\"", "spec=\"beast.inference.PathSamplingStep\" beta='" + beta +"'");
-			File particleDir = new File(getParticleDir(i));
-			if (!particleDir.exists() && !particleDir.mkdir()) {
-				throw new Exception("Failed to make directory " + particleDir.getName());
-			}
-			particleDir.setWritable(true, false);
-        	FileOutputStream xmlFile = new FileOutputStream(particleDir.getAbsoluteFile() + "/beast.xml");
+			stepDir.setWritable(true, false);
+        	FileOutputStream xmlFile = new FileOutputStream(stepDir.getAbsoluteFile() + "/beast.xml");
         	PrintStream out = new PrintStream(xmlFile);
-            out.print(sXMLStep);
+            out.print(sXML);
 			out.close();
 			
-			String cmd = getCommand(particleDir.getAbsolutePath(), i);
+			String cmd = getCommand(stepDir.getAbsolutePath(), i);
         	FileOutputStream cmdFile = 
         			(beast.app.util.Utils.isWindows()?
-        					new FileOutputStream(particleDir.getAbsoluteFile() + "/run.bat"):
-        					new FileOutputStream(particleDir.getAbsoluteFile() + "/run.sh"));
+        					new FileOutputStream(stepDir.getAbsoluteFile() + "/run.bat"):
+        					new FileOutputStream(stepDir.getAbsoluteFile() + "/run.sh"));
         	PrintStream out2 = new PrintStream(cmdFile);
             out2.print(cmd);
 			out2.close();
-			File script = new File(particleDir.getAbsoluteFile() + 
+			File script = new File(stepDir.getAbsoluteFile() + 
 					(beast.app.util.Utils.isWindows()? "/run.bat": "/run.sh"));
 			script.setExecutable(true);
 		}
@@ -173,42 +183,83 @@ public class PathSampler extends beast.core.Runnable {
 		return sCommand;
 	}
 
-    @Override
-    public void run() throws Exception {
-    	long startTime = System.currentTimeMillis();
-		//m_nCountDown = new CountDownLatch(m_nSteps);
-
-		for (int i = 0; i < m_nSteps; i++) {
-			File particleDir = new File(getParticleDir(i));
-			if (!particleDir.exists()) {
-				throw new Exception("Failed to find directory " + particleDir.getName());
-			}
-        	String cmd = 
-        			(beast.app.util.Utils.isWindows()?
-        					particleDir.getAbsoluteFile() + "/run.bat":
-        					particleDir.getAbsoluteFile() + "/run.sh");
-        	
-        	
+	
+	class StepThread extends Thread {
+		int stepNr;
+		
+		StepThread(int stepNr) {
+			this.stepNr = stepNr;
+		}
+		
+		@Override
+		public void run() {
 			try {
-				System.out.println(cmd);
+				System.err.println("Starting step " + stepNr);
+				File stepDir = new File(getStepDir(stepNr));
+				if (!stepDir.exists()) {
+					throw new Exception("Failed to find directory " + stepDir.getName());
+				}
+	        	String cmd = 
+        			(beast.app.util.Utils.isWindows()?
+        					stepDir.getAbsoluteFile() + "/run.bat":
+        					stepDir.getAbsoluteFile() + "/run.sh");
 				Process p = Runtime.getRuntime().exec(cmd);
-				BufferedReader pout = new BufferedReader((new InputStreamReader(p.getInputStream())));
-				BufferedReader perr = new BufferedReader(new InputStreamReader(p.getErrorStream()));
-				String line;
-				while ((line = pout.readLine()) != null) {
-					System.out.println(line);
-				}
-				pout.close();
-				while ((line = perr.readLine()) != null) {
-					System.err.println(line);
-				}
-				perr.close();
 				p.waitFor();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
+			System.err.println("Finished step " + stepNr);
+			m_nCountDown.countDown();
 		}
-		//m_nCountDown.await();
+	}
+	
+    @Override
+    public void run() throws Exception {
+    	long startTime = System.currentTimeMillis();
+		//m_nCountDown = new CountDownLatch(m_nSteps);
+    	
+
+		for (int i = 0; i < m_nSteps; i++) {
+	    	if (BeastMCMC.m_nThreads > 1) {
+	    		int nSteps = Math.min(BeastMCMC.m_nThreads, m_nSteps - i);
+	    		m_nCountDown = new CountDownLatch(nSteps);
+	    		for (int j = 0; j < nSteps; j++) {
+	    			new StepThread(i).start();
+	    			i++;
+	    		}
+	    		i--;
+	    		m_nCountDown.await();	    		
+	    	} else {
+				File stepDir = new File(getStepDir(i));
+				if (!stepDir.exists()) {
+					throw new Exception("Failed to find directory " + stepDir.getName());
+				}
+	        	String cmd = 
+	        			(beast.app.util.Utils.isWindows()?
+	        					stepDir.getAbsoluteFile() + "/run.bat":
+	        					stepDir.getAbsoluteFile() + "/run.sh");
+	        	
+	        	
+				try {
+					System.out.println(cmd);
+					Process p = Runtime.getRuntime().exec(cmd);
+					BufferedReader pout = new BufferedReader((new InputStreamReader(p.getInputStream())));
+					BufferedReader perr = new BufferedReader(new InputStreamReader(p.getErrorStream()));
+					String line;
+					while ((line = pout.readLine()) != null) {
+						System.out.println(line);
+					}
+					pout.close();
+					while ((line = perr.readLine()) != null) {
+						System.err.println(line);
+					}
+					perr.close();
+					p.waitFor();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+	    	}
+		}
     	long endTime = System.currentTimeMillis();
     	
     	PathSampleAnalyser analyser = new PathSampleAnalyser();

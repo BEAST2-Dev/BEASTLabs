@@ -26,7 +26,7 @@ public class PathSampleAnalyser extends Plugin {
 		// collect likelihood estimates for each step
 		double [] marginalLs = new double[nSteps];
 		for (int i = 0; i < nSteps; i++) {
-			String logFile = getParticleDir(rootDir, i) + "/" + PathSampler.LIKELIHOOD_LOG_FILE;
+			String logFile = getStepDir(rootDir, i) + "/" + PathSampler.LIKELIHOOD_LOG_FILE;
 			LogAnalyser analyser = new LogAnalyser(new String[] {logFile}, 2000, burnInPercentage);
 			marginalLs[i] = analyser.getMean("likelihood");
 			System.err.println("marginalLs[" + i + " ] = " + marginalLs[i]);
@@ -41,7 +41,7 @@ public class PathSampleAnalyser extends Plugin {
 		return marginalL;
 	}
 
-	String getParticleDir(String rootDir, int iParticle) {
+	String getStepDir(String rootDir, int iParticle) {
 		return rootDir + "/step" + formatter.format(iParticle);
 	}
 	
