@@ -105,8 +105,9 @@ public class PathSamplingStep extends MCMC {
                 state.checkCalculationNodesDirtiness();
 
                 
-                logPriorProb = prior.calculateLogP();
-                logLikelihood = likelihood.calculateLogP();
+                posterior.calculateLogP();
+                logPriorProb = prior.getArrayValue();
+                logLikelihood = likelihood.getArrayValue();
                 
                 fNewLogLikelihood = logPriorProb + logLikelihood * beta; 
 
