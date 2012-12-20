@@ -9,9 +9,8 @@ import beast.core.Description;
 import beast.core.Plugin;
 import beast.util.LogAnalyser;
 
-@Description("Reads logs produces through PathSamples and estimates marginal likelihood")
+@Description("Reads logs produces through PathSampler and estimates marginal likelihood")
 public class PathSampleAnalyser extends Plugin {
-	
 	
 	DecimalFormat formatter;
 	
@@ -19,6 +18,14 @@ public class PathSampleAnalyser extends Plugin {
 	public void initAndValidate() throws Exception {
 	}
 	
+	/** estimate marginal likelihoods from logs produced by PathSampler
+	 * @param nSteps number of steps used by PathSampler
+	 * @param alpha  if < 0 uniform intervals are used, otherwise a Beta(alpha,1.0) distribution is used for intervals
+	 * @param rootDir location where log files are stored
+	 * @param burnInPercentage percentage of log files to be discarded
+	 * @return log of marginal likelihood
+	 * @throws Exception
+	 */
 	double estimateMarginalLikelihood(int nSteps, double alpha, String rootDir, int burnInPercentage) throws Exception {
 		String sFormat = "";
 		for (int i = nSteps; i > 0; i /= 10) {
@@ -28,30 +35,58 @@ public class PathSampleAnalyser extends Plugin {
 
 		// collect likelihood estimates for each step
 		double [] marginalLs = new double[nSteps];
+		Double [] [] marginalLs2 = new Double[nSteps][];
 		for (int i = 0; i < nSteps; i++) {
 			String logFile = getStepDir(rootDir, i) + "/" + PathSampler.LIKELIHOOD_LOG_FILE;
 			LogAnalyser analyser = new LogAnalyser(new String[] {logFile}, 2000, burnInPercentage);
 			marginalLs[i] = analyser.getMean("likelihood");
+			marginalLs2[i] = analyser.getTrace("likelihood");
 			System.err.println("marginalLs[" + i + " ] = " + marginalLs[i]);
 		}
 		
 		// combine steps
-		double marginalL = 0;
+		double logMarginalL = 0;
 		if (alpha <= 0) { 
+			// uniform intervals
 			for (int i = 0; i < nSteps - 1; i++) {
-				marginalL += (marginalLs[i] + marginalLs[i + 1]); 
+				logMarginalL += (marginalLs[i] + marginalLs[i + 1]); 
 			}		
-			marginalL = marginalL / (2.0 * (nSteps - 1));
+			logMarginalL = logMarginalL / (2.0 * (nSteps - 1));
 		} else {
+			// intervals follow Beta distribution
 			BetaDistribution betaDistribution = new BetaDistributionImpl(alpha, 1.0);
 			for (int i = 0; i < nSteps - 1; i++) {
 				double beta1 = betaDistribution.inverseCumulativeProbability((i + 0.0)/ (nSteps - 1));
 				double beta2 = betaDistribution.inverseCumulativeProbability((i + 1.0)/ (nSteps - 1));
 				double weight = beta2 - beta1;
-				marginalL += weight * (marginalLs[i] + marginalLs[i + 1]); 
+
+				// Use formula top right at page 153 of 
+				// Xie W, Lewis PO, Fan Y, Kuo L, Chen MH. 2011. Improving marginal
+				// likelihood estimation for Bayesian phylogenetic model selection.
+				// Syst Biol. 60:150–160.
+				Double [] marginal2 = marginalLs2[i];
+				double logLmax = max(marginal2);
+				logMarginalL += weight * logLmax;
+				
+				int n = marginal2.length;
+				double x = 0;
+				for (int j = 0; j < n; j++) {
+					x += Math.exp(weight * (marginal2[j] - logLmax)); 
+				}
+				logMarginalL += Math.log(x/n);
+				
+//				logMarginalL += weight * marginalLs[i]; 
 			}		
 		}
-		return marginalL;
+		return logMarginalL;
+	}
+
+	private double max(Double[] marginal2) {
+		Double max = marginal2[0];
+		for (Double v : marginal2) {
+			max = Math.max(v, max);
+		}
+		return max;
 	}
 
 	String getStepDir(String rootDir, int iParticle) {

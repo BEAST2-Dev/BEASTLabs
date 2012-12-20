@@ -29,9 +29,9 @@
 <map name="OneOnX">beast.math.distributions.OneOnX</map>
 <map name="Normal">beast.math.distributions.Normal</map>
 
-<run spec='beast.inference.PathSampler' chainLength="100000" alpha='0.3' rootdir='/tmp' burnInPercentage='80'>
+<run spec='beast.inference.PathSampler' chainLength="100000" alpha='0.3' rootdir='/tmp/step' burnInPercentage='80' preBurnin="50000" deleteOldLogs='true'>
 cd $(dir)
-java -cp $(java.class.path) beast.app.beastapp.BeastMain -overwrite -java -seed $(seed) beast.xml
+java -cp $(java.class.path) beast.app.beastapp.BeastMain $(resume/overwrite) -java -seed $(seed) beast.xml
 
   <mcmc chainLength="10000000" id="mcmc" spec="MCMC">
     <state id="state" storeEvery="1000">
@@ -83,8 +83,9 @@ java -cp $(java.class.path) beast.app.beastapp.BeastMain -overwrite -java -seed 
 
     <operator id="UniformOperator.t:alignment" spec="Uniform" tree="@Tree.t:alignment" weight="30.0"/>
 
+<!--
     <operator id="SubtreeSlide.t:alignment" spec="SubtreeSlide" tree="@Tree.t:alignment" weight="15.0"/>
-
+-->
     <operator id="narrow.t:alignment" spec="Exchange" tree="@Tree.t:alignment" weight="15.0"/>
 
     <operator id="wide.t:alignment" isNarrow="false" spec="Exchange" tree="@Tree.t:alignment" weight="3.0"/>
