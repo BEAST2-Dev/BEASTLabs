@@ -2,8 +2,11 @@ package beast.inference;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.text.DecimalFormat;
 import java.util.List;
@@ -36,6 +39,7 @@ public class PathSampler extends beast.core.Runnable {
 	public Input<MCMC> mcmcInput = new Input<MCMC>("mcmc", "MCMC analysis used to specify model and operations in each of the particles", Validate.REQUIRED);
 	public Input<Integer> chainLengthInput = new Input<Integer>("chainLength", "number of sample to run a chain for a single step", 100000);
 	public Input<Integer> burnInPercentageInput = new Input<Integer>("burnInPercentage", "burn-In Percentage used for analysing log files", 50);
+	public Input<Integer> preBurnInInput = new Input<Integer>("preBurnin", "number of samples that are discarded for the first step, but not the others", 100000);
 	public Input<String> m_sScriptInput = new Input<String>("value", "script for launching a job. " +
 			"$(dir) is replaced by the directory associated with the particle " +
 			"$(java.class.path) is replaced by a java class path used to launch this application " +
@@ -47,6 +51,8 @@ public class PathSampler extends beast.core.Runnable {
 			"by the (i modulo k) host in the list. " +
 			"Note that whitespace is removed");
 	
+	public Input<Boolean> deleteOldLogsInpuyt = new Input<Boolean>("deleteOldLogs", "delete existing log files from root dir", false);
+	
 	int m_nSteps;
 	String [] m_sHosts;
 	String m_sScript;
@@ -54,7 +60,8 @@ public class PathSampler extends beast.core.Runnable {
 
 	CountDownLatch m_nCountDown;
 
-	
+    final static String fileSep = System.getProperty("file.separator");
+
 	DecimalFormat formatter;
 	String getStepDir(int iParticle) {
 		return rootDirInput.get() + "/step" + formatter.format(iParticle);
@@ -63,6 +70,7 @@ public class PathSampler extends beast.core.Runnable {
 
 	@Override
 	public void initAndValidate() throws Exception {
+		// grab info from inputs
 		m_sScript = m_sScriptInput.get();
 		if (m_sHostsInput.get() != null) {
 			m_sHosts = m_sHostsInput.get().split(",");
@@ -80,7 +88,9 @@ public class PathSampler extends beast.core.Runnable {
 		if (burnInPercentage < 0 || burnInPercentage >= 100) {
 			throw new Exception("burnInPercentage should be between 0 and 100");
 		}
+		int preBurnIn = preBurnInInput.get();
 		
+		// root directory sanity checks
 		File rootDir = new File(rootDirInput.get());
 		if (!rootDir.exists()) {
 			throw new Exception("Directory " + rootDirInput.get() + " does not exist.");
@@ -91,6 +101,7 @@ public class PathSampler extends beast.core.Runnable {
 		
 		// initialise MCMC
 		MCMC mcmc = mcmcInput.get();
+
 		if (!mcmc.getClass().equals(MCMC.class)) {
 			System.out.println("WARNING: class is not beast.core.MCMC, which may result in unexpected behavior ");
 		}
@@ -135,6 +146,12 @@ public class PathSampler extends beast.core.Runnable {
 		}
 		
 		for (int i = 0; i < m_nSteps; i++) {
+			if (i < BeastMCMC.m_nThreads) {
+				mcmc.m_oBurnIn.setValue(preBurnIn, mcmc);
+			} else {
+				mcmc.m_oBurnIn.setValue(0, mcmc);
+			}
+			// create XML for a single step
 			double beta = betaDistribution != null ?
 					betaDistribution.inverseCumulativeProbability((i + 0.0)/ (m_nSteps - 1)):
 						(i + 0.0)/ (m_nSteps - 1);
@@ -197,6 +214,11 @@ public class PathSampler extends beast.core.Runnable {
 		if (m_sHosts != null) {
 			sCommand = sCommand.replaceAll("\\$\\(host\\)", m_sHosts[iStep % m_sHosts.length]);
 		}
+		if (iStep < BeastMCMC.m_nThreads) {
+			sCommand = sCommand.replaceAll("\\$\\(resume/overwrite\\)", "-overwrite");
+		} else {
+			sCommand = sCommand.replaceAll("\\$\\(resume/overwrite\\)", "-resume");
+		}		
 		return sCommand;
 	}
 
@@ -242,8 +264,12 @@ public class PathSampler extends beast.core.Runnable {
 	    			new StepThread(i).start();
 	    			i++;
 	    		}
-	    		i--;
 	    		m_nCountDown.await();	    		
+    			for (int j = 0; j < BeastMCMC.m_nThreads && i+j < m_nSteps; j++) {
+    				copyStateFile(i-1, i + j);	    			
+    				checkLogFiles(i + j);
+    			}
+	    		i--;
 	    	} else {
 				File stepDir = new File(getStepDir(i));
 				if (!stepDir.exists()) {
@@ -251,11 +277,16 @@ public class PathSampler extends beast.core.Runnable {
 				}
 	        	String cmd = 
 	        			(beast.app.util.Utils.isWindows()?
-	        					stepDir.getAbsoluteFile() + "/run.bat":
+	        					stepDir.getAbsoluteFile() + "\\run.bat":
 	        					stepDir.getAbsoluteFile() + "/run.sh");
 	        	
 	        	
-				try {
+//				try {
+	    		if (i > 0) {
+	    			copyStateFile(i-1, i);
+	    		}
+				checkLogFiles(i);
+					
 					System.out.println(cmd);
 					Process p = Runtime.getRuntime().exec(cmd);
 					BufferedReader pout = new BufferedReader((new InputStreamReader(p.getInputStream())));
@@ -270,9 +301,9 @@ public class PathSampler extends beast.core.Runnable {
 					}
 					pout.close();
 					p.waitFor();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
+//				} catch (Exception e) {
+//					e.printStackTrace();
+//				}
 	    	}
 		}
     	long endTime = System.currentTimeMillis();
@@ -283,5 +314,50 @@ public class PathSampler extends beast.core.Runnable {
 
 		System.out.println("\n\nTotal wall time: " + (endTime-startTime)/1000 + " seconds\nDone");
     } // run;	
+
+
+	/** check for log files in directory for step i **/
+	private void checkLogFiles(int i) throws Exception {
+		File stepDir = new File(getStepDir(i));
+		
+		// remove any existing likglihood.log file
+		File logFile = new File(stepDir.getPath() + fileSep + "likelihood.log");
+		if (logFile.exists()) {
+			if (deleteOldLogsInpuyt.get()) {
+				System.err.println("WARNING: deleting file " + logFile.getPath());
+				logFile.delete();
+			} else {
+				throw new Exception("Found old log file " + logFile.getPath() + " and will not overwrite (unless deleteOldLogs flag is set to true)");
+			}
+		}
+		
+		// process other log and tree files
+		for (File file : stepDir.listFiles()) {
+			if (file.getPath().endsWith(".log") || 
+					file.getPath().endsWith(".trees")) {
+				if (deleteOldLogsInpuyt.get()) {
+				System.err.println("WARNING: deleting file " + file.getPath());
+					file.delete();
+				} else {
+					throw new Exception("Found old log file " + file.getPath() + " and will not overwrite (unless deleteOldLogs flag is set to true)");
+				}
+			}
+		}
+	}
+
+	/** copy beast.xml.state file from previous directory **/
+	private void copyStateFile(int iFrom, int iTo) throws Exception {
+		File prevStepDir = new File(getStepDir(iFrom));
+		File stepDir = new File(getStepDir(iTo));
+        InputStream in = new FileInputStream(new File(prevStepDir.getPath() + fileSep + "beast.xml.state"));
+        OutputStream out = new FileOutputStream(new File(stepDir.getPath() + fileSep + "beast.xml.state"));
+        byte[] buf = new byte[1024];
+        int len;
+        while ((len = in.read(buf)) > 0) {
+            out.write(buf, 0, len);
+        }
+        in.close();
+        out.close();
+	}
 	
 } // PathSampler
