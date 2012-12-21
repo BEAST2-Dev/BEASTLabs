@@ -93,17 +93,59 @@ public class CauchyPlusConstant extends PopulationFunction.Abstract {
         double C = CInput.get().getValue();
         
         if (B==0) {
-            return (t-t0)/(A+C);
+            return t/(A+C);
         }
         
         if (C==0) {
             return (t-B*Math.pow(t0-t,3)/3.0)/A
                     + B*Math.pow(t0,3)/3.0/A;
-        }
+        }        
 
         return -A*Math.atan(t0*Math.sqrt(B*C/(A + C)))/Math.sqrt(B*Math.pow(C,3)*(A + C))
                 + A*Math.atan(Math.sqrt(B*C/(A + C))*(-t + t0))/Math.sqrt(B*Math.pow(C,3)*(A + C))
                 + t0/C - (-t + t0)/C;
+    }
+    
+    /**
+     * Calculate and return result of integral \int_t_1^t 2/N(s)ds.  This method
+     * is slightly more accurate than simply using getIntensity(t2)-getIntensity(t1).
+     * 
+     * @param t1
+     * @param t2
+     * @return Result of integral.
+     */
+    @Override
+    public double getIntegral(double t1, double t2) {
+        
+        double A = AInput.get().getValue();
+        double B = BInput.get().getValue();
+        double t0 = t0Input.get().getValue();
+        double C = CInput.get().getValue();
+        
+        if (B==0) {
+            return (t2-t1)/(A+C);
+        }
+        
+        if (C==0) {
+            return (t2-B*Math.pow(t0-t2,3)/3.0)/A
+                    -(t1-B*Math.pow(t0-t1,3)/3.0)/A;
+        }
+        
+        double I = (A/Math.sqrt(B*Math.pow(C,3)*(A+C)))
+                *(Math.atan(Math.sqrt(B*C/(A+C))*(t0-t2))
+                -Math.atan(Math.sqrt(B*C/(A+C))*(t0-t1)))
+                + (t2-t1)/C;
+        
+        /* DEBUG:
+        double Iold = getIntensity(t2)-getIntensity(t1);
+        System.out.println(
+                "I="+I
+                +", Iold="+Iold
+                +", dI="+String.valueOf(I-Iold)
+                +", t1="+t1+", t2="+t2);
+        */
+        
+        return I;
     }
     
 
