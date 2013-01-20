@@ -30,6 +30,7 @@
 		<fileset dir="${beast2path}/lib" includes="jam.jar"/>
 		<fileset dir="${beast2path}/lib" includes="beagle.jar"/>
 		<fileset dir="${beast2path}/lib" includes="fest.jar"/>
+		<fileset dir="${beast2path}/lib" includes="colt.jar"/>
         <pathelement path="${beast2classpath}"/>
 	</path>
 
