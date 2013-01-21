@@ -124,12 +124,11 @@ public class TreeAnnotator {
         totalTrees = 10000;
         totalTreesUsed = 0;
 
-        progressStream.println("Reading trees (bar assumes 10,000 trees)...");
+        //progressStream.println("Reading trees (bar assumes 10,000 trees)...");
         progressStream.println("0              25             50             75            100");
         progressStream.println("|--------------|--------------|--------------|--------------|");
 
-        int stepSize = totalTrees / 60;
-        if (stepSize < 1) stepSize = 1;
+        int stepSize = Math.max(totalTrees / 60, 1);
 
         TreeSetParser parser = new TreeSetParser(burnin, bAllowSingleChild);
         try {
@@ -220,8 +219,8 @@ public class TreeAnnotator {
         progressStream.println("0              25             50             75            100");
         progressStream.println("|--------------|--------------|--------------|--------------|");
 
-        stepSize = totalTrees / 60;
-        if (stepSize < 1) stepSize = 1;
+        stepSize = Math.max(totalTrees / 60, 1);
+        int reported = 0;
 
         // this call increments the clade counts and it shouldn't
         // this is remedied with removeClades call after while loop below
@@ -232,9 +231,10 @@ public class TreeAnnotator {
             int counter = 0;
         	for (Tree tree: trees) {
                 cladeSystem.collectAttributes(tree);
-                if (counter > 0 && counter % stepSize == 0) {
+                if (counter > 0 && counter % stepSize == 0 && reported < 61) {
                     progressStream.print("*");
                     progressStream.flush();
+                    reported++;
                 }
                 totalTreesUsed++;
                 counter++;
@@ -348,8 +348,8 @@ public class TreeAnnotator {
         progressStream.println("0              25             50             75            100");
         progressStream.println("|--------------|--------------|--------------|--------------|");
 
-        int stepSize = totalTrees / 60;
-        if (stepSize < 1) stepSize = 1;
+        int stepSize = Math.max(totalTrees / 60, 1);
+        int reported = 0;
 
         int counter = 0;
         for (Tree tree : trees) {
@@ -358,9 +358,10 @@ public class TreeAnnotator {
               bestTree = tree;
               bestScore = score;
           }
-          if (counter > 0 && counter % stepSize == 0) {
+          if (counter > 0 && counter % stepSize == 0 && reported < 61) {
               progressStream.print("*");
               progressStream.flush();
+              reported++;
           }
           counter++;
         }
@@ -1476,6 +1477,7 @@ public class TreeAnnotator {
 
         int reportStepSize = totalTrees / 60;
         if (reportStepSize < 1) reportStepSize = 1;
+        int reported = 0;
 
 
         // this call increments the clade counts and it shouldn't
@@ -1519,9 +1521,10 @@ public class TreeAnnotator {
                 ths[k] += hs[k];
             }
             totalTreesUsed += 1;
-            if (counter > 0 && counter % reportStepSize == 0) {
+            if (counter > 0 && counter % reportStepSize == 0 && reported < 61) {
                 progressStream.print("*");
                 progressStream.flush();
+                reported++;
             }
             counter++;
 
