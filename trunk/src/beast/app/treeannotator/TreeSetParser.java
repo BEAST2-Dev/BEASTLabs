@@ -22,7 +22,9 @@ package beast.app.treeannotator;
 
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
@@ -79,16 +81,26 @@ public class TreeSetParser {
 		m_fMaxLat = -90; m_fMaxLong = -180;
 	}
 	
+	long fileStep;
+	long fileRead = 0;
+	long fileMarked = 0;
+
+	
 	public Node [] parseFile(String sFile) throws Exception {
 		//List<String> sNewickTrees = new List<String>();
 		List<Node> trees = new ArrayList<Node>();
 		m_nOffset = 0;
 		// parse Newick tree file
+		File file = new File(sFile);
+		fileStep = Math.max(file.length() / 61, 1);
+		fileRead = 0;
+		fileMarked = 0;
+		
 		BufferedReader fin = new BufferedReader(new FileReader(sFile));
-		String sStr = fin.readLine();
+		String sStr = readLine(fin);
 		// grab translate block
 		while (fin.ready() && sStr.toLowerCase().indexOf("translate") < 0) {
-			sStr = fin.readLine();
+			sStr = readLine(fin);
 		}
 		m_bIsLabelledNewick = false;
 		m_nNrOfLabels = m_sLabels.size();
@@ -97,9 +109,12 @@ public class TreeSetParser {
 			m_bIsLabelledNewick = true;
 			// could not find translate block, assume it is a list of Newick trees instead of Nexus file
 			fin.close();
+			fileRead = 0;
+			fileMarked = 0;
 			fin = new BufferedReader(new FileReader(sFile));
 			while (fin.ready() && m_nNrOfLabels == 0) {
-				sStr = fin.readLine();
+				sStr = readLine(fin);
+				fileRead += sStr.length();
 				if (sStr.length() > 2 && sStr.indexOf("(") >= 0) {
 					String sStr2 = sStr;
 					sStr2 = sStr2.substring(sStr2.indexOf("("));
@@ -129,7 +144,7 @@ public class TreeSetParser {
 			}
 
 			while (fin.ready()) {
-				sStr = fin.readLine();
+				sStr = readLine(fin);
 				if (sStr.length() > 2 && sStr.indexOf("(") >= 0) {
 					Node tree = parseNewick(sStr);
 					tree.sort();
@@ -141,7 +156,7 @@ public class TreeSetParser {
 			}
 		} else {
 			// read tree set from file, and store in individual strings
-			sStr = fin.readLine();
+			sStr = readLine(fin);
 			//m_nNrOfLabels = 0;
 			boolean bLastLabel = false;
 			while (fin.ready() && !bLastLabel) {
@@ -192,15 +207,15 @@ public class TreeSetParser {
 					m_nNrOfLabels++;
 				}
 				if (!bLastLabel) {
-					sStr = fin.readLine();
+					sStr = readLine(fin);
 				}
 			}
 			
 			// read trees
 			int nBurnIn = m_nBurnIn;
-			//int k = 0;
+			//int k = 0;			
 			while (fin.ready()) {
-				sStr = fin.readLine();
+				sStr = readLine(fin);
 				sStr = sStr.trim();
 				if (sStr.length() > 5) {
 					String sTree = sStr.substring(0,5);
@@ -211,20 +226,11 @@ public class TreeSetParser {
 							if (i > 0) {
 								sStr = sStr.substring(i);
 							}
-//						if (m_bSurpressMetadata) {
-//							while (sStr.indexOf('[') >= 0) {
-//								int i0 = sStr.indexOf('[');
-//								int i1 = sStr.indexOf(']');
-//								sStr = sStr.substring(0, i0) + sStr.substring(i1 + 1);
-//							}
-//						}
 							Node tree = parseNewick(sStr);
-							//System.err.println(k + " " + tree);
 							tree.sort();
 							tree.labelInternalNodes(m_nNrOfLabels);
 							trees.add(tree);
-							if (trees.size() % 100 ==0) {if (m_nNrOfLabels>=100||trees.size() % 1000 ==0) {System.err.print(trees.size() + " ");}}
-							//sNewickTrees.add(sStr);
+							//if (trees.size() % 100 ==0) {if (m_nNrOfLabels>=100||trees.size() % 1000 ==0) {System.err.print(trees.size() + " ");}}
 						} else {
 							nBurnIn--;
 						}
@@ -253,11 +259,24 @@ public class TreeSetParser {
 		}
 
 		System.err.println();
-		System.err.println("Geo: " +m_fMinLong + "x" + m_fMinLat + " " + m_fMaxLong + "x" + m_fMaxLat);
+		//System.err.println("Geo: " +m_fMinLong + "x" + m_fMinLat + " " + m_fMaxLong + "x" + m_fMaxLat);
 		return trees.toArray(new Node[1]);
 	} // parseFile
 
 	
+	int k = 0;
+	private String readLine(BufferedReader fin) throws IOException {
+		String s = fin.readLine();
+		fileRead += s.length();
+		if (fileRead > fileMarked - 10) {
+			System.err.print("*");
+			fileMarked += fileStep;
+			k++;
+		}
+//		System.err.println(fileRead + " " + fileMarked + " " + k);
+		return s;
+	}
+
 	/** move y-position of a tree with offset f **/
 	public void offsetHeight(Node node, double f) {
 		if (!node.isLeaf()) {
@@ -583,46 +602,6 @@ public class TreeSetParser {
 			} catch (Exception e) {
 				// TODO: handle exception
 			}
-			
-			// parse as list of numbers
-//			i = 0;
-//			start = 1;
-//			int iNumber = 0;
-//			//Pattern pattern = Pattern.compile("^([+-0-9\\.]+)([eE]-??[0-9]+)??.*");
-//			Pattern pattern = Pattern.compile("((-?[0-9]+(\\.[0-9]+)?)([eE]-?[0-9]+)?)");
-//			try {
-//				while (i < m_sMetaData.length()) {
-//					char c = m_sMetaData.charAt(i);
-//					if ((c >= '0' && c <= '9') || c=='+' || c=='-') {
-//						String str = m_sMetaData.substring(i);
-//						Matcher m = pattern.matcher(str);
-//						m.find();
-//						String mantissa = m.group(1);
-//						i  += mantissa.length();
-//						double value = 0;
-//						try {
-//							value = Double.parseDouble(mantissa);
-//						} catch (Exception e) {
-//							System.err.println(e.getMessage());
-//						}
-//						node.setMetaData(name, value);
-//						
-//						metaDataList.add(value);
-//						if (g_maxListValue.size() < metaDataList.size()) {
-//							g_maxListValue.add(Double.NEGATIVE_INFINITY);
-//							g_minListValue.add(Double.POSITIVE_INFINITY);
-//						}
-//						g_maxListValue.set(iNumber, Math.max(g_maxListValue.get(iNumber), value));
-//						g_minListValue.set(iNumber, Math.min(g_minListValue.get(iNumber), value));
-//						iNumber++;
-//					} else {
-//						i++;
-//					}
-//				}
-//			} catch (Exception e) {
-//				// TODO: handle exception
-//			}
-//
 		}
 
 } // class TreeFileParser
