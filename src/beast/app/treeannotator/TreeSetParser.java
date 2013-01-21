@@ -477,7 +477,7 @@ public class TreeSetParser {
 				stack.remove(stack.size()-1);
 				isFirstChild.remove(isFirstChild.size()-1);
 				metaData = sMetaData.remove(sMetaData.size() - 1);
-				parseMetaData(right, metaData);
+				parseMetaData(left, metaData);
 
 				Node parent = stack.lastElement();
 				parent.setLeft(left);
@@ -520,6 +520,7 @@ public class TreeSetParser {
 				break;
 			case SEMI_COLON:
 				//System.err.println(stack.lastElement().toString());
+				parseMetaData(stack.lastElement(), sMetaData.lastElement());
 				return stack.lastElement();
 			default:
 				throw new Exception("parseNewick: unknown token");	
