@@ -152,7 +152,7 @@ public class TreeAnnotator {
 	            	cladeSystem.add(tree, false);
 	                totalTreesUsed++;
 	            }
-	            totalTrees = burnin + totalTreesUsed;
+	            totalTrees = Math.max(burnin, 0) + totalTreesUsed;
             } catch (Exception e) {
                 System.err.println("Error Processing Input Tree: " + e.getMessage());
                 return;
@@ -274,8 +274,14 @@ public class TreeAnnotator {
                     System.out;
             targetTree.init(stream);
             stream.println();
-            stream.println(targetTree.getRoot().toShortNewick(false));
-            stream.println();
+            
+            stream.print("tree TREE1 = ");
+            int[] dummy = new int[1];
+            String sNewick = targetTree.getRoot().toSortedNewick(dummy, true);
+            stream.print(sNewick);
+            stream.println(";");
+//            stream.println(targetTree.getRoot().toShortNewick(false));
+//            stream.println();
             targetTree.close(stream);
             stream.println();
         } catch (Exception e) {
