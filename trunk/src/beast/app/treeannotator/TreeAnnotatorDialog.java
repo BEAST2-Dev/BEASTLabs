@@ -55,10 +55,10 @@ public class TreeAnnotatorDialog {
     });
 
     private JComboBox nodeHeightsCombo = new JComboBox(new String[] {
+            TreeAnnotator.HeightsSummary.values()[3].toString(),
             TreeAnnotator.HeightsSummary.values()[0].toString(),
             TreeAnnotator.HeightsSummary.values()[1].toString(),
-            TreeAnnotator.HeightsSummary.values()[2].toString(),
-            TreeAnnotator.HeightsSummary.values()[3].toString()
+            TreeAnnotator.HeightsSummary.values()[2].toString()
     });
 
 	private File targetFile = null;
