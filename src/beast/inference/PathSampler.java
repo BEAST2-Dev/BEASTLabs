@@ -242,7 +242,19 @@ public class PathSampler extends beast.core.Runnable {
         			(beast.app.util.Utils.isWindows()?
         					stepDir.getAbsoluteFile() + "/run.bat":
         					stepDir.getAbsoluteFile() + "/run.sh");
-				Process p = Runtime.getRuntime().exec(cmd);
+	        	
+				ProcessBuilder pb = new ProcessBuilder(cmd);
+				pb.redirectErrorStream(true); // merge stdout and stderr
+				Process p = pb.start();
+//	        	
+//				Process p = Runtime.getRuntime().exec(cmd);
+				BufferedReader pout = new BufferedReader((new InputStreamReader(p.getInputStream())));
+				String line;
+				while ((line = pout.readLine()) != null) {
+					//System.out.println(line);
+				}
+				pout.close();
+				
 				p.waitFor();
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -288,14 +300,13 @@ public class PathSampler extends beast.core.Runnable {
 				checkLogFiles(i);
 					
 					System.out.println(cmd);
-					Process p = Runtime.getRuntime().exec(cmd);
+					
+					ProcessBuilder pb = new ProcessBuilder(cmd);
+					pb.redirectErrorStream(true); // merge stdout and stderr
+					Process p = pb.start();
+					
 					BufferedReader pout = new BufferedReader((new InputStreamReader(p.getInputStream())));
-					BufferedReader perr = new BufferedReader(new InputStreamReader(p.getErrorStream()));
 					String line;
-					while ((line = perr.readLine()) != null) {
-						System.err.println(line);
-					}
-					perr.close();
 					while ((line = pout.readLine()) != null) {
 						System.out.println(line);
 					}

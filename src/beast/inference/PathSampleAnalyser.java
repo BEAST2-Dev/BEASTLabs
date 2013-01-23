@@ -1,6 +1,8 @@
 package beast.inference;
 
 import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.math.distribution.BetaDistribution;
 import org.apache.commons.math.distribution.BetaDistributionImpl;
@@ -27,6 +29,9 @@ public class PathSampleAnalyser extends Plugin {
 	 * @throws Exception
 	 */
 	double estimateMarginalLikelihood(int nSteps, double alpha, String rootDir, int burnInPercentage) throws Exception {
+		List<List<Double>> logdata = new ArrayList<List<Double>>(); 
+		
+		
 		String sFormat = "";
 		for (int i = nSteps; i > 0; i /= 10) {
 			sFormat += "#";
@@ -37,11 +42,17 @@ public class PathSampleAnalyser extends Plugin {
 		double [] marginalLs = new double[nSteps];
 		Double [] [] marginalLs2 = new Double[nSteps][];
 		for (int i = 0; i < nSteps; i++) {
+			List<Double> logdata1 = new ArrayList<Double>();
 			String logFile = getStepDir(rootDir, i) + "/" + PathSampler.LIKELIHOOD_LOG_FILE;
 			LogAnalyser analyser = new LogAnalyser(new String[] {logFile}, 2000, burnInPercentage);
 			marginalLs[i] = analyser.getMean("likelihood");
 			marginalLs2[i] = analyser.getTrace("likelihood");
 			System.err.println("marginalLs[" + i + " ] = " + marginalLs[i]);
+
+			logdata1.add(marginalLs[i]);
+			logdata1.add(0.0);
+			logdata1.add(analyser.getESS("likelihood"));
+			logdata.add(logdata1);
 		}
 		
 		// combine steps
@@ -56,6 +67,7 @@ public class PathSampleAnalyser extends Plugin {
 			// intervals follow Beta distribution
 			BetaDistribution betaDistribution = new BetaDistributionImpl(alpha, 1.0);
 			for (int i = 0; i < nSteps - 1; i++) {
+				List<Double> logdata1 = logdata.get(i);;
 				double beta1 = betaDistribution.inverseCumulativeProbability((i + 0.0)/ (nSteps - 1));
 				double beta2 = betaDistribution.inverseCumulativeProbability((i + 1.0)/ (nSteps - 1));
 				double weight = beta2 - beta1;
@@ -74,11 +86,37 @@ public class PathSampleAnalyser extends Plugin {
 					x += Math.exp(weight * (marginal2[j] - logLmax)); 
 				}
 				logMarginalL += Math.log(x/n);
-				
+
+				logdata1.set(1, weight * logLmax + Math.log(x/n));
+
 //				logMarginalL += weight * marginalLs[i]; 
 			}		
 		}
+		
+		System.out.println("\nStep        theta         likelihood   contribution ESS");
+		BetaDistribution betaDistribution = new BetaDistributionImpl(alpha, 1.0);
+		for (int i = 0; i < nSteps; i++) {
+			System.out.print(format(i)+" ");
+			double beta = betaDistribution != null ?
+					betaDistribution.inverseCumulativeProbability((i + 0.0)/ (nSteps - 1)):
+						(i + 0.0)/ (nSteps - 1);
+			System.out.print(format(beta)+" ");
+
+			
+			for (Double d : logdata.get(i)) {
+				System.out.print(format(d) + " ");
+			}
+			System.out.println();
+		}		
+		System.out.println();
 		return logMarginalL;
+	}
+
+	private String format(double d) {
+		DecimalFormat format = new DecimalFormat("###.####");
+		String s = format.format(d);
+		s += "            ".substring(s.length());
+		return s;
 	}
 
 	private double max(Double[] marginal2) {
