@@ -316,7 +316,7 @@ public class TreeAnnotator {
 				}
 				metadata += ",";
 			}
-			metadata = metadata.substring(0, metadata.length() - 2);
+			metadata = metadata.substring(0, metadata.length() - 1);
 			node.m_sMetaData = metadata;
 		}		
 	}
