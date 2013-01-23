@@ -1388,7 +1388,7 @@ public class TreeAnnotator {
             System.exit(0);
         }
 
-        HeightsSummary heights = HeightsSummary.KEEP_HEIGHTS;
+        HeightsSummary heights = HeightsSummary.CA_HEIGHTS;
         if (arguments.hasOption("heights")) {
             String value = arguments.getStringOption("heights");
             if (value.equalsIgnoreCase("mean")) {
@@ -1529,6 +1529,7 @@ public class TreeAnnotator {
             counter++;
 
         }
+        targetTree.initAndValidate();
         cladeSystem.removeClades(targetTree, targetTree.getRoot(), true);
         for (int k = 0; k < nClades; ++k) {
             ths[k] /= totalTreesUsed;
