@@ -50,6 +50,8 @@ public class PathSampler extends beast.core.Runnable {
 			"If there are k hosts in the list, for particle i the term $(host) in the script will be replaced " +
 			"by the (i modulo k) host in the list. " +
 			"Note that whitespace is removed");
+	public Input<Boolean> doNotRun = new Input<Boolean>("doNotRun", "Set up all files but do not run analysis if true. " +
+			"This can be useful for setting up an analysis on a cluster", false);
 	
 	public Input<Boolean> deleteOldLogsInpuyt = new Input<Boolean>("deleteOldLogs", "delete existing log files from root dir", false);
 	
@@ -145,6 +147,17 @@ public class PathSampler extends beast.core.Runnable {
 			betaDistribution = new BetaDistributionImpl(alphaInput.get(), 1.0);
 		}
 		
+		
+		PrintStream [] cmdFiles = new PrintStream[BeastMCMC.m_nThreads];
+    	for (int i = 0; i < BeastMCMC.m_nThreads; i++) {
+    		FileOutputStream outStream = (beast.app.util.Utils.isWindows()?
+    					new FileOutputStream(rootDirInput.get() + "/run" + i +".bat"):
+    					new FileOutputStream(rootDirInput.get() + "/run" + i +".sh"));
+    		 cmdFiles[i] = new PrintStream(outStream);
+    	}
+
+		
+		
 		for (int i = 0; i < m_nSteps; i++) {
 			if (i < BeastMCMC.m_nThreads) {
 				mcmc.m_oBurnIn.setValue(preBurnIn, mcmc);
@@ -175,11 +188,22 @@ public class PathSampler extends beast.core.Runnable {
         	PrintStream out2 = new PrintStream(cmdFile);
             out2.print(cmd);
 			out2.close();
+
+			if (i >= BeastMCMC.m_nThreads) {
+				String copyCmd = (beast.app.util.Utils.isWindows()
+						? "copy " + getStepDir(i - BeastMCMC.m_nThreads) + "\\beast.xml.state " + getStepDir(i)
+						: "cp " + getStepDir(i - BeastMCMC.m_nThreads) + "/beast.xml.state " + getStepDir(i)
+							);
+				cmdFiles[i % BeastMCMC.m_nThreads].print(copyCmd);				
+			}
+			cmdFiles[i % BeastMCMC.m_nThreads].print(cmd);
 			File script = new File(stepDir.getAbsoluteFile() + 
 					(beast.app.util.Utils.isWindows()? "/run.bat": "/run.sh"));
 			script.setExecutable(true);
 		}
-		
+    	for (int k = 0; k < BeastMCMC.m_nThreads; k++) {
+    		cmdFiles[k].close();
+    	}
 	} // initAndValidate
 	
 	private Distribution extractLikelihood(MCMC mcmc) throws Exception {
@@ -266,6 +290,12 @@ public class PathSampler extends beast.core.Runnable {
 	
     @Override
     public void run() throws Exception {
+    	if (doNotRun.get()) {
+    		System.out.println("batch files can be found in " + rootDirInput.get());
+    		System.out.println("Run these and then run"); 
+    		System.out.println("java beast.inference.PathSampleAnalyser " + m_nSteps + " " + alphaInput.get() + " " + rootDirInput.get() + " " + burnInPercentage);
+    		return;
+    	}
     	long startTime = System.currentTimeMillis();
 
 		for (int i = 0; i < m_nSteps; i++) {
