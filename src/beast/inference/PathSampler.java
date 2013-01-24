@@ -189,6 +189,15 @@ public class PathSampler extends beast.core.Runnable {
             out2.print(cmd);
 			out2.close();
 
+        	cmdFile = 
+        			(beast.app.util.Utils.isWindows()?
+        					new FileOutputStream(stepDir.getAbsoluteFile() + "/resume.bat"):
+        					new FileOutputStream(stepDir.getAbsoluteFile() + "/resume.sh"));
+        	cmd = cmd.replace("-overwrite", "-resume");
+        	out2 = new PrintStream(cmdFile);
+            out2.print(cmd);
+			out2.close();
+
 			if (i >= BeastMCMC.m_nThreads) {
 				String copyCmd = (beast.app.util.Utils.isWindows()
 						? "copy " + getStepDir(i - BeastMCMC.m_nThreads) + "\\beast.xml.state " + getStepDir(i)
