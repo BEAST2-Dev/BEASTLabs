@@ -19,9 +19,7 @@ import java.util.List;
  * @author remco@cs.waikato.ac.nz
  */
 @Description("An alignment containing sequences randomly generated using a"
-        + "given site model down a given tree.  Due to the requirement of"
-        + "the parent Alignment plugin, this plugin requires at least one"
-        + "dummy sequence to be provided as an input.")
+        + "given site model down a given tree.")
 public class SimulatedAlignment extends Alignment {
     public Input<Alignment> m_data = new Input<Alignment>("data", "alignment data which specifies datatype and taxa of the beast.tree", Validate.REQUIRED);
     public Input<Tree> m_treeInput = new Input<Tree>("tree", "phylogenetic beast.tree with sequence data in the leafs", Validate.REQUIRED);
@@ -67,6 +65,12 @@ public class SimulatedAlignment extends Alignment {
      * an array used to transfer transition probabilities
      */
     protected double[][] m_probabilities;
+    
+    public SimulatedAlignment() {
+        
+        // Override the sequence input requirement.
+        m_pSequences.setRule(Validate.OPTIONAL);
+    }
 
     @Override
     public void initAndValidate() throws Exception {
