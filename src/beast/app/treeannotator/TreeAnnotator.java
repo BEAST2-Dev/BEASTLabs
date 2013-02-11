@@ -50,6 +50,8 @@ import java.util.*;
 /**
  * @author Alexei Drummond
  * @author Andrew Rambaut
+ * 
+ * TreeAnnotator ported from BEAST 1
  */
 public class TreeAnnotator {
 
