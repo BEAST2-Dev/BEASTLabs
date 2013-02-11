@@ -82,7 +82,7 @@
 		<echo message="Successfully compiled." />
 	</target>
 
-	<!-- make the beast.jar and beauti.jar -->
+	<!-- make the beastii.hjar and TreeAnnotator.jar -->
 	<target name="dist_all_BEASTii" depends="compile-allBEASTii" description="create BEASTii jar">
 		<!-- Create the distribution directory -->
 		<mkdir dir="${distii}" />
@@ -92,6 +92,25 @@
 			<manifest>
 				<attribute name="Built-By" value="${user.name}" />
 				<attribute name="Main-Class" value="${main_class_BEAST}" />
+			</manifest>
+			<fileset dir="${buildii}">
+				<include name="beast/**/*.class" />
+			</fileset>
+			<fileset dir="${beast2classpath}">
+				<include name="beast/**/*.class" />
+				<include name="beast/**/*.properties" />
+				<include name="beast/**/*.png" />
+				<include name="beagle/**/*.class" />
+				<include name="org/**/*.class" />
+			</fileset>
+			<zipgroupfileset dir="${beast2path}/lib" includes="jam.jar" />
+			<!--zipgroupfileset dir="${lib}" includes="commons-math-II.0.jar" /-->
+		</jar>
+
+		<jar jarfile="${distii}/treeannotator.jar">
+			<manifest>
+				<attribute name="Built-By" value="${user.name}" />
+				<attribute name="Main-Class" value="beast.app.treeannotator.TreeAnnotator" />
 			</manifest>
 			<fileset dir="${buildii}">
 				<include name="beast/**/*.class" />
