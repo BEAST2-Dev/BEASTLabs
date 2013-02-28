@@ -28,7 +28,7 @@ public class CombinedOperator extends Operator {
 	@Override
 	public double proposal() {
 		operator1 = operatorGroup1.get(Randomizer.nextInt(operatorGroup1.size()));
-		operator2 = operatorGroup1.get(Randomizer.nextInt(operatorGroup2.size()));
+		operator2 = operatorGroup2.get(Randomizer.nextInt(operatorGroup2.size()));
 		double logHR = operator1.proposal();
 		if (logHR == Double.NEGATIVE_INFINITY) {
 			operator2 = null;
