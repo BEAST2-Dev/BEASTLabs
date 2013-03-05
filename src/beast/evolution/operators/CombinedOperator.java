@@ -5,6 +5,7 @@ import java.util.List;
 
 import beast.core.Description;
 import beast.core.Input;
+import beast.core.StateNode;
 import beast.core.Input.Validate;
 import beast.core.Operator;
 import beast.util.Randomizer;
@@ -50,5 +51,21 @@ public class CombinedOperator extends Operator {
 		if (operator2 != null) {
 			operator2.reject();
 		}
+	}
+	
+	@Override
+	public List<StateNode> listStateNodes() throws Exception {
+		List<StateNode> list = new ArrayList<StateNode>();
+		for (Operator operator : operatorGroup1) {
+			List<StateNode> list2 = operator.listStateNodes();
+			list.addAll(list2);
+			
+		}
+		for (Operator operator : operatorGroup2) {
+			List<StateNode> list2 = operator.listStateNodes();
+			list.addAll(list2);
+			
+		}
+		return list;
 	}
 }
