@@ -197,7 +197,8 @@ public class PathSampler extends beast.core.Runnable {
         	out2 = new PrintStream(cmdFile);
             out2.print(cmd);
 			out2.close();
-
+//TODO: probably more efficient to group cmdFiles in block of #steps/#threads
+//instead of skipping #threads steps every time.
 			if (i >= BeastMCMC.m_nThreads) {
 				String copyCmd = (beast.app.util.Utils.isWindows()
 						? "copy " + getStepDir(i - BeastMCMC.m_nThreads) + "\\beast.xml.state " + getStepDir(i)
@@ -238,12 +239,13 @@ public class PathSampler extends beast.core.Runnable {
 	}
 
 	String getCommand(String sStepDir, int iStep) {
+		sStepDir = sStepDir.replace("\\", "\\\\");
 		String sCommand = m_sScript.replaceAll("\\$\\(dir\\)", sStepDir);
 		//while (sCommand.matches("$(seed)")) {
 			sCommand = sCommand.replaceAll("\\$\\(seed\\)", Math.abs(Randomizer.nextInt())+"");
 		//}
-		sCommand = sCommand.replaceAll("\\$\\(java.library.path\\)", System.getProperty("java.library.path"));
-		sCommand = sCommand.replaceAll("\\$\\(java.class.path\\)", System.getProperty("java.class.path"));
+		sCommand = sCommand.replaceAll("\\$\\(java.library.path\\)", sanitise(System.getProperty("java.library.path")));
+		sCommand = sCommand.replaceAll("\\$\\(java.class.path\\)", sanitise(System.getProperty("java.class.path")));
 		if (m_sHosts != null) {
 			sCommand = sCommand.replaceAll("\\$\\(host\\)", m_sHosts[iStep % m_sHosts.length]);
 		}
@@ -256,6 +258,18 @@ public class PathSampler extends beast.core.Runnable {
 	}
 
 	
+	private String sanitise(String property) {
+		// sanitise for windows
+		if (beast.app.util.Utils.isWindows()) {
+			String cwd = System.getProperty("user.dir");
+			cwd = cwd.replace("\\", "/");
+			property = property.replaceAll(";\\.", ";" +  cwd + ".");
+			property = property.replace("\\", "/");
+		}
+		return property;
+	}
+
+
 	class StepThread extends Thread {
 		int stepNr;
 		
