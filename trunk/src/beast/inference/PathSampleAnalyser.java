@@ -66,6 +66,8 @@ public class PathSampleAnalyser extends Plugin {
 		} else {
 			// intervals follow Beta distribution
 			BetaDistribution betaDistribution = new BetaDistributionImpl(alpha, 1.0);
+			double [] contrib = new double[nSteps-1];
+			
 			for (int i = 0; i < nSteps - 1; i++) {
 				List<Double> logdata1 = logdata.get(i);;
 				double beta1 = betaDistribution.inverseCumulativeProbability((i + 0.0)/ (nSteps - 1));
@@ -87,10 +89,12 @@ public class PathSampleAnalyser extends Plugin {
 				}
 				logMarginalL += Math.log(x/n);
 
+				contrib[i] = weight * logLmax + Math.log(x/n);
 				logdata1.set(1, weight * logLmax + Math.log(x/n));
 
 //				logMarginalL += weight * marginalLs[i]; 
-			}		
+			}
+						
 		}
 		
 		System.out.println("\nStep        theta         likelihood   contribution ESS");
@@ -115,7 +119,9 @@ public class PathSampleAnalyser extends Plugin {
 	private String format(double d) {
 		DecimalFormat format = new DecimalFormat("###.####");
 		String s = format.format(d);
-		s += "            ".substring(s.length());
+		if (s.length() < 12) {
+			s += "            ".substring(s.length());
+		}
 		return s;
 	}
 
