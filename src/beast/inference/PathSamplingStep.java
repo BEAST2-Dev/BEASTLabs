@@ -6,8 +6,10 @@ import beast.core.Description;
 import beast.core.Distribution;
 import beast.core.Evaluator;
 import beast.core.Input;
+import beast.core.Logger;
 import beast.core.MCMC;
 import beast.core.Operator;
+import beast.core.StateNodeInitialiser;
 import beast.core.util.CompoundDistribution;
 import beast.util.Randomizer;
 
@@ -48,6 +50,74 @@ public class PathSamplingStep extends MCMC {
 		}
 	}
 	
+	
+    @Override
+    public void run() throws Exception {
+        // set up state (again). Other plugins may have manipulated the
+        // StateNodes, e.g. set up bounds or dimensions
+        state.initAndValidate();
+        // also, initialise state with the file name to store and set-up whether to resume from file
+        state.setStateFileName(m_sStateFile);
+        operatorSchedule.setStateFileName(m_sStateFile);
+
+        nBurnIn = m_oBurnIn.get();
+        nChainLength = m_oChainLength.get();
+        int nInitiliasiationAttemps = 0;
+        state.setEverythingDirty(true);
+        posterior = posteriorInput.get();
+
+        if (m_bRestoreFromFile) {
+            state.restoreFromFile();
+            operatorSchedule.restoreFromFile();
+            nBurnIn = 0;
+            fOldLogLikelihood = robustlyCalcPosterior(posterior);
+        } else {
+            do {
+                for (StateNodeInitialiser initialiser : m_initilisers.get()) {
+                    initialiser.initStateNodes();
+                }
+                fOldLogLikelihood = robustlyCalcPosterior(posterior);
+            } while (Double.isInfinite(fOldLogLikelihood) && nInitiliasiationAttemps++ < 10);
+        }
+        long tStart = System.currentTimeMillis();
+
+        // do the sampling
+        logAlpha = 0;
+        bDebug = Boolean.valueOf(System.getProperty("beast.debug"));
+
+
+//        System.err.println("Start state:");
+//        System.err.println(state.toString());
+
+        System.err.println("Start likelihood: " + fOldLogLikelihood + " " + (nInitiliasiationAttemps > 1 ? "after " + nInitiliasiationAttemps + " initialisation attempts" : ""));
+        if (Double.isInfinite(fOldLogLikelihood) || Double.isNaN(fOldLogLikelihood)) {
+            reportLogLikelihoods(posterior, "");
+            throw new Exception("Could not find a proper state to initialise. Perhaps try another seed.");
+        }
+
+        // initialises log so that log file headers are written, etc.
+        for (Logger log : m_loggers.get()) {
+            log.init();
+        }
+
+        doLoop();
+
+        operatorSchedule.showOperatorRates(System.out);
+        long tEnd = System.currentTimeMillis();
+        System.out.println("Total calculation time: " + (tEnd - tStart) / 1000.0 + " seconds");
+        close();
+
+        System.err.println("End likelihood: " + fOldLogLikelihood);
+//        System.err.println(state);
+        state.storeToFile(nChainLength);
+        // Do not store operator optimisation information
+        // since this may not be valid for the next step
+        // especially when sampling from the prior only
+//        operatorSchedule.storeToFile();
+    } // run;
+	
+	
+	
     /**
      * main MCMC loop *
      */
@@ -64,7 +134,10 @@ public class PathSamplingStep extends MCMC {
             state.store(currentState);
             if (m_nStoreEvery > 0 && iSample % m_nStoreEvery == 0 && iSample > 0) {
                 state.storeToFile(iSample);
-            	operatorSchedule.storeToFile();
+                // Do not store operator optimisation information
+                // since this may not be valid for the next step
+                // especially when sampling from the prior only
+            	//operatorSchedule.storeToFile();
             }
 
             Operator operator = operatorSchedule.selectOperator();
