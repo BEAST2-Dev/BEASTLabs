@@ -240,12 +240,12 @@ public class PathSampler extends beast.core.Runnable {
 
 	String getCommand(String sStepDir, int iStep) {
 		sStepDir = sStepDir.replace("\\", "\\\\");
-		String sCommand = m_sScript.replaceAll("\\$\\(dir\\)", sStepDir);
+		String sCommand = m_sScript.replaceAll("\\$\\(dir\\)", "\"" + sStepDir + "\"");
 		//while (sCommand.matches("$(seed)")) {
 			sCommand = sCommand.replaceAll("\\$\\(seed\\)", Math.abs(Randomizer.nextInt())+"");
 		//}
-		sCommand = sCommand.replaceAll("\\$\\(java.library.path\\)", sanitise(System.getProperty("java.library.path")));
-		sCommand = sCommand.replaceAll("\\$\\(java.class.path\\)", sanitise(System.getProperty("java.class.path")));
+		sCommand = sCommand.replaceAll("\\$\\(java.library.path\\)",  "\"" + sanitise(System.getProperty("java.library.path")) + "\"");
+		sCommand = sCommand.replaceAll("\\$\\(java.class.path\\)", "\"" + sanitise(System.getProperty("java.class.path")) + "\"");
 		if (m_sHosts != null) {
 			sCommand = sCommand.replaceAll("\\$\\(host\\)", m_sHosts[iStep % m_sHosts.length]);
 		}
