@@ -1,14 +1,15 @@
 package beast.util;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+//import java.nio.file.Files;
+//import java.nio.file.Path;
+//import java.nio.file.Paths;
 import java.util.*;
 import java.util.regex.Pattern;
 
 /**
  * Given nex file(s) to replace sequence in the xml, but tip names have to be same.
+ * use java 1.7 File.copy
  * @author Walter Xie
  */
 public class ReplaceSequenceInXML {
@@ -24,13 +25,13 @@ public class ReplaceSequenceInXML {
         String nexFilePath = args[1];
 
         String xmlFileName = xmlFilePath + File.separator + "tree_" + treeTotal + "_0.xml";
-        Path source = Paths.get(xmlFileName);
-        if (!Files.exists(source)) throw new IllegalArgumentException("Cannot find input xml " + xmlFileName);
+//        Path source = Paths.get(xmlFileName);
+//        if (!Files.exists(source)) throw new IllegalArgumentException("Cannot find input xml " + xmlFileName);
 
         // copy sample XML to target folder
-        Path target = Paths.get(nexFilePath + File.separator + "xml" + File.separator + "tree_" + treeTotal + "_0.xml");
-        Files.copy(source, target);
-        System.out.println("\nCopy sample XML to " + target + " ...");
+//        Path target = Paths.get(nexFilePath + File.separator + "xml" + File.separator + "tree_" + treeTotal + "_0.xml");
+//        Files.copy(source, target);
+//        System.out.println("\nCopy sample XML to " + target + " ...");
 
         String stem_old = "tree_0_";
 
