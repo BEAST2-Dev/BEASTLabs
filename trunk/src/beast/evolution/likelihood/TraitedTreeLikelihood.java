@@ -61,7 +61,7 @@ public class TraitedTreeLikelihood extends TreeLikelihood {
         }
         System.out.println("TreeLikelihood uses " + m_likelihoodCore.getClass().getName());
 
-        m_fProportionInvariant = m_siteModel.getProportianInvariant();
+        m_fProportionInvariant = m_siteModel.getProportionInvariant();
         m_siteModel.setPropInvariantIsCategory(false);
         if (m_fProportionInvariant > 0) {
         	calcConstantPatternIndices(m_nPatterns, nStateCount);

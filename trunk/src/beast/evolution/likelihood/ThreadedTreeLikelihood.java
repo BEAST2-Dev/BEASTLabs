@@ -190,7 +190,7 @@ public class ThreadedTreeLikelihood extends Distribution {
     	//m_likelihoodCore = new ThreadedLikelihoodCoreNative(nStateCount);
         System.err.println("TreeLikelihood uses " + m_likelihoodCore.getClass().getName());
 
-        m_fProportionInvariant = m_siteModel.getProportianInvariant();
+        m_fProportionInvariant = m_siteModel.getProportionInvariant();
         m_siteModel.setPropInvariantIsCategory(false);
         if (m_fProportionInvariant > 0) {
         	calcConstantPatternIndices(nPatterns, nStateCount);
@@ -463,7 +463,7 @@ public class ThreadedTreeLikelihood extends Distribution {
   		  	try {
   		    	
 	            if (m_iConstantPattern != null) { // && !SiteModel.g_bUseOriginal) {
-	            	m_fProportionInvariant = m_siteModel.getProportianInvariant();
+	            	m_fProportionInvariant = m_siteModel.getProportionInvariant();
 	            }
 	        	//m_core.calculateAllPartials(cacheNode1, cacheNode2, cacheNode3, cacheNodeCount, m_iFrom, m_iTo);
 	            logPByThread[m_iThread] = m_core.calcLogP(m_iThread, 
@@ -532,7 +532,7 @@ public class ThreadedTreeLikelihood extends Distribution {
 				m_nCountDown.await();
 			} else {
 		        if (m_iConstantPattern != null) { // && !SiteModel.g_bUseOriginal) {
-		        	m_fProportionInvariant = m_siteModel.getProportianInvariant();
+		        	m_fProportionInvariant = m_siteModel.getProportionInvariant();
 		        }
 				//m_likelihoodCore.calculateAllPartials(cacheNode1, cacheNode2, cacheNode3, cacheNodeCount, 0, nPatterns);
 		        logPByThread[0] = m_likelihoodCore.calcLogP(0, 

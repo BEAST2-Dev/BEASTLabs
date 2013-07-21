@@ -214,7 +214,7 @@ public class ExperimentalTreeLikelihood extends Distribution {
             m_likelihoodCore.createNodePartials(extNodeCount + i);
         }
         
-        m_fProportionInvariant = m_siteModel.getProportianInvariant();
+        m_fProportionInvariant = m_siteModel.getProportionInvariant();
         if (m_fProportionInvariant > 0 && m_siteModel.m_bPropInvariantIsCategory == false) {
         	int [] iConstantPattern = calcConstantPatternIndices(nPatterns, nStateCount);
             m_likelihoodCore.setProportionInvariant(m_fProportionInvariant, iConstantPattern);
