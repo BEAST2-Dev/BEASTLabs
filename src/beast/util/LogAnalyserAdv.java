@@ -29,7 +29,7 @@ public class LogAnalyserAdv {
         traces.loadTraces();
 
         int percLower = 5;
-        int percUpper = 50;
+        int percUpper = 80;
         int percIncremental = 5;
 //        double[][] essMatrix = new double[traceNames.length][(percUpper-percLower)/percIncremental+1];
         double essThreshould = 100;
@@ -97,11 +97,7 @@ public class LogAnalyserAdv {
 
 //            System.out.print(distribution.getHpdLower() + "\t");
 //            System.out.print(distribution.getHpdUpper() + "\t");
-            double ess = distribution.getESS();
-//            if (ess < 100) System.out.print("*");
-            System.out.print(distribution.getESS());
-//            if (ess < 100) System.out.print("*");
-            System.out.print("\t");
+
 //                System.out.print(formatter.format(distribution.getStdErrorOfMean()));
 //                System.out.print(formatter.format(distribution.getMinimum()));
 //                System.out.print(formatter.format(distribution.getMaximum()));
@@ -113,6 +109,11 @@ public class LogAnalyserAdv {
             System.out.print(distribution.getAutoCorrelationTime() + "\t");
 //                System.out.print(formatter.format(distribution.getStdevAutoCorrelationTime()));
 
+            double ess = distribution.getESS();
+//            if (ess < 100) System.out.print("*");
+            System.out.print(distribution.getESS());
+//            if (ess < 100) System.out.print("*");
+            System.out.print("\t");
 //            System.out.println();
 //            }
         }
@@ -126,33 +127,36 @@ public class LogAnalyserAdv {
 
         String[] traceNames = new String[]{"posterior", "TreeHeight.Species"}; //"posterior", "TreeHeight.Species"
 //        int burnIN = -1;
-        int[] trees = new int[] {2,4,8,16,32,64,128}; //2,4,8,16,32,64,128,256
+        int[] trees = new int[] {256}; //2,4,8,16,32,64,128,256
+        boolean isCombined = true;
         int replicates = 100;
 
-        for (int tree : trees) {
-            for (int r=0; r<replicates; r++) {
+        if (!isCombined) {
+            for (int tree : trees) {
+                for (int r=0; r<replicates; r++) {
 //                System.out.println("\nGo to folder " + tree + "/" + r + " ...");
-                File folder = new File(workPath + tree + File.separator + r);
-                File[] listOfFiles = folder.listFiles();
+                    File folder = new File(workPath + tree + File.separator + r);
+                    File[] listOfFiles = folder.listFiles();
 
-                for (int i = 0; i < listOfFiles.length; i++) {
-                    File file = listOfFiles[i];
-                    if (file.isFile()) {
-                        String fileName = file.getName();
-                        if (fileName.endsWith("stdout.txt")) {
+                    for (int i = 0; i < listOfFiles.length; i++) {
+                        File file = listOfFiles[i];
+                        if (file.isFile()) {
+                            String fileName = file.getName();
+                            if (fileName.endsWith("stdout.txt")) {
 //                            System.out.println("\nReading screen log " + fileName + " ...");
-                            BufferedReader reader = new BufferedReader(new FileReader(file));
-                            String line = reader.readLine();
-                            String time = "";
-                            while (line != null) {
-                                if (line.startsWith("Total calculation time:")) {
-                                    String[] fields = line.split(" ", -1);
-                                    time = fields[3];
+                                BufferedReader reader = new BufferedReader(new FileReader(file));
+                                String line = reader.readLine();
+                                String time = "";
+                                while (line != null) {
+                                    if (line.startsWith("Total calculation time:")) {
+                                        String[] fields = line.split(" ", -1);
+                                        time = fields[3];
+                                    }
+                                    line = reader.readLine();
                                 }
-                                line = reader.readLine();
+                                reader.close();
+                                System.out.println(time + "\tseconds");
                             }
-                            reader.close();
-                            System.out.println(time + "\tseconds");
                         }
                     }
                 }
@@ -161,8 +165,9 @@ public class LogAnalyserAdv {
 
         for (int tree : trees) {
             for (int r=0; r<replicates; r++) {
-                System.out.print(tree + "\t" + r + "\t");
-                File folder = new File(workPath + tree + File.separator + r);
+                String folderName = isCombined ? Integer.toString(tree) + "-combined" : Integer.toString(tree);
+                System.out.print(folderName + "\t" + r + "\t");
+                File folder = new File(workPath + folderName + File.separator + r);
                 File[] listOfFiles = folder.listFiles();
 
                 for (int i = 0; i < listOfFiles.length; i++) {
