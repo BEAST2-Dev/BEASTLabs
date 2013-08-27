@@ -2,13 +2,14 @@ package beast.util;
 
 import beast.core.Citation;
 import beast.core.Description;
-import test.beast.beast2vs1.trace.*;
+import test.beast.beast2vs1.trace.LogFileTraces;
+import test.beast.beast2vs1.trace.TraceException;
+import test.beast.beast2vs1.trace.TraceStatistics;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.List;
 
 @Description("Log Analyser Advanced: auto optimize burnin. Extend from Log Analyser in BEAST 1 created by Alexei Drummond.")
 @Citation("Created by Walter Xie")
@@ -40,7 +41,7 @@ public class LogAnalyserAdv {
         int bestPerc = 0;
         double maxSumESS = 0;
         for (int percentage = percLower; percentage <= percUpper; percentage+=percIncremental) {
-            int burnin = (traces.getMaxState() / 100) * percentage; // start from 10%
+            long burnin = (traces.getMaxState() / 100) * percentage; // start from 10%
             traces.setBurnIn(burnin);
 
             double sumESS = 0;
@@ -65,7 +66,7 @@ public class LogAnalyserAdv {
 //            if (maxESS[n] < 100) System.out.println(traceNames[n]  + "\t" + maxESS[n]);
 //        }
 
-        int burnin = (traces.getMaxState() / 100) * bestPerc; // best burnin detemined by max of sum of ess
+        long burnin = (traces.getMaxState() / 100) * bestPerc; // best burnin detemined by max of sum of ess
         traces.setBurnIn(burnin);
         for (int i = 0; i < traces.getTraceCount(); i++) {
             TraceStatistics distribution = traces.analyseTrace(i);
@@ -122,22 +123,24 @@ public class LogAnalyserAdv {
 
     //Main method
     public static void main(final String[] args) throws IOException, TraceException {
-        String workPath = "/Users/dxie004/Documents/BEAST2/*BEAST-sim/Evolution2013/new100/sp5-2/";
+        String workPath = "/Users/dxie004/Documents/BEAST2/*BEAST-sim/Evolution2013/new100/sp8-4/";
         System.out.println("\nWorking path = " + workPath);
 
         String[] traceNames = new String[]{"posterior", "TreeHeight.Species"}; //"posterior", "TreeHeight.Species"
 //        int burnIN = -1;
-        int[] trees = new int[] {256}; //2,4,8,16,32,64,128,256
-        boolean isCombined = true;
+        int[] trees = new int[] {128}; //2,4,8,16,32,64,128,256
+        boolean isCombined = false;
         int replicates = 100;
 
         if (!isCombined) {
             for (int tree : trees) {
                 for (int r=0; r<replicates; r++) {
 //                System.out.println("\nGo to folder " + tree + "/" + r + " ...");
-                    File folder = new File(workPath + tree + File.separator + r);
+                    String folderName = Integer.toString(tree) + "-resume";
+                    File folder = new File(workPath + folderName + File.separator + r);
                     File[] listOfFiles = folder.listFiles();
 
+                    int log = 0;
                     for (int i = 0; i < listOfFiles.length; i++) {
                         File file = listOfFiles[i];
                         if (file.isFile()) {
@@ -146,7 +149,7 @@ public class LogAnalyserAdv {
 //                            System.out.println("\nReading screen log " + fileName + " ...");
                                 BufferedReader reader = new BufferedReader(new FileReader(file));
                                 String line = reader.readLine();
-                                String time = "";
+                                String time = "?";
                                 while (line != null) {
                                     if (line.startsWith("Total calculation time:")) {
                                         String[] fields = line.split(" ", -1);
@@ -155,9 +158,17 @@ public class LogAnalyserAdv {
                                     line = reader.readLine();
                                 }
                                 reader.close();
-                                System.out.println(time + "\tseconds");
+                                System.out.println(r + "\t" + time + "\tseconds");
+                            } else if (fileName.endsWith(".log")) {
+                                log++;
                             }
                         }
+                    }
+
+                    if (log < 1) {
+                        System.err.println(r + "\tno log !");
+                    } else if (log > 1) {
+                        System.err.println(r + "\t" + log + " logs !");
                     }
                 }
             }
