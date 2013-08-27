@@ -123,20 +123,20 @@ public class LogAnalyserAdv {
 
     //Main method
     public static void main(final String[] args) throws IOException, TraceException {
-        String workPath = "/Users/dxie004/Documents/BEAST2/*BEAST-sim/Evolution2013/new100/sp8-4/";
+        String workPath = "/Users/dxie004/Documents/BEAST2/*BEAST-sim/Evolution2013/new100/sp5-2/";
         System.out.println("\nWorking path = " + workPath);
 
         String[] traceNames = new String[]{"posterior", "TreeHeight.Species"}; //"posterior", "TreeHeight.Species"
 //        int burnIN = -1;
-        int[] trees = new int[] {128}; //2,4,8,16,32,64,128,256
-        boolean isCombined = false;
+        int[] trees = new int[] {128,256}; //2,4,8,16,32,64,128,256
+        boolean isCombined = true;
         int replicates = 100;
 
         if (!isCombined) {
             for (int tree : trees) {
                 for (int r=0; r<replicates; r++) {
 //                System.out.println("\nGo to folder " + tree + "/" + r + " ...");
-                    String folderName = Integer.toString(tree) + "-resume";
+                    String folderName = Integer.toString(tree) + "-resume4";
                     File folder = new File(workPath + folderName + File.separator + r);
                     File[] listOfFiles = folder.listFiles();
 
