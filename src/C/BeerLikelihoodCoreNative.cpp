@@ -30,12 +30,11 @@ JNIEXPORT jlong JNICALL Java_beast_evolution_likelihood_BeerLikelihoodCoreNative
  * Method:    initializeC
  * Signature: (JIIIZ)V
  */
-JNIEXPORT void JNICALL Java_beast_evolution_likelihood_BeerLikelihoodCoreNative_initializeC
+JNIEXPORT jboolean JNICALL Java_beast_evolution_likelihood_BeerLikelihoodCoreNative_initializeC
   (JNIEnv * env, jobject obj, jlong jpBEER, jint nNodeCount, jint nPatternCount, jint nMatrixCount, jboolean bIntegrateCategories) {
 PRINT(init);
 	BEER * pBEER = reinterpret_cast<BEER *>(jpBEER);
-	pBEER->initialize(nNodeCount, nPatternCount, nMatrixCount, bIntegrateCategories);
-PRINT2(init);
+	return pBEER->initialize(nNodeCount, nPatternCount, nMatrixCount, bIntegrateCategories);
 }
 
 /*

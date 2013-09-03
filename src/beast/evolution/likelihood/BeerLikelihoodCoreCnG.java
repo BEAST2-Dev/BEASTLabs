@@ -39,6 +39,8 @@ import beast.evolution.sitemodel.SiteModel;
 
 
 
+
+
 public class BeerLikelihoodCoreCnG extends ExperimentalLikelihoodCore {
 	/** various counts **/
 	protected int m_nStates;

@@ -31,7 +31,9 @@ import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 
-import beast.app.beastapp.WholeNumberField;
+import beast.app.util.WholeNumberField;
+
+
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -77,7 +79,7 @@ public class TreeAnnotatorDialog {
 
         burninText.setColumns(12);
         burninText.setValue(0);
-        optionPanel.addComponentWithLabel("Burnin: ", burninText);
+        optionPanel.addComponentWithLabel("Burnin percentage: ", burninText);
 
 		limitText.setColumns(12);
 		limitText.setValue(0.0);
@@ -210,7 +212,7 @@ public class TreeAnnotatorDialog {
 		return optionPane.getValue().equals("Run");
 	}
 
-    public int getBurnin() {
+    public int getBurninPercentage() {
         return burninText.getValue();
     }
 

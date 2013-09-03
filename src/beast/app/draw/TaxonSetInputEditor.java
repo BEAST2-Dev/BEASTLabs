@@ -17,11 +17,14 @@ import javax.swing.event.TreeModelListener;
 import javax.swing.tree.*;
 
 import beast.app.beauti.BeautiDoc;
+import beast.app.draw.ListInputEditor;
 import beast.core.Input;
-import beast.core.Plugin;
+import beast.core.BEASTObject;
 import beast.evolution.alignment.Alignment;
 import beast.evolution.alignment.Taxon;
 import beast.evolution.alignment.TaxonSet;
+
+
 
 public class TaxonSetInputEditor extends ListInputEditor implements TreeModelListener {
 	public TaxonSetInputEditor(BeautiDoc doc) {
@@ -47,7 +50,7 @@ public class TaxonSetInputEditor extends ListInputEditor implements TreeModelLis
 	}
 
 	@Override
-	public void init(Input<?> input, Plugin plugin, int itemNr, ExpandOption bExpand, boolean bAddButtons) {
+	public void init(Input<?> input, BEASTObject plugin, int itemNr, ExpandOption bExpand, boolean bAddButtons) {
 		this.itemNr = itemNr;
 		List<TaxonSet> taxonset = (List<TaxonSet>) input.get();
 		add(getContent(taxonset));
@@ -58,7 +61,7 @@ public class TaxonSetInputEditor extends ListInputEditor implements TreeModelLis
 		m_taxonset = taxonset;
 		m_taxonMap = new HashMap<String, Taxon>();
 		for (Taxon taxonset2 : m_taxonset) {
-			for (Taxon taxon : ((TaxonSet)taxonset2).m_taxonset.get()) {
+			for (Taxon taxon : ((TaxonSet)taxonset2).taxonsetInput.get()) {
 				m_taxonMap.put(taxon.getID(), taxon);
 			}
 		}
@@ -220,7 +223,7 @@ public class TaxonSetInputEditor extends ListInputEditor implements TreeModelLis
 		for (int i = 0; i < taxonsets.size(); i++) {
 			DefaultMutableTreeNode Kid = new DefaultMutableTreeNode(taxonsets.get(i).getID());
 			m_treemodel.insertNodeInto(Kid, root, i);
-			List<Taxon> taxa = ((TaxonSet) taxonsets.get(i)).m_taxonset.get();
+			List<Taxon> taxa = ((TaxonSet) taxonsets.get(i)).taxonsetInput.get();
 			for (int j = 0; j < taxa.size(); j++) {
 				DefaultMutableTreeNode GKid = new DefaultMutableTreeNode(taxa.get(j).getID());
 				GKid.setAllowsChildren(false);
@@ -243,7 +246,7 @@ public class TaxonSetInputEditor extends ListInputEditor implements TreeModelLis
 				DefaultMutableTreeNode gchild = (DefaultMutableTreeNode) child.getChildAt(j);
 				Taxon taxon = m_taxonMap.get(gchild.toString());
 				try {
-					taxonset.m_taxonset.setValue(taxon, taxonset);
+					taxonset.taxonsetInput.setValue(taxon, taxonset);
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -287,9 +290,9 @@ public class TaxonSetInputEditor extends ListInputEditor implements TreeModelLis
 		TaxonSet taxonset = new TaxonSet();
 		taxonset.setID(sID);
 		try {
-			taxonset.m_taxonset.setValue(newTaxon, taxonset);
-			taxonset.m_taxonset.setValue(newTaxon2, taxonset);
-			taxonset.m_taxonset.setValue(newTaxon3, taxonset);
+			taxonset.taxonsetInput.setValue(newTaxon, taxonset);
+			taxonset.taxonsetInput.setValue(newTaxon2, taxonset);
+			taxonset.taxonsetInput.setValue(newTaxon3, taxonset);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

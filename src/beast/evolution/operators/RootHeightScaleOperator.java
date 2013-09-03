@@ -2,6 +2,7 @@ package beast.evolution.operators;
 
 import beast.core.Description;
 import beast.core.Input;
+import beast.evolution.operators.TreeOperator;
 import beast.evolution.tree.Node;
 import beast.util.Randomizer;
 
@@ -20,7 +21,7 @@ public class RootHeightScaleOperator extends TreeOperator {
 	public double proposal() {
         final double scale = m_fScaleFactor + (Randomizer.nextDouble() * ((1.0 / m_fScaleFactor) - m_fScaleFactor));
         double hastingsRatio = -Math.log(scale);
-        Node root = m_tree.get().getRoot();
+        Node root = treeInput.get().getRoot();
         double fNewHeight = root.getHeight() * scale;
         if (fNewHeight < Math.max(root.getLeft().getHeight(), root.getRight().getHeight())) {
         	return Double.NEGATIVE_INFINITY;

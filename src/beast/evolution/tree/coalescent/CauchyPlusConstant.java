@@ -16,13 +16,16 @@
  */
 package beast.evolution.tree.coalescent;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import beast.core.Description;
 import beast.core.Input;
 import beast.core.Input.Validate;
 import beast.core.parameter.RealParameter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import beast.evolution.tree.coalescent.PopulationFunction;
+
 
 /**
  * @author Tim Vaughan <tgvaughan@gmail.com>

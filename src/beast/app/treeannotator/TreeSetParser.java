@@ -32,6 +32,8 @@ import java.util.Vector;
 import beast.evolution.tree.Node;
 
 
+
+
 public class TreeSetParser {
 	/**
 	 * default tree branch length, used when that info is not in the Newick tree
@@ -49,7 +51,7 @@ public class TreeSetParser {
 	/** nr of labels in dataset **/
 	int m_nNrOfLabels;
 	/** burn in = nr of trees ignored at the start of tree file, can be set by command line option **/
-	int m_nBurnIn = 0;
+	int m_nBurnInPercentage = 0;
 	//DensiTree m_densiTree;
 	/** for memory saving, set to true **/
 	boolean m_bSurpressMetadata = true;
@@ -58,17 +60,17 @@ public class TreeSetParser {
 	/** flag to indicate that single child nodes are allowed **/
 	boolean m_bAllowSingleChild = false;
 	
-	public TreeSetParser(int nBurnIn, boolean bAllowSingleChild) {
+	public TreeSetParser(int nBurnInPercentage, boolean bAllowSingleChild) {
 		m_sLabels = new ArrayList<String>();
 		m_fLongitude = new ArrayList<Float>();
 		m_fLatitude = new ArrayList<Float>();
-		m_nBurnIn = nBurnIn;
+		m_nBurnInPercentage = Math.max(nBurnInPercentage, 0);
 		m_fMinLat = 90; m_fMinLong = 180;
 		m_fMaxLat = -90; m_fMaxLong = -180;
 		m_bAllowSingleChild = bAllowSingleChild;
 	} // c'tor
 	
-	public TreeSetParser(List<String> sLabels, List<Float> fLongitude, List<Float> fLatitude, int nBurnIn) {
+	public TreeSetParser(List<String> sLabels, List<Float> fLongitude, List<Float> fLatitude, int nBurnInPercentage) {
 		m_sLabels = sLabels;
 		if (m_sLabels != null) {
 			m_bIsLabelledNewick = true;
@@ -76,7 +78,7 @@ public class TreeSetParser {
 		}
 		m_fLongitude = fLongitude;
 		m_fLatitude = fLatitude;
-		m_nBurnIn = nBurnIn;
+		m_nBurnInPercentage = Math.max(nBurnInPercentage, 0);
 		m_fMinLat = 90; m_fMinLong = 180;
 		m_fMaxLat = -90; m_fMaxLong = -180;
 	}
@@ -154,6 +156,7 @@ public class TreeSetParser {
 //					sNewickTrees.add(sStr);
 				}
 			}
+			
 		} else {
 			// read tree set from file, and store in individual strings
 			sStr = readLine(fin);
@@ -212,38 +215,39 @@ public class TreeSetParser {
 			}
 			
 			// read trees
-			int nBurnIn = m_nBurnIn;
-			//int k = 0;			
-			while (fin.ready()) {
-				sStr = readLine(fin);
-				sStr = sStr.trim();
-				if (sStr.length() > 5) {
-					String sTree = sStr.substring(0,5);
-					if (sTree.toLowerCase().startsWith("tree ")) {
-						//k++;
-						if (nBurnIn <= 0) {
-							int i = sStr.indexOf('(');
-							if (i > 0) {
-								sStr = sStr.substring(i);
-							}
-							Node tree = parseNewick(sStr);
-							tree.sort();
-							tree.labelInternalNodes(m_nNrOfLabels);
-							trees.add(tree);
-							//if (trees.size() % 100 ==0) {if (m_nNrOfLabels>=100||trees.size() % 1000 ==0) {System.err.print(trees.size() + " ");}}
-						} else {
-							nBurnIn--;
-						}
-					}
-				}
-			}
-			fin.close();
-			if (nBurnIn > 0) {
-				System.err.println("WARNING: Burn-in too large, resetting burn-in to zero");
-				m_sLabels.clear();
-				m_nBurnIn = 0;
-				return parseFile(sFile);
-			}
+			// read trees
+            int nBurnIn = 0;
+            //int k = 0;                    
+            while (fin.ready()) {
+                    sStr = readLine(fin);
+                    sStr = sStr.trim();
+                    if (sStr.length() > 5) {
+                            String sTree = sStr.substring(0,5);
+                            if (sTree.toLowerCase().startsWith("tree ")) {
+                                    //k++;
+                                    if (nBurnIn <= 0) {
+                                            int i = sStr.indexOf('(');
+                                            if (i > 0) {
+                                                    sStr = sStr.substring(i);
+                                            }
+                                            Node tree = parseNewick(sStr);
+                                            tree.sort();
+                                            tree.labelInternalNodes(m_nNrOfLabels);
+                                            trees.add(tree);
+                                            //if (trees.size() % 100 ==0) {if (m_nNrOfLabels>=100||trees.size() % 1000 ==0) {System.err.print(trees.size() + " ");}}
+                                    } else {
+                                            nBurnIn--;
+                                    }
+                            }
+                    }
+            }
+            fin.close();
+		}
+		
+		// discard burn-in percentage
+		int burnIn = m_nBurnInPercentage * trees.size() / 100;
+		for (int i = 0; i < burnIn; i++) {
+			trees.remove(i);
 		}
 		
 		
@@ -458,7 +462,7 @@ public class TreeSetParser {
 						parent.setLeft(left);
 						left.setParent(parent);
 						String metaData = sMetaData.remove(sMetaData.size() - 1);
-						left.m_sMetaData = metaData;
+						left.metaDataString = metaData;
 						parseMetaData(left, metaData);
 						break;
 					} else {
@@ -555,7 +559,7 @@ public class TreeSetParser {
 	 
 	 
 		public void parseMetaData(Node node, String sMetaData) {
-			node.m_sMetaData = sMetaData;
+			node.metaDataString = sMetaData;
 			if (sMetaData == null) {
 				return;
 			}

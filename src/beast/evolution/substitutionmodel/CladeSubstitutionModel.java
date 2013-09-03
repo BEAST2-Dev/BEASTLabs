@@ -14,8 +14,12 @@ import beast.evolution.alignment.Sequence;
 import beast.evolution.alignment.Taxon;
 import beast.evolution.alignment.TaxonSet;
 import beast.evolution.datatype.DataType;
+import beast.evolution.substitutionmodel.EigenDecomposition;
+import beast.evolution.substitutionmodel.SubstitutionModel;
 import beast.evolution.tree.Node;
 import beast.evolution.tree.Tree;
+
+
 
 @Description("Substitution model dependent on clades. For each clade a substitution model is specified. " +
 		"For nodes that do not fit in a clade a default substitution model is used.")
@@ -58,9 +62,9 @@ public class CladeSubstitutionModel extends SubstitutionModel.Base {
 		m_nLeafNrs = new List[m_clademodel.get().size()];
 		
 		// find node numbers for clades
-		List<Sequence> data = m_taxa.get().m_pSequences.get();
+		List<Sequence> data = m_taxa.get().sequenceInput.get();
 		for (int i = 0; i < m_clades.get().size(); i++) {
-			List<Taxon> set = m_clades.get().get(i).m_taxonset.get();
+			List<Taxon> set = m_clades.get().get(i).taxonsetInput.get();
 			m_nLeafNrs[i] = new ArrayList<Integer>();
 			for (Taxon taxon : set) {
 				String sLabel = taxon.getID();

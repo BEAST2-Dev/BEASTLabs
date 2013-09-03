@@ -16,13 +16,15 @@
  */
 package beast.evolution.tree;
 
-import beast.evolution.tree.Node;
-import beast.evolution.tree.Tree;
-import beast.util.NexusParser;
 
 import java.io.File;
 import java.io.PrintStream;
 import java.util.*;
+
+import beast.evolution.tree.Node;
+import beast.evolution.tree.Tree;
+import beast.util.NexusParser;
+
 
 // TODO: Calculate mean node heights for trees in credible set.
 
@@ -212,7 +214,7 @@ public class TreeTraceAnalysis {
 		try {
 			NexusParser parser = new NexusParser();
 			parser.parseFile(new File(args[0]));
-			TreeTraceAnalysis analysis = new TreeTraceAnalysis(parser.m_trees, 0.10, 0.95);
+			TreeTraceAnalysis analysis = new TreeTraceAnalysis(parser.trees, 0.10, 0.95);
 			analysis.report(System.out);
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -77,18 +77,22 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
 
+import beast.app.draw.MyAction;
+import beast.app.draw.PluginDialog;
 import beast.core.Distribution;
 import beast.core.Input;
 import beast.core.Logger;
 import beast.core.Operator;
-import beast.core.Plugin;
 import beast.core.StateNode;
+import beast.core.BEASTObject;
 import beast.evolution.alignment.Alignment;
 import beast.evolution.alignment.Sequence;
 import beast.util.AddOnManager;
-
 import beast.util.XMLParser;
 import beast.util.XMLProducer;
+
+
+
 
 // Wishlist:
 // TODO update all cells when a cell is changed
@@ -103,10 +107,10 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 	int DEFAULT_COLUMN_WIDTH = 75;
 
 	/** list of available Plugin objects **/
-	List<Plugin> m_plugins;
+	List<BEASTObject> m_plugins;
 	List<FormulaCell> m_formulas;
 	/** maps plugins to locations on the spreadsheet. Locations are encoded as (x + MAX_ROW * y) **/
-	static HashMap<Plugin, Integer> m_pluginLocation;
+	static HashMap<BEASTObject, Integer> m_pluginLocation;
 	static HashMap<FormulaCell, Integer> m_formulaLocation;
 	/** objects associated with the spread sheet cells **/
 	Object[][] m_objects;
@@ -147,7 +151,7 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 
 	/** constructor **/
 	SpreadSheet() {
-        List<String> sPlugInNames = AddOnManager.find(beast.core.Plugin.class, AddOnManager.IMPLEMENTATION_DIR);
+        List<String> sPlugInNames = AddOnManager.find(beast.core.BEASTObject.class, AddOnManager.IMPLEMENTATION_DIR);
         m_sPlugInNames = sPlugInNames.toArray(new String[0]);
         headers = new String[MAX_COL];
 		m_objects = new Object[MAX_ROW][MAX_COL];
@@ -193,8 +197,8 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 					return null;
 				}
 				Object o = m_objects[iRow][iCol];
-				if (o instanceof Plugin) {
-					return ((Plugin)o).getDescription();
+				if (o instanceof BEASTObject) {
+					return ((BEASTObject)o).getDescription();
 				} else if (o instanceof FormulaCell) {
 					return ((FormulaCell)o).m_sMessage;
 				} else {
@@ -231,7 +235,7 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
                             "select", JOptionPane.PLAIN_MESSAGE,  null, m_sPlugInNames, null);
                     if (sClassName != null) {
                     	try {
-                    		Plugin plugin = (beast.core.Plugin) Class.forName(sClassName).newInstance();
+                    		BEASTObject plugin = (beast.core.BEASTObject) Class.forName(sClassName).newInstance();
                     		m_objects[iRow][iCol] = plugin;
                 			m_pluginLocation.put(plugin, iRow + iCol * MAX_ROW);
                 			m_plugins.add(plugin);
@@ -278,7 +282,7 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 					m_formulas.remove(m_objects[m_iRow][m_iCol]);
 					m_formulaLocation.remove(m_objects[m_iRow][m_iCol]);
 				}
-				if (m_objects[m_iRow][m_iCol] == null || !(m_objects[m_iRow][m_iCol] instanceof Plugin)) {
+				if (m_objects[m_iRow][m_iCol] == null || !(m_objects[m_iRow][m_iCol] instanceof BEASTObject)) {
 					if (sText.startsWith("=")) {
 						FormulaCell formula = new FormulaCell(sText);
 						m_objects[m_iRow][m_iCol] = formula;
@@ -341,8 +345,8 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 				selectCell(m_iRow, m_iCol);
 				if (value == null) {
 					((JTextField)component).setText("");
-				} else if (value instanceof Plugin) {
-					Plugin plugin = (Plugin) value;
+				} else if (value instanceof BEASTObject) {
+					BEASTObject plugin = (BEASTObject) value;
 					PluginDialog dlg = new PluginDialog(plugin, plugin.getClass(), null);
                     if (dlg.showDialog()) {
 						dlg.accept(plugin, null);
@@ -694,11 +698,11 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 					sClass = sClass2;
 				}
 			}
-			Plugin plugin = null;
+			BEASTObject plugin = null;
 			if (m_objects[iRow][iCol]==null || !m_objects[iRow][iCol].getClass().getName().equals(sClass)) {
-				plugin = (Plugin) Class.forName(sClass).newInstance();
+				plugin = (BEASTObject) Class.forName(sClass).newInstance();
 			} else {
-				plugin = (Plugin) m_objects[iRow][iCol];
+				plugin = (BEASTObject) m_objects[iRow][iCol];
 			}
 			String sArgs = sStr.substring(sStr.indexOf('(') + 1, sStr.lastIndexOf(')'));
 			List<Object> objects = new ArrayList<Object>();
@@ -834,9 +838,9 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 
 	/** file action implementations **/
 	void newSpreadsheet() {
-		m_plugins = new ArrayList<Plugin>();
+		m_plugins = new ArrayList<BEASTObject>();
 		m_formulas = new ArrayList<FormulaCell>();
-		m_pluginLocation = new HashMap<Plugin, Integer>();
+		m_pluginLocation = new HashMap<BEASTObject, Integer>();
 		m_formulaLocation = new HashMap<FormulaCell, Integer>();
 		m_actions = new ArrayList<SpreadSheet.UndoAction>();
 		m_iTopUndoAction = 0;
@@ -981,7 +985,7 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 				m_sDir = sFileName .substring(0, sFileName .lastIndexOf('/'));
 			}
 			try {
-				Plugin plugin = (Plugin) m_objects[iRow][iCol];
+				BEASTObject plugin = (BEASTObject) m_objects[iRow][iCol];
 				PrintStream out = new PrintStream(sFileName);
 				out.print(new XMLProducer().toXML(plugin));
 				out.close();
@@ -1018,7 +1022,7 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 			for (int iCol = iColStart; iCol <= iColEnd; iCol++) {
 				if (m_table.isCellSelected(iRow, iCol)) {
 					editObject(iRow,iCol);
-					if (m_objects[iRow][iCol] instanceof Plugin) {
+					if (m_objects[iRow][iCol] instanceof BEASTObject) {
 						m_pluginLocation.remove(m_objects[iRow][iCol]);
 						m_plugins.remove(m_objects[iRow][iCol]);
 					} else if (m_objects[iRow][iCol] instanceof FormulaCell) {
@@ -1088,8 +1092,8 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 			sText += " n:";
 		} else if (o instanceof FormulaCell) {
 			sText += " f:=" + ((FormulaCell) o).m_sFormula;
-		} else if (o instanceof Plugin) {
-			sText += " p:" + toString((Plugin) o);
+		} else if (o instanceof BEASTObject) {
+			sText += " p:" + toString((BEASTObject) o);
 		} else {
 			sText += " s:" + o.toString();
 		}
@@ -1420,10 +1424,10 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 		Random rand = new Random(127);
 
 
-		Plugin plugin0 = null;
+		BEASTObject plugin0 = null;
 		plugin0 = parser.parseFile(new File(fileName));
 		// collect all objects and store in m_plugins
-		m_plugins = new ArrayList<Plugin>();
+		m_plugins = new ArrayList<BEASTObject>();
 		collectPlugins(plugin0);
 		m_plugins.add(plugin0);
 
@@ -1431,7 +1435,7 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 		int k = 0;
 		int i = 0;
 		while (k < m_plugins.size()) {
-			Plugin plugin = m_plugins.get(k++);
+			BEASTObject plugin = m_plugins.get(k++);
 			if (i > 1) {
 				Object prev = m_objects[i-1][1];
 				if (prev instanceof Sequence && !(plugin instanceof Sequence) ||
@@ -1468,8 +1472,8 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 		updateActions();
 	} // readXML
 
-	void collectPlugins(Plugin plugin) throws Exception {
-		for (Plugin plugin2 : plugin.listActivePlugins()) {
+	void collectPlugins(BEASTObject plugin) throws Exception {
+		for (BEASTObject plugin2 : plugin.listActivePlugins()) {
 			if (!m_plugins.contains(plugin2)) {
 				m_plugins.add(plugin2);
 				collectPlugins(plugin2);
@@ -1477,7 +1481,7 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 		}
 	} // collectPlugins
 
-	static String toString(Plugin plugin) {
+	static String toString(BEASTObject plugin) {
 		String sClass = plugin.getClass().getName();
 		String sStr = sClass.substring(sClass.lastIndexOf('.') + 1);
 		sStr += "(";
@@ -1488,16 +1492,16 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 				Input input = inputs.get(i);
 				if (input.get() == null) {
 					sStr += "null";
-				} else if (input.get() instanceof Plugin) {
-					sStr += getLocation((Plugin) input.get());
+				} else if (input.get() instanceof BEASTObject) {
+					sStr += getLocation((BEASTObject) input.get());
 				} else if (input.get() instanceof List) {
 					sStr += "[";
 					@SuppressWarnings("rawtypes")
 					List list = (List) input.get();
 					for (int j = 0; j < list.size(); j++) {
 						Object o = list.get(j);
-						if (o instanceof Plugin) {
-							sStr += getLocation((Plugin) o);
+						if (o instanceof BEASTObject) {
+							sStr += getLocation((BEASTObject) o);
 						} else {
 							sStr += o;
 						}
@@ -1520,7 +1524,7 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 		return sStr;
 	} // toString
 
-	static String getLocation(Plugin plugin) {
+	static String getLocation(BEASTObject plugin) {
 		int iLocation = m_pluginLocation.get(plugin);
 		char a = (char) ('A' + (iLocation / MAX_ROW));
 		return "$" + a + (1 + iLocation % MAX_ROW);
@@ -1713,8 +1717,8 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 	            setHorizontalAlignment(SwingConstants.LEFT);
 			}
 
-	        if (value instanceof Plugin) {
-	        	setText(SpreadSheet.toString((Plugin) value));
+	        if (value instanceof BEASTObject) {
+	        	setText(SpreadSheet.toString((BEASTObject) value));
 	        } else {
 	        	super.getTableCellRendererComponent(table, value, bSelected, bFocused, iRow, iCol);
 	        }
@@ -1853,7 +1857,7 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 		try {
 			AddOnManager.loadExternalJars();
 
-			Logger.FILE_MODE = Logger.FILE_OVERWRITE;
+			Logger.FILE_MODE = Logger.LogFileMode.overwrite;
 			SpreadSheet spreadSheet = new SpreadSheet();
 			spreadSheet.setSize(2048, 2048);
 			if (args.length > 0) {

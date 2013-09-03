@@ -5,10 +5,12 @@ import java.util.List;
 
 import beast.core.Description;
 import beast.core.Input;
+import beast.core.Operator;
 import beast.core.StateNode;
 import beast.core.Input.Validate;
-import beast.core.Operator;
 import beast.util.Randomizer;
+
+
 
 @Description("Combines propoosals by randomly selecting from two groups of operators")
 public class CombinedOperator extends Operator {

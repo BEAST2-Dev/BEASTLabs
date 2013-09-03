@@ -2,13 +2,14 @@ package test.beast.evolution.tree;
 
 import org.junit.Test;
 
-import test.beast.evolution.likelihood.TreeLikelihoodTest;
-
 import beast.evolution.alignment.Alignment;
 import beast.evolution.alignment.Taxon;
 import beast.evolution.alignment.TaxonSet;
 import beast.evolution.tree.MonophyleticConstraint;
 import beast.util.TreeParser;
+
+import test.beast.evolution.likelihood.ExperimentalTreeLikelihoodTest;
+
 
 import junit.framework.TestCase;
 
@@ -16,7 +17,7 @@ public class MonophyleticConstraintTest extends TestCase {
 
 	@Test
 	public void testSingleMonophyleticConstraint() throws Exception {
-		Alignment data = TreeLikelihoodTest.getAlignment();
+		Alignment data = ExperimentalTreeLikelihoodTest.getAlignment();
 		TreeParser tree = new TreeParser();
 		tree.initByName("taxa", data, 
 				        "newick","((human:0.024003,(chimp:0.010772,bonobo:0.010772):0.013231):0.012035," +

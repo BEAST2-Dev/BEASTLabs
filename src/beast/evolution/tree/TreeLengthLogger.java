@@ -16,20 +16,24 @@
  */
 package beast.evolution.tree;
 
+import java.io.PrintStream;
+
 import beast.core.CalculationNode;
 import beast.core.Description;
+import beast.core.Function;
 import beast.core.Input;
-import beast.core.Input.Validate;
 import beast.core.Loggable;
-import beast.core.Valuable;
-import java.io.PrintStream;
+import beast.core.Input.Validate;
+import beast.evolution.tree.Node;
+import beast.evolution.tree.Tree;
+
 
 /**
  *
  * @author Tim Vaughan <tgvaughan@gmail.com>
  */
 @Description("Logger to report total length of all branches on tree.")
-public class TreeLengthLogger extends CalculationNode implements Loggable, Valuable {
+public class TreeLengthLogger extends CalculationNode implements Loggable, Function {
     
     public Input<Tree> treeInput = new Input<Tree>("tree",
             "Tree to report total branch length of.",

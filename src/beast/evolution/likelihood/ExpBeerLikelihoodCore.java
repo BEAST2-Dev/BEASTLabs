@@ -37,9 +37,11 @@ import java.util.Arrays;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-
 import beast.app.BeastMCMC;
 import beast.evolution.sitemodel.SiteModel;
+
+
+
 
 public class ExpBeerLikelihoodCore extends ExperimentalLikelihoodCore {
 	double SCALE = 10;
@@ -651,7 +653,7 @@ public class ExpBeerLikelihoodCore extends ExperimentalLikelihoodCore {
     	for (int iThread = 1; iThread < nThreads; iThread++) {
     		m_lock[iThread] = new ReentrantLock();
     		CoreRunnable coreRunnable = new CoreRunnable(iThread, nThreads);
-			BeastMCMC.g_exec.execute(coreRunnable);
+    		BeastMCMC.g_exec.execute(coreRunnable);
     	}
 
 //		for (int iJob = 0; iJob < m_nTopOfStack; iJob++) {

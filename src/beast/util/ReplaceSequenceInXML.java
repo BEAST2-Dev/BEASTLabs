@@ -5,6 +5,11 @@ import java.io.*;
 //import java.nio.file.Path;
 //import java.nio.file.Paths;
 import java.util.*;
+import java.util.regex.Pattern;
+
+import beast.util.NexusParser;
+import beast.util.XMLProducer;
+
 
 /**
  * Given nex file(s) to replace sequence in the xml, but tip names have to be same.
@@ -13,87 +18,83 @@ import java.util.*;
  */
 public class ReplaceSequenceInXML {
 
-    public static void main(String[] args) throws IOException {
-        int[] treeSet = new int[]{128}; //2,4,8,16,32,64,128,256
+    private static int treeTotal = 32;
 
-        if (args.length != 1)
+    public static void main(String[] args) throws IOException {
+
+        if (args.length != 2)
             throw new IllegalArgumentException("XML input file and folder containing nex files are missing !");
 
-        String workPath = args[0];
+        String xmlFilePath = args[0];
+        String nexFilePath = args[1];
 
-        for (int treeNum : treeSet) {
-            System.out.println("\nWork Path : " + workPath + treeNum);
+        String xmlFileName = xmlFilePath + File.separator + "tree_" + treeTotal + "_0.xml";
+//        Path source = Paths.get(xmlFileName);
+//        if (!Files.exists(source)) throw new IllegalArgumentException("Cannot find input xml " + xmlFileName);
 
-            String xmlFileName = workPath + treeNum + File.separator + "xml" + File.separator + "tree_" + treeNum + "_0_new.xml";
-//            Path source = Paths.get(xmlFileName);
-//            if (!Files.exists(source)) throw new IllegalArgumentException("Cannot find input xml " + xmlFileName);
-//
-//            // copy sample XML to target folder
-            String targetPath = workPath + treeNum + File.separator + "xmlall" + File.separator;
-//            Path target = Paths.get(targetPath + "tree_" + treeNum + "_0_new.xml");
-//            Files.copy(source, target);
-//            System.out.println("\nCopy sample XML to " + target + " ...");
+        // copy sample XML to target folder
+//        Path target = Paths.get(nexFilePath + File.separator + "xml" + File.separator + "tree_" + treeTotal + "_0.xml");
+//        Files.copy(source, target);
+//        System.out.println("\nCopy sample XML to " + target + " ...");
 
-            String stem_old = "tree_0_";
-            String nexFilePath = workPath + "alignments" + File.separator;
+        String stem_old = "tree_0_";
 
-            for (int i = 1; i < 100; i++) { // 100
-                String stem = "tree_" + Integer.toString(i) + "_";
+        for (int i = 1; i < 100; i++) { // 100
+            String stem = "tree_" + Integer.toString(i) + "_";
 
-                System.out.println("\nReading all nex files from " + nexFilePath + ", stem = " + stem);
-                Map<String, String> parserMap = readAllNexus(nexFilePath, stem, treeNum);
+            System.out.println("\nReading all nex files from " + nexFilePath + ", stem = " + stem);
+            Map<String, String> parserMap = readAllNexus(nexFilePath, stem);
 
-                try {
-                    // read XML
-                    BufferedReader reader = new BufferedReader(new FileReader(xmlFileName));
-                    System.out.println("\nReading XML " + xmlFileName + " ...");
+            try {
+                // read XML
+                BufferedReader reader = new BufferedReader(new FileReader(xmlFileName));
+                System.out.println("\nReading XML " + xmlFileName + " ...");
 
-                    // write new XML
-                    String outFile = targetPath + "tree_" + treeNum + "_" + Integer.toString(i) + "_new.xml";
-                    PrintStream out = new PrintStream(new FileOutputStream(outFile));
-                    System.out.println("\nWriting new XML " + outFile + " ...");
+                // write new XML
+                String outFile = nexFilePath + File.separator + "xml" + File.separator +
+                        "tree_" + treeTotal + "_" + Integer.toString(i) + ".xml";
+                PrintStream out = new PrintStream(new FileOutputStream(outFile));
+                System.out.println("\nWriting new XML " + outFile + " ...");
 
-                    String line = reader.readLine();
-                    while (line != null) {
+                String line = reader.readLine();
+                while (line != null) {
 //                    if (line.contains("<?xml")) {
 //                        out.println(line);
 //                        line = reader.readLine();
 //                        // skip some empty lines
 //                        while (line.trim().equals("")) line = reader.readLine();
 //                    }
-                        if (line.contains("<data id=") || line.contains("<sequence id=") || line.contains("</data>")) {
-                            // skip sequence
-                        } else if (line.contains("beast.math.distributions.Beta")) {
-                            // trigger print new sequence
-                            for (String xml : parserMap.values()) {
-                                out.println(xml);
-                            }
-                            out.println(line);
-                        } else {
-                            String newLine = line.replaceAll(stem_old, stem);
-                            out.println(newLine);
+                    if (line.contains("<data id=") || line.contains("<sequence id=") || line.contains("</data>")) {
+                        // skip sequence
+                    } else if (line.contains("beast.math.distributions.Beta")) {
+                        // trigger print new sequence
+                        for (String xml : parserMap.values()) {
+                            out.println(xml);
                         }
-                        line = reader.readLine();
+                        out.println(line);
+                    } else {
+                        String newLine = line.replaceAll(stem_old, stem);
+                        out.println(newLine);
                     }
-
-                    reader.close();
-                    out.flush();
-                    out.close();
-
-                } catch (Exception e) {
-                    e.printStackTrace();
+                    line = reader.readLine();
                 }
 
+                reader.close();
+                out.flush();
+                out.close();
+
+            } catch (Exception e) {
+                e.printStackTrace();
             }
+
         }
     } // main
 
-    private static Map<String, String> readAllNexus(String nexFilePath, String stem, int treeTotal) {
+    private static Map<String, String> readAllNexus(String nexFilePath, String stem) {
         File folder = new File(nexFilePath);
         File[] listOfFiles = folder.listFiles();
 
         Map<String, String> parserMap = new HashMap<String, String>();
-        assert listOfFiles != null;
         for (File file : listOfFiles) {
             String fileName = file.getName();
             if (file.isFile() && fileName.endsWith("nex") && fileName.startsWith(stem)) {

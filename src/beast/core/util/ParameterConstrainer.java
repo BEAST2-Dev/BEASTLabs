@@ -1,14 +1,16 @@
 package beast.core.util;
 
-import beast.core.Input;
-import beast.core.CalculationNode;
-import beast.core.Loggable;
-import beast.core.Description;
-import beast.core.parameter.RealParameter;
-import beast.evolution.tree.Tree;
 
 import java.io.PrintStream;
 import java.util.Arrays;
+
+import beast.core.CalculationNode;
+import beast.core.Description;
+import beast.core.Input;
+import beast.core.Loggable;
+import beast.core.parameter.RealParameter;
+import beast.evolution.tree.Tree;
+
 
 /**
  * @author dkuh004

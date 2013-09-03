@@ -28,6 +28,17 @@
 package beast.evolution.likelihood;
 
 
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Random;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
+
 import beast.app.BeastMCMC;
 import beast.core.Description;
 import beast.core.Distribution;
@@ -39,20 +50,13 @@ import beast.evolution.alignment.AscertainedAlignment;
 import beast.evolution.alignment.FilteredAlignment;
 import beast.evolution.branchratemodel.BranchRateModel;
 import beast.evolution.branchratemodel.StrictClockModel;
+import beast.evolution.likelihood.BeagleTreeLikelihood;
+import beast.evolution.likelihood.TreeLikelihood.Scaling;
 import beast.evolution.sitemodel.SiteModel;
 import beast.evolution.substitutionmodel.SubstitutionModel;
 import beast.evolution.tree.Node;
 import beast.evolution.tree.Tree;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Random;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executors;
-import java.util.concurrent.RejectedExecutionException;
 
 @Description("Calculates the likelihood of sequence data on a beast.tree given a site and substitution model using " +
 		"a variant of the 'peeling algorithm'. For details, see" +
@@ -69,6 +73,10 @@ public class ThreadedTreeLikelihood extends Distribution {
     public Input<Integer> maxNrOfThreads = new Input<Integer>("threads","maximum number of threads to use, if less than 1 the number of threads in BeastMCMC is used (default -1)", -1);
     public Input<Boolean> useJava = new Input<Boolean>("useJava", "prefer java, even if beagle is available", true);
 
+    enum Scaling {none, always, _default};
+    public Input<Scaling> scaling = new Input<ThreadedTreeLikelihood.Scaling>("scaling", "type of scaling to use, one of " + Arrays.toString(Scaling.values()) + ". If not specified, the -beagle_scaling flag is used.", Scaling._default, Scaling.values());
+    
+    
     /** calculation engine **/
     protected ThreadedLikelihoodCore m_likelihoodCore;
     BeagleTreeLikelihood [] m_beagle;
@@ -170,7 +178,7 @@ public class ThreadedTreeLikelihood extends Distribution {
         int nodeCount = m_tree.get().getNodeCount();
         m_siteModel = m_pSiteModel.get();
         m_siteModel.setDataType(m_data.get().getDataType());
-        m_substitutionModel = m_siteModel.m_pSubstModel.get();
+        m_substitutionModel = m_siteModel.substModelInput.get();
 
         if (m_pBranchRateModel.get() != null) {
         	m_branchRateModel = m_pBranchRateModel.get();
@@ -359,7 +367,11 @@ public class ThreadedTreeLikelihood extends Distribution {
            	threadedTraverse(m_root);
             calcLogP();
             return logP;
-        } else if (logP == Double.NEGATIVE_INFINITY && m_fScale < 10) { // && !m_likelihoodCore.getUseScaling()) {
+        } else if (logP == Double.NEGATIVE_INFINITY && m_fScale < 10 && !scaling.get().equals(Scaling.none)) { // && !m_likelihoodCore.getUseScaling()) {
+//        	if (true) {
+//        		System.err.print("x");
+//        		return logP;
+//        	}
         	m_nScale = 0;
         	m_fScale *= 1.01;
             System.err.println("Turning on scaling to prevent numeric instability " + m_fScale);
@@ -522,11 +534,11 @@ public class ThreadedTreeLikelihood extends Distribution {
 		    	for (int iThread = 1; iThread < m_nThreads; iThread++) {
 		    		int iTo = iFrom + nRange; 
 		    		CoreRunnable coreRunnable = new CoreRunnable(iThread, root, iFrom, iTo, m_likelihoodCore);
-					BeastMCMC.g_exec.execute(coreRunnable);
+		    		BeastMCMC.g_exec.execute(coreRunnable);
 					iFrom = iTo;
 		    	}
 	    		CoreRunnable coreRunnable = new CoreRunnable(0, root, iFrom, nPatterns, m_likelihoodCore);
-				BeastMCMC.g_exec.execute(coreRunnable);
+	    		BeastMCMC.g_exec.execute(coreRunnable);
 		    	//traverse(root, iFrom, nPatterns, m_likelihoodCore, 0);
 	    	
 				m_nCountDown.await();
@@ -581,7 +593,7 @@ public class ThreadedTreeLikelihood extends Distribution {
 				m_nCountDown = new CountDownLatch(m_nThreads);
 		    	for (int iThread = 0; iThread < m_nThreads; iThread++) {
 		    		BeagleCoreRunnable coreRunnable = new BeagleCoreRunnable(iThread, m_beagle[iThread]);
-					BeastMCMC.g_exec.execute(coreRunnable);
+		    		BeastMCMC.g_exec.execute(coreRunnable);
 		    	}
 				m_nCountDown.await();
 		    	logP = 0;
@@ -608,10 +620,11 @@ public class ThreadedTreeLikelihood extends Distribution {
 
         double branchRate = m_branchRateModel.getRateForBranch(node);
         double branchTime = node.getLength() * branchRate;
-       	m_branchLengths[iNode] = branchTime;
-        
+
         // First update the transition probability matrix(ices) for this branch
-        if (!node.isRoot() && (update != Tree.IS_CLEAN || branchTime != m_StoredBranchLengths[iNode])) {
+        //if (!node.isRoot() && (update != Tree.IS_CLEAN || branchTime != m_StoredBranchLengths[iNode])) {
+        if (!node.isRoot() && (update != Tree.IS_CLEAN || branchTime != m_branchLengths[iNode])) {
+            m_branchLengths[iNode] = branchTime;        
             Node parent = node.getParent();
             m_likelihoodCore.setNodeMatrixForUpdate(iNode);
 //            synchronized (this) {
@@ -745,16 +758,16 @@ public class ThreadedTreeLikelihood extends Distribution {
     	}
         m_nHasDirt = Tree.IS_CLEAN;
 
-        if (m_branchRateModel != null && m_branchRateModel.isDirtyCalculation()) {
-            m_nHasDirt = Tree.IS_FILTHY;
-            return true;
-        }
         if (m_data.get().isDirtyCalculation()) {
             m_nHasDirt = Tree.IS_FILTHY;
             return true;
         }
         if (m_siteModel.isDirtyCalculation()) {
             m_nHasDirt = Tree.IS_DIRTY;
+            return true;
+        }
+        if (m_branchRateModel != null && m_branchRateModel.isDirtyCalculation()) {
+            //m_nHasDirt = Tree.IS_FILTHY;
             return true;
         }
         return m_tree.get().somethingIsDirty();

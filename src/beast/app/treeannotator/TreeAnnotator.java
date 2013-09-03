@@ -30,7 +30,10 @@ import jam.console.ConsoleApplication;
 //import org.rosuda.JRI.RVector;
 //import org.rosuda.JRI.Rengine;
 
-import beast.app.beastapp.BeastVersion;
+
+import javax.swing.*;
+
+import beast.app.BEASTVersion;
 import beast.app.beauti.BeautiDoc;
 import beast.app.tools.LogCombiner;
 import beast.app.util.Arguments;
@@ -41,7 +44,7 @@ import beast.math.statistic.DiscreteStatistics;
 import beast.util.HeapSort;
 import beast.util.TreeParser;
 
-import javax.swing.*;
+
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -55,7 +58,7 @@ import java.util.*;
  */
 public class TreeAnnotator {
 
-    private final static BeastVersion version = new BeastVersion();
+    private final static BEASTVersion version = new BEASTVersion();
 
     private final static boolean USE_R = false;
 
@@ -104,7 +107,7 @@ public class TreeAnnotator {
 //    private final String location2Attribute = "longLat2";
 //    private final String locationOutputAttribute = "location";
 
-    public TreeAnnotator(final int burnin,
+    public TreeAnnotator(final int burninPercentage,
     					boolean bAllowSingleChild,
                          HeightsSummary heightsOption,
                          double posteriorLimit,
@@ -132,7 +135,7 @@ public class TreeAnnotator {
 
         int stepSize = Math.max(totalTrees / 60, 1);
 
-        TreeSetParser parser = new TreeSetParser(burnin, bAllowSingleChild);
+        TreeSetParser parser = new TreeSetParser(burninPercentage, bAllowSingleChild);
         try {
         	Node [] roots = parser.parseFile(inputFileName);
         	trees = new Tree[roots.length];
@@ -140,6 +143,7 @@ public class TreeAnnotator {
         	for (Node root : roots) {
         		trees[i++] = new Tree(root);
         	}
+        	progressStream.println(trees.length + " trees read.");
         } catch (Exception e) {
         	e.printStackTrace();
             System.err.println("Error Parsing Input Tree: " + e.getMessage());
@@ -153,7 +157,7 @@ public class TreeAnnotator {
 	            	cladeSystem.add(tree, false);
 	                totalTreesUsed++;
 	            }
-	            totalTrees = Math.max(burnin, 0) + totalTreesUsed;
+	            totalTrees = Math.max(burninPercentage, 0) + totalTreesUsed;
             } catch (Exception e) {
                 System.err.println("Error Processing Input Tree: " + e.getMessage());
                 return;
@@ -166,7 +170,7 @@ public class TreeAnnotator {
                 return;
             }
             if (totalTreesUsed <= 1) {
-                if (burnin > 0) {
+                if (burninPercentage > 0) {
                     System.err.println("No trees to use: burnin too high");
                     return;
                 }
@@ -174,8 +178,8 @@ public class TreeAnnotator {
             cladeSystem.calculateCladeCredibilities(totalTreesUsed);
 
             progressStream.println("Total trees read: " + totalTrees);
-            if (burnin > 0) {
-                progressStream.println("Ignoring first " + burnin + " trees.");
+            if (burninPercentage > 0) {
+                progressStream.println("Ignoring first " + burninPercentage + " trees.");
             }
 
             progressStream.println("Total unique clades: " + cladeSystem.getCladeMap().keySet().size());
@@ -207,12 +211,12 @@ public class TreeAnnotator {
             }
             case MAX_CLADE_CREDIBILITY: {
                 progressStream.println("Finding maximum credibility tree...");
-                targetTree = summarizeTrees(burnin, cladeSystem, inputFileName, false).copy();
+                targetTree = summarizeTrees(burninPercentage, cladeSystem, inputFileName, false).copy();
                 break;
             }
             case MAX_SUM_CLADE_CREDIBILITY: {
                 progressStream.println("Finding maximum sum clade credibility tree...");
-                targetTree = summarizeTrees(burnin, cladeSystem, inputFileName, true).copy();
+                targetTree = summarizeTrees(burninPercentage, cladeSystem, inputFileName, true).copy();
                 break;
             }
         }
@@ -258,7 +262,7 @@ public class TreeAnnotator {
             cladeSystem.annotateTree(targetTree, targetTree.getRoot(), null, heightsOption);
 
             if( heightsOption == HeightsSummary.CA_HEIGHTS ) {
-                setTreeHeightsByCA(targetTree, inputFileName, burnin);
+                setTreeHeightsByCA(targetTree, inputFileName, burninPercentage);
             }
         } catch (Exception e) {
         	e.printStackTrace();
@@ -319,7 +323,7 @@ public class TreeAnnotator {
 				metadata += ",";
 			}
 			metadata = metadata.substring(0, metadata.length() - 1);
-			node.m_sMetaData = metadata;
+			node.metaDataString = metadata;
 		}		
 	}
 
@@ -1252,8 +1256,8 @@ public class TreeAnnotator {
         arguments.printUsage("treeannotator", "<input-file-name> [<output-file-name>]");
         progressStream.println();
         progressStream.println("  Example: treeannotator test.trees out.txt");
-        progressStream.println("  Example: treeannotator -burnin 100 -heights mean test.trees out.txt");
-        progressStream.println("  Example: treeannotator -burnin 100 -target map.tree test.trees out.txt");
+        progressStream.println("  Example: treeannotator -burnin 10 -heights mean test.trees out.txt");
+        progressStream.println("  Example: treeannotator -burnin 20 -target map.tree test.trees out.txt");
         progressStream.println();
     }
 
@@ -1307,7 +1311,7 @@ public class TreeAnnotator {
                 return;
             }
 
-            int burnin = dialog.getBurnin();
+            int burninPercentage = dialog.getBurninPercentage();
             double posteriorLimit = dialog.getPosteriorLimit();
             double hpd2D = 0.80;
             Target targetOption = dialog.getTargetOption();
@@ -1333,7 +1337,7 @@ public class TreeAnnotator {
 
             try {
             	boolean allowSingleChild = false;
-                new TreeAnnotator(burnin,
+                new TreeAnnotator(burninPercentage,
                 		allowSingleChild,
                         heightsOption,
                         posteriorLimit,
@@ -1364,7 +1368,7 @@ public class TreeAnnotator {
                         //new Arguments.StringOption("target", new String[] { "maxclade", "maxtree" }, false, "an option of 'maxclade' or 'maxtree'"),
                         new Arguments.StringOption("heights", new String[]{"keep", "median", "mean", "ca"}, false,
                                 "an option of 'keep' (default), 'median', 'mean' or 'ca'"),
-                        new Arguments.IntegerOption("burnin", "the number of states to be considered as 'burn-in'"),
+                        new Arguments.IntegerOption("burnin", "the percentage of states to be considered as 'burn-in'"),
                         new Arguments.RealOption("limit", "the minimum posterior probability for a node to be annotated"),
                         new Arguments.StringOption("target", "target_file_name", "specifies a user target tree to be annotated"),
                         new Arguments.Option("help", "option to print this message"),

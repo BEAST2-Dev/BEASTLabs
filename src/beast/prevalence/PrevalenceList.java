@@ -12,6 +12,8 @@ import org.w3c.dom.Node;
 import beast.core.Description;
 import beast.core.StateNode;
 
+
+
 @Description("Prevalence list is a linked list with times and actions")
 public class PrevalenceList extends StateNode {
 
@@ -348,7 +350,7 @@ public class PrevalenceList extends StateNode {
 		m_storedNodeIDtoItemMap = m_nodeIDtoItemMap;
 		m_nodeIDtoItemMap = tmp3;
 
-		m_bHasStartedEditing = false;
+		hasStartedEditing = false;
 	}
 
 	@Override

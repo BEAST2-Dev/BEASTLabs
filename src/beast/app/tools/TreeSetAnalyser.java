@@ -1,6 +1,11 @@
 package beast.app.tools;
 
-import beast.app.beastapp.BeastVersion;
+import jam.util.IconUtils;
+
+import javax.swing.*;
+import javax.swing.filechooser.FileFilter;
+
+import beast.app.BEASTVersion;
 import beast.app.util.Arguments;
 import beast.app.util.ErrorLogHandler;
 import beast.app.util.MessageLogHandler;
@@ -8,10 +13,7 @@ import beast.app.util.Version;
 import beast.evolution.tree.TreeTraceAnalysis;
 import beast.util.NexusParser;
 import beast.util.Randomizer;
-import jam.util.IconUtils;
 
-import javax.swing.*;
-import javax.swing.filechooser.FileFilter;
 
 
 import java.io.File;
@@ -20,7 +22,7 @@ import java.util.logging.*;
 
 public class TreeSetAnalyser {
 
-    private final static Version version = new BeastVersion();
+    private final static Version version = new BEASTVersion();
     
     static class TSAConsoleApp extends jam.console.ConsoleApplication {
 
@@ -289,7 +291,7 @@ public class TreeSetAnalyser {
 			double burnInpercentage = arguments.getIntegerOption("burnin");
 			double HPDpercentage = arguments.getIntegerOption("HPD");
 	        
-	        TreeTraceAnalysis analyser = new TreeTraceAnalysis(parser.m_trees, burnInpercentage, HPDpercentage);
+	        TreeTraceAnalysis analyser = new TreeTraceAnalysis(parser.trees, burnInpercentage, HPDpercentage);
 
        		new TreeSetAnalyser(analyser, consoleApp, maxErrorCount);
        } catch (RuntimeException rte) {

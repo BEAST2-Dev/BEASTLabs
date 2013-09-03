@@ -50,14 +50,16 @@
 package beast.prevalence;
 
 
+
+import java.util.ArrayList;
+import java.util.List;
+
 import beast.core.Description;
 import beast.core.Input;
 import beast.evolution.tree.Node;
 import beast.evolution.tree.Tree;
 import beast.util.Randomizer;
 
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Implements the subtree slide move.

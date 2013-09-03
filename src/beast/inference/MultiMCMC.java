@@ -17,6 +17,8 @@ import beast.util.TreeParser;
 import beast.util.XMLParser;
 import beast.util.XMLProducer;
 
+
+
 @Description("Runs multiple MCMC chains in parallel and reports Rubin-Gelman statistic while running the chain " +
 		"for each item in the first log file as well as the maximum difference in clade probability for every " +
 		"pair of chains. " +
@@ -87,22 +89,22 @@ public class MultiMCMC extends MCMC {
 			}
 			m_chains[i] = (MCMC) parser.parseFragment(sXML2, true);
 			// remove log to stdout, if any
-			for (int iLogger = m_chains[i].m_loggers.get().size()-1; iLogger >= 0; iLogger--) {
-				if (m_chains[i].m_loggers.get().get(iLogger).m_pFileName.get() == null) {
-					m_chains[i].m_loggers.get().remove(iLogger);
+			for (int iLogger = m_chains[i].loggersInput.get().size()-1; iLogger >= 0; iLogger--) {
+				if (m_chains[i].loggersInput.get().get(iLogger).fileNameInput.get() == null) {
+					m_chains[i].loggersInput.get().remove(iLogger);
 				}
 			}
 		}
 	
 		// collect indices for tree log file names
-		while (m_chains[0].m_loggers.get().get(m_iTreeLog).m_mode != Logger.TREE_LOGGER) {
+		while (m_chains[0].loggersInput.get().get(m_iTreeLog).mode != Logger.TREE_LOGGER) {
 			m_iTreeLog++;
 		}
-		while (m_chains[0].m_loggers.get().get(m_iLog).m_mode != Logger.COMPOUND_LOGGER) {
+		while (m_chains[0].loggersInput.get().get(m_iLog).mode != Logger.COMPOUND_LOGGER) {
 			m_iLog++;
 		}
-		int nEveryLog = m_chains[0].m_loggers.get().get(m_iLog).m_pEvery.get();
-		int nEveryTree = m_chains[0].m_loggers.get().get(m_iTreeLog).m_pEvery.get();
+		int nEveryLog = m_chains[0].loggersInput.get().get(m_iLog).everyInput.get();
+		int nEveryTree = m_chains[0].loggersInput.get().get(m_iTreeLog).everyInput.get();
 		if (nEveryLog != nEveryTree) {
 			throw new Exception("log frequencey and tree log frequencey should be the same.");
 		}
@@ -115,9 +117,9 @@ public class MultiMCMC extends MCMC {
 		m_threads = new Thread[m_chains.length];
 		int k = 0;
 		for (final MCMC mcmc : m_chains) {
-			mcmc.setStateFile(m_sStateFile + "." +k, m_bRestoreFromFile);
+			mcmc.setStateFile(stateFileName + "." +k, restoreFromFile);
 			// need this to keep regression testing time reasonable
-			mcmc.m_oChainLength.setValue(m_oChainLength.get(), this);
+			mcmc.chainLengthInput.setValue(chainLengthInput.get(), this);
 			m_threads[k] = new Thread() {
 				public void run() {
 					try {
@@ -174,7 +176,7 @@ public class MultiMCMC extends MCMC {
 				while (nFilesOpened < nThreads*2) {
 					for (int i = 0; i < nThreads*2; i++) {
 						if (fin[i] == null) {
-							String sFileName = m_chains[i/2].m_loggers.get().get(i%2==0?m_iLog:m_iTreeLog).m_pFileName.get(); 
+							String sFileName = m_chains[i/2].loggersInput.get().get(i%2==0?m_iLog:m_iTreeLog).fileNameInput.get(); 
 							fin[i] = new BufferedReader(new FileReader(sFileName));
 							if (fin[i] != null) {
 								nFilesOpened++;
@@ -293,7 +295,7 @@ public class MultiMCMC extends MCMC {
 				} while (!sStr.matches("tree STATE.*")); // ignore non-tree lines
 				sStr = sStr.substring(sStr.indexOf("("));
 				TreeParser parser = new TreeParser();
-				parser.m_nOffset.setValue(0, parser);
+				parser.offsetInput.setValue(0, parser);
 				Node tree = parser.parseNewick(sStr);
 				List<String> sClades = new ArrayList<String>();
 				m_nClades = traverse(tree, sClades).length;

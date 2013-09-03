@@ -4,6 +4,8 @@ package test.beast.evolution.likelihood;
 import java.util.concurrent.Executors;
 
 import junit.framework.TestCase;
+import org.junit.Test;
+
 import beast.app.BeastMCMC;
 import beast.evolution.alignment.Alignment;
 import beast.evolution.likelihood.ThreadedTreeLikelihood;
@@ -19,7 +21,7 @@ import beast.evolution.substitutionmodel.MTREV;
 import beast.evolution.substitutionmodel.SubstitutionModel;
 import beast.evolution.substitutionmodel.WAG;
 import beast.evolution.tree.Tree;
-import org.junit.Test;
+
 import test.beast.BEASTTestCase;
 
 /** This test mimics the testLikelihood.xml file from Beast 1, which compares Beast 1 results to PAUP results. 

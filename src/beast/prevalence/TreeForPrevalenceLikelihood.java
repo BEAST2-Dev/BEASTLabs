@@ -13,6 +13,8 @@ import beast.evolution.tree.Tree;
 import beast.prevalence.PrevalenceList.Action;
 import beast.prevalence.PrevalenceList.Item;
 
+
+
 @Description("likelihood of a tree conditioned on a prevalence sequence")
 public class TreeForPrevalenceLikelihood extends Distribution {
 	public Input<Double> m_initialRootTime = new Input<Double>("initialTime", "initial start time for prevalence curve, defaults to root height times 2");

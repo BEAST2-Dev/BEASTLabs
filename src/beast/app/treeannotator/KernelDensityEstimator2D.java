@@ -1,12 +1,13 @@
 package beast.app.treeannotator;
 
+import beast.math.matrixalgebra.Matrix;
+import beast.math.matrixalgebra.Vector;
 import beast.math.statistic.DiscreteStatistics;
 import cern.colt.list.DoubleArrayList;
 import cern.jet.stat.Descriptive;
-import beast.math.matrixalgebra.Matrix;
-import beast.math.matrixalgebra.Vector;
 
 import java.util.Arrays;
+
 
 /**
  * KernelDensityEstimator2D creates a bi-variate kernel density smoother for data
