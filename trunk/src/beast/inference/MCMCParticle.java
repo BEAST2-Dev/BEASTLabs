@@ -9,6 +9,8 @@ import beast.core.Logger;
 import beast.core.MCMC;
 import beast.util.Randomizer;
 
+
+
 @Description("MCMC chain that synchronises through files. Can be used with ParticleFilter instead of plain MCMC.")
 public class MCMCParticle extends MCMC {
 	public Input<Integer> m_stepSize = new Input<Integer>("stepsize", "number of samples before switching state (default 10000)", 10000);
@@ -24,9 +26,9 @@ public class MCMCParticle extends MCMC {
 		System.err.println("MCMCParticle living in " + m_sParticleDir);
 		
 		if (m_sParticleDir != null) {
-			for (Logger logger : m_loggers.get()) {
-				if (logger.m_pFileName.get() != null) {
-					logger.m_pFileName.setValue(m_sParticleDir + "/" + logger.m_pFileName.get(), logger);
+			for (Logger logger : loggersInput.get()) {
+				if (logger.fileNameInput.get() != null) {
+					logger.fileNameInput.setValue(m_sParticleDir + "/" + logger.fileNameInput.get(), logger);
 				}
 			}
 		}
@@ -97,7 +99,7 @@ public class MCMCParticle extends MCMC {
 			} catch (Exception e) {
 				System.out.println("Restoring state failed: " + e.getMessage());
 			}
-			fOldLogLikelihood = robustlyCalcPosterior(posterior);
+			oldLogLikelihood = robustlyCalcPosterior(posterior);
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.exit(0);

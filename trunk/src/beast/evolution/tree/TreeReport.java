@@ -16,14 +16,16 @@
  */
 package beast.evolution.tree;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import beast.core.Description;
 import beast.core.Input;
 import beast.core.Logger;
-import beast.core.Plugin;
+import beast.core.BEASTObject;
 import beast.evolution.tree.Tree;
 import beast.evolution.tree.TreeTraceAnalysis;
-import java.util.ArrayList;
-import java.util.List;
+
 
 /**
  * Modified logger which analyses a sequence of tree states generated
@@ -60,14 +62,14 @@ public class TreeReport extends Logger {
 	@Override
 	public void initAndValidate() throws Exception {
 
-		List<Plugin> loggers = m_pLoggers.get();
+		List<BEASTObject> loggers = loggersInput.get();
         final int nLoggers = loggers.size();
         if (nLoggers == 0) {
             throw new Exception("Logger with nothing to log specified");
         }
 
-		if (m_pEvery.get() != null)
-			m_nEvery = m_pEvery.get();
+		if (everyInput.get() != null)
+			m_nEvery = everyInput.get();
 
 		if (burninPercentageInput.get() != null)
 			burninPercentage = burninPercentageInput.get();

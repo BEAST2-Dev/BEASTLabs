@@ -10,11 +10,11 @@ package beast.math.matrixalgebra;
  *
  */
 
+import beast.math.util.MathUtils;
+import beast.util.Randomizer;
 import cern.colt.matrix.DoubleFactory2D;
 import cern.colt.matrix.DoubleMatrix2D;
 import cern.colt.matrix.linalg.Property;
-import beast.util.Randomizer;
-import beast.math.util.MathUtils;
 
 
 public class RobustSingularValueDecomposition implements java.io.Serializable {

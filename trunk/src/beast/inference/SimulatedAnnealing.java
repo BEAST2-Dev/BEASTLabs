@@ -10,6 +10,8 @@ import beast.core.MCMC;
 import beast.core.Operator;
 import beast.util.Randomizer;
 
+
+
 @Description("Maximum likelihood by simulated annealing")
 public class SimulatedAnnealing extends MCMC implements Loggable {
 	public Input<Double> startTemp = new Input<Double>("startTemp","starting temperature (default 1.0)", 1.0);
@@ -31,19 +33,19 @@ public class SimulatedAnnealing extends MCMC implements Loggable {
     /** main MCMC loop **/ 
     protected void doLoop() throws Exception {
         String sBestXML = state.toXML(0);
-        double fBestLogLikelihood = fOldLogLikelihood;
+        double fBestLogLikelihood = oldLogLikelihood;
 		double fTemp0 = startTemp.get();
 		fTemp = fTemp0;
 		
 		// find lowest log frequency
-		int nLogEvery = nChainLength;
-		for (Logger logger :  m_loggers.get()) {
-			nLogEvery = Math.min(logger.m_pEvery.get(), nLogEvery);
+		int nLogEvery = chainLength;
+		for (Logger logger :  loggersInput.get()) {
+			nLogEvery = Math.min(logger.everyInput.get(), nLogEvery);
 		}
 			
-        for (int iSample = -nBurnIn; iSample <= nChainLength; iSample++) {
+        for (int iSample = -burnIn; iSample <= chainLength; iSample++) {
             state.store(iSample);
-            if (m_nStoreEvery > 0 && iSample % m_nStoreEvery == 0 && iSample > 0) {
+            if (storeEvery > 0 && iSample % storeEvery == 0 && iSample > 0) {
                 state.storeToFile(iSample);
             	operatorSchedule.storeToFile();
             }
@@ -57,14 +59,14 @@ public class SimulatedAnnealing extends MCMC implements Loggable {
             	state.storeCalculationNodes();
                 state.checkCalculationNodesDirtiness();
 
-                fNewLogLikelihood = posterior.calculateLogP();
+                newLogLikelihood = posterior.calculateLogP();
 
-                double logAlpha = fNewLogLikelihood - fOldLogLikelihood;
+                double logAlpha = newLogLikelihood - oldLogLikelihood;
                 //System.out.println(logAlpha + " " + fNewLogLikelihood + " " + fOldLogLikelihood);
                 if (logAlpha >= 0 || Randomizer.nextDouble() > Math.exp(-Math.exp(logAlpha) * fTemp)) {
                 //if (logAlpha >= 0) {
                     // accept
-                    fOldLogLikelihood = fNewLogLikelihood;
+                    oldLogLikelihood = newLogLikelihood;
                     state.acceptCalculationNodes();
 
                     if (iSample >= 0) {
@@ -90,9 +92,9 @@ public class SimulatedAnnealing extends MCMC implements Loggable {
                 //System.out.print(" direct reject");
             }
             
-            if (fOldLogLikelihood > fBestLogLikelihood) {
+            if (oldLogLikelihood > fBestLogLikelihood) {
                 sBestXML = state.toXML(iSample);
-                fBestLogLikelihood = fOldLogLikelihood;
+                fBestLogLikelihood = oldLogLikelihood;
             }
             
             
@@ -100,33 +102,33 @@ public class SimulatedAnnealing extends MCMC implements Loggable {
             if (iSample % nLogEvery == 0) {
                 String sXML = state.toXML(iSample);
             	state.fromXML(sBestXML);
-            	fOldLogLikelihood = robustlyCalcPosterior(posterior); 
+            	oldLogLikelihood = robustlyCalcPosterior(posterior); 
             	log(iSample);
             	state.fromXML(sXML);
-            	fOldLogLikelihood = robustlyCalcPosterior(posterior); 
+            	oldLogLikelihood = robustlyCalcPosterior(posterior); 
             }
 
             
             
-            if (bDebug && iSample % 3 == 0 || iSample % 10000 == 0) { 
+            if (debugFlag && iSample % 3 == 0 || iSample % 10000 == 0) { 
             	// check that the posterior is correctly calculated at every third
             	// sample, as long as we are in debug mode
                 double fLogLikelihood = robustlyCalcPosterior(posterior); 
-                if (Math.abs(fLogLikelihood - fOldLogLikelihood) > 1e-6) {
+                if (Math.abs(fLogLikelihood - oldLogLikelihood) > 1e-6) {
                 	reportLogLikelihoods(posterior, "");
-                    throw new Exception("At sample "+ iSample + "\nLikelihood incorrectly calculated: " + fOldLogLikelihood + " != " + fLogLikelihood
+                    throw new Exception("At sample "+ iSample + "\nLikelihood incorrectly calculated: " + oldLogLikelihood + " != " + fLogLikelihood
                     		+ " Operator: " + operator.getClass().getName());
                 }
                 if (iSample > NR_OF_DEBUG_SAMPLES * 3) {
                 	// switch of debug mode once a sufficient large sample is checked
-                    bDebug = false;
+                    debugFlag = false;
                 }
             } else {
                 operator.optimize(logAlpha);
             }
             callUserFunction(iSample);
             
-            fTemp = fTemp0 * Math.exp(iSample * m_fDeltaLogTemp / nChainLength);
+            fTemp = fTemp0 * Math.exp(iSample * m_fDeltaLogTemp / chainLength);
         }
     }
 

@@ -30,7 +30,10 @@ import java.util.Arrays;
 import beast.core.Description;
 import beast.core.Input;
 import beast.core.parameter.RealParameter;
+import beast.evolution.substitutionmodel.HKY;
 import beast.evolution.tree.Node;
+
+
 
 @Description("Lazy version of HKY85 substitution model of nucleotide evolution.")
 public final class LazyHKY extends HKY {

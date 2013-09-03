@@ -20,6 +20,8 @@ import beast.core.Input;
 import beast.math.statistic.DiscreteStatistics;
 import beast.util.Randomizer;
 
+
+
 @Description("MCMC chain to be launched by ParticleFilter. It updates its state without " +
 		"synchronisation with any of the other particles.")
 public class MCMCParticleAsync extends MCMCParticle {
@@ -89,7 +91,7 @@ public class MCMCParticleAsync extends MCMCParticle {
 			try {        	
 				state.restoreFromFile();
 				operatorSchedule.restoreFromFile();
-				fOldLogLikelihood = robustlyCalcPosterior(posterior);
+				oldLogLikelihood = robustlyCalcPosterior(posterior);
 			} catch (Exception e) {
 				System.out.println("Could not restore from state " + e.getMessage() + " trying to go back to old state");
 				m_sStates[m_iCurrentParticleNr] = m_sOldStates[m_iCurrentParticleNr];
@@ -101,7 +103,7 @@ public class MCMCParticleAsync extends MCMCParticle {
 				Thread.sleep(4000);
 				state.restoreFromFile();
 				operatorSchedule.restoreFromFile();
-				fOldLogLikelihood = robustlyCalcPosterior(posterior);
+				oldLogLikelihood = robustlyCalcPosterior(posterior);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

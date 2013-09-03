@@ -11,8 +11,10 @@ import beast.core.State;
 import beast.core.Input.Validate;
 import beast.core.parameter.IntegerParameter;
 import beast.core.parameter.RealParameter;
-//import beast.evolution.tree.coalescent.TreeIntervals;
 import beast.prevalence.PrevalenceList.Item;
+
+
+//import beast.evolution.tree.coalescent.TreeIntervals;
 
 @Description("likelihood of the prevalence sequence based on a set of parameters")
 public class PrevalenceLikelihood extends Distribution {

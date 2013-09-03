@@ -19,12 +19,14 @@ import beast.app.BeastMCMC;
 import beast.core.Description;
 import beast.core.Distribution;
 import beast.core.Input;
-import beast.core.Input.Validate;
-import beast.core.util.CompoundDistribution;
 import beast.core.Logger;
 import beast.core.MCMC;
+import beast.core.Input.Validate;
+import beast.core.util.CompoundDistribution;
 import beast.util.Randomizer;
 import beast.util.XMLProducer;
+
+
 
 @Description("Calculate marginal likelihood through path/stepping stone sampling. " +
 		"Perform multiple steps and calculate estimate." +
@@ -125,14 +127,14 @@ public class PathSampler extends beast.core.Runnable {
 		
 		int chainLength = chainLengthInput.get();
 		// set up chain length for a single step
-		mcmc.m_oBurnIn.setValue(0, mcmc);
-		mcmc.m_oChainLength.setValue(chainLength, mcmc);
+		mcmc.burnInInput.setValue(0, mcmc);
+		mcmc.chainLengthInput.setValue(chainLength, mcmc);
 		
 		// add posterior logger
 		Logger logger = new Logger();
 		Distribution likelihood = extractLikelihood(mcmc); 
 		logger.initByName("fileName", LIKELIHOOD_LOG_FILE, "log", likelihood, "logEvery", chainLength/1000);
-		mcmc.m_loggers.setValue(logger, mcmc);
+		mcmc.loggersInput.setValue(logger, mcmc);
 
 		// set up directories with beast.xml files in each of them
 		String sFormat = "";
@@ -160,9 +162,9 @@ public class PathSampler extends beast.core.Runnable {
 		
 		for (int i = 0; i < m_nSteps; i++) {
 			if (i < BeastMCMC.m_nThreads) {
-				mcmc.m_oBurnIn.setValue(preBurnIn, mcmc);
+				mcmc.burnInInput.setValue(preBurnIn, mcmc);
 			} else {
-				mcmc.m_oBurnIn.setValue(0, mcmc);
+				mcmc.burnInInput.setValue(0, mcmc);
 			}
 			// create XML for a single step
 			double beta = betaDistribution != null ?

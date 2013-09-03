@@ -18,9 +18,9 @@ JNIEXPORT jlong JNICALL Java_beast_evolution_likelihood_BeerLikelihoodCoreNative
 /*
  * Class:     beast_evolution_likelihood_BeerLikelihoodCoreNative
  * Method:    initializeC
- * Signature: (JIIIZ)V
+ * Signature: (JIIIZ)Z
  */
-JNIEXPORT void JNICALL Java_beast_evolution_likelihood_BeerLikelihoodCoreNative_initializeC
+JNIEXPORT jboolean JNICALL Java_beast_evolution_likelihood_BeerLikelihoodCoreNative_initializeC
   (JNIEnv *, jobject, jlong, jint, jint, jint, jboolean);
 
 /*
@@ -78,14 +78,6 @@ JNIEXPORT void JNICALL Java_beast_evolution_likelihood_BeerLikelihoodCoreNative_
  */
 JNIEXPORT void JNICALL Java_beast_evolution_likelihood_BeerLikelihoodCoreNative_setNodeMatrixC
   (JNIEnv *, jobject, jlong, jint, jint, jdoubleArray);
-
-/*
- * Class:     beast_evolution_likelihood_BeerLikelihoodCoreNative
- * Method:    setPaddedMatricesC
- * Signature: (JI[D)V
- */
-JNIEXPORT void JNICALL Java_beast_evolution_likelihood_BeerLikelihoodCoreNative_setPaddedMatricesC
-  (JNIEnv *, jobject, jlong, jint, jdoubleArray);
 
 /*
  * Class:     beast_evolution_likelihood_BeerLikelihoodCoreNative

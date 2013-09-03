@@ -64,9 +64,9 @@ public class MCMC2 extends Runnable {
                     new ArrayList<Logger>(), Input.Validate.REQUIRED);
 
     
-    public Input<List<Plugin>> m_initialisers = new Input<List<Plugin>>("init","list of plugins used " +
+    public Input<List<BEASTObject>> m_initialisers = new Input<List<BEASTObject>>("init","list of plugins used " +
     		"for initialising StateNodes. Only initAndValidate is called on these plugins, but they " +
-    		"are ignored once the chain is running", new ArrayList<Plugin>());
+    		"are ignored once the chain is running", new ArrayList<BEASTObject>());
     
     /** Alternative representation of operatorsInput that allows random selection
      * of operators and calculation of statistics.
@@ -105,7 +105,7 @@ public class MCMC2 extends Runnable {
         this.state = new State();
         HashSet<StateNode> stateNodes = new HashSet<StateNode>();
         for (Operator op : operatorsInput.get()) {
-        	for (Plugin o : op.listActivePlugins()) {
+        	for (BEASTObject o : op.listActivePlugins()) {
         		if (o instanceof StateNode) {
         			stateNodes.add((StateNode) o);
         		}
@@ -186,11 +186,11 @@ public class MCMC2 extends Runnable {
     	// StateNodes, e.g. set up bounds or dimensions
     	state.initAndValidate();
     	// also, initialise state with the file name to store and set-up whether to resume from file
-    	state.setStateFileName(m_sStateFile);
+    	state.setStateFileName(stateFileName);
 
         nBurnIn = m_oBurnIn.get();
         nChainLength = m_oChainLength.get();
-        if (m_bRestoreFromFile) {
+        if (restoreFromFile) {
         	state.restoreFromFile();
         	nBurnIn = 0;
         }

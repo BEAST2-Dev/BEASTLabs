@@ -8,21 +8,25 @@ import beast.core.Input;
 import beast.core.Input.Validate;
 import beast.evolution.branchratemodel.StrictClockModel;
 import beast.evolution.datatype.DataType;
+import beast.evolution.likelihood.BeerLikelihoodCore;
+import beast.evolution.likelihood.BeerLikelihoodCore4;
 import beast.evolution.sitemodel.SiteModel;
 import beast.evolution.tree.Node;
 import beast.evolution.tree.TraitSet;
 import beast.evolution.tree.Tree;
 
+
+
 @Description("Performs peeling algorithm over a tree using a trait as values for " +
 		"tips instead of a sequence")
-public class TraitedTreeLikelihood extends TreeLikelihood {
+public class TraitedTreeLikelihood extends AscertainedTreeLikelihood {
 	public Input<DataType.Base> m_dataTypeInput = new Input<DataType.Base>("dataType", "data type of the trait", Validate.REQUIRED);
 	public Input<TraitSet> m_traitSet = new Input<TraitSet>("traitSet", "set of traits associated with tips", Validate.REQUIRED);
 	
 	int m_nPatterns;
 	
 	public TraitedTreeLikelihood() {
-		m_data.setRule(Validate.OPTIONAL);
+		dataInput.setRule(Validate.OPTIONAL);
 	}
 	
 	@Override
@@ -31,45 +35,45 @@ public class TraitedTreeLikelihood extends TreeLikelihood {
 //    	if (m_traitSet.get().getNrTaxa() != m_tree.get().getLeafNodeCount()) {
 //    		throw new Exception("The number of nodes in the tree does not match the number of sequences");
 //    	}
-    	m_beagle = null;
+    	beagle = null;
     	
-        int nodeCount = m_tree.get().getNodeCount();
-        if (!(m_pSiteModel.get() instanceof SiteModel.Base)) {
+        int nodeCount = treeInput.get().getNodeCount();
+        if (!(siteModelInput.get() instanceof SiteModel.Base)) {
         	throw new Exception ("siteModel input should be of type SiteModel.Base");
         }
-        m_siteModel = (SiteModel.Base) m_pSiteModel.get();
+        m_siteModel = (SiteModel.Base) siteModelInput.get();
 
 
         int nStateCount = m_dataTypeInput.get().getStateCount();
         
         m_siteModel.setDataType(m_dataTypeInput.get());
-        m_substitutionModel = m_siteModel.m_pSubstModel.get();
+        substitutionModel = m_siteModel.substModelInput.get();
 
-        if (m_pBranchRateModel.get() != null) {
-        	m_branchRateModel = m_pBranchRateModel.get();
+        if (branchRateModelInput.get() != null) {
+        	branchRateModel = branchRateModelInput.get();
         } else {
-            m_branchRateModel = new StrictClockModel();
+            branchRateModel = new StrictClockModel();
         }
     	m_branchLengths = new double[nodeCount];
-    	m_StoredBranchLengths = new double[nodeCount];
+    	storedBranchLengths = new double[nodeCount];
     	
         m_nPatterns = 1;
         if (nStateCount == 4) {
-            m_likelihoodCore = new BeerLikelihoodCore4();
+            likelihoodCore = new BeerLikelihoodCore4();
         } else {
-            m_likelihoodCore = new BeerLikelihoodCore(nStateCount);
+            likelihoodCore = new BeerLikelihoodCore(nStateCount);
         }
-        System.out.println("TreeLikelihood uses " + m_likelihoodCore.getClass().getName());
+        System.out.println("TreeLikelihood uses " + likelihoodCore.getClass().getName());
 
-        m_fProportionInvariant = m_siteModel.getProportionInvariant();
+        proportionInvariant = m_siteModel.getProportionInvariant();
         m_siteModel.setPropInvariantIsCategory(false);
-        if (m_fProportionInvariant > 0) {
+        if (proportionInvariant > 0) {
         	calcConstantPatternIndices(m_nPatterns, nStateCount);
         }
         
 
         // initialise core
-        m_likelihoodCore.initialize(
+        likelihoodCore.initialize(
                 nodeCount,
                 m_nPatterns,
                 m_siteModel.getCategoryCount(),
@@ -80,23 +84,23 @@ public class TraitedTreeLikelihood extends TreeLikelihood {
         int intNodeCount = nodeCount / 2;
 
         if (m_useAmbiguities.get()) {
-        	setTraitPartials(m_tree.get().getRoot(), m_nPatterns);
+        	setTraitPartials(treeInput.get().getRoot(), m_nPatterns);
         } else {
-        	setTraitStates(m_tree.get().getRoot(), m_nPatterns);
+        	setTraitStates(treeInput.get().getRoot(), m_nPatterns);
         }
-        m_nHasDirt = Tree.IS_FILTHY;
+        hasDirt = Tree.IS_FILTHY;
         for (int i = 0; i < intNodeCount; i++) {
-            m_likelihoodCore.createNodePartials(extNodeCount + i);
+            likelihoodCore.createNodePartials(extNodeCount + i);
         }
         
         
-        m_fPatternLogLikelihoods = new double[m_nPatterns];
+        patternLogLikelihoods = new double[m_nPatterns];
         m_fRootPartials = new double[m_nPatterns * nStateCount];
-        m_nMatrixSize = (nStateCount +1)* (nStateCount+1);
-        m_fProbabilities = new double[(nStateCount +1)* (nStateCount+1)];
-        Arrays.fill(m_fProbabilities, 1.0);
+        matrixSize = (nStateCount +1)* (nStateCount+1);
+        probabilities = new double[(nStateCount +1)* (nStateCount+1)];
+        Arrays.fill(probabilities, 1.0);
 
-        m_bAscertainedSitePatterns = false;
+        useAscertainedSitePatterns = false;
 	}
 	
     /** set leaf states in likelihood core **/
@@ -118,7 +122,7 @@ public class TraitedTreeLikelihood extends TreeLikelihood {
         			states[iPattern] = dataType.getStateCount();
         		}
             }
-            m_likelihoodCore.setNodeStates(node.getNr(), states);
+            likelihoodCore.setNodeStates(node.getNr(), states);
 
         } else {
         	setTraitStates(node.getLeft(), patternCount);
@@ -147,7 +151,7 @@ public class TraitedTreeLikelihood extends TreeLikelihood {
         			partials[k++] = (stateSet[iState] ? 1.0 : 0.0);
             	}
             }
-            m_likelihoodCore.setNodePartials(node.getNr(), partials);
+            likelihoodCore.setNodePartials(node.getNr(), partials);
 
         } else {
         	setTraitPartials(node.getLeft(), patternCount);
@@ -159,22 +163,22 @@ public class TraitedTreeLikelihood extends TreeLikelihood {
     void calcLogP() throws Exception {
         logP = 0.0;
         for (int i = 0; i < m_nPatterns; i++) {
-            logP += m_fPatternLogLikelihoods[i];
+            logP += patternLogLikelihoods[i];
         }
     }
 
     @Override
     protected boolean requiresRecalculation() {
-        m_nHasDirt = Tree.IS_CLEAN;
+        hasDirt = Tree.IS_CLEAN;
 
         if (m_siteModel.isDirtyCalculation()) {
-            m_nHasDirt = Tree.IS_DIRTY;
+            hasDirt = Tree.IS_DIRTY;
             return true;
         }
-        if (m_branchRateModel != null && m_branchRateModel.isDirtyCalculation()) {
-            m_nHasDirt = Tree.IS_DIRTY;
+        if (branchRateModel != null && branchRateModel.isDirtyCalculation()) {
+            hasDirt = Tree.IS_DIRTY;
             return true;
         }
-        return m_tree.get().somethingIsDirty();
+        return treeInput.get().somethingIsDirty();
     }
 }

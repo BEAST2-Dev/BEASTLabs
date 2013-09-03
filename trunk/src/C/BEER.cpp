@@ -547,7 +547,7 @@ double * BEER::newdouble(int nSize) {
      * @param nMatrixCount         the number of matrices (i.e., number of categories)
      * @param bIntegrateCategories whether sites are being integrated over all matrices
      */
-    void BEER::initialize(int nNodeCount, int nPatternCount, int nMatrixCount, bool bIntegrateCategories) {
+    bool BEER::initialize(int nNodeCount, int nPatternCount, int nMatrixCount, bool bIntegrateCategories) {
 //fprintf(stderr,"initialize %d %d %d %d\n", nNodeCount, nPatternCount, nMatrixCount, bIntegrateCategories);
         m_nNodes = nNodeCount;
         m_nPatterns = nPatternCount;
@@ -638,6 +638,7 @@ double * BEER::newdouble(int nSize) {
     		DEFAULT_ID[k] = k;
     	}
     	DEFAULT_MAP = newint(m_nPatterns * m_nPatterns);
+    	return true;
     }
 
     /**

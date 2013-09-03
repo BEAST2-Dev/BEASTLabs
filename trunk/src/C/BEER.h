@@ -72,7 +72,7 @@ public:
 
 	/** reserve memory for partials, indices and other 
 	 * data structures required by the core **/
-	void initialize(int nNodeCount, int nPatternCount, int nMatrixCount, bool bIntegrateCategories);
+	bool initialize(int nNodeCount, int nPatternCount, int nMatrixCount, bool bIntegrateCategories);
 	
 	/** clean up after last likelihood calculation, if at all required **/
 	void finalize();

@@ -35,7 +35,7 @@ public class RandomLocalYuleModel extends UltrametricSpeciationModel {
     @Override
     public void initAndValidate() throws Exception {
 //        super.initAndValidate();
-        tree = m_tree.get();
+        tree = treeInput.get();
         this.birthRates = new double[tree.getNodeCount()];
         
         RealParameter rates = birthRatesParameter.get();

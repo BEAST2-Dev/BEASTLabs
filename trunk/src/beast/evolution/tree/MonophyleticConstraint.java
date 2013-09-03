@@ -10,12 +10,16 @@ import java.util.Set;
 import beast.core.Description;
 import beast.core.Distribution;
 import beast.core.Input;
-import beast.core.Input.Validate;
 import beast.core.State;
+import beast.core.Input.Validate;
 import beast.evolution.alignment.Alignment;
 import beast.evolution.alignment.Sequence;
 import beast.evolution.alignment.Taxon;
 import beast.evolution.alignment.TaxonSet;
+import beast.evolution.tree.Node;
+import beast.evolution.tree.Tree;
+
+
 
 @Description("Enforces groups of taxa to be monophyletic -- have a common mrca that " +
 		"no other taxa have. This can be used as part of the prior. " +
@@ -35,7 +39,7 @@ public class MonophyleticConstraint extends Distribution {
 	public void initAndValidate() throws Exception {
 		List<TaxonSet> taxonsets = m_set.get();
 		m_nIDs = new ArrayList[taxonsets.size()];
-		List<Sequence> data = m_taxa.get().m_pSequences.get();
+		List<Sequence> data = m_taxa.get().sequenceInput.get();
 
 		m_leafConstraintNr = new int[m_tree.get().getLeafNodeCount()];
 		Arrays.fill(m_leafConstraintNr, -1);
@@ -43,7 +47,7 @@ public class MonophyleticConstraint extends Distribution {
 		for (int i = 0; i < taxonsets.size(); i++) {
 			TaxonSet taxonset = taxonsets.get(i);
 			m_nIDs[i] = new ArrayList<Integer>();
-			List<Taxon> set = taxonset.m_taxonset.get();
+			List<Taxon> set = taxonset.taxonsetInput.get();
 			if (set.size() <= 1) {
 				throw new Exception("Taxon set should contain at least two taxa");
 			}

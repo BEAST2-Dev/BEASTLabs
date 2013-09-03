@@ -32,8 +32,11 @@ import java.util.Arrays;
 import beast.core.Description;
 import beast.core.Input;
 import beast.core.parameter.RealParameter;
+import beast.evolution.substitutionmodel.GeneralSubstitutionModel;
 import beast.evolution.tree.Node;
 import beast.math.GammaFunction;
+
+
 
 @Description("Uses a super-relaxed clock model. Note, this should only be used with strict clock models.")
 public class GeneralLazySubstitutionModel extends GeneralSubstitutionModel {
@@ -68,7 +71,7 @@ public class GeneralLazySubstitutionModel extends GeneralSubstitutionModel {
             if (updateMatrix) {
             	setupRelativeRates();
             	setupRateMatrix();
-            	eigenDecomposition = eigenSystem.decomposeMatrix(m_rateMatrix);
+            	eigenDecomposition = eigenSystem.decomposeMatrix(rateMatrix);
             	updateMatrix = false;
             }
         }
@@ -76,7 +79,7 @@ public class GeneralLazySubstitutionModel extends GeneralSubstitutionModel {
         // TODO: is the following really necessary?
         // TODO: implemented a pool of iexp matrices to support multiple threads
         // TODO: without creating a new matrix each call. - AJD
-        double[] iexp = new double[m_nStates * m_nStates];
+        double[] iexp = new double[nrOfStates * nrOfStates];
         // Eigen vectors
         double[] Evec = eigenDecomposition.getEigenVectors();
         // inverse Eigen vectors
@@ -84,7 +87,7 @@ public class GeneralLazySubstitutionModel extends GeneralSubstitutionModel {
         // Eigen values
         double[] Eval = eigenDecomposition.getEigenValues();
         double fTheta = (m_theta.get() == null ? 1.0 : m_theta.get().getValue());
-        for (i = 0; i < m_nStates; i++) {
+        for (i = 0; i < nrOfStates; i++) {
             //temp = Math.exp(distance * Eval[i]);
         	switch (m_relaxationMode) {
         	case exponential:
@@ -99,17 +102,17 @@ public class GeneralLazySubstitutionModel extends GeneralSubstitutionModel {
         		temp *= Math.exp(GammaFunction.lnGamma(fTheta + 1.0));
         		break;
         	}
-            for (j = 0; j < m_nStates; j++) {
-                iexp[i * m_nStates + j] = Ievc[i * m_nStates + j] * temp;
+            for (j = 0; j < nrOfStates; j++) {
+                iexp[i * nrOfStates + j] = Ievc[i * nrOfStates + j] * temp;
             }
         }
 
         int u = 0;
-        for (i = 0; i < m_nStates; i++) {
-            for (j = 0; j < m_nStates; j++) {
+        for (i = 0; i < nrOfStates; i++) {
+            for (j = 0; j < nrOfStates; j++) {
                 temp = 0.0;
-                for (k = 0; k < m_nStates; k++) {
-                    temp += Evec[i * m_nStates + k] * iexp[k * m_nStates + j];
+                for (k = 0; k < nrOfStates; k++) {
+                    temp += Evec[i * nrOfStates + k] * iexp[k * nrOfStates + j];
                 }
 
                 matrix[u] = Math.abs(temp);

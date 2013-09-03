@@ -8,11 +8,13 @@ import org.apache.commons.math.distribution.BetaDistribution;
 import org.apache.commons.math.distribution.BetaDistributionImpl;
 
 import beast.core.Description;
-import beast.core.Plugin;
+import beast.core.BEASTObject;
 import beast.util.LogAnalyser;
 
+
+
 @Description("Reads logs produces through PathSampler and estimates marginal likelihood")
-public class PathSampleAnalyser extends Plugin {
+public class PathSampleAnalyser extends BEASTObject {
 	
 	DecimalFormat formatter;
 	

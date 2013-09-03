@@ -27,6 +27,13 @@
 
 package beast.evolution.likelihood;
 
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Random;
+
 import beast.core.Description;
 import beast.core.Distribution;
 import beast.core.Input;
@@ -41,11 +48,6 @@ import beast.evolution.substitutionmodel.SubstitutionModel;
 import beast.evolution.tree.Node;
 import beast.evolution.tree.Tree;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Random;
 
 @Description("Calculates the likelihood of sequence data on a beast.tree given a site and substitution model using " +
 		"a variant of the 'peeling algorithm'. For details, see" +
@@ -113,7 +115,7 @@ public class ExperimentalTreeLikelihood extends Distribution {
         int nNodeCount = m_tree.get().getNodeCount();
         m_siteModel = m_pSiteModel.get();
         m_siteModel.setDataType(m_data.get().getDataType());
-        m_substitutionModel = m_siteModel.m_pSubstModel.get();
+        m_substitutionModel = m_siteModel.substModelInput.get();
 
         if (m_pBranchRateModel.get() != null) {
         	m_branchRateModel = m_pBranchRateModel.get();
@@ -215,7 +217,7 @@ public class ExperimentalTreeLikelihood extends Distribution {
         }
         
         m_fProportionInvariant = m_siteModel.getProportionInvariant();
-        if (m_fProportionInvariant > 0 && m_siteModel.m_bPropInvariantIsCategory == false) {
+        if (m_fProportionInvariant > 0 && m_siteModel.hasPropInvariantCategory == false) {
         	int [] iConstantPattern = calcConstantPatternIndices(nPatterns, nStateCount);
             m_likelihoodCore.setProportionInvariant(m_fProportionInvariant, iConstantPattern);
         }

@@ -1,16 +1,21 @@
 package beast.core;
 
+import java.io.PrintStream;
+
 import beast.core.CalculationNode;
 import beast.core.Description;
+import beast.core.Function;
 import beast.core.Input;
+import beast.core.Loggable;
 import beast.core.Input.Validate;
-import beast.core.Valuable;
+
+
 
 @Description("selects values from a parameter, for instance all even indexed entries")
-public class FilteredValuable extends CalculationNode implements Valuable {
+public class FilteredValuable extends CalculationNode implements Function, Loggable {
 
-	public Input<Valuable> parameterInput = new Input<Valuable>("parameter", "the parameter to select values from",
-			Validate.REQUIRED, Valuable.class);
+	public Input<Function> parameterInput = new Input<Function>("parameter", "the parameter to select values from",
+			Validate.REQUIRED, Function.class);
 	public Input<String> rangeInput = new Input<String>("range", "specifies list of indices " + "First site is 1."
 			+ "Filter specs are comma separated, either a range [from]-[to] or iteration [from]:[to]:[step]; "
 			+ "1-100 defines a range, " + "1-100\3 or 1:100:3 defines every third in range 1-100, "
@@ -18,7 +23,7 @@ public class FilteredValuable extends CalculationNode implements Valuable {
 			+ "negative values count from the last: -1 indicate the last element, -2 the one but last. "
 			+ "Default for range [1]-[last site], default for iterator [1]:[last site]:[1]", Validate.REQUIRED);
 
-	Valuable parameter;
+	Function parameter;
 	int[] indices;
 
 	@Override
@@ -113,5 +118,32 @@ public class FilteredValuable extends CalculationNode implements Valuable {
 	public double getArrayValue(int iDim) {
 		return parameter.getArrayValue(indices[iDim]);
 	}
+
+    /**
+     * Loggable interface implementation follows (partly, the actual
+     * logging of values happens in derived classes) *
+     */
+    @Override
+    public void init(final PrintStream out) throws Exception {
+        if (getDimension() == 1) {
+            out.print(getID() + "\t");
+        } else {
+            for (int iValue = 0; iValue < getDimension(); iValue++) {
+                out.print(getID() + (iValue + 1) + "\t");
+            }
+        }
+    }
+
+	@Override
+	public void log(int nSample, PrintStream out) {
+        for (int iValue = 0; iValue < getDimension(); iValue++) {
+            out.print(getArrayValue(iValue) + "\t");
+        }
+	}
+
+    @Override
+    public void close(final PrintStream out) {
+        // nothing to do
+    }
 
 }

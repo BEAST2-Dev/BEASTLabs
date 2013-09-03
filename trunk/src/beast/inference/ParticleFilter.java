@@ -15,20 +15,22 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
 
-
 import beast.core.Description;
 import beast.core.Input;
-import beast.core.Input.Validate;
 import beast.core.Logger;
 import beast.core.MCMC;
 import beast.core.Operator;
-import beast.core.Plugin;
 import beast.core.State;
 import beast.core.StateNode;
 import beast.core.StateNodeInitialiser;
+import beast.core.BEASTObject;
+import beast.core.Input.Validate;
 import beast.math.statistic.DiscreteStatistics;
 import beast.util.Randomizer;
 import beast.util.XMLProducer;
+
+
+
 
 @Description("MCMC Inference by particle filter approach. This works only when run with many threads, one per particle is optimal.")
 public class ParticleFilter extends beast.core.Runnable {
@@ -96,18 +98,18 @@ public class ParticleFilter extends beast.core.Runnable {
 		// initialise MCMC
 		MCMC mcmc = m_mcmc.get();
 		// set up chain length for a single step
-		mcmc.m_oBurnIn.setValue(0, mcmc);
-		m_nSteps = mcmc.m_oChainLength.get() / nStepSize;
+		mcmc.burnInInput.setValue(0, mcmc);
+		m_nSteps = mcmc.chainLengthInput.get() / nStepSize;
 		if (mcmc instanceof MCMCParticle) {
 			((MCMCParticle)mcmc).m_stepSize.setValue(nStepSize, mcmc);
 		} else {
-			mcmc.m_oChainLength.setValue(nStepSize, mcmc);
+			mcmc.chainLengthInput.setValue(nStepSize, mcmc);
 		}
 		
 		// add posterior logger
 		Logger logger = new Logger();
 		logger.initByName("fileName", POSTERIOR_LOG_FILE, "log", mcmc.posteriorInput.get(), "logEvery", nStepSize);
-		mcmc.m_loggers.setValue(logger, mcmc);
+		mcmc.loggersInput.setValue(logger, mcmc);
 
 		// set up directories with beast.xml files in each of them
 		String sFormat = "";
@@ -132,15 +134,15 @@ public class ParticleFilter extends beast.core.Runnable {
 		
 		m_sStates = new String[m_nParticles];
 		m_fPosteriors = new double[m_nParticles];
-		for (StateNodeInitialiser init : mcmc.m_initilisers.get()) {
+		for (StateNodeInitialiser init : mcmc.initilisersInput.get()) {
 			init.initStateNodes();
 		}
-		State state = mcmc.m_startState.get();
+		State state = mcmc.startStateInput.get();
 		if (state == null) {
 	        // State initialisation
 	        HashSet<StateNode> operatorStateNodes = new HashSet<StateNode>();
 	        for (Operator op : mcmc.operatorsInput.get()) {
-	        	for (Plugin o : op.listActivePlugins()) {
+	        	for (BEASTObject o : op.listActivePlugins()) {
 	        		if (o instanceof StateNode) {
 	        			operatorStateNodes.add((StateNode) o);
 	        		}
@@ -151,7 +153,7 @@ public class ParticleFilter extends beast.core.Runnable {
             for (StateNode stateNode : operatorStateNodes) {
             	state.stateNodeInput.setValue(stateNode, state);
             }
-            state.m_storeEvery.setValue(mcmc.m_storeEvery.get(), state);
+            state.m_storeEvery.setValue(mcmc.storeEveryInput.get(), state);
 	        state.initialise();
 	    }
 		String sState = state.toXML(0);
@@ -384,7 +386,7 @@ public class ParticleFilter extends beast.core.Runnable {
 
 
 	public boolean isResuming() {
-		return m_bRestoreFromFile;
+		return restoreFromFile;
 	}
 	
 }

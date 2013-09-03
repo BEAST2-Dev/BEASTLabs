@@ -12,11 +12,11 @@ public class ML extends MCMC {
     /** main MCMC loop **/ 
     protected void doLoop() throws Exception {
         String sBestXML = state.toXML(0);
-        double fBestLogLikelihood = fOldLogLikelihood;
+        double fBestLogLikelihood = oldLogLikelihood;
 		
-        for (int iSample = -nBurnIn; iSample <= nChainLength; iSample++) {
+        for (int iSample = -burnIn; iSample <= chainLength; iSample++) {
             state.store(iSample);
-            if (m_nStoreEvery > 0 && iSample % m_nStoreEvery == 0 && iSample > 0) {
+            if (storeEvery > 0 && iSample % storeEvery == 0 && iSample > 0) {
                 state.storeToFile(iSample);
             	operatorSchedule.storeToFile();
             }
@@ -28,14 +28,14 @@ public class ML extends MCMC {
             	state.storeCalculationNodes();
                 state.checkCalculationNodesDirtiness();
 
-                fNewLogLikelihood = posterior.calculateLogP();
+                newLogLikelihood = posterior.calculateLogP();
 
-                double logAlpha = fNewLogLikelihood - fOldLogLikelihood;
+                double logAlpha = newLogLikelihood - oldLogLikelihood;
                 //System.out.println(logAlpha + " " + fNewLogLikelihood + " " + fOldLogLikelihood);
                 if (logAlpha >= 0 || Randomizer.nextDouble() < Math.exp(logAlpha)) {
                 //if (logAlpha >= 0) {
                     // accept
-                    fOldLogLikelihood = fNewLogLikelihood;
+                    oldLogLikelihood = newLogLikelihood;
                     state.acceptCalculationNodes();
 
                     if (iSample >= 0) {
@@ -61,32 +61,32 @@ public class ML extends MCMC {
                 //System.out.print(" direct reject");
             }
             
-            if (fOldLogLikelihood > fBestLogLikelihood) {
+            if (oldLogLikelihood > fBestLogLikelihood) {
                 sBestXML = state.toXML(iSample);
-                fBestLogLikelihood = fOldLogLikelihood;
+                fBestLogLikelihood = oldLogLikelihood;
             }
             
             if (iSample % 1000 == 0) {
                 String sXML = state.toXML(iSample);
             	state.fromXML(sBestXML);
-            	fOldLogLikelihood = robustlyCalcPosterior(posterior); 
+            	oldLogLikelihood = robustlyCalcPosterior(posterior); 
             	log(iSample);
 //            	state.fromXML(sXML);
 //                robustlyCalcPosterior(posterior); 
             }
             
-            if (bDebug && iSample % 2 == 0 || iSample % 10000 == 0) { 
+            if (debugFlag && iSample % 2 == 0 || iSample % 10000 == 0) { 
             	// check that the posterior is correctly calculated at every third
             	// sample, as long as we are in debug mode
                 double fLogLikelihood = robustlyCalcPosterior(posterior); 
-                if (Math.abs(fLogLikelihood - fOldLogLikelihood) > 1e-6) {
+                if (Math.abs(fLogLikelihood - oldLogLikelihood) > 1e-6) {
                 	reportLogLikelihoods(posterior, "");
-                    throw new Exception("At sample "+ iSample + "\nLikelihood incorrectly calculated: " + fOldLogLikelihood + " != " + fLogLikelihood
+                    throw new Exception("At sample "+ iSample + "\nLikelihood incorrectly calculated: " + oldLogLikelihood + " != " + fLogLikelihood
                     		+ " Operator: " + operator.getClass().getName());
                 }
                 if (iSample > NR_OF_DEBUG_SAMPLES * 3) {
                 	// switch of debug mode once a sufficient large sample is checked
-                    bDebug = false;
+                    debugFlag = false;
                 }
             } else {
                 operator.optimize(logAlpha);

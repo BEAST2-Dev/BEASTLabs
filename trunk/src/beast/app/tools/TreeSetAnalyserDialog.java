@@ -8,7 +8,9 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.filechooser.FileFilter;
 
-import beast.app.beastapp.WholeNumberField;
+import beast.app.util.WholeNumberField;
+
+
 
 import java.awt.*;
 import java.awt.event.ActionEvent;

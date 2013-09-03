@@ -1,6 +1,7 @@
 package beast.evolution.speciation;
 
 import beast.core.Description;
+import beast.evolution.speciation.SpeciesTreeDistribution;
 import beast.evolution.tree.Node;
 import beast.evolution.tree.Tree;
 

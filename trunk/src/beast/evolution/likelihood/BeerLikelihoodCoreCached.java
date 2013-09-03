@@ -35,6 +35,8 @@ import java.util.Arrays;
 import beast.evolution.sitemodel.SiteModel;
 
 
+
+
 public class BeerLikelihoodCoreCached extends ExperimentalLikelihoodCore {
 	int u, v, w, v1, v2;
     protected int m_nStates;

@@ -3,15 +3,19 @@ package beast.evolution.tree;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import beast.core.Description;
 import beast.core.Input;
 import beast.core.StateNode;
 import beast.core.StateNodeInitialiser;
 import beast.core.Input.Validate;
 import beast.core.parameter.RealParameter;
+import beast.evolution.tree.Node;
+import beast.evolution.tree.Tree;
+
 
 @Description("Sets values of a parameter from metadata values associated with a newick tree")
-public class InitParamFromTree extends beast.core.Plugin implements StateNodeInitialiser {
+public class InitParamFromTree extends beast.core.BEASTObject implements StateNodeInitialiser {
 	public Input<Tree> m_tree = new Input<Tree>("tree", "tree containing some meta data", Validate.REQUIRED);
 	public Input<RealParameter> m_parameter = new Input<RealParameter>("initial","parameter to be initialised", Validate.REQUIRED);
 	public Input<String> m_sPattern = new Input<String>("pattern","name of the metadata item to be parsed", Validate.REQUIRED);
@@ -38,20 +42,20 @@ public class InitParamFromTree extends beast.core.Plugin implements StateNodeIni
 
 	/** traverse tree and pick up meta data values on the way **/
 	private void traverse(Node node, Double[] fValues, String sPattern) {
-		if (node.m_sMetaData != null) {
-            String[] sMetaData = node.m_sMetaData.split(",");
+		if (node.metaDataString != null) {
+            String[] sMetaData = node.metaDataString.split(",");
             for (int i = 0; i < sMetaData.length; i++) {
                 try {
                     String[] sStrs = sMetaData[i].split("=");
                     if (sStrs.length != 2) {
-                        throw new Exception("misformed meta data '" + node.m_sMetaData + "'. Expected name='value' pairs");
+                        throw new Exception("misformed meta data '" + node.metaDataString + "'. Expected name='value' pairs");
                     }
                     if (sStrs[0].equals(sPattern)) {
                     sStrs[1] = sStrs[1].replaceAll("[\"']", "");
             		fValues[node.getNr()] = Double.parseDouble(sStrs[1]);;
                     }
                 } catch (Exception e) {
-                    System.out.println("Warning 1333: Attempt to parse metadata failed: " + node.m_sMetaData);
+                    System.out.println("Warning 1333: Attempt to parse metadata failed: " + node.metaDataString);
                 }
             }
         }		

@@ -1,5 +1,9 @@
 package beast.evolution.tree.coalescent;
 
+
+import java.util.ArrayList;
+import java.util.List;
+
 import beast.core.Description;
 import beast.core.Input;
 import beast.core.parameter.IntegerParameter;
@@ -9,8 +13,6 @@ import beast.evolution.tree.Tree;
 import beast.math.Binomial;
 import beast.util.Randomizer;
 
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author Alexei Drummond

@@ -27,12 +27,12 @@ package beast.prevalence;
 
 
 import beast.core.Description;
-
 import beast.core.Input;
-import beast.evolution.tree.Node;
 import beast.core.Operator;
-import beast.evolution.tree.Tree;
 import beast.core.Input.Validate;
+import beast.evolution.tree.Node;
+import beast.evolution.tree.Tree;
+
 
 @Description("This operator changes a beast.tree.")
 abstract public class TreeOperator extends Operator {
