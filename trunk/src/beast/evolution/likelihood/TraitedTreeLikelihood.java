@@ -19,7 +19,7 @@ import beast.evolution.tree.Tree;
 
 @Description("Performs peeling algorithm over a tree using a trait as values for " +
 		"tips instead of a sequence")
-public class TraitedTreeLikelihood extends AscertainedTreeLikelihood {
+public class TraitedTreeLikelihood extends TreeLikelihood {
 	public Input<DataType.Base> m_dataTypeInput = new Input<DataType.Base>("dataType", "data type of the trait", Validate.REQUIRED);
 	public Input<TraitSet> m_traitSet = new Input<TraitSet>("traitSet", "set of traits associated with tips", Validate.REQUIRED);
 	
