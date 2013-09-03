@@ -69,7 +69,7 @@ public class CladeSubstitutionModel extends SubstitutionModel.Base {
 			for (Taxon taxon : set) {
 				String sLabel = taxon.getID();
 				int iTaxon = 0;
-				while (!data.get(iTaxon).m_sTaxon.get().equals(sLabel)) {
+				while (!data.get(iTaxon).taxonInput.get().equals(sLabel)) {
 					iTaxon++;
 					if (iTaxon == data.size()) {
 						throw new Exception("Unknown taxon (" + sLabel + ") in clade number " + (i+1));
