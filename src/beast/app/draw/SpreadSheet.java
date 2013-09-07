@@ -78,7 +78,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
 
 import beast.app.draw.MyAction;
-import beast.app.draw.PluginDialog;
+import beast.app.draw.BEASTObjectDialog;
 import beast.core.Distribution;
 import beast.core.Input;
 import beast.core.Logger;
@@ -347,7 +347,7 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 					((JTextField)component).setText("");
 				} else if (value instanceof BEASTObject) {
 					BEASTObject plugin = (BEASTObject) value;
-					PluginDialog dlg = new PluginDialog(plugin, plugin.getClass(), null);
+					BEASTObjectDialog dlg = new BEASTObjectDialog(plugin, plugin.getClass(), null);
                     if (dlg.showDialog()) {
 						dlg.accept(plugin, null);
 						//plugin = dlg.m_panel.m_plugin;
