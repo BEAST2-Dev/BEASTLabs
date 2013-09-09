@@ -1,15 +1,15 @@
 package beast.util;
 
-import test.beast.beast2vs1.trace.*;
+import beast.core.Citation;
+import beast.core.Description;
+import test.beast.beast2vs1.trace.LogFileTraces;
+import test.beast.beast2vs1.trace.TraceException;
+import test.beast.beast2vs1.trace.TraceStatistics;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.List;
-
-import beast.core.Citation;
-import beast.core.Description;
 
 @Description("Log Analyser Advanced: auto optimize burnin. Extend from Log Analyser in BEAST 1 created by Alexei Drummond.")
 @Citation("Created by Walter Xie")
@@ -30,7 +30,7 @@ public class LogAnalyserAdv {
         traces.loadTraces();
 
         int percLower = 5;
-        int percUpper = 50;
+        int percUpper = 80;
         int percIncremental = 5;
 //        double[][] essMatrix = new double[traceNames.length][(percUpper-percLower)/percIncremental+1];
         double essThreshould = 100;
@@ -76,9 +76,8 @@ public class LogAnalyserAdv {
     }
 
     /**
-     * @param file the name of the log file to analyze
-     * @param inBurnin   the state to discard up to
-     * @param traceName only print the given trace, if traceName == null, print all traces
+     * @param traces   LogFileTraces instance
+     * @param traceNames only print the given trace,
      * @return an array og analyses of the statistics in a log file.
      * @throws java.io.IOException if general error reading file
      * @throws test.beast.beast2vs1.trace.TraceException      if trace file in wrong format or corrupted
@@ -98,11 +97,7 @@ public class LogAnalyserAdv {
 
 //            System.out.print(distribution.getHpdLower() + "\t");
 //            System.out.print(distribution.getHpdUpper() + "\t");
-            double ess = distribution.getESS();
-//            if (ess < 100) System.out.print("*");
-            System.out.print(distribution.getESS());
-//            if (ess < 100) System.out.print("*");
-            System.out.print("\t");
+
 //                System.out.print(formatter.format(distribution.getStdErrorOfMean()));
 //                System.out.print(formatter.format(distribution.getMinimum()));
 //                System.out.print(formatter.format(distribution.getMaximum()));
@@ -114,6 +109,11 @@ public class LogAnalyserAdv {
             System.out.print(distribution.getAutoCorrelationTime() + "\t");
 //                System.out.print(formatter.format(distribution.getStdevAutoCorrelationTime()));
 
+            double ess = distribution.getESS();
+//            if (ess < 100) System.out.print("*");
+            System.out.print(distribution.getESS());
+//            if (ess < 100) System.out.print("*");
+            System.out.print("\t");
 //            System.out.println();
 //            }
         }
@@ -122,39 +122,52 @@ public class LogAnalyserAdv {
 
     //Main method
     public static void main(final String[] args) throws IOException, TraceException {
-        String workPath = "/Users/dxie004/Documents/BEAST2/*BEAST-sim/Evolution2013/new100/sp5-2/";
+        String workPath = "/Users/dxie004/Documents/BEAST2/*BEAST-sim/Evolution2013/new100/sp8-4/";
         System.out.println("\nWorking path = " + workPath);
 
         String[] traceNames = new String[]{"posterior", "TreeHeight.Species"}; //"posterior", "TreeHeight.Species"
 //        int burnIN = -1;
-        int[] trees = new int[] {2,4,8,16,32,64,128}; //2,4,8,16,32,64,128,256
+        int[] trees = new int[] {64}; //2,4,8,16,32,64,128,256
+        boolean isCombined = false;
         int replicates = 100;
 
-        for (int tree : trees) {
-            for (int r=0; r<replicates; r++) {
+        if (!isCombined) {
+            for (int tree : trees) {
+                for (int r=0; r<replicates; r++) {
 //                System.out.println("\nGo to folder " + tree + "/" + r + " ...");
-                File folder = new File(workPath + tree + File.separator + r);
-                File[] listOfFiles = folder.listFiles();
+                    String folderName = Integer.toString(tree) + "-resume6";
+                    File folder = new File(workPath + folderName + File.separator + r);
+                    File[] listOfFiles = folder.listFiles();
 
-                for (int i = 0; i < listOfFiles.length; i++) {
-                    File file = listOfFiles[i];
-                    if (file.isFile()) {
-                        String fileName = file.getName();
-                        if (fileName.endsWith("stdout.txt")) {
+                    int log = 0;
+                    for (int i = 0; i < listOfFiles.length; i++) {
+                        File file = listOfFiles[i];
+                        if (file.isFile()) {
+                            String fileName = file.getName();
+                            if (fileName.endsWith("stdout.txt")) {
 //                            System.out.println("\nReading screen log " + fileName + " ...");
-                            BufferedReader reader = new BufferedReader(new FileReader(file));
-                            String line = reader.readLine();
-                            String time = "";
-                            while (line != null) {
-                                if (line.startsWith("Total calculation time:")) {
-                                    String[] fields = line.split(" ", -1);
-                                    time = fields[3];
+                                BufferedReader reader = new BufferedReader(new FileReader(file));
+                                String line = reader.readLine();
+                                String time = "?";
+                                while (line != null) {
+                                    if (line.startsWith("Total calculation time:")) {
+                                        String[] fields = line.split(" ", -1);
+                                        time = fields[3];
+                                    }
+                                    line = reader.readLine();
                                 }
-                                line = reader.readLine();
+                                reader.close();
+                                System.out.println(r + "\t" + time + "\tseconds");
+                            } else if (fileName.endsWith(".log")) {
+                                log++;
                             }
-                            reader.close();
-                            System.out.println(time + "\tseconds");
                         }
+                    }
+
+                    if (log < 1) {
+                        System.err.println(r + "\tno log !");
+                    } else if (log > 1) {
+                        System.err.println(r + "\t" + log + " logs !");
                     }
                 }
             }
