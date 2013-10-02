@@ -1,5 +1,6 @@
 package beast.evolution.operators;
 
+import beast.core.Description;
 import beast.core.Input;
 import beast.core.Operator;
 import beast.core.Input.Validate;
@@ -10,6 +11,9 @@ import beast.evolution.tree.Tree;
 import beast.evolution.tree.TreeInterface;
 import beast.util.Randomizer;
 
+@Description("Operator that uses a standard TreeOperator to change the topology of the tree, "
+		+ "then changes metadata (such as rate categories for relaxed clock) associated with "
+		+ "only those nodes in the tree that are changed due to the TreeOperator.")
 public class TreeWithMetaDataRandomWalker extends Operator {
 	public Input<Operator> treeoperatorInput = new Input<Operator>("treeoperator","tree operator that changes the tree. " +
 			"All changed nodes will have their metadata scaled", Validate.REQUIRED);
@@ -27,7 +31,6 @@ public class TreeWithMetaDataRandomWalker extends Operator {
 	public void initAndValidate() throws Exception {
 		treeoperator = treeoperatorInput.get();
 		treeoperator.setOperatorSchedule(new OperatorSchedule());
-		tree = (TreeInterface) treeoperator.getInput("tree").get();
 		parameter = parameterInput.get();
         windowSize = windowSizeInput.get();
 	}
@@ -71,6 +74,12 @@ public class TreeWithMetaDataRandomWalker extends Operator {
     @Override
     public void optimize(final double logAlpha) {
         treeoperator.optimize(logAlpha);
+    }
+    
+    @Override
+    public void setOperatorSchedule(OperatorSchedule operatorSchedule) {
+    	super.setOperatorSchedule(operatorSchedule);
+		treeoperator.setOperatorSchedule(operatorSchedule);
     }
 
 }
