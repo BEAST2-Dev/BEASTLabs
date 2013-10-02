@@ -7,6 +7,7 @@ import beast.core.parameter.BooleanParameter;
 import beast.core.parameter.RealParameter;
 import beast.evolution.tree.Node;
 import beast.evolution.tree.Tree;
+import beast.evolution.tree.TreeInterface;
 
 /**
  * @author Alexei Drummond
@@ -26,7 +27,7 @@ public class RandomLocalYuleModel extends UltrametricSpeciationModel {
             new Input<Boolean>("ratesAreMultipliers", "birth rates are multipliers (default false)", false);
 //    public Input<Integer> mfDigitsInput = new Input<Integer>("mfDigits", "maximum fraction digits (default 4)", 4);
     
-    protected Tree tree;
+    protected TreeInterface tree;
     protected double[] birthRates;
     protected boolean ratesAreMultipliers;
     private boolean calculateAllBirthRates = false;

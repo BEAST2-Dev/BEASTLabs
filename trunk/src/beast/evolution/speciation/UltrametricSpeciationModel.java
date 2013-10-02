@@ -4,6 +4,7 @@ import beast.core.Description;
 import beast.evolution.speciation.SpeciesTreeDistribution;
 import beast.evolution.tree.Node;
 import beast.evolution.tree.Tree;
+import beast.evolution.tree.TreeInterface;
 
 @Description("Experimental code with unknown use. If you know, fill this in.")
 public abstract class UltrametricSpeciationModel extends SpeciesTreeDistribution {
@@ -13,7 +14,7 @@ public abstract class UltrametricSpeciationModel extends SpeciesTreeDistribution
     }
 
     @Override
-    public double calculateTreeLogLikelihood(final Tree tree) {        
+    public double calculateTreeLogLikelihood(final TreeInterface tree) {        
         final int taxonCount = tree.getLeafNodeCount();
             
         double logL = logTreeProbability(taxonCount);

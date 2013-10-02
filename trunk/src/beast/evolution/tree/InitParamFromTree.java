@@ -66,10 +66,8 @@ public class InitParamFromTree extends beast.core.BEASTObject implements StateNo
 	}
 
 	@Override
-	public List<StateNode> getInitialisedStateNodes() {
-		List<StateNode> list = new ArrayList<StateNode>();
+	public void getInitialisedStateNodes(List<StateNode> list) {
 		list.add(m_parameter.get());
-		return list;
 	}
 
 }
