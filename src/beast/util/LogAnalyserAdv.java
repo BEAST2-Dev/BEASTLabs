@@ -122,12 +122,13 @@ public class LogAnalyserAdv {
 
     //Main method
     public static void main(final String[] args) throws IOException, TraceException {
-        String workPath = "/Users/dxie004/Documents/BEAST2/*BEAST-sim/Evolution2013/new100/sp8-4/";
+        String workPath = "/Users/dxie004/Documents/BEAST2/*BEAST-sim/Evolution2013/new100/sp8-2/";
+//        String workPath = "/Users/dxie004/Documents/BEAST2/*BEAST-sim/Evolution2013/joseph/BEAST2xml-i/sp8-4/";
         System.out.println("\nWorking path = " + workPath);
 
         String[] traceNames = new String[]{"posterior", "TreeHeight.Species"}; //"posterior", "TreeHeight.Species"
 //        int burnIN = -1;
-        int[] trees = new int[] {64}; //2,4,8,16,32,64,128,256
+        int[] trees = new int[] {128}; //2,4,8,16,32,64,128,256
         boolean isCombined = false;
         int replicates = 100;
 
@@ -135,7 +136,7 @@ public class LogAnalyserAdv {
             for (int tree : trees) {
                 for (int r=0; r<replicates; r++) {
 //                System.out.println("\nGo to folder " + tree + "/" + r + " ...");
-                    String folderName = Integer.toString(tree) + "-resume6";
+                    String folderName = Integer.toString(tree) + "-resume8";
                     File folder = new File(workPath + folderName + File.separator + r);
                     File[] listOfFiles = folder.listFiles();
 
@@ -175,8 +176,9 @@ public class LogAnalyserAdv {
 
         for (int tree : trees) {
             for (int r=0; r<replicates; r++) {
-                System.out.print(tree + "\t" + r + "\t");
-                File folder = new File(workPath + tree + File.separator + r);
+                String folderName = isCombined ? Integer.toString(tree) + "-combined" : Integer.toString(tree);
+                System.out.print(folderName + "\t" + r + "\t");
+                File folder = new File(workPath + folderName + File.separator + r);
                 File[] listOfFiles = folder.listFiles();
 
                 for (int i = 0; i < listOfFiles.length; i++) {
