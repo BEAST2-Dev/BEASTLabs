@@ -72,8 +72,8 @@ public class PathSampleAnalyser extends BEASTObject {
 			
 			for (int i = 0; i < nSteps - 1; i++) {
 				List<Double> logdata1 = logdata.get(i);;
-				double beta1 = betaDistribution.inverseCumulativeProbability((i + 0.0)/ (nSteps - 1));
-				double beta2 = betaDistribution.inverseCumulativeProbability((i + 1.0)/ (nSteps - 1));
+				double beta1 = betaDistribution.inverseCumulativeProbability((nSteps - 1.0 - i)/ (nSteps - 1));
+				double beta2 = betaDistribution.inverseCumulativeProbability((nSteps - 1.0 - (i + 1.0))/ (nSteps - 1));
 				double weight = beta2 - beta1;
 
 				// Use formula top right at page 153 of 
@@ -104,7 +104,7 @@ public class PathSampleAnalyser extends BEASTObject {
 		for (int i = 0; i < nSteps; i++) {
 			System.out.print(format(i)+" ");
 			double beta = betaDistribution != null ?
-					betaDistribution.inverseCumulativeProbability((i + 0.0)/ (nSteps - 1)):
+					betaDistribution.inverseCumulativeProbability((nSteps - 1.0 - i)/ (nSteps - 1)):
 						(i + 0.0)/ (nSteps - 1);
 			System.out.print(format(beta)+" ");
 
