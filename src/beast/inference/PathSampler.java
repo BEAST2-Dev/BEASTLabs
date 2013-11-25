@@ -168,8 +168,8 @@ public class PathSampler extends beast.core.Runnable {
 			}
 			// create XML for a single step
 			double beta = betaDistribution != null ?
-					betaDistribution.inverseCumulativeProbability((i + 0.0)/ (m_nSteps - 1)):
-						(i + 0.0)/ (m_nSteps - 1);
+					betaDistribution.inverseCumulativeProbability((m_nSteps - 1.0 - i)/ (m_nSteps - 1)):
+						(m_nSteps - 1.0 - i)/ (m_nSteps - 1);
 			step.setInputValue("beta", beta);
 			String sXML = producer.toXML(step);
 			File stepDir = new File(getStepDir(i));

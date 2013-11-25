@@ -74,7 +74,9 @@
 		<javac srcdir="${srcii}" destdir="${buildii}" classpathref="classpath" 
 		       fork="true"
 		       memoryinitialsize="256m"
-		       memorymaximumsize="1024m">
+		       memorymaximumsize="1024m"
+			   source="1.6"
+		       target="1.6">
 			<include name="beast/**/**" />
 			<!-- compile JUnit test classes -->
 			<include name="test/beast/**" />
@@ -104,7 +106,9 @@
 				<include name="org/**/*.class" />
 			</fileset>
 			<zipgroupfileset dir="${beast2path}/lib" includes="jam.jar" />
-			<!--zipgroupfileset dir="${lib}" includes="commons-math-II.0.jar" /-->
+			<zipgroupfileset dir="${beast2path}/lib" includes="beagle.jar" />
+			<zipgroupfileset dir="${beast2path}/lib" includes="colt.jar" />
+			<zipgroupfileset dir="${beast2path}/lib" includes="commons-math3-3.1.1.jar" />
 		</jar>
 
 		<jar jarfile="${distii}/treeannotator.jar">
