@@ -105,7 +105,7 @@ public class PathSampleAnalyser extends BEASTObject {
 			System.out.print(format(i)+" ");
 			double beta = betaDistribution != null ?
 					betaDistribution.inverseCumulativeProbability((nSteps - 1.0 - i)/ (nSteps - 1)):
-						(i + 0.0)/ (nSteps - 1);
+						(nSteps - 1.0 - i)/ (nSteps - 1);
 			System.out.print(format(beta)+" ");
 
 			
