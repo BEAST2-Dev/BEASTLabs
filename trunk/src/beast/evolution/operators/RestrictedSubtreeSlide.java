@@ -240,9 +240,9 @@ public class RestrictedSubtreeSlide extends SubtreeSlide {
 
     private double getDelta() {
         if (!gaussianInput.get()) {
-            return (Randomizer.nextDouble() * m_fSize) - (m_fSize / 2.0);
+            return (Randomizer.nextDouble() * fSize) - (fSize / 2.0);
         } else {
-            return Randomizer.nextGaussian() * m_fSize;
+            return Randomizer.nextGaussian() * fSize;
         }
     }
 
