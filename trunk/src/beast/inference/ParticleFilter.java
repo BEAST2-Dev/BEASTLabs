@@ -134,7 +134,7 @@ public class ParticleFilter extends beast.core.Runnable {
 		
 		m_sStates = new String[m_nParticles];
 		m_fPosteriors = new double[m_nParticles];
-		for (StateNodeInitialiser init : mcmc.initilisersInput.get()) {
+		for (StateNodeInitialiser init : mcmc.initialisersInput.get()) {
 			init.initStateNodes();
 		}
 		State state = mcmc.startStateInput.get();
