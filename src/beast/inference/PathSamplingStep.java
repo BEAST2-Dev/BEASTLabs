@@ -75,7 +75,7 @@ public class PathSamplingStep extends MCMC {
             oldLogLikelihood = robustlyCalcPosterior(posterior);
         } else {
             do {
-                for (StateNodeInitialiser initialiser : initilisersInput.get()) {
+                for (StateNodeInitialiser initialiser : initialisersInput.get()) {
                     initialiser.initStateNodes();
                 }
                 oldLogLikelihood = robustlyCalcPosterior(posterior);
