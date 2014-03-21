@@ -2,11 +2,12 @@ package beast.util;
 
 
 
+
 import java.util.*;
 
 import javax.script.*;
 
-import sun.org.mozilla.javascript.*;
+//import sun.org.mozilla.javascript.*;
 
 import beast.core.*;
 import beast.core.Function;
@@ -61,12 +62,12 @@ public class Script extends CalculationNode implements beast.core.Function {
         	f.append(";}\n}");
 	        o = engine.eval(f.toString());
         }
-        if (o instanceof NativeArray) {
-            value = new double[((NativeArray)o).size()];
-            for (int i = 0; i < value.length; i++) {
-                value[i] = Double.NaN;
-            }
-        }
+//        if (o instanceof NativeArray) {
+//            value = new double[((NativeArray)o).size()];
+//            for (int i = 0; i < value.length; i++) {
+//                value[i] = Double.NaN;
+//            }
+//        }
         //initEngine();
         inv = (Invocable) engine;
         
@@ -105,14 +106,14 @@ public class Script extends CalculationNode implements beast.core.Function {
         try {
        		Object o = inv.invokeFunction("f", args);
 
-            if (o instanceof NativeArray) {
-                value = new double[((NativeArray)o).size()];
-                for (int i = 0; i < value.length; i++) {
-                    this.value[i] = Double.parseDouble(((NativeArray)o).get(i).toString());
-                }
-            } else {
+//            if (o instanceof NativeArray) {
+//                value = new double[((NativeArray)o).size()];
+//                for (int i = 0; i < value.length; i++) {
+//                    this.value[i] = Double.parseDouble(((NativeArray)o).get(i).toString());
+//                }
+//            } else {
                 this.value[0] = Double.parseDouble(o.toString());
-            }
+//            }
         } catch (NoSuchMethodException e) {
             this.value[0] = Double.NaN;
             Log.err.println(e.getMessage());
