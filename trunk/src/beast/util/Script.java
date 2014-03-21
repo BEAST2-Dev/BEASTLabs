@@ -3,6 +3,7 @@ package beast.util;
 
 
 
+import java.io.PrintStream;
 import java.util.*;
 
 import javax.script.*;
@@ -10,15 +11,13 @@ import javax.script.*;
 //import sun.org.mozilla.javascript.*;
 
 import beast.core.*;
-import beast.core.Function;
 import beast.core.Input.*;
 import beast.core.parameter.RealParameter;
 import beast.core.util.*;
 import beast.evolution.tree.*;
-import beast.evolution.tree.Node;
 
 @Description("Base class for Script-BEAST interoperation")
-public class Script extends CalculationNode implements beast.core.Function {
+public class Script extends CalculationNode implements Loggable, beast.core.Function {
     public Input<String> scriptInput = new Input<String>("value", "Script script needed for the calculations. " +
     		"It assumes there is a function f defined, which returns a single number or array of numbers.");
     public Input<String> expressionInput = new Input<String>("expression", "expression representing the calculations", Validate.XOR, scriptInput);
@@ -60,6 +59,7 @@ public class Script extends CalculationNode implements beast.core.Function {
         	f.append(") { return ");
         	f.append(expressionInput.get());
         	f.append(";}\n}");
+        	System.err.println(f);
 	        o = engine.eval(f.toString());
         }
 //        if (o instanceof NativeArray) {
@@ -295,4 +295,27 @@ public class Script extends CalculationNode implements beast.core.Function {
 //        System.out.println("a * 3 = " + jsBEAST.getArrayValue());
 //    }
 
+
+    // Loggable implementation
+    @Override
+    public void init(final PrintStream out) throws Exception {
+        if (value.length == 1)
+            out.print(this.getID() + "\t");
+        else
+            for (int i = 0; i < value.length; i++)
+                out.print(this.getID() + "_" + i + "\t");
+    }
+
+    @Override
+    public void log(final int nSample, final PrintStream out) {
+    	isUpToDate = false;
+        for (int i = 0; i < value.length; i++)
+            out.print(getArrayValue(i) + "\t");
+    }
+
+    @Override
+    public void close(final PrintStream out) {
+        // nothing to do
+    }
+    
 }
