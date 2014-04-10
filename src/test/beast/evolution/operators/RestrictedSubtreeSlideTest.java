@@ -54,7 +54,7 @@ public class RestrictedSubtreeSlideTest extends TestCase {
         String sourceTree = "(((A:5.0,B:5.0):2.0,((C:5.0,D:5.0):1.0,E:6.0):1.0):1.0,F:8.0):0.0"; 
 
 	    TreeParser tree = new TreeParser();
-	    tree.initByName("taxa", data, "newick", sourceTree);
+	    tree.initByName("taxa", data, "newick", sourceTree, "IsLabelledNewick", true, "IsLabelledNewick", true);
 		State state = new State();
 		state.initByName("stateNode", tree);
 		state.initialise();
