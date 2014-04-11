@@ -64,19 +64,7 @@ public class TreeTraceAnalysis {
         this(rawTreeList, burninPercentage, DEFAULT_CRED_SET);
     }
 
-    public TreeTraceAnalysis(List<Tree> rawTreeList, double burninPercentage, double credSetPercentage) {
-
-//        // Record original list length and burnin for report:
-//        this.burnin = (int)(rawTreeList.size()*burninPercentage/100.0);
-//
-//        // Remove burnin from trace:
-//        treeList = new ArrayList<Tree>();
-//        for (int i=0; i<rawTreeList.size(); i++) {
-//            if (i<burnin)
-//                continue;
-//
-//            treeList.add(rawTreeList.get(i));
-//        }
+    public TreeTraceAnalysis(List<Tree> rawTreeList, double burninPercentage, double credSetProbability) {
         this.totalTrees = rawTreeList.size();
         this.burnin = getBurnIn(totalTrees, burninPercentage);
         this.totalTreesUsed = this.totalTrees-this.burnin;
@@ -85,9 +73,10 @@ public class TreeTraceAnalysis {
         treeList = getSubListOfTrees(rawTreeList, burnin, totalTrees);
 
         // Assemble credible set:
-        this.credSetProbability = credSetPercentage / 100.0; //TODO bug 0.95 / 100 ?
+        this.credSetProbability = credSetProbability;
 
         analyzeTopologies();
+        calculateCredibleSetFreqs();
     }
 
     public static int getBurnIn(int total, double burninPercentage) {
@@ -108,18 +97,21 @@ public class TreeTraceAnalysis {
         return new ArrayList<Tree>(rawTreeList.subList(start, end));
     }
 
+    public void reportShort(PrintStream oStream) {
+        oStream.println("burnin = " + String.valueOf(burnin));
+        oStream.println("total trees used (total - burnin) = "
+                + String.valueOf(totalTreesUsed));
+    }
+
     /**
      * Generate report summarising analysis.
      *
      * @param oStream Print stream to write output to.
      */
     public void report(PrintStream oStream) {
+        reportShort(oStream);
 
-        oStream.println("burnin = " + String.valueOf(burnin));
-        oStream.println("total trees used (total - burnin) = "
-                + String.valueOf(totalTreesUsed));
-
-        oStream.print("\n" + String.valueOf(credSetProbability)
+        oStream.print("\n" + String.valueOf(credSetProbability*100)
                 + "% credible set");
 
         oStream.println(" (" + String.valueOf(credibleSet.size())
@@ -143,8 +135,7 @@ public class TreeTraceAnalysis {
     /**
      * Analyse tree topologies.
      */
-    private void analyzeTopologies() {
-
+    protected void analyzeTopologies() {
         topologyCounts = new HashMap<String, Integer>();
         topologiesSorted = new ArrayList<String>();
 
@@ -164,7 +155,9 @@ public class TreeTraceAnalysis {
                 return topologyCounts.get(top2) - topologyCounts.get(top1);
             }
         });
+    }
 
+    protected void calculateCredibleSetFreqs() {
         credibleSetTotalFreq = 0;
         int totalFreq = treeList.size();
 
@@ -187,8 +180,7 @@ public class TreeTraceAnalysis {
      * @param node
      * @return
      */
-    private String uniqueNewick(Node node) {
-
+    protected String uniqueNewick(Node node) {
         if (node.isLeaf()) {
             return String.valueOf(node.getNr());
         } else {

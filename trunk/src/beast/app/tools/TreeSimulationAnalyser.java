@@ -17,32 +17,37 @@ import java.util.List;
  */
 public class TreeSimulationAnalyser extends TreeTraceAnalysis {
 
+    protected double[] branchScoreTreeDistanceList;
+    protected int numTrueTree = 0;
+    protected int numTopsInCred=0;
+
+
     private final static Version version = new BEASTVersion();
 
-    public TreeSimulationAnalyser(File trueTreesLog, int trueTreeIndex, File posteriorTreesLog, double burninPercentage) {
-        super();
-        NexusParser parser = new NexusParser();
-        try {
-            parser.parseFile(trueTreesLog);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        Tree trueTree = parser.trees.get(trueTreeIndex);
-
-        parser = new NexusParser();
-        try {
-            parser.parseFile(posteriorTreesLog);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        new TreeSimulationAnalyser(trueTree, parser.trees, burninPercentage);
+    public TreeSimulationAnalyser(Tree trueTree, List<Tree> posteriorTreeList) {
+        this(trueTree, posteriorTreeList, DEFAULT_BURN_IN_PERCENTAGE);
     }
 
     public TreeSimulationAnalyser(Tree trueTree, List<Tree> posteriorTreeList, double burninPercentage) {
         super(posteriorTreeList, burninPercentage);
+    }
+
+    protected void calculateBranchScoreTreeDistance() {
+        double[] branchScoreTreeDistanceList = new double[topologiesSorted.size()];
 
 
+    }
+
+    @Override
+    protected void analyzeTopologies() {
+        super.analyzeTopologies();
+
+
+        calculateBranchScoreTreeDistance();
+    }
+
+    @Override
+    protected void calculateCredibleSetFreqs() {
 
 
 
@@ -78,6 +83,26 @@ public class TreeSimulationAnalyser extends TreeTraceAnalysis {
     //Main method
     public static void main(String[] args) {
 
+        File trueTreesLog = new File("");
+        NexusParser parser = new NexusParser();
+        try {
+            parser.parseFile(trueTreesLog);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        List<Tree> trueTreeList = parser.trees;
+
+        File posteriorTreesLog = new File("");
+        parser = new NexusParser();
+        try {
+            parser.parseFile(posteriorTreesLog);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        for (Tree trueTree : trueTreeList) {
+            new TreeSimulationAnalyser(trueTree, parser.trees);
+        }
 
     }
 }
