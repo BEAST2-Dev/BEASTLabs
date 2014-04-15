@@ -3,6 +3,7 @@ package beast.app.tools;
 import beast.app.BEASTVersion;
 import beast.app.util.Arguments;
 import beast.app.util.Version;
+import beast.evolution.tree.BranchScoreMetric;
 import beast.evolution.tree.Tree;
 import beast.evolution.tree.TreeTraceAnalysis;
 import beast.util.NexusParser;
@@ -17,7 +18,8 @@ import java.util.List;
  */
 public class TreeSimulationAnalyser extends TreeTraceAnalysis {
 
-    protected double[] branchScoreTreeDistanceList;
+    protected final Tree trueTree;
+    protected double[] branchScoreMetrics;
     protected int numTrueTree = 0;
     protected int numTopsInCred=0;
 
@@ -30,27 +32,24 @@ public class TreeSimulationAnalyser extends TreeTraceAnalysis {
 
     public TreeSimulationAnalyser(Tree trueTree, List<Tree> posteriorTreeList, double burninPercentage) {
         super(posteriorTreeList, burninPercentage);
+        this.trueTree = trueTree;
     }
 
-    protected void calculateBranchScoreTreeDistance() {
-        double[] branchScoreTreeDistanceList = new double[topologiesSorted.size()];
+    protected void calculateBranchScoreMetrics() {
+        branchScoreMetrics = new double[topologiesSorted.size()];
 
-
+        BranchScoreMetric branchScoreMetric = new BranchScoreMetric();
+//        branchScoreMetrics[] = branchScoreMetric.getMetric(trueTree, ?topologiesSorted.get());
     }
 
     @Override
     protected void analyzeTopologies() {
         super.analyzeTopologies();
-
-
-        calculateBranchScoreTreeDistance();
+        calculateBranchScoreMetrics();
     }
 
     @Override
     protected void calculateCredibleSetFreqs() {
-
-
-
 
 
     }
