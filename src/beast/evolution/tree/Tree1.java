@@ -19,14 +19,14 @@ import java.util.Set;
  *
  * Both interfaces contain no mutator methods. As of 2006-12-08, the only way
  * to mutate a tree after it has been built is to use its concrete class
- * instead of the TreeInterface or RootedTree interface.
+ * instead of the Tree1 or RootedTree interface.
  *
  * @author rambaut
  * @author Alexei Drummond
  *
- * @version $Id: TreeInterface.java 627 2007-01-15 03:50:40Z pepster $
+ * @version $Id: Tree1.java 627 2007-01-15 03:50:40Z pepster $
  */
-public interface TreeInterface {
+public interface Tree1 {
 
     /**
      * @return a set of all nodes that have degree 1.

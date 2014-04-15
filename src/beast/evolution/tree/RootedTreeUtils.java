@@ -134,7 +134,7 @@ public class RootedTreeUtils {
 
 	/**
 	 * Gets the most recent common ancestor (MRCA) node of a set of tip nodes.
-	 * @param tree the TreeInterface
+	 * @param tree the Tree1
 	 * @param tipNodes a set of tip nodes
 	 * @return the Node of the MRCA
 	 */
