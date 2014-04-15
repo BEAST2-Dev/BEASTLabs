@@ -21,7 +21,7 @@ import java.util.List;
  *
  * @version $Id: RootedTree.java 936 2008-08-06 14:12:07Z rambaut $
  */
-public interface RootedTree extends TreeInterface {
+public interface RootedTree extends Tree1 {
 
     /**
      * @param node the node whose children are being requested.
