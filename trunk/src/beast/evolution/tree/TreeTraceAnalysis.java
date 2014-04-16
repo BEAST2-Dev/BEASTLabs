@@ -71,6 +71,11 @@ public class TreeTraceAnalysis {
         treeInCredSetList = getSubListOfTrees(posteriorTreeList, burnin);
     }
 
+    public TreeTraceAnalysis(List<Tree> posteriorTreeList, double burninPercentage, double credSetProbability) {
+        this(posteriorTreeList, burninPercentage);
+        analyze(credSetProbability);
+    }
+
     /**
      * Analyse tree topologies, and set credSetProbability
      */
