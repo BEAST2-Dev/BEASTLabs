@@ -1,6 +1,6 @@
 package beast.evolution.tree;
 
-import beast.evolution.alignment.Taxon;
+import beast.evolution.taxonomy.Taxon;
 
 import java.util.HashSet;
 import java.util.List;

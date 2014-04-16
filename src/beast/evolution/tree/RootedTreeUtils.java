@@ -1,7 +1,7 @@
 package beast.evolution.tree;
 
 
-import beast.evolution.alignment.Taxon;
+import beast.evolution.taxonomy.Taxon;
 
 import java.util.*;
 
@@ -134,7 +134,7 @@ public class RootedTreeUtils {
 
 	/**
 	 * Gets the most recent common ancestor (MRCA) node of a set of tip nodes.
-	 * @param tree the Tree1
+	 * @param tree the JEBLTree
 	 * @param tipNodes a set of tip nodes
 	 * @return the Node of the MRCA
 	 */

@@ -6,9 +6,11 @@ import beast.app.util.Version;
 import beast.evolution.tree.BranchScoreMetric;
 import beast.evolution.tree.Tree;
 import beast.evolution.tree.TreeTraceAnalysis;
+import beast.util.FrequencySet;
 import beast.util.NexusParser;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -19,7 +21,7 @@ import java.util.List;
 public class TreeSimulationAnalyser extends TreeTraceAnalysis {
 
     protected final Tree trueTree;
-    protected double[] branchScoreMetrics;
+    protected List<Double> branchScoreMetricList;
     protected int numTrueTree = 0;
     protected int numTopsInCred=0;
 
@@ -35,23 +37,26 @@ public class TreeSimulationAnalyser extends TreeTraceAnalysis {
         this.trueTree = trueTree;
     }
 
-    protected void calculateBranchScoreMetrics() {
-        branchScoreMetrics = new double[topologiesSorted.size()];
-
+    @Override
+    public void analyze(double credSetProbability) {
+        // set credSetProbability
+        topologiesFrequencySet = new FrequencySet<String>(credSetProbability);
+        branchScoreMetricList = new ArrayList<Double>();
         BranchScoreMetric branchScoreMetric = new BranchScoreMetric();
-//        branchScoreMetrics[] = branchScoreMetric.getMetric(trueTree, ?topologiesSorted.get());
-    }
+        String trueTopology = uniqueNewick(trueTree.getRoot());
 
-    @Override
-    protected void analyzeTopologies() {
-        super.analyzeTopologies();
-        calculateBranchScoreMetrics();
-    }
+        for (Tree tree : treeInCredSetList) {
+            String topology = uniqueNewick(tree.getRoot());
+            topologiesFrequencySet.add(topology, 1);
 
-    @Override
-    protected void calculateCredibleSetFreqs() {
+//            double branchScore = branchScoreMetric.getMetric(trueTree, tree); TODO
+//            branchScoreMetricList.add(branchScore);
+        }
 
+        credibleSet = topologiesFrequencySet.getCredibleSet(trueTopology);
 
+        numTrueTree = topologiesFrequencySet.getFrequency(trueTopology);
+        numTopsInCred = credibleSet.credibleSetList.size();
     }
 
     public static void centreLine(String line, int pageWidth) {
