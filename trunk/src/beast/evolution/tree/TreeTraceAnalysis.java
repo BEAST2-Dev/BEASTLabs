@@ -17,11 +17,16 @@
 package beast.evolution.tree;
 
 
+import beast.util.CredibleSet;
+import beast.util.FrequencySet;
 import beast.util.NexusParser;
 
 import java.io.File;
 import java.io.PrintStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 
 // TODO: Calculate mean node heights for trees in credible set.
@@ -38,45 +43,47 @@ import java.util.*;
  */
 public class TreeTraceAnalysis {
 
-    public static final double DEFAULT_CRED_SET = 0.95;
     public static final double DEFAULT_BURN_IN_PERCENTAGE = 0.1;
 
-    protected List<Tree> treeList;
-    protected double credSetProbability;
-    protected int burnin;
-    protected int totalTrees, totalTreesUsed;
+    protected List<Tree> treeInCredSetList;
+    protected int burnin, totalTrees;
 
-    protected Map<String, Integer> topologyCounts;
-    protected List<String> topologiesSorted;
-    protected List<String> credibleSet;
-    protected List<Integer> credibleSetFreqs;
-
-    protected int credibleSetTotalFreq;
-
+    protected FrequencySet<String> topologiesFrequencySet; // include credSetProbability
+    protected CredibleSet<String> credibleSet;
 
     public TreeTraceAnalysis() {   }
 
-    public TreeTraceAnalysis(List<Tree> rawTreeList) {
-        this(rawTreeList, DEFAULT_BURN_IN_PERCENTAGE);
+    public TreeTraceAnalysis(List<Tree> posteriorTreeList) {
+        this(posteriorTreeList, DEFAULT_BURN_IN_PERCENTAGE);
     }
 
-    public TreeTraceAnalysis(List<Tree> rawTreeList, double burninPercentage) {
-        this(rawTreeList, burninPercentage, DEFAULT_CRED_SET);
-    }
-
-    public TreeTraceAnalysis(List<Tree> rawTreeList, double burninPercentage, double credSetProbability) {
-        this.totalTrees = rawTreeList.size();
-        this.burnin = getBurnIn(totalTrees, burninPercentage);
-        this.totalTreesUsed = this.totalTrees-this.burnin;
+    /**
+     * need to run analyze(credSetProbability)
+     *
+     * @param posteriorTreeList
+     * @param burninPercentage
+     */
+    public TreeTraceAnalysis(List<Tree> posteriorTreeList, double burninPercentage) {
+        totalTrees = posteriorTreeList.size();
+        burnin = getBurnIn(totalTrees, burninPercentage);
 
         // Remove burnin from trace:
-        treeList = getSubListOfTrees(rawTreeList, burnin, totalTrees);
+        treeInCredSetList = getSubListOfTrees(posteriorTreeList, burnin);
+    }
 
-        // Assemble credible set:
-        this.credSetProbability = credSetProbability;
+    /**
+     * Analyse tree topologies, and set credSetProbability
+     */
+    public void analyze(double credSetProbability) {
+        // set credSetProbability
+        topologiesFrequencySet = new FrequencySet<String>(credSetProbability);
 
-        analyzeTopologies();
-        calculateCredibleSetFreqs();
+        for (Tree tree : treeInCredSetList) {
+            String topology = uniqueNewick(tree.getRoot());
+            topologiesFrequencySet.add(topology, 1);
+        }
+
+        credibleSet = topologiesFrequencySet.getCredibleSet();
     }
 
     public static int getBurnIn(int total, double burninPercentage) {
@@ -94,13 +101,18 @@ public class TreeTraceAnalysis {
      * @return
      */
     public static List<Tree> getSubListOfTrees(List<Tree> rawTreeList, int start, int end) {
+        assert start < end;
         return new ArrayList<Tree>(rawTreeList.subList(start, end));
+    }
+
+    public static List<Tree> getSubListOfTrees(List<Tree> rawTreeList, int start) {
+        return getSubListOfTrees(rawTreeList, start, rawTreeList.size());
     }
 
     public void reportShort(PrintStream oStream) {
         oStream.println("burnin = " + String.valueOf(burnin));
         oStream.println("total trees used (total - burnin) = "
-                + String.valueOf(totalTreesUsed));
+                + String.valueOf(treeInCredSetList.size()));
     }
 
     /**
@@ -111,67 +123,27 @@ public class TreeTraceAnalysis {
     public void report(PrintStream oStream) {
         reportShort(oStream);
 
-        oStream.print("\n" + String.valueOf(credSetProbability*100)
+        oStream.print("\n" + String.valueOf(topologiesFrequencySet.getCredSetProbability()*100)
                 + "% credible set");
 
-        oStream.println(" (" + String.valueOf(credibleSet.size())
+        oStream.println(" (" + String.valueOf(credibleSet.credibleSetList.size())
                 + " unique tree topologies, "
-                + String.valueOf(credibleSetTotalFreq)
+                + String.valueOf(credibleSet.sumFrequency)
                 + " trees in total)");
 
         oStream.println("Count\tPercent\tRunning\tTree");
         double runningPercent = 0;
-        for (int i=0; i<credibleSet.size(); i++) {
-            double percent = 100.0*credibleSetFreqs.get(i)/(totalTrees-burnin);
+        for (int i=0; i<credibleSet.credibleSetList.size(); i++) {
+            double percent = 100.0*credibleSet.getFrequency(i, topologiesFrequencySet)/(totalTrees-burnin);
             runningPercent += percent;
 
-            oStream.print(credibleSetFreqs.get(i) + "\t");
+            oStream.print(credibleSet.getFrequency(i, topologiesFrequencySet) + "\t");
             oStream.format("%.2f%%\t", percent);
             oStream.format("%.2f%%\t", runningPercent);
-            oStream.println(credibleSet.get(i));
+            oStream.println(credibleSet.credibleSetList.get(i));
         }
     }
 
-    /**
-     * Analyse tree topologies.
-     */
-    protected void analyzeTopologies() {
-        topologyCounts = new HashMap<String, Integer>();
-        topologiesSorted = new ArrayList<String>();
-
-        for (Tree tree : treeList) {
-            String topology = uniqueNewick(tree.getRoot());
-            if (topologyCounts.containsKey(topology))
-                topologyCounts.put(topology, topologyCounts.get(topology)+1);
-            else {
-                topologyCounts.put(topology, 1);
-                topologiesSorted.add(topology);
-            }
-
-        }
-
-        Collections.sort(topologiesSorted, new Comparator<String>(){
-            public int compare(String top1, String top2) {
-                return topologyCounts.get(top2) - topologyCounts.get(top1);
-            }
-        });
-    }
-
-    protected void calculateCredibleSetFreqs() {
-        credibleSetTotalFreq = 0;
-        int totalFreq = treeList.size();
-
-        credibleSet = new ArrayList<String>();
-        credibleSetFreqs = new ArrayList<Integer>();
-
-        for (String topo : topologiesSorted) {
-            credibleSetTotalFreq += topologyCounts.get(topo);
-            if (credibleSetTotalFreq>credSetProbability*totalFreq)
-                break;
-            credibleSet.add(topo);
-            credibleSetFreqs.add(topologyCounts.get(topo));
-        }
-    }
 
     /**
      * Recursive function for constructing a Newick tree representation
@@ -210,8 +182,8 @@ public class TreeTraceAnalysis {
      *
      * @return List of tree topologies as Newick-formatted strings.
      */
-    public List<String> getCredibleSet() {
-        return credibleSet;
+    public List<String> getCredibleSetList() {
+        return credibleSet.credibleSetList;
     }
 
     /**
@@ -220,9 +192,9 @@ public class TreeTraceAnalysis {
      *
      * @return  List of absolute topology frequencies.
      */
-    public List<Integer> getCredibleSetFreqs() {
-        return credibleSetFreqs;
-    }
+//    public List<Integer> getCredibleSetFreqs() {
+//        return credibleSetFreqs;
+//    }
 
     /**
      * Obtain total number of trees analysed (excluding burnin).
@@ -230,10 +202,11 @@ public class TreeTraceAnalysis {
      * @return Number of trees analysed.
      */
     public int getTotalTreesUsed() {
-        return totalTreesUsed;
+        return treeInCredSetList.size();
     }
+
     public Map<String,Integer> getTopologyCounts() {
-        return topologyCounts;
+        return topologiesFrequencySet.getFrequencyMap();
     }
 
     public static void main(String[] args) {

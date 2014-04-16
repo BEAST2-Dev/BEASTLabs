@@ -8,8 +8,6 @@
  */
 package beast.evolution.tree;
 
-import beast.evolution.alignment.Taxon;
-
 import java.util.Set;
 
 /**
@@ -19,14 +17,14 @@ import java.util.Set;
  *
  * Both interfaces contain no mutator methods. As of 2006-12-08, the only way
  * to mutate a tree after it has been built is to use its concrete class
- * instead of the Tree1 or RootedTree interface.
+ * instead of the JEBLTree or RootedTree interface.
  *
  * @author rambaut
  * @author Alexei Drummond
  *
- * @version $Id: Tree1.java 627 2007-01-15 03:50:40Z pepster $
+ * @version $Id: JEBLTree.java 627 2007-01-15 03:50:40Z pepster $
  */
-public interface Tree1 {
+public interface JEBLTree {
 
     /**
      * @return a set of all nodes that have degree 1.
@@ -45,14 +43,14 @@ public interface Tree1 {
      * nodes of this tree. The size of this set should be the
      * same as the size of the external nodes set.
      */
-    Set<Taxon> getTaxa();
+    Set<beast.evolution.taxonomy.Taxon> getTaxa();
 
     /**
      * @param node the node whose associated taxon is being requested.
      * @return the taxon object associated with the given node, or null
      * if the node is an internal node.
      */
-    Taxon getTaxon(Node node);
+    beast.evolution.taxonomy.Taxon getTaxon(Node node);
 
     /**
      * @param node the node
@@ -65,7 +63,7 @@ public interface Tree1 {
      * @return the external node associated with the given taxon, or null
      * if the taxon is not a member of the taxa set associated with this tree.
      */
-    Node getNode(Taxon taxon);
+    Node getNode(beast.evolution.taxonomy.Taxon taxon);
 
-    void renameTaxa(Taxon from, Taxon to);
+    void renameTaxa(beast.evolution.taxonomy.Taxon from, beast.evolution.taxonomy.Taxon to);
 }
