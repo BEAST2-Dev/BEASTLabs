@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 
 import beast.core.Description;
+import beast.core.DataNode;
 import beast.core.Distribution;
 import beast.core.BEASTObject;
 import beast.core.util.CompoundDistribution;
@@ -49,8 +50,8 @@ public class Likelihood extends CompoundDistribution {
 		
     } // initAndValidate
 
-	void collectDataNodes(BEASTObject plugin, Set<DataNode> DataNodes) throws Exception {
-		for (BEASTObject o : plugin.listActivePlugins()) {
+	void collectDataNodes(BEASTInterface plugin, Set<DataNode> DataNodes) throws Exception {
+		for (BEASTInterface o : BEASTObject.listActivePlugins(plugin)) {
 			if (o instanceof DataNode) {
 				DataNodes.add((DataNode) o);
 			} else {

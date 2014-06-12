@@ -18,6 +18,7 @@ import javax.swing.tree.*;
 
 import beast.app.beauti.BeautiDoc;
 import beast.app.draw.ListInputEditor;
+import beast.core.BEASTInterface;
 import beast.core.Input;
 import beast.core.BEASTObject;
 import beast.evolution.alignment.Alignment;
@@ -50,7 +51,7 @@ public class TaxonSetInputEditor extends ListInputEditor implements TreeModelLis
 	}
 
 	@Override
-	public void init(Input<?> input, BEASTObject plugin, int itemNr, ExpandOption bExpand, boolean bAddButtons) {
+	public void init(Input<?> input, BEASTInterface plugin, int itemNr, ExpandOption bExpand, boolean bAddButtons) {
 		this.itemNr = itemNr;
 		List<TaxonSet> taxonset = (List<TaxonSet>) input.get();
 		add(getContent(taxonset));

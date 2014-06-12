@@ -10,6 +10,7 @@ import java.util.Vector;
 import beast.core.Description;
 import beast.core.Input;
 import beast.core.Logger;
+import beast.core.Logger.LOGMODE;
 import beast.core.MCMC;
 import beast.evolution.tree.Node;
 import beast.util.Randomizer;
@@ -97,10 +98,10 @@ public class MultiMCMC extends MCMC {
 		}
 	
 		// collect indices for tree log file names
-		while (m_chains[0].loggersInput.get().get(m_iTreeLog).mode != Logger.TREE_LOGGER) {
+		while (m_chains[0].loggersInput.get().get(m_iTreeLog).mode != Logger.LOGMODE.tree) {
 			m_iTreeLog++;
 		}
-		while (m_chains[0].loggersInput.get().get(m_iLog).mode != Logger.COMPOUND_LOGGER) {
+		while (m_chains[0].loggersInput.get().get(m_iLog).mode != Logger.LOGMODE.compound) {
 			m_iLog++;
 		}
 		int nEveryLog = m_chains[0].loggersInput.get().get(m_iLog).everyInput.get();

@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
 
+import beast.core.BEASTInterface;
 import beast.core.Description;
 import beast.core.Input;
 import beast.core.Logger;
@@ -142,7 +143,7 @@ public class ParticleFilter extends beast.core.Runnable {
 	        // State initialisation
 	        HashSet<StateNode> operatorStateNodes = new HashSet<StateNode>();
 	        for (Operator op : mcmc.operatorsInput.get()) {
-	        	for (BEASTObject o : op.listActivePlugins()) {
+	        	for (BEASTInterface o : op.listActivePlugins()) {
 	        		if (o instanceof StateNode) {
 	        			operatorStateNodes.add((StateNode) o);
 	        		}
