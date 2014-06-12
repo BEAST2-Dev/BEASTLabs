@@ -79,6 +79,7 @@ import javax.swing.table.TableCellEditor;
 
 import beast.app.draw.MyAction;
 import beast.app.draw.BEASTObjectDialog;
+import beast.core.BEASTInterface;
 import beast.core.Distribution;
 import beast.core.Input;
 import beast.core.Logger;
@@ -107,10 +108,10 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 	int DEFAULT_COLUMN_WIDTH = 75;
 
 	/** list of available Plugin objects **/
-	List<BEASTObject> m_plugins;
+	List<BEASTInterface> m_plugins;
 	List<FormulaCell> m_formulas;
 	/** maps plugins to locations on the spreadsheet. Locations are encoded as (x + MAX_ROW * y) **/
-	static HashMap<BEASTObject, Integer> m_pluginLocation;
+	static HashMap<BEASTInterface, Integer> m_pluginLocation;
 	static HashMap<FormulaCell, Integer> m_formulaLocation;
 	/** objects associated with the spread sheet cells **/
 	Object[][] m_objects;
@@ -838,9 +839,9 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 
 	/** file action implementations **/
 	void newSpreadsheet() {
-		m_plugins = new ArrayList<BEASTObject>();
+		m_plugins = new ArrayList<BEASTInterface>();
 		m_formulas = new ArrayList<FormulaCell>();
-		m_pluginLocation = new HashMap<BEASTObject, Integer>();
+		m_pluginLocation = new HashMap<BEASTInterface, Integer>();
 		m_formulaLocation = new HashMap<FormulaCell, Integer>();
 		m_actions = new ArrayList<SpreadSheet.UndoAction>();
 		m_iTopUndoAction = 0;
@@ -1427,7 +1428,7 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 		BEASTObject plugin0 = null;
 		plugin0 = parser.parseFile(new File(fileName));
 		// collect all objects and store in m_plugins
-		m_plugins = new ArrayList<BEASTObject>();
+		m_plugins = new ArrayList<BEASTInterface>();
 		collectPlugins(plugin0);
 		m_plugins.add(plugin0);
 
@@ -1435,7 +1436,7 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 		int k = 0;
 		int i = 0;
 		while (k < m_plugins.size()) {
-			BEASTObject plugin = m_plugins.get(k++);
+			BEASTInterface plugin = m_plugins.get(k++);
 			if (i > 1) {
 				Object prev = m_objects[i-1][1];
 				if (prev instanceof Sequence && !(plugin instanceof Sequence) ||
@@ -1472,8 +1473,8 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 		updateActions();
 	} // readXML
 
-	void collectPlugins(BEASTObject plugin) throws Exception {
-		for (BEASTObject plugin2 : plugin.listActivePlugins()) {
+	void collectPlugins(BEASTInterface plugin) throws Exception {
+		for (BEASTInterface plugin2 : BEASTObject.listActivePlugins(plugin)) {
 			if (!m_plugins.contains(plugin2)) {
 				m_plugins.add(plugin2);
 				collectPlugins(plugin2);

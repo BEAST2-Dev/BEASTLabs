@@ -105,7 +105,7 @@ public class MCMC2 extends Runnable {
         this.state = new State();
         HashSet<StateNode> stateNodes = new HashSet<StateNode>();
         for (Operator op : operatorsInput.get()) {
-        	for (BEASTObject o : op.listActivePlugins()) {
+        	for (BEASTInterface o : op.listActivePlugins()) {
         		if (o instanceof StateNode) {
         			stateNodes.add((StateNode) o);
         		}
