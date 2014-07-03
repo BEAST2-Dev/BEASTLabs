@@ -45,7 +45,7 @@ public class Prior extends CompoundDistribution {
     } // initAndValidate
 
 	void collectStateNodes(BEASTInterface plugin, Set<StateNode> stateNodes) throws Exception {
-		for (BEASTInterface o : BEASTObject.listActivePlugins(plugin)) {
+		for (BEASTInterface o : plugin.listActivePlugins()) {
 			if (o instanceof StateNode) {
 				stateNodes.add((StateNode) o);
 			} else {
