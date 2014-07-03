@@ -1474,7 +1474,7 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 	} // readXML
 
 	void collectPlugins(BEASTInterface plugin) throws Exception {
-		for (BEASTInterface plugin2 : BEASTObject.listActivePlugins(plugin)) {
+		for (BEASTInterface plugin2 : plugin.listActivePlugins()) {
 			if (!m_plugins.contains(plugin2)) {
 				m_plugins.add(plugin2);
 				collectPlugins(plugin2);

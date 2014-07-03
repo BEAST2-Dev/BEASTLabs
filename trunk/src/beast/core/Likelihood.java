@@ -51,7 +51,7 @@ public class Likelihood extends CompoundDistribution {
     } // initAndValidate
 
 	void collectDataNodes(BEASTInterface plugin, Set<DataNode> DataNodes) throws Exception {
-		for (BEASTInterface o : BEASTObject.listActivePlugins(plugin)) {
+		for (BEASTInterface o : plugin.listActivePlugins()) {
 			if (o instanceof DataNode) {
 				DataNodes.add((DataNode) o);
 			} else {
