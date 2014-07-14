@@ -10,13 +10,22 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
-@Description("Log Analyser Advanced: auto optimize burnin. Extend from Log Analyser in BEAST 1 created by Alexei Drummond.")
+@Description("Advanced Log Analyser: auto optimizing burnin to analyse batch proceeded logs. " +
+        "It is modified from Log Analyser in BEAST 1 created by Alexei Drummond.\n" +
+        "The input has to fit into a specified folder structure: workPath / tree / replicate. " +
+        "For example, tree=2 and replicate=88, then analyser looks for files workPath/2/88/*.log.\n" +
+        "traceNames define the logged parameters to be analysed.\n" +
+        "trees and replicates provide the folder structure from batch processes, and could be changed according different simulations.\n" +
+        "isCombined determines (true) to analyse combined logs, (false) to analyse an individual resumed/initial log.\n" +
+        "percLower and percUpper are the percentage of all states to start and end for auto optimizing burnin.\n" +
+        "percIncremental defines the incremental of percentage each search for auto optimizing burnin.\n" +
+        "")
 @Citation("Created by Walter Xie")
 public class LogAnalyserAdv {
-    public LogAnalyserAdv() throws Exception {
-        super();
-    }
+
     /**
      * @param file the name of the log file to analyze
      * @param traceNames only print the given trace, if traceName == null, print all traces
@@ -122,27 +131,28 @@ public class LogAnalyserAdv {
 
     //Main method
     public static void main(final String[] args) throws IOException, TraceException {
-        String workPath = "/Users/dxie004/Documents/BEAST2/*BEAST-sim/Evolution2013/new100/sp8-2/";
-//        String workPath = "/Users/dxie004/Documents/BEAST2/*BEAST-sim/Evolution2013/joseph/BEAST2xml-i/sp8-4/";
+        Path workPath = Paths.get(System.getProperty("user.home") + "/Documents/BEAST2/*BEAST-sim/Evolution2013/new100/sp13-2/");
         System.out.println("\nWorking path = " + workPath);
 
         String[] traceNames = new String[]{"posterior", "TreeHeight.Species"}; //"posterior", "TreeHeight.Species"
 //        int burnIN = -1;
-        int[] trees = new int[] {128}; //2,4,8,16,32,64,128,256
-        boolean isCombined = false;
+        int[] trees = new int[] {32}; //2,4,8,16,32,64,128,256
+        boolean isCombined = false; // "true" analyses combined logs, "false" analyses an individual resumed/initial log
         int replicates = 100;
 
         if (!isCombined) {
+            // read non-combined beast log, and std output file for time
             for (int tree : trees) {
+                String folderName = Integer.toString(tree) + "-resume8";
+                System.out.println("Logs folder = " + folderName);
                 for (int r=0; r<replicates; r++) {
 //                System.out.println("\nGo to folder " + tree + "/" + r + " ...");
-                    String folderName = Integer.toString(tree) + "-resume8";
-                    File folder = new File(workPath + folderName + File.separator + r);
-                    File[] listOfFiles = folder.listFiles();
+                    Path folder = Paths.get(workPath.toString(), folderName, Integer.toString(r));
+                    File[] listOfFiles = folder.toFile().listFiles();
+                    assert listOfFiles != null;
 
                     int log = 0;
-                    for (int i = 0; i < listOfFiles.length; i++) {
-                        File file = listOfFiles[i];
+                    for (File file : listOfFiles) {
                         if (file.isFile()) {
                             String fileName = file.getName();
                             if (fileName.endsWith("stdout.txt")) {
@@ -174,15 +184,16 @@ public class LogAnalyserAdv {
             }
         }
 
+        // read combined beast log
         for (int tree : trees) {
             for (int r=0; r<replicates; r++) {
                 String folderName = isCombined ? Integer.toString(tree) + "-combined" : Integer.toString(tree);
                 System.out.print(folderName + "\t" + r + "\t");
-                File folder = new File(workPath + folderName + File.separator + r);
-                File[] listOfFiles = folder.listFiles();
+                Path folder = Paths.get(workPath.toString(), folderName, Integer.toString(r));
+                File[] listOfFiles = folder.toFile().listFiles();
+                assert listOfFiles != null;
 
-                for (int i = 0; i < listOfFiles.length; i++) {
-                    File file = listOfFiles[i];
+                for (File file : listOfFiles) {
                     if (file.isFile()) {
                         String fileName = file.getName();
                         if (fileName.endsWith(".log")) {
