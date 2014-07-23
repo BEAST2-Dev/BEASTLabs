@@ -29,11 +29,11 @@ public class TreeSimulationAnalyser extends TreeTraceAnalysis {
     private final static Version version = new BEASTVersion();
 
     public TreeSimulationAnalyser(Tree trueTree, List<Tree> posteriorTreeList) {
-        this(trueTree, posteriorTreeList, DEFAULT_BURN_IN_PERCENTAGE);
+        this(trueTree, posteriorTreeList, DEFAULT_BURN_IN_FRACTION);
     }
 
-    public TreeSimulationAnalyser(Tree trueTree, List<Tree> posteriorTreeList, double burninPercentage) {
-        super(posteriorTreeList, burninPercentage);
+    public TreeSimulationAnalyser(Tree trueTree, List<Tree> posteriorTreeList, double burninFraction) {
+        super(posteriorTreeList, burninFraction);
         this.trueTree = trueTree;
     }
 

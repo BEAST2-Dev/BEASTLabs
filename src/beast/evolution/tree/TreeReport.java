@@ -16,15 +16,13 @@
  */
 package beast.evolution.tree;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import beast.core.BEASTObject;
 import beast.core.Description;
 import beast.core.Input;
 import beast.core.Logger;
-import beast.core.BEASTObject;
-import beast.evolution.tree.Tree;
-import beast.evolution.tree.TreeTraceAnalysis;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -101,7 +99,7 @@ public class TreeReport extends Logger {
 	public void close() {
 
 		traceAnalysis = new TreeTraceAnalysis(treeTrace,
-				burninPercentage, credibleSetPercentage);
+				burninPercentage/100, credibleSetPercentage);
 
 		if (!silent) {
 			System.out.println("\n----- Tree trace analysis -----------------------");

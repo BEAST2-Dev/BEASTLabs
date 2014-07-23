@@ -16,13 +16,6 @@
  */
 package test.beast.evolution.operators;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import junit.framework.JUnit4TestAdapter;
-import org.junit.Test;
-import org.junit.Assert;
-
 import beast.core.MCMC;
 import beast.core.State;
 import beast.core.parameter.RealParameter;
@@ -37,6 +30,13 @@ import beast.evolution.tree.coalescent.Coalescent;
 import beast.evolution.tree.coalescent.ConstantPopulation;
 import beast.evolution.tree.coalescent.TreeIntervals;
 import beast.util.Randomizer;
+import junit.framework.JUnit4TestAdapter;
+import org.junit.Assert;
+import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 
 /**
