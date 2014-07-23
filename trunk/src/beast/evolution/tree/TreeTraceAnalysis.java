@@ -64,31 +64,29 @@ public class TreeTraceAnalysis {
      * @param burninPercentage
      */
     public TreeTraceAnalysis(List<Tree> posteriorTreeList, double burninPercentage) {
-        totalTrees = posteriorTreeList.size();
-        burnin = getBurnIn(totalTrees, burninPercentage);
-
-        // Remove burnin from trace:
-        treeInCredSetList = getSubListOfTrees(posteriorTreeList, burnin);
+        removeBurnin(posteriorTreeList, burninPercentage);
+        analyze();
     }
 
     public TreeTraceAnalysis(List<Tree> posteriorTreeList, double burninPercentage, double credSetProbability) {
-        this(posteriorTreeList, burninPercentage);
+        removeBurnin(posteriorTreeList, burninPercentage);
         analyze(credSetProbability);
     }
 
     /**
      * Analyse tree topologies, and set credSetProbability
      */
-    public void analyze(double credSetProbability) {
+    public void analyze() {
         // set credSetProbability
+        topologiesFrequencySet = new FrequencySet<String>();
+
+        analyze(topologiesFrequencySet);
+    }
+
+    public void analyze(double credSetProbability) {
         topologiesFrequencySet = new FrequencySet<String>(credSetProbability);
 
-        for (Tree tree : treeInCredSetList) {
-            String topology = uniqueNewick(tree.getRoot());
-            topologiesFrequencySet.add(topology, 1);
-        }
-
-        credibleSet = topologiesFrequencySet.getCredibleSet();
+        analyze(topologiesFrequencySet);
     }
 
     public static int getBurnIn(int total, double burninPercentage) {
@@ -118,6 +116,14 @@ public class TreeTraceAnalysis {
         oStream.println("burnin = " + String.valueOf(burnin));
         oStream.println("total trees used (total - burnin) = "
                 + String.valueOf(treeInCredSetList.size()));
+
+        oStream.print("\n" + String.valueOf(topologiesFrequencySet.getCredSetProbability()*100)
+                + "% credible set");
+
+        oStream.println(" (" + String.valueOf(credibleSet.credibleSetList.size())
+                + " unique tree topologies, "
+                + String.valueOf(credibleSet.sumFrequency)
+                + " trees in total)");
     }
 
     /**
@@ -127,14 +133,6 @@ public class TreeTraceAnalysis {
      */
     public void report(PrintStream oStream) {
         reportShort(oStream);
-
-        oStream.print("\n" + String.valueOf(topologiesFrequencySet.getCredSetProbability()*100)
-                + "% credible set");
-
-        oStream.println(" (" + String.valueOf(credibleSet.credibleSetList.size())
-                + " unique tree topologies, "
-                + String.valueOf(credibleSet.sumFrequency)
-                + " trees in total)");
 
         oStream.println("Count\tPercent\tRunning\tTree");
         double runningPercent = 0;
@@ -149,6 +147,24 @@ public class TreeTraceAnalysis {
         }
     }
 
+    protected void removeBurnin(List<Tree> posteriorTreeList, double burninPercentage) {
+        totalTrees = posteriorTreeList.size();
+        burnin = getBurnIn(totalTrees, burninPercentage);
+
+        // Remove burnin from trace:
+        treeInCredSetList = getSubListOfTrees(posteriorTreeList, burnin);
+    }
+
+    // topologiesFrequencySet = new FrequencySet<String>(double credSetProbability);
+    protected void analyze(FrequencySet<String> topologiesFrequencySet) {
+
+        for (Tree tree : treeInCredSetList) {
+            String topology = uniqueNewick(tree.getRoot());
+            topologiesFrequencySet.add(topology, 1);
+        }
+
+        credibleSet = topologiesFrequencySet.getCredibleSet();
+    }
 
     /**
      * Recursive function for constructing a Newick tree representation
@@ -219,7 +235,7 @@ public class TreeTraceAnalysis {
             NexusParser parser = new NexusParser();
             parser.parseFile(new File(args[0]));
             TreeTraceAnalysis analysis = new TreeTraceAnalysis(parser.trees);
-            analysis.report(System.out);
+            analysis.reportShort(System.out);
         } catch (Exception e) {
             e.printStackTrace();
         }

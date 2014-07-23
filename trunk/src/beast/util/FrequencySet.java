@@ -39,7 +39,9 @@ public class FrequencySet<T> {
 
     protected CredibleSet<String> credibleSet;
 
-    public FrequencySet() { }
+    public FrequencySet() {
+        this(DEFAULT_CRED_SET);
+    }
 
     public FrequencySet(double credSetProbability) {
         setCredSetProbability(credSetProbability);
