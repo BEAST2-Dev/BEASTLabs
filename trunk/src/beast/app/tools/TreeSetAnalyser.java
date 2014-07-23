@@ -1,10 +1,5 @@
 package beast.app.tools;
 
-import jam.util.IconUtils;
-
-import javax.swing.*;
-import javax.swing.filechooser.FileFilter;
-
 import beast.app.BEASTVersion;
 import beast.app.util.Arguments;
 import beast.app.util.ErrorLogHandler;
@@ -13,9 +8,10 @@ import beast.app.util.Version;
 import beast.evolution.tree.TreeTraceAnalysis;
 import beast.util.NexusParser;
 import beast.util.Randomizer;
+import jam.util.IconUtils;
 
-
-
+import javax.swing.*;
+import javax.swing.filechooser.FileFilter;
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.*;
