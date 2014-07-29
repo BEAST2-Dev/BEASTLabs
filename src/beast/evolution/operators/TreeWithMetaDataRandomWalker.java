@@ -33,6 +33,7 @@ public class TreeWithMetaDataRandomWalker extends Operator {
 		treeoperator.setOperatorSchedule(new OperatorSchedule());
 		parameter = parameterInput.get();
         windowSize = windowSizeInput.get();
+        tree = (TreeInterface) treeoperator.getInput("tree").get();
 	}
 
 	@Override

@@ -7,7 +7,6 @@ import java.util.Set;
 import beast.core.Description;
 import beast.core.DataNode;
 import beast.core.Distribution;
-import beast.core.BEASTObject;
 import beast.core.util.CompoundDistribution;
 
 

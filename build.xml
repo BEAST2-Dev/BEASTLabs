@@ -133,6 +133,7 @@
 		<jar jarfile="${distii}/BEASTii.src.jar">
 			<fileset dir="${srcii}">
 				<include name="beast/**/*.java" />
+				<include name="test/**/*.java" />
 				<include name="beast/**/*.png" />
 				<include name="beast/**/*.xsl" />
 			</fileset>
