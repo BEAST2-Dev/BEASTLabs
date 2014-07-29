@@ -45,7 +45,7 @@ public class TreeSimulationAnalyser extends TreeTraceAnalysis {
         BranchScoreMetric branchScoreMetric = new BranchScoreMetric();
         String trueTopology = uniqueNewick(trueTree.getRoot());
 
-        for (Tree tree : treeInCredSetList) {
+        for (Tree tree : treeInTrace) {
             String topology = uniqueNewick(tree.getRoot());
             topologiesFrequencySet.add(topology, 1);
 
@@ -105,7 +105,8 @@ public class TreeSimulationAnalyser extends TreeTraceAnalysis {
         }
 
         for (Tree trueTree : trueTreeList) {
-            new TreeSimulationAnalyser(trueTree, parser.trees);
+            TreeSimulationAnalyser treeSimulationAnalyser = new TreeSimulationAnalyser(trueTree, parser.trees);
+            treeSimulationAnalyser.analyze();
         }
 
     }

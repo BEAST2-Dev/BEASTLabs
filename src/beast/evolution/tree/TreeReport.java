@@ -98,8 +98,8 @@ public class TreeReport extends Logger {
 	@Override
 	public void close() {
 
-		traceAnalysis = new TreeTraceAnalysis(treeTrace,
-				burninPercentage/100, credibleSetPercentage);
+		traceAnalysis = new TreeTraceAnalysis(treeTrace, burninPercentage/100);
+        traceAnalysis.analyze(credibleSetPercentage);
 
 		if (!silent) {
 			System.out.println("\n----- Tree trace analysis -----------------------");
