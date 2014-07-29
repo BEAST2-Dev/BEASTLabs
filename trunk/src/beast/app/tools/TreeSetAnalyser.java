@@ -287,8 +287,8 @@ public class TreeSetAnalyser {
 			double burnInpercentage = arguments.getIntegerOption("burnin");
 			double HPDpercentage = arguments.getIntegerOption("HPD");
 	        
-	        TreeTraceAnalysis analyser = new TreeTraceAnalysis(parser.trees, burnInpercentage, HPDpercentage);
-
+	        TreeTraceAnalysis analyser = new TreeTraceAnalysis(parser.trees, burnInpercentage);
+            analyser.analyze(HPDpercentage);
        		new TreeSetAnalyser(analyser, consoleApp, maxErrorCount);
        } catch (RuntimeException rte) {
             if (window) {

@@ -165,7 +165,7 @@ public class WilsonBaldingTest {
 		// Obtain analysis results:
 		TreeTraceAnalysis analysis = treeReport.getAnalysis();
 		Map<String,Integer> topologyCounts = analysis.getTopologyCounts();
-		int totalTreesUsed = analysis.getTotalTreesUsed();
+		int totalTreesUsed = analysis.getTotalTreesBurninRemoved();
 
 		// Test topology distribution against ideal:
 
