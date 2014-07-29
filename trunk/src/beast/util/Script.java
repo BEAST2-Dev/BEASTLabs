@@ -8,8 +8,6 @@ import java.util.*;
 
 import javax.script.*;
 
-//import sun.org.mozilla.javascript.*;
-
 import beast.core.*;
 import beast.core.Input.*;
 import beast.core.parameter.RealParameter;
@@ -24,7 +22,7 @@ public class Script extends CalculationNode implements Loggable, beast.core.Func
     public Input<List<beast.core.Function>> functionInput = new Input<List<beast.core.Function>>("x", "Parameters needed for the calculations", new ArrayList<beast.core.Function>());
 
     enum Engine {JavaScript, python, jruby, groovy};
-    public Input<Engine> engineInput = new Input<Engine>("engine", "Script needed for the calculations (one of "+ Arrays.toString(Engine.values()) + " default Javascript)", Engine.JavaScript);
+    public Input<Engine> engineInput = new Input<Engine>("engine", "Script needed for the calculations (one of "+ Arrays.toString(Engine.values()) + " default Javascript)", Engine.JavaScript, Engine.values());
 
     ScriptEngine engine;
     Invocable inv;
