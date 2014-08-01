@@ -29,6 +29,7 @@ package beast.evolution.likelihood;
 
 
 
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -51,7 +52,6 @@ import beast.evolution.alignment.FilteredAlignment;
 import beast.evolution.branchratemodel.BranchRateModel;
 import beast.evolution.branchratemodel.StrictClockModel;
 import beast.evolution.likelihood.BeagleTreeLikelihood;
-import beast.evolution.likelihood.TreeLikelihood.Scaling;
 import beast.evolution.sitemodel.SiteModel;
 import beast.evolution.substitutionmodel.SubstitutionModel;
 import beast.evolution.tree.Node;
@@ -73,6 +73,13 @@ public class ThreadedTreeLikelihood extends Distribution {
     public Input<Integer> maxNrOfThreads = new Input<Integer>("threads","maximum number of threads to use, if less than 1 the number of threads in BeastMCMC is used (default -1)", -1);
     public Input<Boolean> useJava = new Input<Boolean>("useJava", "prefer java, even if beagle is available", true);
 
+    public Input<String> proportionsInput = new Input<String>("proportions", "specifies proportions of patterns used per thread as space "
+    		+ "delimted string. This is useful when using a mixture of BEAGLE devices that run at different speeds, e.g GPU and CPU. "
+    		+ "The string is duplicated if there are more threads than proportions specified. For example, "
+    		+ "'1 2' as well as '33 66' with 2 threads specifies that the first thread gets hald the patterns and the second "
+    		+ "two thirds. With 3 threads, it is interpreted as '1 2 1' = 25%, 50%, 25% and with 7 threads it is "
+    		+ "'1 2 1 2 1 2 1' = 10% 20% 10% 20% 10% 20% 10%. If not specified, all threads get the same proprtion of patterns.");
+    
     enum Scaling {none, always, _default};
     public Input<Scaling> scaling = new Input<ThreadedTreeLikelihood.Scaling>("scaling", "type of scaling to use, one of " + Arrays.toString(Scaling.values()) + ". If not specified, the -beagle_scaling flag is used.", Scaling._default, Scaling.values());
     
@@ -129,6 +136,10 @@ public class ThreadedTreeLikelihood extends Distribution {
 	int [] cacheNode2;
 	int [] cacheNode3;
 	int cacheNodeCount;
+	
+	// specified a set ranges of patterns assigned to each thread
+	// first patternPoints contains 0, then one point for each thread
+	int [] patternPoints;
 	
     @Override
     public void initAndValidate() throws Exception {
@@ -219,6 +230,36 @@ public class ThreadedTreeLikelihood extends Distribution {
     	cacheNode2 = new int[nodeCount];
     	cacheNode3 = new int[nodeCount];
 
+		patternPoints = new int[m_nThreads + 1];
+		if (proportionsInput.get() == null) {
+			int range = nPatterns / m_nThreads;
+			for (int i = 0; i < m_nThreads - 1; i++) {
+				patternPoints[i+1] = range * (i+1);
+			}
+			patternPoints[m_nThreads] = nPatterns;
+		} else {
+			String [] strs = proportionsInput.get().split("\\s+");
+			double [] proportions = new double[m_nThreads];
+			for (int i = 0; i < m_nThreads; i++) {
+				proportions[i] = Double.parseDouble(strs[i % strs.length]);
+			}
+			// normalise
+			double sum = 0;
+			for (double d : proportions) {
+				sum += d;
+			}
+			for (int i = 0; i < m_nThreads; i++) {
+				proportions[i] /= sum;
+			}
+			// cummulative 
+			for (int i = 1; i < m_nThreads; i++) {
+				proportions[i] += proportions[i- 1];
+			}
+			// calc ranges
+			for (int i = 0; i < m_nThreads; i++) {
+				patternPoints[i+1] = (int) (proportions[i] * nPatterns + 0.5);
+			}
+		}
     }
 
 
@@ -528,11 +569,12 @@ public class ThreadedTreeLikelihood extends Distribution {
 			int nPatterns = m_fPatternLogLikelihoods.length;
 			if (m_nThreads >= 1) {
 				m_nCountDown = new CountDownLatch(m_nThreads);
-				int iFrom = 0;
+				int iFrom = patternPoints[0];
 				int nRange = nPatterns / m_nThreads;
 				// kick off the threads
 		    	for (int iThread = 1; iThread < m_nThreads; iThread++) {
-		    		int iTo = iFrom + nRange; 
+		    		//int iTo = iFrom + nRange;
+		    		int iTo = patternPoints[iThread];
 		    		CoreRunnable coreRunnable = new CoreRunnable(iThread, root, iFrom, iTo, m_likelihoodCore);
 		    		BeastMCMC.g_exec.execute(coreRunnable);
 					iFrom = iTo;
