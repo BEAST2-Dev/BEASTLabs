@@ -76,7 +76,59 @@ public class ThreadedTreeLikelihoodTest extends TestCase {
     	}
 	}
 
-	@Test
+    @Test
+	public void testProportionsOfLikelihood() throws Exception {
+		// 2 threads
+		Alignment data = BEASTTestCase.getAlignment();
+		Tree tree = BEASTTestCase.getTree(data);
+		
+		Frequencies freqs = new Frequencies();
+		freqs.initByName("data", data, 
+						 "estimate", false);
+
+		HKY hky = new HKY();
+		hky.initByName("kappa", "1.0", 
+				       "frequencies",freqs);
+
+		SiteModel siteModel = new SiteModel();
+		siteModel.initByName("mutationRate", "1.0", "gammaCategoryCount", 1, "substModel", hky);
+
+		ThreadedTreeLikelihood likelihood = newThreadedTreeLikelihood();
+		likelihood.initByName("data",data, "tree",tree, "siteModel", siteModel, "proportions", "1 2");
+		double fLogP = 0;
+		fLogP = likelihood.calculateLogP();
+		assertEquals(fLogP, -1992.2056440317247, BEASTTestCase.PRECISION);
+ 
+		likelihood.initByName("useAmbiguities", true, "data",data, "tree",tree, "siteModel", siteModel);
+		fLogP = likelihood.calculateLogP();
+		assertEquals(fLogP, -1992.2056440317247, BEASTTestCase.PRECISION);
+
+		// 3 threads
+		BeastMCMC.m_nThreads = 3;
+		BeastMCMC.g_exec = Executors.newFixedThreadPool(BeastMCMC.m_nThreads);
+    
+		likelihood = newThreadedTreeLikelihood();
+		likelihood.initByName("data",data, "tree",tree, "siteModel", siteModel, "proportions", "1 2");
+		fLogP = 0;
+		fLogP = likelihood.calculateLogP();
+		assertEquals(fLogP, -1992.2056440317247, BEASTTestCase.PRECISION);
+
+		// 5 threads
+		BeastMCMC.m_nThreads = 5;
+		BeastMCMC.g_exec = Executors.newFixedThreadPool(BeastMCMC.m_nThreads);
+    
+		likelihood = newThreadedTreeLikelihood();
+		likelihood.initByName("data",data, "tree",tree, "siteModel", siteModel, "proportions", "1 2");
+		fLogP = 0;
+		fLogP = likelihood.calculateLogP();
+		assertEquals(fLogP, -1992.2056440317247, BEASTTestCase.PRECISION);
+
+		// restore to 2 threads
+		BeastMCMC.m_nThreads = 2;
+		BeastMCMC.g_exec = Executors.newFixedThreadPool(BeastMCMC.m_nThreads);
+}
+
+    @Test
 	public void testAscertainedJC69Likelihood() throws Exception {
 		// as testJC69Likelihood but with ascertained alignment	
 		Alignment data = BEASTTestCase.getAscertainedAlignment();
