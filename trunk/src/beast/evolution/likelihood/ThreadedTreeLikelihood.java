@@ -164,10 +164,13 @@ public class ThreadedTreeLikelihood extends Distribution {
     		m_beagle[0] = new BeagleTreeLikelihood();
     		m_beagle[0].initByName("data", m_data.get(), "tree", m_tree.get(), "siteModel", m_pSiteModel.get(), "branchRateModel", m_pBranchRateModel.get(), "useAmbiguities", m_useAmbiguities.get());
     	} else {
+    		
+        	calcPatternPoints(m_data.get().getSiteCount());
         	for (int i = 0; i < m_nThreads; i++) {
+        		String filterSpec = (patternPoints[i] +1) + "-" + (patternPoints[i + 1]);
         		m_beagle[i] = new BeagleTreeLikelihood();
         		FilteredAlignment filter = new FilteredAlignment();
-        		filter.initByName("data", m_data.get()/*, "userDataType", m_data.get().getDataType()*/, "filter", (i+1)+"::"+m_nThreads);
+        		filter.initByName("data", m_data.get()/*, "userDataType", m_data.get().getDataType()*/, "filter", filterSpec);
         		m_beagle[i].initByName("data", filter, "tree", m_tree.get(), "siteModel", m_pSiteModel.get(), "branchRateModel", m_pBranchRateModel.get(), "useAmbiguities", m_useAmbiguities.get());
         	}
     	}
@@ -230,6 +233,10 @@ public class ThreadedTreeLikelihood extends Distribution {
     	cacheNode2 = new int[nodeCount];
     	cacheNode3 = new int[nodeCount];
 
+    	calcPatternPoints(nPatterns);
+    }
+    
+    void calcPatternPoints(int nPatterns) {
 		patternPoints = new int[m_nThreads + 1];
 		if (proportionsInput.get() == null) {
 			int range = nPatterns / m_nThreads;
