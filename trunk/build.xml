@@ -17,7 +17,7 @@
 	<property name="srcBeast2" location="${beast2path}/src" />
 	<property name="beast2classpath" location="${beast2path}/build" />
 	<property name="Add_on_dir" value="${release_dir}/add-on" />
-	<property name="version" value="1.1.2" />
+	<property name="version" value="1.2.0" />
 
     <import file="${beast2path}/build.xml" />
 
@@ -91,7 +91,7 @@
 		<mkdir dir="${distii}" />
 
 		<!-- Put everything in ${buildii} into the beast.jar file -->
-		<jar jarfile="${distii}/beastii.jar">
+		<jar jarfile="${distii}/beastlabs.jar">
 			<manifest>
 				<attribute name="Built-By" value="${user.name}" />
 				<attribute name="Main-Class" value="${main_class_BEAST}" />
@@ -130,7 +130,7 @@
 			<zipgroupfileset dir="${beast2path}/lib" includes="jam.jar" />
 			<!--zipgroupfileset dir="${lib}" includes="commons-math-II.0.jar" /-->
 		</jar>
-		<jar jarfile="${distii}/BEASTii.src.jar">
+		<jar jarfile="${distii}/BEASTlabs.src.jar">
 			<fileset dir="${srcii}">
 				<include name="beast/**/*.java" />
 				<include name="test/**/*.java" />
@@ -138,7 +138,7 @@
 				<include name="beast/**/*.xsl" />
 			</fileset>
         </jar>
-		<jar jarfile="${distii}/BEASTii.addon.jar">
+		<jar jarfile="${distii}/BEASTlabs.addon.jar">
 			<manifest>
 				<attribute name="Built-By" value="${user.name}" />
 			</manifest>
@@ -212,17 +212,17 @@
 		</copy>
 
 		<copy todir="${Add_on_dir}/lib">
-			<fileset  file="${distii}/BEASTii.addon.jar" />
+			<fileset  file="${distii}/BEASTlabs.addon.jar" />
 		</copy>
 		<copy todir="${Add_on_dir}">
-			<fileset file="${distii}/BEASTii.src.jar" />
+			<fileset file="${distii}/BEASTlabs.src.jar" />
 		</copy>
 <!--
 		<copy todir="${Add_on_dir}/templates">
 			<fileset file="templates/BEASTii.xml" />
 		</copy>
 -->
-		<jar jarfile="${distii}/BEASTii.addon.v${version}.zip">
+		<jar jarfile="${distii}/BEASTlabs.addon.v${version}.zip">
 			<fileset dir="${Add_on_dir}">
 				<include name="**/*" />
 			</fileset>
