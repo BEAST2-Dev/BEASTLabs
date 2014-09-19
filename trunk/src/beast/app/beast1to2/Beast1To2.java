@@ -23,7 +23,7 @@
  * Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
  * Boston, MA  02110-1301  USA
  */
-package beast.app;
+package beast.app.beast1to2;
 
 import javax.xml.transform.TransformerException;
 import java.io.*;
@@ -42,7 +42,7 @@ import java.nio.file.Paths;
  * NB: current limitations Only alignments are converted.
  */
 public class Beast1To2 {
-	final static String BEAST1TO2_XSL_FILE = "beast/app/beast1To2.xsl";
+	final static String BEAST1TO2_XSL_FILE = "beast/app/beast1to2/beast1To2.xsl";
 
 	String m_sXSL;
 
