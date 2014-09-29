@@ -189,7 +189,7 @@ public class CladeSubstitutionModel extends SubstitutionModel.Base {
 	}
 
 	@Override
-	public boolean canHandleDataType(DataType dataType) throws Exception {
+	public boolean canHandleDataType(DataType dataType) {
 		if (m_substitutionModels != null) {
 			return m_substitutionModels[0].canHandleDataType(dataType);
 		}
