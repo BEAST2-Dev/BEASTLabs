@@ -484,7 +484,7 @@ public class ThreadedBeerLikelihoodCore extends ThreadedLikelihoodCore {
 
     @Override
     public void setUseScaling(double  fScale) {
-   		m_bUseScaling = (fScale != 1.0);
+   		m_bUseScaling = Math.abs(fScale - 1.0) < 1e-10;
 
         if (m_bUseScaling) {
             m_fScalingFactors = new double[2][m_nNodes][m_nPatterns];

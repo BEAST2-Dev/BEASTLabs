@@ -225,7 +225,7 @@ public class ThreadedTreeLikelihood extends Distribution {
         m_fProbabilities = new double[(nStateCount +1)* (nStateCount+1)];
         Arrays.fill(m_fProbabilities, 1.0);
 
-        if (m_data.get() instanceof AscertainedAlignment) {
+        if (m_data.get().isAscertained) {
             m_bAscertainedSitePatterns = true;
         }
         
@@ -405,7 +405,7 @@ public class ThreadedTreeLikelihood extends Distribution {
 //        System.err.println(logP);
         m_nScale++;
         if (logP > 0 || (m_likelihoodCore.getUseScaling() && m_nScale > X)) {
-            System.err.println("Switch off scaling");
+            //System.err.println("Switch off scaling");
             m_likelihoodCore.setUseScaling(1.0);
             m_likelihoodCore.unstore();
             m_nHasDirt = Tree.IS_FILTHY;
@@ -441,7 +441,7 @@ public class ThreadedTreeLikelihood extends Distribution {
         logP = 0.0;
         if (m_bAscertainedSitePatterns) {
         	m_fPatternLogLikelihoods = m_likelihoodCore.getPatternLogLikelihoods();
-            double ascertainmentCorrection = ((AscertainedAlignment)m_data.get()).getAscertainmentCorrection(m_fPatternLogLikelihoods);
+            double ascertainmentCorrection = m_data.get().getAscertainmentCorrection(m_fPatternLogLikelihoods);
             for (int i = 0; i < m_data.get().getPatternCount(); i++) {
             	logP += (m_fPatternLogLikelihoods[i] - ascertainmentCorrection) * m_data.get().getPatternWeight(i);
             }
