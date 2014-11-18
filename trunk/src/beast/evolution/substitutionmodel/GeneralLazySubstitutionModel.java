@@ -122,7 +122,7 @@ public class GeneralLazySubstitutionModel extends GeneralSubstitutionModel {
     } // getTransitionProbabilities
     
 
-    double BesselK(double alpha, double x, //long []nb,
+   public static double BesselK(double alpha, double x, //long []nb,
 		     long ize) { //, double []bk) {, long []ncalc) {
 /*-------------------------------------------------------------------
 
