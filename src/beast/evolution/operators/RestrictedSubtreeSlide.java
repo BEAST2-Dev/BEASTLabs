@@ -1,22 +1,24 @@
 package beast.evolution.operators;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import beast.core.Description;
 import beast.core.Input;
 import beast.evolution.alignment.TaxonSet;
 import beast.evolution.tree.Node;
 import beast.evolution.tree.Tree;
+import beast.math.distributions.MultiMonophyleticConstraint;
 import beast.util.Randomizer;
 
 @Description("Subtree-slide operator that only considers part of the tree defined by "
 		+ "the predecessors of a set of clades.")
 public class RestrictedSubtreeSlide extends SubtreeSlide {
-	public Input<List<TaxonSet>> cladesInput = new Input<List<TaxonSet>>("clade", "defines predecessor of cladde to be considered by Subtree-slide operation", new ArrayList<TaxonSet>());
-	
+	public Input<List<TaxonSet>> cladesInput = new Input<List<TaxonSet>>("clade", "defines predecessor of clade to be considered by Subtree-slide operation",
+            new ArrayList<TaxonSet>());
+
+    public final Input<MultiMonophyleticConstraint> cladesSetInput = new Input<>("clades", "all clades encoded by one unresolved tree.", null,
+            Input.Validate.OPTIONAL);
+
     // array of flags to indicate which taxa are in the set
     boolean[][] isInTaxaSet;
     int[] nrOfTaxa;
@@ -28,12 +30,11 @@ public class RestrictedSubtreeSlide extends SubtreeSlide {
     	try {
 	    	Tree tree = treeInput.get();
 	        final List<String> sTaxaNames = new ArrayList<String>();
-	        for (final String sTaxon : tree.getTaxaNames()) {
-	            sTaxaNames.add(sTaxon);
-	        }
-	
-	        
-	        int n = cladesInput.get().size();
+            Collections.addAll(sTaxaNames, tree.getTaxaNames());
+
+            final List<List<String>> constraints = cladesSetInput != null ? cladesSetInput.get().getConstraints() : null;
+	        final int n = cladesInput.get().size() + (constraints != null ? constraints.size() : 0);
+
 	        isInTaxaSet = new boolean[n][];
 	        nrOfTaxa = new int[n];
 	        taxonIndex = new int[n][];
@@ -41,8 +42,7 @@ public class RestrictedSubtreeSlide extends SubtreeSlide {
 	        int j = 0;
 	        for (TaxonSet clade : cladesInput.get()) {
 		        // determine nr of taxa in taxon set
-		        List<String> set = null;
-		        set = clade.asStringList();
+		        List<String> set = clade.asStringList();
 		        nrOfTaxa[j] = set.size();
 	
 		        // determine which taxa are in the set
@@ -62,8 +62,31 @@ public class RestrictedSubtreeSlide extends SubtreeSlide {
 	            }
 		        j++;
 	        }
-	
-	        super.initAndValidate();
+
+            if( constraints != null ) {
+                for (final List<String> set : constraints) {
+                    nrOfTaxa[j] = set.size();
+
+                    // determine which taxa are in the set
+                    taxonIndex[j] = new int[nrOfTaxa[j]];
+                    isInTaxaSet[j] = new boolean[sTaxaNames.size()];
+                    int k = 0;
+                    for (final String sTaxon : set) {
+                        final int iTaxon = sTaxaNames.indexOf(sTaxon);
+                        if( iTaxon < 0 ) {
+                            throw new Exception("Cannot find taxon " + sTaxon + " in data");
+                        }
+                        if( isInTaxaSet[j][iTaxon] ) {
+                            throw new Exception("Taxon " + sTaxon + " is defined multiple times, while they should be unique");
+                        }
+                        isInTaxaSet[j][iTaxon] = true;
+                        taxonIndex[j][k++] = iTaxon;
+                    }
+                    j++;
+                }
+            }
+
+            super.initAndValidate();
     	} catch (Exception e) {
     		throw new RuntimeException(e.getMessage());
     	}
