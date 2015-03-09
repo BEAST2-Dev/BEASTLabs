@@ -46,6 +46,7 @@ import beast.core.Distribution;
 import beast.core.Input;
 import beast.core.State;
 import beast.core.Input.Validate;
+import beast.core.util.Log;
 import beast.evolution.alignment.Alignment;
 import beast.evolution.alignment.AscertainedAlignment;
 import beast.evolution.alignment.FilteredAlignment;
@@ -210,7 +211,7 @@ public class ThreadedTreeLikelihood extends Distribution {
         	m_likelihoodCore = new ThreadedBeerLikelihoodCore(nStateCount);
         }
     	//m_likelihoodCore = new ThreadedLikelihoodCoreNative(nStateCount);
-        System.err.println("TreeLikelihood uses " + m_likelihoodCore.getClass().getName());
+        Log.info.println("TreeLikelihood uses " + m_likelihoodCore.getClass().getName());
 
         m_fProportionInvariant = m_siteModel.getProportionInvariant();
         m_siteModel.setPropInvariantIsCategory(false);
@@ -604,7 +605,7 @@ public class ThreadedTreeLikelihood extends Distribution {
 			}
 		} catch (RejectedExecutionException e) {
 			m_nThreads--;
-			System.err.println("Reducing nr of threads to " + m_nThreads);
+			Log.info.println("Reducing nr of threads to " + m_nThreads);
 			// refresh thread pool
 			BeastMCMC.g_exec = Executors.newFixedThreadPool(BeastMCMC.m_nThreads);
 			threadedTraverse(root);

@@ -39,6 +39,7 @@ import beast.core.Distribution;
 import beast.core.Input;
 import beast.core.State;
 import beast.core.Input.Validate;
+import beast.core.util.Log;
 import beast.evolution.alignment.Alignment;
 import beast.evolution.alignment.AscertainedAlignment;
 import beast.evolution.branchratemodel.BranchRateModel;
@@ -143,7 +144,7 @@ public class ExperimentalTreeLikelihood extends Distribution {
     	m_likelihoodCore = new BeerLikelihoodCoreCnG(4);
         //m_likelihoodCore = new BeerLikelihoodCoreSimpleNative(nStateCount);
         //m_likelihoodCore = new BeerLikelihoodCoreSimpleGPU(nStateCount);
-        System.err.println("TreeLikelihood uses " + m_likelihoodCore.getClass().getName());
+        Log.info.println("TreeLikelihood uses " + m_likelihoodCore.getClass().getName());
         int nPatterns = m_data.get().getPatternCount();
         initCore(nNodeCount, nPatterns, nStateCount);
         
