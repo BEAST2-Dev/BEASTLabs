@@ -6,6 +6,7 @@ import java.util.List;
 import beast.core.Description;
 import beast.core.Input;
 import beast.core.Input.Validate;
+import beast.core.util.Log;
 import beast.evolution.branchratemodel.StrictClockModel;
 import beast.evolution.datatype.DataType;
 import beast.evolution.likelihood.BeerLikelihoodCore;
@@ -63,7 +64,7 @@ public class TraitedTreeLikelihood extends TreeLikelihood {
         } else {
             likelihoodCore = new BeerLikelihoodCore(nStateCount);
         }
-        System.out.println("TreeLikelihood uses " + likelihoodCore.getClass().getName());
+        Log.info.println("TreeLikelihood uses " + likelihoodCore.getClass().getName());
 
         proportionInvariant = m_siteModel.getProportionInvariant();
         m_siteModel.setPropInvariantIsCategory(false);
