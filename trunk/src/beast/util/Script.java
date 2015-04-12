@@ -20,6 +20,8 @@ public class Script extends CalculationNode implements Loggable, beast.core.Func
     		"It assumes there is a function f defined, which returns a single number or array of numbers.");
     public Input<String> expressionInput = new Input<String>("expression", "expression representing the calculations", Validate.XOR, scriptInput);
     public Input<List<beast.core.Function>> functionInput = new Input<List<beast.core.Function>>("x", "Parameters needed for the calculations", new ArrayList<beast.core.Function>());
+    public Input<String> argNames = new Input<>("argnames", "names of arguments used in expression (space delimited)," +
+            " order as given by XML");
 
     enum Engine {JavaScript, python, jruby, groovy};
     public Input<Engine> engineInput = new Input<Engine>("engine", "Script needed for the calculations (one of "+ Arrays.toString(Engine.values()) + " default Javascript)", Engine.JavaScript, Engine.values());
@@ -42,22 +44,31 @@ public class Script extends CalculationNode implements Loggable, beast.core.Func
         Object o = null;
         if (scriptInput.get() != null && scriptInput.get().trim().length() > 0) { 
 	        o = engine.eval(scriptInput.get());
-        }	else {
+        } else {
         	StringBuilder f = new StringBuilder();
         	// create function with argument list
         	f.append("with (Math) { function f(");
-        	for (Function x : functionInput.get()) {
-        		f.append(((BEASTObject)x).getID());
-        		f.append(", ");
-        	}
-        	if (functionInput.get().size() > 0) {
-        		// eat up trailing comma
-        		f.deleteCharAt(f.length() - 2);
-        	}
+            if( argNames.get() != null ) {
+                String[] args = argNames.get().split("\\s+");
+                f.append(args[0]);
+                for (String a : Arrays.copyOfRange(args, 1, args.length) ) {
+                    f.append(", ").append(a);
+                }
+            } else {
+                for (Function x : functionInput.get()) {
+                    f.append(((BEASTObject) x).getID());
+                    f.append(", ");
+                }
+
+                if( functionInput.get().size() > 0 ) {
+                    // eat up trailing comma
+                    f.deleteCharAt(f.length() - 2);
+                }
+            }
         	f.append(") { return ");
         	f.append(expressionInput.get());
         	f.append(";}\n}");
-        	System.err.println(f);
+        	Log.info.println(f);
 	        o = engine.eval(f.toString());
         }
 //        if (o instanceof NativeArray) {
@@ -112,10 +123,7 @@ public class Script extends CalculationNode implements Loggable, beast.core.Func
 //            } else {
                 this.value[0] = Double.parseDouble(o.toString());
 //            }
-        } catch (NoSuchMethodException e) {
-            this.value[0] = Double.NaN;
-            Log.err.println(e.getMessage());
-        } catch (ScriptException e) {
+        } catch (NoSuchMethodException | ScriptException e) {
             this.value[0] = Double.NaN;
             Log.err.println(e.getMessage());
         }
