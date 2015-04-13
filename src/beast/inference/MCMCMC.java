@@ -149,21 +149,18 @@ public class MCMCMC extends MCMC {
 				j = Randomizer.nextInt(m_chains.length);
 			}
 			
-			double p1 = m_chains[i].getCurrentLogLikelihood();
-			double p2 = m_chains[j].getCurrentLogLikelihood();
-			double t1 = m_chains[i].getTemperature();
-			double t2 = m_chains[j].getTemperature();
+			double p1before = m_chains[i].getCurrentLogLikelihood();
+			double p2before = m_chains[j].getCurrentLogLikelihood();
 			swapStates(m_chains[i], m_chains[j]);
-			double p1b = m_chains[i].robustlyCalcPosterior(m_chains[i].posteriorInput.get());
-			double p2b = m_chains[j].robustlyCalcPosterior(m_chains[j].posteriorInput.get());
+			double p1after = m_chains[i].geCurrentLogLikelihoodRobustly();
+			double p2after = m_chains[j].geCurrentLogLikelihoodRobustly();
 			
-			if (p1/t1 + p1b/t2 - p2/t1 - p2b/t2 < Randomizer.nextDouble()) {
+			if (p1before + p1after - p2before - p2after < Randomizer.nextDouble()) {
 				// swap fails
 				swapStates(m_chains[i], m_chains[j]);
 			}
 			m_chains[i].startStateInput.get().setEverythingDirty(true);
 			m_chains[j].startStateInput.get().setEverythingDirty(true);
-			
 		}
 
 		// wait 5 seconds for the log to complete

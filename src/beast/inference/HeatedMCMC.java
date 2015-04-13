@@ -1,5 +1,6 @@
 package beast.inference;
 
+
 import beast.core.Description;
 import beast.core.Distribution;
 import beast.core.MCMC;
@@ -8,24 +9,34 @@ import beast.core.util.Evaluator;
 import beast.util.Randomizer;
 
 @Description("Base class for doing Metropolis coupled MCMC. Each instance represenst a chain at a different temperature.")
-class HeatedMCMC extends MCMC {
+public class HeatedMCMC extends MCMC {
 	
 	// LAMBDA is temperature multiplier
 	final static double LAMBDA = 1.0;
 	
 	// temperature on which this chain runs
-	double temperature = 1.0;
+	protected double temperature = 1.0;
 	
 	// nr of samples between re-arranging states
-	int resampleEvery = 1000;
+	protected int resampleEvery = 1000;
 	
 	// keep track of total nr of states sampled, using currentSample
-	int currentSample = 0;
+	protected int currentSample = 0;
 
-	double getCurrentLogLikelihood() {
-		return oldLogLikelihood;
+	protected double getCurrentLogLikelihood() {
+		return oldLogLikelihood / temperature;
+	};
+
+	protected double geCurrentLogLikelihoodRobustly() throws Exception {
+		oldLogLikelihood = robustlyCalcPosterior(posterior);
+		return getCurrentLogLikelihood();
 	};
 	
+	public void setChainNr(int i, int resampleEvery) throws Exception {
+		temperature = 1 + i * LAMBDA;
+		this.resampleEvery = resampleEvery;
+	}
+
 	@Override
 	protected void doLoop() throws Exception {
 	}
@@ -171,15 +182,6 @@ class HeatedMCMC extends MCMC {
 	            System.err.println("\n\nNB: " + corrections + " posterior calculation corrections were required. This analysis may not be valid!\n\n");
 	        }
 	        currentSample += resampleEvery;
-	}
-
-	public void setChainNr(int i, int resampleEvery) {
-		temperature = 1 + i * LAMBDA;
-		this.resampleEvery = resampleEvery;
-	}
-
-	public double getTemperature() {
-		return temperature;
 	}
 	
 }
