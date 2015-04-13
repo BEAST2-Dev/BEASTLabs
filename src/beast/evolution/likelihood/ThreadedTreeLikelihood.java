@@ -77,9 +77,9 @@ public class ThreadedTreeLikelihood extends Distribution {
     public Input<String> proportionsInput = new Input<String>("proportions", "specifies proportions of patterns used per thread as space "
     		+ "delimted string. This is useful when using a mixture of BEAGLE devices that run at different speeds, e.g GPU and CPU. "
     		+ "The string is duplicated if there are more threads than proportions specified. For example, "
-    		+ "'1 2' as well as '33 66' with 2 threads specifies that the first thread gets hald the patterns and the second "
+    		+ "'1 2' as well as '33 66' with 2 threads specifies that the first thread gets a third of the patterns and the second "
     		+ "two thirds. With 3 threads, it is interpreted as '1 2 1' = 25%, 50%, 25% and with 7 threads it is "
-    		+ "'1 2 1 2 1 2 1' = 10% 20% 10% 20% 10% 20% 10%. If not specified, all threads get the same proprtion of patterns.");
+    		+ "'1 2 1 2 1 2 1' = 10% 20% 10% 20% 10% 20% 10%. If not specified, all threads get the same proportion of patterns.");
     
     enum Scaling {none, always, _default};
     public Input<Scaling> scaling = new Input<ThreadedTreeLikelihood.Scaling>("scaling", "type of scaling to use, one of " + Arrays.toString(Scaling.values()) + ". If not specified, the -beagle_scaling flag is used.", Scaling._default, Scaling.values());
