@@ -43,9 +43,9 @@ public class HeatedMCMC extends MCMC {
 	}
 	
 	// run MCMC inner loop for resampleEvery nr of samples
-	protected void runTillResample() throws Exception {
+	protected long runTillResample() throws Exception {
 	       int corrections = 0;
-	       for (int sampleNr = currentSample; sampleNr <= currentSample + resampleEvery; sampleNr++) {
+	       for (int sampleNr = currentSample; sampleNr < currentSample + resampleEvery; sampleNr++) {
 	            final int currentState = sampleNr;
 
 	            state.store(currentState);
@@ -183,10 +183,13 @@ public class HeatedMCMC extends MCMC {
 	            System.err.println("\n\nNB: " + corrections + " posterior calculation corrections were required. This analysis may not be valid!\n\n");
 	        }
 	        currentSample += resampleEvery;
+	        return System.currentTimeMillis();
 	}
 
 	public void reset() throws Exception {
 		oldLogLikelihood = state.robustlyCalcNonStochasticPosterior(posterior);		
 	}
+	
+	public void optimiseRunTime(long startTime, long endTime, long endTimeMainChain) {}
 	
 }

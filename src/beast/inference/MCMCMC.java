@@ -5,10 +5,10 @@ import java.io.File;
 import java.io.FileWriter;
 import java.util.List;
 
-import beast.app.beauti.BeautiDoc;
 import beast.core.Description;
 import beast.core.Input;
 import beast.core.Logger;
+import beast.core.Logger.LogFileMode;
 import beast.core.MCMC;
 import beast.core.State;
 import beast.core.StateNode;
@@ -28,10 +28,11 @@ import beast.util.XMLProducer;
 		"Furthermore, the log and tree log should have the same sample frequency.")
 public class MCMCMC extends MCMC {
 	public Input<Integer> m_nrOfChains = new Input<Integer>("chains", " number of chains to run in parallel (default 2)", 2);
+	public Input<Integer> resampleEveryInput = new Input<Integer>("resampleEvery", "number of samples in between resampling (and possibly swappping) states", 1000);
 	public Input<String> heatedMCMCClassInput = new Input<String>("heatedMCMCClass", "Name of the class used for heated chains", HeatedMCMC.class.getName());
 	
 	// nr of samples between re-arranging states
-	int resampleEvery = 1000;
+	int resampleEvery = 10;
 	
 	
 	/** plugins representing MCMC with model, loggers, etc **/
@@ -41,11 +42,15 @@ public class MCMCMC extends MCMC {
 	/** keep track of time taken between logs to estimate speed **/
     long m_nStartLogTime;
 
+	// keep track of when threads finish in order to optimise thread usage
+	long [] finishTimes;
+
 	List<StateNode> tmpStateNodes;
 
 	@Override
 	public void initAndValidate() throws Exception {
 		m_chains = new HeatedMCMC[m_nrOfChains.get()];
+		resampleEvery = resampleEveryInput.get();
 
 		// the difference between the various chains is
 		// 1. it runs an MCMC, not a  MultiplMCMC
@@ -54,6 +59,8 @@ public class MCMCMC extends MCMC {
 		// 4. log to stdout is removed to prevent clutter on stdout
 		String sXML = new XMLProducer().toXML(this);
 		sXML = sXML.replaceAll("chains=['\"][^ ]*['\"]", "");
+		sXML = sXML.replaceAll("heatedMCMCClass=['\"][^ ]*['\"]", "");
+		sXML = sXML.replaceAll("resampleEvery=['\"][^ ]*['\"]", "");
 		
         String sMCMCMC = this.getClass().getName();
 		while (sMCMCMC.length() > 0) {
@@ -76,17 +83,8 @@ public class MCMCMC extends MCMC {
 	        outfile.write(sXML2);
 	        outfile.close();
 			
-//			if (sXML2.equals(sXML)) {
-//				// Uh oh, no seed in log name => logs will overwrite
-//				throw new Exception("Use $(seed) in log file name to guarantee log files do not overwrite");
-//			}
 			m_chains[i] = (HeatedMCMC) parser.parseFragment(sXML2, true);
-			// remove log to stdout, if any
-//			for (int iLogger = m_chains[i].loggersInput.get().size()-1; iLogger >= 0; iLogger--) {
-//				if (m_chains[i].loggersInput.get().get(iLogger).fileNameInput.get() == null) {
-//					m_chains[i].loggersInput.get().remove(iLogger);
-//				}
-//			}
+
 			// remove all loggers, except for main cahin
 			if (i != 0) {
 				m_chains[i].loggersInput.get().clear();
@@ -95,11 +93,34 @@ public class MCMCMC extends MCMC {
 			m_chains[i].run();
 		}
 	
+		// reopen log files for main chain, which were closed at the end of run(); 
+		Logger.FILE_MODE = LogFileMode.resume;
+		for (Logger logger : m_chains[0].loggersInput.get()) {
+			logger.init();
+		}
+		
 		// get a copy of the list of state nodes to facilitate swapping states
 		tmpStateNodes = startStateInput.get().stateNodeInput.get();
 
 		chainLength = chainLengthInput.get();
+		finishTimes = new long[m_chains.length];
 	} // initAndValidate
+	
+	
+	
+	class HeatedChainThread extends Thread {
+		final int chainNr;
+		HeatedChainThread(int chainNr) {
+			this.chainNr = chainNr;
+		}
+		public void run() {
+			try {
+				finishTimes[chainNr] = m_chains[chainNr].runTillResample();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
 	
 	@Override 
 	public void run() throws Exception {
@@ -109,21 +130,14 @@ public class MCMCMC extends MCMC {
 			chain.startStateInput.get().setEverythingDirty(true);
 		}
 		for (int sampleNr = 0; sampleNr < chainLength; sampleNr += resampleEvery) {
+			long startTime = System.currentTimeMillis();
 			
 			// start threads with individual chains here.
 			m_threads = new Thread[m_chains.length];
 			int k = 0;
 			for (final HeatedMCMC mcmc : m_chains) {
 				mcmc.setStateFile(stateFileName + "." +k, restoreFromFile);
-				m_threads[k] = new Thread() {
-					public void run() {
-						try {
-							mcmc.runTillResample();
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-					}
-				};
+				m_threads[k] = new HeatedChainThread(k);
 				m_threads[k].start();
 				k++;
 			}
@@ -158,6 +172,11 @@ public class MCMCMC extends MCMC {
 				System.err.println("\n\nSWAPPING " + i + " and " + j + "\n\n");
 				m_chains[i].reset(); 
 				m_chains[j].reset();
+			}
+			
+			// tuning
+			for (k = 1; k < m_chains.length; k++) {
+				m_chains[k].optimiseRunTime(startTime, finishTimes[k], finishTimes[0]);
 			}
 		}
 
