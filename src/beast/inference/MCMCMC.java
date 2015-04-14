@@ -1,8 +1,11 @@
 package beast.inference;
 
 
+import java.io.File;
+import java.io.FileWriter;
 import java.util.List;
 
+import beast.app.beauti.BeautiDoc;
 import beast.core.Description;
 import beast.core.Input;
 import beast.core.Logger;
@@ -38,11 +41,6 @@ public class MCMCMC extends MCMC {
 	/** keep track of time taken between logs to estimate speed **/
     long m_nStartLogTime;
 
-
-	/** index of log and tree log among the MCMC loggers**/
-	int m_iTreeLog = 0;
-	int m_iLog = 0;
-	
 	List<StateNode> tmpStateNodes;
 
 	@Override
@@ -55,8 +53,9 @@ public class MCMCMC extends MCMC {
 		// 3. output logs change for every chain
 		// 4. log to stdout is removed to prevent clutter on stdout
 		String sXML = new XMLProducer().toXML(this);
-		sXML = sXML.replaceAll("chains=[^ /]*", "");
-		String sMCMCMC = this.getClass().getName();
+		sXML = sXML.replaceAll("chains=['\"][^ ]*['\"]", "");
+		
+        String sMCMCMC = this.getClass().getName();
 		while (sMCMCMC.length() > 0) {
 			sXML = sXML.replaceAll("\\b"+MCMCMC.class.getName()+"\\b", heatedMCMCClassInput.get());
 			if (sMCMCMC.indexOf('.') >= 0) {
@@ -67,20 +66,20 @@ public class MCMCMC extends MCMC {
 		}
 		long nSeed = Randomizer.getSeed();
 		
-		// create new chains
-		XMLParser parser = new XMLParser();
-		
-		// get a copy of the list of state nodes to facilitate swapping states
-		HeatedMCMC tmp = (HeatedMCMC) parser.parseFragment(sXML, true);
-		tmpStateNodes = tmp.startStateInput.get().stateNodeInput.get();
-		
+		// create new chains		
 		for (int i = 0; i < m_chains.length; i++) {
+			XMLParser parser = new XMLParser();
 			String sXML2 = sXML;
 			sXML2 = sXML2.replaceAll("\\$\\(seed\\)", nSeed+i+"");
-			if (sXML2.equals(sXML)) {
-				// Uh oh, no seed in log name => logs will overwrite
-				throw new Exception("Use $(seed) in log file name to guarantee log files do not overwrite");
-			}
+
+	        FileWriter outfile = new FileWriter(new File("/tmp/MCMCMC.xml"));
+	        outfile.write(sXML2);
+	        outfile.close();
+			
+//			if (sXML2.equals(sXML)) {
+//				// Uh oh, no seed in log name => logs will overwrite
+//				throw new Exception("Use $(seed) in log file name to guarantee log files do not overwrite");
+//			}
 			m_chains[i] = (HeatedMCMC) parser.parseFragment(sXML2, true);
 			// remove log to stdout, if any
 //			for (int iLogger = m_chains[i].loggersInput.get().size()-1; iLogger >= 0; iLogger--) {
@@ -93,27 +92,24 @@ public class MCMCMC extends MCMC {
 				m_chains[i].loggersInput.get().clear();
 			}
 			m_chains[i].setChainNr(i, resampleEvery);
+			m_chains[i].run();
 		}
 	
-		// collect indices for tree log file names
-		while (m_chains[0].loggersInput.get().get(m_iTreeLog).mode != Logger.LOGMODE.tree) {
-			m_iTreeLog++;
-		}
-		while (m_chains[0].loggersInput.get().get(m_iLog).mode != Logger.LOGMODE.compound) {
-			m_iLog++;
-		}
-		int nEveryLog = m_chains[0].loggersInput.get().get(m_iLog).everyInput.get();
-		int nEveryTree = m_chains[0].loggersInput.get().get(m_iTreeLog).everyInput.get();
-		if (nEveryLog != nEveryTree) {
-			throw new Exception("log frequencey and tree log frequencey should be the same.");
-		}
+		// get a copy of the list of state nodes to facilitate swapping states
+		tmpStateNodes = startStateInput.get().stateNodeInput.get();
+
+		chainLength = chainLengthInput.get();
 	} // initAndValidate
 	
 	@Override 
 	public void run() throws Exception {
 		
 		
+		for (HeatedMCMC chain:m_chains) {
+			chain.startStateInput.get().setEverythingDirty(true);
+		}
 		for (int sampleNr = 0; sampleNr < chainLength; sampleNr += resampleEvery) {
+			
 			// start threads with individual chains here.
 			m_threads = new Thread[m_chains.length];
 			int k = 0;
@@ -158,9 +154,11 @@ public class MCMCMC extends MCMC {
 			if (p1before + p1after - p2before - p2after < Randomizer.nextDouble()) {
 				// swap fails
 				swapStates(m_chains[i], m_chains[j]);
+			} else {
+				System.err.println("\n\nSWAPPING " + i + " and " + j + "\n\n");
+				m_chains[i].reset(); 
+				m_chains[j].reset();
 			}
-			m_chains[i].startStateInput.get().setEverythingDirty(true);
-			m_chains[j].startStateInput.get().setEverythingDirty(true);
 		}
 
 		// wait 5 seconds for the log to complete
