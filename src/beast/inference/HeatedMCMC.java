@@ -1,11 +1,16 @@
 package beast.inference;
 
 
+import java.util.Collections;
+
 import beast.core.Description;
 import beast.core.Distribution;
+import beast.core.Logger;
 import beast.core.MCMC;
 import beast.core.Operator;
+import beast.core.StateNodeInitialiser;
 import beast.core.util.Evaluator;
+import beast.core.util.Log;
 import beast.util.Randomizer;
 
 @Description("Base class for doing Metropolis coupled MCMC. Each instance represenst a chain at a different temperature.")
@@ -27,20 +32,119 @@ public class HeatedMCMC extends MCMC {
 		return oldLogLikelihood / temperature;
 	};
 
-	protected double geCurrentLogLikelihoodRobustly() throws Exception {
-		oldLogLikelihood = robustlyCalcPosterior(posterior);
-		return getCurrentLogLikelihood();
-	};
-	
 	public void setChainNr(int i, int resampleEvery) throws Exception {
 		temperature = 1 + i * LAMBDA;
 		this.resampleEvery = resampleEvery;
 	}
 
-	@Override
-	protected void doLoop() throws Exception {
-		runTillResample();
-	}
+	protected double calcCurrentLogLikelihoodRobustly() throws Exception {
+		oldLogLikelihood = robustlyCalcPosterior(posterior);
+		return getCurrentLogLikelihood();
+	};
+
+	
+//	@Override
+//	protected void doLoop() throws Exception {
+//	//	runTillResample();
+//	}
+	
+    @Override
+    public void run() throws Exception {
+        // set up state (again). Other plugins may have manipulated the
+        // StateNodes, e.g. set up bounds or dimensions
+        state.initAndValidate();
+        // also, initialise state with the file name to store and set-up whether to resume from file
+        state.setStateFileName(stateFileName);
+        operatorSchedule.setStateFileName(stateFileName);
+
+        burnIn = burnInInput.get();
+        chainLength = chainLengthInput.get();
+        int nInitialisationAttempts = 0;
+        //state.setEverythingDirty(true);
+        posterior = posteriorInput.get();
+
+        if (restoreFromFile) {
+            state.restoreFromFile();
+            operatorSchedule.restoreFromFile();
+            burnIn = 0;
+            oldLogLikelihood = state.robustlyCalcPosterior(posterior);
+        } else {
+            do {
+                for (final StateNodeInitialiser initialiser : initialisersInput.get()) {
+                    initialiser.initStateNodes();
+                }
+                oldLogLikelihood = state.robustlyCalcPosterior(posterior);
+                nInitialisationAttempts += 1;
+            } while (Double.isInfinite(oldLogLikelihood) && nInitialisationAttempts < numInitializationAttempts.get());
+        }
+        final long startTime = System.currentTimeMillis();
+
+        // do the sampling
+        logAlpha = 0;
+        debugFlag = Boolean.valueOf(System.getProperty("beast.debug"));
+
+
+//        System.err.println("Start state:");
+//        System.err.println(state.toString());
+
+        System.err.println("Start likelihood: " + oldLogLikelihood + " " + (nInitialisationAttempts > 1 ? "after " + nInitialisationAttempts + " initialisation attempts" : ""));
+        if (Double.isInfinite(oldLogLikelihood) || Double.isNaN(oldLogLikelihood)) {
+            reportLogLikelihoods(posterior, "");
+            throw new Exception("Could not find a proper state to initialise. Perhaps try another seed.");
+        }
+
+        loggers = loggersInput.get();
+
+        // put the loggers logging to stdout at the bottom of the logger list so that screen output is tidier.
+        Collections.sort(loggers, (o1, o2) -> {
+            if (o1.isLoggingToStdout()) {
+                return o2.isLoggingToStdout() ? 0 : 1;
+            } else {
+                return o2.isLoggingToStdout() ? -1 : 0;
+            }
+        });
+        // warn if none of the loggers is to stdout, so no feedback is given on screen
+        boolean hasStdOutLogger = false;
+        boolean hasScreenLog = false;
+        for (Logger l : loggers) {
+        	if (l.isLoggingToStdout()) {
+        		hasStdOutLogger = true;
+        	}
+        	if (l.getID() != null && l.getID().equals("screenlog")) {
+        		hasScreenLog = true;
+        	}
+        }
+        if (!hasStdOutLogger) {
+        	Log.warning.println("WARNING: If nothing seems to be happening on screen this is because none of the loggers give feedback to screen.");
+        	if (hasScreenLog) {
+        		Log.warning.println("WARNING: This happens when a filename  is specified for the 'screenlog' logger.");
+        		Log.warning.println("WARNING: To get feedback to screen, leave the filename for screenlog blank.");
+        		Log.warning.println("WARNING: Otherwise, the screenlog is saved into the specified file.");
+        	}
+        }
+
+        // initialises log so that log file headers are written, etc.
+        for (final Logger log : loggers) {
+            log.init();
+        }
+
+//        doLoop();
+//
+//        System.out.println();
+//        operatorSchedule.showOperatorRates(System.out);
+//
+//        System.out.println();
+//        final long endTime = System.currentTimeMillis();
+//        System.out.println("Total calculation time: " + (endTime - startTime) / 1000.0 + " seconds");
+//        close();
+//
+//        System.err.println("End likelihood: " + oldLogLikelihood);
+////        System.err.println(state);
+//        state.storeToFile(chainLength);
+//        operatorSchedule.storeToFile();
+        //Randomizer.storeToFile(stateFileName);
+    } // run;
+	
 	
 	// run MCMC inner loop for resampleEvery nr of samples
 	protected long runTillResample() throws Exception {
@@ -186,10 +290,6 @@ public class HeatedMCMC extends MCMC {
 	        return System.currentTimeMillis();
 	}
 
-	public void reset() throws Exception {
-		oldLogLikelihood = state.robustlyCalcNonStochasticPosterior(posterior);		
-	}
-	
 	public void optimiseRunTime(long startTime, long endTime, long endTimeMainChain) {}
 	
 }

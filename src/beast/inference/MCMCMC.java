@@ -12,6 +12,7 @@ import beast.core.Logger.LogFileMode;
 import beast.core.MCMC;
 import beast.core.State;
 import beast.core.StateNode;
+import beast.core.util.Log;
 import beast.util.Randomizer;
 import beast.util.XMLParser;
 import beast.util.XMLProducer;
@@ -27,7 +28,7 @@ import beast.util.XMLProducer;
 		"that the first chain uses the actual seed in the file name and all subsequent chains add one to it." +
 		"Furthermore, the log and tree log should have the same sample frequency.")
 public class MCMCMC extends MCMC {
-	public Input<Integer> m_nrOfChains = new Input<Integer>("chains", " number of chains to run in parallel (default 2)", 2);
+	public Input<Integer> nrOfChainsInput = new Input<Integer>("chains", " number of chains to run in parallel (default 2)", 2);
 	public Input<Integer> resampleEveryInput = new Input<Integer>("resampleEvery", "number of samples in between resampling (and possibly swappping) states", 1000);
 	public Input<String> heatedMCMCClassInput = new Input<String>("heatedMCMCClass", "Name of the class used for heated chains", HeatedMCMC.class.getName());
 	
@@ -36,11 +37,11 @@ public class MCMCMC extends MCMC {
 	
 	
 	/** plugins representing MCMC with model, loggers, etc **/
-	HeatedMCMC [] m_chains;
+	HeatedMCMC [] chains;
 	/** threads for running MCMC chains **/
-	Thread [] m_threads;
+	Thread [] threads;
 	/** keep track of time taken between logs to estimate speed **/
-    long m_nStartLogTime;
+    long startLogTime;
 
 	// keep track of when threads finish in order to optimise thread usage
 	long [] finishTimes;
@@ -49,7 +50,14 @@ public class MCMCMC extends MCMC {
 
 	@Override
 	public void initAndValidate() throws Exception {
-		m_chains = new HeatedMCMC[m_nrOfChains.get()];
+		if (nrOfChainsInput.get() < 1) {
+			throw new RuntimeException("chains must be at least 1");
+		}
+		if (nrOfChainsInput.get() == 1) {
+			Log.warning.println("Warning: MCMCMC needs at least 2 chains to be effective, but chains=1. Running plain MCMC.");
+		}
+		chains = new HeatedMCMC[nrOfChainsInput.get()];
+		
 		resampleEvery = resampleEveryInput.get();
 
 		// the difference between the various chains is
@@ -74,7 +82,7 @@ public class MCMCMC extends MCMC {
 		long nSeed = Randomizer.getSeed();
 		
 		// create new chains		
-		for (int i = 0; i < m_chains.length; i++) {
+		for (int i = 0; i < chains.length; i++) {
 			XMLParser parser = new XMLParser();
 			String sXML2 = sXML;
 			sXML2 = sXML2.replaceAll("\\$\\(seed\\)", nSeed+i+"");
@@ -83,27 +91,29 @@ public class MCMCMC extends MCMC {
 	        outfile.write(sXML2);
 	        outfile.close();
 			
-			m_chains[i] = (HeatedMCMC) parser.parseFragment(sXML2, true);
+			chains[i] = (HeatedMCMC) parser.parseFragment(sXML2, true);
 
 			// remove all loggers, except for main cahin
 			if (i != 0) {
-				m_chains[i].loggersInput.get().clear();
+				chains[i].loggersInput.get().clear();
 			}
-			m_chains[i].setChainNr(i, resampleEvery);
-			m_chains[i].run();
+			chains[i].setChainNr(i, resampleEvery);
+			chains[i].setStateFile(stateFileName + "." +i, restoreFromFile);
+			
+			chains[i].run();
 		}
 	
 		// reopen log files for main chain, which were closed at the end of run(); 
-		Logger.FILE_MODE = LogFileMode.resume;
-		for (Logger logger : m_chains[0].loggersInput.get()) {
-			logger.init();
-		}
+		//Logger.FILE_MODE = LogFileMode.resume;
+		//for (Logger logger : m_chains[0].loggersInput.get()) {
+		//	logger.init();
+		//}
 		
 		// get a copy of the list of state nodes to facilitate swapping states
 		tmpStateNodes = startStateInput.get().stateNodeInput.get();
 
 		chainLength = chainLengthInput.get();
-		finishTimes = new long[m_chains.length];
+		finishTimes = new long[chains.length];
 	} // initAndValidate
 	
 	
@@ -115,7 +125,7 @@ public class MCMCMC extends MCMC {
 		}
 		public void run() {
 			try {
-				finishTimes[chainNr] = m_chains[chainNr].runTillResample();
+				finishTimes[chainNr] = chains[chainNr].runTillResample();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -125,26 +135,24 @@ public class MCMCMC extends MCMC {
 	@Override 
 	public void run() throws Exception {
 		
-		
-		for (HeatedMCMC chain:m_chains) {
-			chain.startStateInput.get().setEverythingDirty(true);
-		}
+		int successfullSwaps = 0, successfullSwaps0 = 0;
+//		for (HeatedMCMC chain:m_chains) {
+//			chain.startStateInput.get().setEverythingDirty(true);
+//		}
 		for (int sampleNr = 0; sampleNr < chainLength; sampleNr += resampleEvery) {
 			long startTime = System.currentTimeMillis();
 			
 			// start threads with individual chains here.
-			m_threads = new Thread[m_chains.length];
-			int k = 0;
-			for (final HeatedMCMC mcmc : m_chains) {
-				mcmc.setStateFile(stateFileName + "." +k, restoreFromFile);
-				m_threads[k] = new HeatedChainThread(k);
-				m_threads[k].start();
-				k++;
+			threads = new Thread[chains.length];
+			
+			for (int k = 0; k < chains.length; k++) {
+				threads[k] = new HeatedChainThread(k);
+				threads[k].start();
 			}
-	
+
 			// wait for the chains to finish
-	        m_nStartLogTime = System.currentTimeMillis();
-			for (Thread thread : m_threads) {
+	        startLogTime = System.currentTimeMillis();
+			for (Thread thread : threads) {
 				try {
 					thread.join();
 				} catch (InterruptedException e) {
@@ -152,38 +160,67 @@ public class MCMCMC extends MCMC {
 				}
 			}
 			
-			// resample state
-			int i = Randomizer.nextInt(m_chains.length);
-			int j = i;
-			while (i == j) {
-				j = Randomizer.nextInt(m_chains.length);
-			}
-			
-			double p1before = m_chains[i].getCurrentLogLikelihood();
-			double p2before = m_chains[j].getCurrentLogLikelihood();
-			swapStates(m_chains[i], m_chains[j]);
-			double p1after = m_chains[i].geCurrentLogLikelihoodRobustly();
-			double p2after = m_chains[j].geCurrentLogLikelihoodRobustly();
-			
-			if (p1before + p1after - p2before - p2after < Randomizer.nextDouble()) {
-				// swap fails
-				swapStates(m_chains[i], m_chains[j]);
-			} else {
-				System.err.println("\n\nSWAPPING " + i + " and " + j + "\n\n");
-				m_chains[i].reset(); 
-				m_chains[j].reset();
-			}
-			
-			// tuning
-			for (k = 1; k < m_chains.length; k++) {
-				m_chains[k].optimiseRunTime(startTime, finishTimes[k], finishTimes[0]);
+			if (chains.length > 1) {
+				// resample state
+				int i = Randomizer.nextInt(chains.length);
+				int j = i;
+				while (i == j) {
+					j = Randomizer.nextInt(chains.length);
+				}
+				if (i > j) {
+					int tmp = i; i = j; j = tmp;
+				}
+				
+				
+				double p1before = chains[i].getCurrentLogLikelihood();
+				double p2before = chains[j].getCurrentLogLikelihood();
+				swapStates(chains[i], chains[j]);
+				double p1after = chains[i].calcCurrentLogLikelihoodRobustly();
+				double p2after = chains[j].calcCurrentLogLikelihoodRobustly();
+				
+				double logAlpha = p1after - p1before + p2after - p2before;
+				System.err.println(successfullSwaps0 + " " + successfullSwaps + ": " + i + " <--> " + j + ": " + logAlpha);
+				if (Math.exp(logAlpha) < Randomizer.nextDouble()) {
+					// swap fails
+					//assignState(chains[i], chains[j]);
+					swapStates(chains[i], chains[j]);
+					chains[i].calcCurrentLogLikelihoodRobustly();
+					chains[j].calcCurrentLogLikelihoodRobustly();
+				} else {
+					successfullSwaps++;
+					if (i == 0) {
+						successfullSwaps0++;
+					}
+					System.err.print(i + " <--> " + j);
+					//assignState(chains[j], chains[i]);
+					//chains[j].calcCurrentLogLikelihoodRobustly();
+				}
+				
+				// tuning
+				for (int k = 1; k < chains.length; k++) {
+					chains[k].optimiseRunTime(startTime, finishTimes[k], finishTimes[0]);
+				}
 			}
 		}
 
+		System.err.println("#Successfull swaps = " + successfullSwaps);
+		System.err.println("#Successfull swaps with cold chain = " + successfullSwaps0);
 		// wait 5 seconds for the log to complete
 		Thread.sleep(5000);
 	} // run
 	
+	private void assignState(HeatedMCMC mcmc1, HeatedMCMC mcmc2) {
+		State state1 = mcmc1.startStateInput.get();
+		State state2 = mcmc2.startStateInput.get();
+		List<StateNode> stateNodes1 = state1.stateNodeInput.get();
+		List<StateNode> stateNodes2 = state2.stateNodeInput.get();
+		for (int i = 0; i < stateNodes1.size(); i++) {
+			StateNode stateNode1 = stateNodes1.get(i);
+			StateNode stateNode2 = stateNodes2.get(i);
+			stateNode1.assignFromWithoutID(stateNode2);
+		}
+	}
+
 	/* swaps the states of mcmc1 and mcmc2 */
 	void swapStates(MCMC mcmc1, MCMC mcmc2) {
 		State state1 = mcmc1.startStateInput.get();

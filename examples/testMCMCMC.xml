@@ -206,7 +206,7 @@ name="alignment">
         <log id="TreeHeight.t:anolis" spec="beast.evolution.tree.TreeHeightLogger" tree="@Tree.t:anolis"/>
         <log idref="ucldStdev.c:anolis"/>
         <log id="rate.c:anolis" spec="beast.evolution.branchratemodel.RateStatistic" branchratemodel="@RelaxedClock.c:anolis" tree="@Tree.t:anolis"/>
-        <log idref="BayesianSkyline.t:anolis"/>
+        <!--log idref="BayesianSkyline.t:anolis"/-->
         <log idref="bPopSizes.t:anolis"/>
         <log idref="bGroupSizes.t:anolis"/>
         <log idref="proportionInvariant.s:anolis"/>
