@@ -1,4 +1,4 @@
-<addon name='BEASTii' version='1.2.1'>
+<addon name='BEASTii' version='1.2.3'>
 	<depends on='beast2' atleast='2.2.0'/>
     <addonapp description="BEAST model spreadsheet"
               class="beast.app.draw.SpreadSheet"
