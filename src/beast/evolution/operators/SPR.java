@@ -27,6 +27,8 @@ public class SPR extends TreeOperator {
     public double proposal()  {
         Node grandfather, brother;
         double heightFather;
+        // TODO: handle markClades flag
+        final boolean  markClades = markCladesInput.get();
 
         final int nNodes = tree.getNodeCount();
         final Node root = tree.getRoot();

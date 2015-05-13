@@ -26,6 +26,9 @@ public class NNI extends TreeOperator {
     public double proposal() {
         final int nNodes = tree.getNodeCount();
         final Node root = tree.getRoot();
+        // TODO: handle markClades flag
+        final boolean  markClades = markCladesInput.get();
+
 
         Node i;
 
