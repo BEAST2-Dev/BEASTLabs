@@ -1,5 +1,7 @@
 package beast.evolution.operators;
 
+import java.util.List;
+
 import beast.core.Description;
 import beast.evolution.tree.Node;
 import beast.evolution.tree.Tree;
@@ -14,13 +16,14 @@ import beast.util.Randomizer;
  * Adapted from BEAST1 dr.evomodel.operators.FNPR by Sebastian Hoehna 
  */
 @Description("Subtree Prune Regraft move that attaches a subtree at the same height it got pruned from")
-public class SPR extends TreeOperator {
+public class SPR extends RestrictedSubtreeSlide {
 
     private Tree tree = null;
 
     @Override
-    public void initAndValidate() throws Exception {
+    public void initAndValidate() {
         tree = treeInput.get();
+        super.initAndValidate();
     }
     
     @Override
@@ -38,44 +41,53 @@ public class SPR extends TreeOperator {
         int MAX_TRIES = 1000;
 
         for (int tries = 0; tries < MAX_TRIES; ++tries) {
-           // get a random node whose father is not the root - otherwise
-           // the operation is not possible
-           do {
-              i = tree.getNode(Randomizer.nextInt(nNodes));
-           } while (root == i || i.getParent() == root);
+            // get a random node whose father is not the root - otherwise
+            // the operation is not possible
+			if (nrOfTaxa.length > 0) {
+				// we do not want to choose nodes that are constrained
+				List<Node> candidates = getCandidateNodes(tree);
+			
+				// get a random node where neither you or your father is the root
+				do {
+			        i = candidates.get(Randomizer.nextInt(candidates.size()));
+			    } while( root == i || i.getParent() == root );
+			} else {
+			    do {
+			      i = tree.getNode(Randomizer.nextInt(nNodes));
+			    } while( root == i || i.getParent() == root );
+			}
 
-           // int childIndex = (MathUtils.nextDouble() >= 0.5 ? 1 : 0);
-           // int otherChildIndex = 1 - childIndex;
-           // NodeRef iOtherChild = tree.getChild(i, otherChildIndex);
+            // int childIndex = (MathUtils.nextDouble() >= 0.5 ? 1 : 0);
+            // int otherChildIndex = 1 - childIndex;
+            // NodeRef iOtherChild = tree.getChild(i, otherChildIndex);
 
-           Node father = i.getParent();
-           grandfather = father.getParent();
-           brother = getOtherChild(father, i);
-           heightFather = father.getHeight();
+            Node father = i.getParent();
+            grandfather = father.getParent();
+            brother = getOtherChild(father, i);
+            heightFather = father.getHeight();
 
-           // NodeRef newChild = getRandomNode(possibleChilds, iFather);
-           Node newChild = tree.getNode(Randomizer.nextInt(nNodes));
+            // NodeRef newChild = getRandomNode(possibleChilds, iFather);
+            Node newChild = tree.getNode(Randomizer.nextInt(nNodes));
 
-           if (newChild.getHeight() < heightFather
+            if (newChild.getHeight() < heightFather
                  && root != newChild
                  && newChild.getParent().getHeight() > heightFather
                  && newChild != father
                  && newChild.getParent() != father) {
-              Node newGrandfather = newChild.getParent();
-
-
-              // Prune
-              father.removeChild(brother);
-              grandfather.removeChild(father);
-              grandfather.addChild(brother);
-
-              // Regraft
-              newGrandfather.removeChild(newChild);
-              father.addChild(newChild);
-              newGrandfather.addChild(father);
-
-              return 0.0;
-           }
+	            Node newGrandfather = newChild.getParent();
+	
+	
+	            // Prune
+	            father.removeChild(brother);
+	            grandfather.removeChild(father);
+	            grandfather.addChild(brother);
+	            // Regraft
+	            newGrandfather.removeChild(newChild);
+	            father.addChild(newChild);
+	            newGrandfather.addChild(father);
+	
+	            return 0.0;
+            }
         }
 
         // failed

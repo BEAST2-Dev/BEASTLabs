@@ -1,5 +1,7 @@
 package beast.evolution.operators;
 
+import java.util.List;
+
 import beast.core.Description;
 import beast.evolution.tree.Node;
 import beast.evolution.tree.Tree;
@@ -13,13 +15,14 @@ import beast.util.Randomizer;
  * Adapted from BEAST1 dr.evomodel.operators.NNI by Sebastian Hoehna 
  */
 @Description("Nearest Neighbor Interchange (NNI) operation")
-public class NNI extends TreeOperator {
+public class NNI extends RestrictedSubtreeSlide {
 
     private Tree tree = null;
 
     @Override
-    public void initAndValidate() throws Exception {
+    public void initAndValidate() {
         this.tree = treeInput.get();
+        super.initAndValidate();
     }
     
     @Override
@@ -31,11 +34,20 @@ public class NNI extends TreeOperator {
 
 
         Node i;
+        // 0. determine set of candidate nodes
+        if (nrOfTaxa.length > 0) {
+        	// we do not want to choose nodes that are constrained
+        	List<Node> candidates = getCandidateNodes(tree);
 
-        // get a random node where neither you or your father is the root
-        do {
-            i = tree.getNode(Randomizer.nextInt(nNodes));
-        } while( root == i || i.getParent() == root );
+	        // get a random node where neither you or your father is the root
+	        do {
+	            i = candidates.get(Randomizer.nextInt(candidates.size()));
+	        } while( root == i || i.getParent() == root );
+        } else {
+	        do {
+              i = tree.getNode(Randomizer.nextInt(nNodes));
+	        } while( root == i || i.getParent() == root );
+        }
 
         // get parent node
         final Node iParent = i.getParent();

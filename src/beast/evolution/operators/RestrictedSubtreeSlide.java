@@ -1,5 +1,6 @@
 package beast.evolution.operators;
 
+
 import java.util.*;
 
 import beast.core.Description;
@@ -18,6 +19,8 @@ public class RestrictedSubtreeSlide extends SubtreeSlide {
 
     public final Input<MultiMonophyleticConstraint> cladesSetInput = new Input<>("clades", "all clades encoded by one unresolved tree.", null,
             Input.Validate.OPTIONAL);
+    
+    public final Input<Boolean> topLevelOnlyInput = new Input<Boolean>("topLevelOnly", "use only constraints that are not nested", false); 
 
     // array of flags to indicate which taxa are in the set
     boolean[][] isInTaxaSet;
@@ -32,7 +35,27 @@ public class RestrictedSubtreeSlide extends SubtreeSlide {
 	        final List<String> sTaxaNames = new ArrayList<String>();
             Collections.addAll(sTaxaNames, tree.getTaxaNames());
 
-            final List<List<String>> constraints = cladesSetInput != null ? cladesSetInput.get().getConstraints() : null;
+            final List<List<String>> constraints = cladesSetInput.get() != null ? cladesSetInput.get().getConstraints() : null;
+            if (topLevelOnlyInput.get()) {
+            	// remove nested constraints
+            	for (int i = 0; i < constraints.size(); i++) {
+            		List<String> c1 = constraints.get(i);
+                	for (int j = 0; j < constraints.size(); j++) {
+                		if (i != j) {
+	                		List<String> c2 = constraints.get(j);
+	                		if (isNested(c1, c2)) {
+	                			c1.clear();
+	                		}
+                		}
+                	}            		
+            	}
+            	for (int i = constraints.size() - 1; i >= 0 ; i--) {
+            		if (constraints.get(i).size() == 0) {
+            			constraints.remove(i);
+            		}
+            	}            	
+            }
+            
 	        final int n = cladesInput.get().size() + (constraints != null ? constraints.size() : 0);
 
 	        isInTaxaSet = new boolean[n][];
@@ -91,6 +114,18 @@ public class RestrictedSubtreeSlide extends SubtreeSlide {
     		throw new RuntimeException(e.getMessage());
     	}
     }
+
+	private boolean isNested(List<String> c1, List<String> c2) {
+		if (c1.size() == 0 || c2.size() == 0) {
+			return false;
+		}
+		for (String c : c1) {
+			if (c2.indexOf(c) == -1) {
+				return false;
+			}
+		}
+		return true;
+	}
 
 	@Override
 	public double proposal() {
@@ -223,7 +258,7 @@ public class RestrictedSubtreeSlide extends SubtreeSlide {
 	}
 
 
-	private List<Node> getCandidateNodes(Tree tree) {
+	List<Node> getCandidateNodes(Tree tree) {
 		Set<Node> candidates = new HashSet<Node>();
 		for (int i = 0; i < nrOfTaxa.length; i++) {
 			calcPredecessorsOfClade(tree.getRoot(), new int[1], isInTaxaSet[i], nrOfTaxa[i], candidates);
