@@ -95,7 +95,8 @@ public class ConstrainedClusterTree extends Tree implements StateNodeInitialiser
      */
     Type nLinkType = Type.single;
 
-    List<BitSet> constraints;
+    List<boolean[]> constraints;
+    List<Integer> constraintsize;
     
     @Override
     public void initAndValidate() throws Exception {
@@ -113,20 +114,25 @@ public class ConstrainedClusterTree extends Tree implements StateNodeInitialiser
 
     	
     	int nrOfTaxa = taxaNames.size();
-    	constraints = new ArrayList<BitSet>();
+    	constraints = new ArrayList<boolean[]>();
+    	constraintsize = new ArrayList<Integer>();
     	
         for (MRCAPrior prior : calibrationsInput.get()) {
-            final BitSet bTaxa = new BitSet(nrOfTaxa);
+        	
+            final boolean [] bTaxa = new boolean[nrOfTaxa];
+            int size = 0;
 	        for (final String sTaxonID : taxaNames) {
 	            final int iID = taxaNames.indexOf(sTaxonID);
 	            if (iID < 0) {
 	                throw new Exception("Taxon <" + sTaxonID + "> could not be found in list of taxa. Choose one of " + taxaNames.toArray(new String[0]));
 	            }
-	            bTaxa.set(iID);
+	            bTaxa[iID] = true;
+	            size++;
 	        }
 	        if (prior.isMonophyleticInput.get()) {
 	            // add any monophyletic constraint
 	        	constraints.add(bTaxa);
+	        	constraintsize.add(size);
 	        }
         }
         // TODO: pick up constraints from calibrations on m_initial input
@@ -135,15 +141,16 @@ public class ConstrainedClusterTree extends Tree implements StateNodeInitialiser
         List<List<String>> allc = mul.getConstraints();
 
         for( List<String> c : allc ) {
-            final BitSet bTaxa = new BitSet(nrOfTaxa);
+            final boolean [] bTaxa = new boolean[nrOfTaxa];
             for( String sTaxonID : c ) {
 	            final int iID = taxaNames.indexOf(sTaxonID);
 	            if (iID < 0) {
 	                throw new Exception("Taxon <" + sTaxonID + "> could not be found in list of taxa. Choose one of " + taxaNames.toArray(new String[0]));
 	            }
-	            bTaxa.set(iID);
+	            bTaxa[iID] = true;
 	        }
         	constraints.add(bTaxa);
+        	constraintsize.add(c.size());
         }
 
         if (Boolean.valueOf(System.getProperty("beast.resume")) &&
@@ -611,15 +618,15 @@ public class ConstrainedClusterTree extends Tree implements StateNodeInitialiser
     } // doLinkClustering
 
     private boolean isCompatible(int i1, int i2, final List<Integer>[] nClusterID) {
-    	for (BitSet bits : constraints) {
-    		boolean value = bits.get(nClusterID[i1].get(0));
+    	for (boolean [] bits : constraints) {
+    		boolean value = bits[nClusterID[i1].get(0)];
     		for (int i: nClusterID[i1]) {
-    			if (value != bits.get(i)) {
+    			if (value != bits[i]) {
     				return false;
     			}
     		}
     		for (int i: nClusterID[i2]) {
-    			if (value != bits.get(i)) {
+    			if (value != bits[i]) {
     				return false;
     			}
     		}
@@ -630,17 +637,18 @@ public class ConstrainedClusterTree extends Tree implements StateNodeInitialiser
 
 	private void updateConstraints(List<Integer> nClusterIDs) {
 		for (int i = constraints.size() - 1; i >= 0 ; i--) {
-			BitSet bits = constraints.get(i);
-			if (bits.size() == nClusterIDs.size()) {
+			if (constraintsize.get(i) == nClusterIDs.size()) {
+				boolean [] bits = constraints.get(i);
 				boolean match = true;
 				for (int j : nClusterIDs) {
-					if (!bits.get(j)) {
+					if (!bits[j]) {
 						match = false;
 						break;
 					}
 				}
 				if (match) {
 					constraints.remove(i);
+					constraintsize.remove(i);
 				}
 			}
 		}
