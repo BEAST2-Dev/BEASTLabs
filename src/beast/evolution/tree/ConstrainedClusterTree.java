@@ -67,6 +67,7 @@ public class ConstrainedClusterTree extends Tree implements StateNodeInitialiser
     public Input<List<MRCAPrior>> calibrationsInput = new Input<List<MRCAPrior>>("constraint", "specifies (monophyletic or height distribution) constraints on internal nodes", new ArrayList<MRCAPrior>());
     public final Input<MultiMonophyleticConstraint> allConstraints = new Input<>("constraints",
             "all constraints as encoded by one unresolved tree.", Input.Validate.REQUIRED);
+    public final Input<Double> epsilonInput = new Input<Double>("minBranchLength", "lower bound on lengths used for creating branches", 1e-10);
 
     enum Type {single, average, complete, upgma, mean, centroid, ward, adjcomplete, neighborjoining, neighborjoining2}
 
@@ -100,7 +101,7 @@ public class ConstrainedClusterTree extends Tree implements StateNodeInitialiser
     
     @Override
     public void initAndValidate() throws Exception {
-
+    	EPSILON = epsilonInput.get();
         RealParameter clockRate = clockRateInput.get();
 
     	if (dataInput.get() != null) {
