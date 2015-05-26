@@ -30,9 +30,8 @@ import beast.core.Input;
 import beast.core.StateNode;
 import beast.core.StateNodeInitialiser;
 import beast.core.parameter.RealParameter;
+import beast.core.util.Log;
 import beast.evolution.alignment.Alignment;
-import beast.evolution.alignment.Taxon;
-import beast.evolution.alignment.TaxonSet;
 import beast.evolution.alignment.distance.Distance;
 import beast.evolution.alignment.distance.JukesCantorDistance;
 import beast.evolution.tree.Node;
@@ -450,7 +449,7 @@ public class ConstrainedClusterTree extends Tree implements StateNodeInitialiser
      */
     void neighborJoining(int nClusters, final List<Integer>[] nClusterID, final NodeX[] clusterNodes) {
         final int n = taxaNames.size();
-
+        Log.warning.print("ClusterTree: calc distances, ");
         final double[][] fDist = new double[nClusters][nClusters];
         for (int i = 0; i < nClusters; i++) {
             fDist[i][i] = 0;
@@ -544,8 +543,18 @@ public class ConstrainedClusterTree extends Tree implements StateNodeInitialiser
                 updateConstraints(nClusterID[iMin1]);
                 break;
             }
+            
+            // feedback on progress
+            if (nClusters % 100 == 0) {
+                if (nClusters % 1000 == 0) {
+                	Log.warning.print('|');
+                } else {
+                	Log.warning.print('.');
+                }
+            }
         }
 
+        Log.warning.print(" merge");
         for (int i = 0; i < n; i++) {
             if (nClusterID[i].size() > 0) {
                 for (int j = i + 1; j < n; j++) {
@@ -563,6 +572,7 @@ public class ConstrainedClusterTree extends Tree implements StateNodeInitialiser
                 }
             }
         }
+        Log.warning.println(" done.");
     } // neighborJoining
 
     /**

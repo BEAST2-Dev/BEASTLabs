@@ -137,7 +137,7 @@ public class MultiMonophyleticConstraint extends Distribution {
 			}
 			if (list.size() < tree.getLeafNodeCount()) {
 				taxonIDList.add(list);
-				Log.info.println("Constraining " + group);// + " " + Arrays.toString(list.toArray()));			
+				//Log.trace.println("Constraining " + group);// + " " + Arrays.toString(list.toArray()));			
 			}
 			newick = newick.replaceFirst("\\(([^\\(\\)]*)\\)", ",$1,");
 			newick = newick.replaceAll("([\\(,]),", "$1");
