@@ -71,7 +71,7 @@ public class PrunedAlignment extends Alignment {
               }
           }
 
-          if( sites != null ) {
+          if( sites.size() > 0 ) {
               for(int i = 0; i < taxaNames.size(); ++i) {
                   List<Integer> newCounts = new ArrayList<>();
                   List<Integer> c = counts.get(i);
@@ -86,7 +86,7 @@ public class PrunedAlignment extends Alignment {
           return;
       }
 
-      if( sites == null ) {
+      if( sites.size() > 0  ) {
           final int nSites = source.getSiteCount();
           sites = new ArrayList<Integer>(nSites);
           for (int k = 0; k < nSites; ++k) {
