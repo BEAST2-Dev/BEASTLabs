@@ -116,9 +116,21 @@ public class ConstrainedClusterTree extends Tree implements StateNodeInitialiser
     	int nrOfTaxa = taxaNames.size();
     	constraints = new ArrayList<boolean[]>();
     	constraintsize = new ArrayList<Integer>();
-    	
-        for (MRCAPrior prior : calibrationsInput.get()) {
-        	
+    	List<MRCAPrior> calibrations = new ArrayList<>();
+
+    	// collect all calibrations
+    	calibrations.addAll(calibrationsInput.get());
+
+        //  pick up constraints from calibrations on m_initial input
+        if (m_initial.get() != null) {
+            for (final Object plugin : m_initial.get().getOutputs()) {
+                if (plugin instanceof MRCAPrior && !calibrations.contains(plugin)) {
+                    calibrations.add((MRCAPrior) plugin);
+                }
+            }
+        }
+
+        for (MRCAPrior prior : calibrations) {
             final boolean [] bTaxa = new boolean[nrOfTaxa];
             int size = 0;
 	        for (final String sTaxonID : taxaNames) {
@@ -135,7 +147,8 @@ public class ConstrainedClusterTree extends Tree implements StateNodeInitialiser
 	        	constraintsize.add(size);
 	        }
         }
-        // TODO: pick up constraints from calibrations on m_initial input
+        
+        
         
         final MultiMonophyleticConstraint mul = allConstraints.get();
         List<List<String>> allc = mul.getConstraints();
@@ -584,6 +597,7 @@ public class ConstrainedClusterTree extends Tree implements StateNodeInitialiser
      * @param clusterNodes
      */
     void doLinkClustering(int nClusters, final List<Integer>[] nClusterID, final NodeX[] clusterNodes) {
+        Log.warning.print("Calculating distance");
         final int nInstances = taxaNames.size();
         final PriorityQueue<Tuple> queue = new PriorityQueue<Tuple>(nClusters * nClusters / 2, new TupleComparator());
         final double[][] fDistance0 = new double[nClusters][nClusters];
@@ -596,7 +610,16 @@ public class ConstrainedClusterTree extends Tree implements StateNodeInitialiser
                 	queue.add(new Tuple(fDistance0[i][j], i, j, 1, 1));
                 }
             }
+            // feedback on progress
+            if ((i+1) % 100 == 0) {
+                if ((i+1) % 1000 == 0) {
+                	Log.warning.print('|');
+                } else {
+                	Log.warning.print('.');
+                }
+            }
         }
+        Log.warning.print("\nClustering: ");
         while (nClusters > 1) {
             int iMin1 = -1;
             int iMin2 = -1;
@@ -625,7 +648,17 @@ public class ConstrainedClusterTree extends Tree implements StateNodeInitialiser
             }
 
             nClusters--;
+
+            // feedback on progress
+            if (nClusters % 100 == 0) {
+                if (nClusters % 1000 == 0) {
+                	Log.warning.print('|');
+                } else {
+                	Log.warning.print('.');
+                }
+            }
         }
+        Log.warning.println(" done.");
     } // doLinkClustering
 
     private boolean isCompatible(int i1, int i2, final List<Integer>[] nClusterID) {
