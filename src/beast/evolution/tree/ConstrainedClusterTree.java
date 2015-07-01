@@ -32,6 +32,7 @@ import beast.core.StateNodeInitialiser;
 import beast.core.parameter.RealParameter;
 import beast.core.util.Log;
 import beast.evolution.alignment.Alignment;
+import beast.evolution.alignment.TaxonSet;
 import beast.evolution.alignment.distance.Distance;
 import beast.evolution.alignment.distance.JukesCantorDistance;
 import beast.evolution.tree.Node;
@@ -132,8 +133,13 @@ public class ConstrainedClusterTree extends Tree implements StateNodeInitialiser
 
         for (MRCAPrior prior : calibrations) {
             final boolean [] bTaxa = new boolean[nrOfTaxa];
+            List<String> taxa = prior.taxonsetInput.get().asStringList();
+            if (taxa == null) {
+            	prior.taxonsetInput.get().initAndValidate();
+            	taxa = prior.taxonsetInput.get().asStringList();
+            }
             int size = 0;
-	        for (final String sTaxonID : taxaNames) {
+	        for (final String sTaxonID : taxa) {
 	            final int iID = taxaNames.indexOf(sTaxonID);
 	            if (iID < 0) {
 	                throw new Exception("Taxon <" + sTaxonID + "> could not be found in list of taxa. Choose one of " + taxaNames.toArray(new String[0]));
