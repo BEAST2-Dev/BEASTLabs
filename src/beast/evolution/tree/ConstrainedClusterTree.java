@@ -147,7 +147,7 @@ public class ConstrainedClusterTree extends Tree implements StateNodeInitialiser
 	            bTaxa[iID] = true;
 	            size++;
 	        }
-	        if (prior.isMonophyleticInput.get()) {
+	        if (prior.isMonophyleticInput.get() && size > 1) {
 	            // add any monophyletic constraint
 	        	constraints.add(bTaxa);
 	        	constraintsize.add(size);

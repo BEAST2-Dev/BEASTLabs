@@ -35,16 +35,17 @@ public class ConstrainedRandomTree extends RandomTree  {
 
         List<MRCAPrior> cons = new ArrayList<>();
         for( List<String> c : allc ) {
-            final MRCAPrior m = new MRCAPrior();
-            final List<Taxon> t = new ArrayList<>();
-            for( String s : c ) {
-                t.add(new Taxon(s));
+            if (c.size() > 1) {
+	            final MRCAPrior m = new MRCAPrior();
+	            final List<Taxon> t = new ArrayList<>();
+	            for( String s : c ) {
+	                t.add(new Taxon(s));
+	            }
+	            final TaxonSet ts = new TaxonSet();
+	            ts.initByName("taxon", t);
+	            m.initByName("tree", tree, "taxonset", ts, "monophyletic", true);
+	            cons.add(m);
             }
-            final TaxonSet ts = new TaxonSet();
-            ts.initByName("taxon", t);
-            m.initByName("tree", tree, "taxonset", ts, "monophyletic", true);
-
-            cons.add(m);
         }
 		return cons;
 	}
