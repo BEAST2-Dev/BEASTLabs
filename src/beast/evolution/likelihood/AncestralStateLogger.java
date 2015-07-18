@@ -19,10 +19,13 @@ import beast.util.Randomizer;
 public class AncestralStateLogger extends TreeLikelihood implements Loggable {
 	public Input<TaxonSet> taxonsetInput = new Input<>("taxonset", "set of taxa defining a clade. The MRCA node of the clade is logged", Validate.REQUIRED);
 	public Input<String> valueInput = new Input<>("value", "space delimited set of labels, one for each site in the alignment. Used as site label in the log file.");
+	public Input<Boolean> logParentInput = new Input<>("logParent", "flag to indicate the parent value should be logged", false);
 	
     // array of flags to indicate which taxa are in the set
     Set<String> isInTaxaSet = new LinkedHashSet<>();
     Node MRCA;
+	int [] parentSample;
+    boolean logParent;
     
     @Override
 	public void initAndValidate() throws Exception {
@@ -45,6 +48,11 @@ public class AncestralStateLogger extends TreeLikelihood implements Loggable {
                 throw new Exception("Taxon " + sTaxon + " is defined multiple times, while they should be unique");
             }
             isInTaxaSet.add(sTaxon);
+        }
+        
+        logParent = logParentInput.get();
+        if (logParent && taxaNames.size() == set.size()) {
+        	throw new RuntimeException("Cannot log parent of the root; either choose a different clade, or set logParent flag to false");
         }
 	}
 	
@@ -80,6 +88,9 @@ public class AncestralStateLogger extends TreeLikelihood implements Loggable {
 
             // generate output
 			for (int i = 0; i < sample.length; i++) {
+				if (logParent) {
+					out.append(parentSample[i] + "");
+				}
 				out.append(sample[i] + "\t");
 			}
 			
@@ -88,7 +99,6 @@ public class AncestralStateLogger extends TreeLikelihood implements Loggable {
 			e.printStackTrace();
 		}
 	}
-	
 	
 	/** traverse to the root
 	 * then, sample root values, and propagate back to the MRCA
@@ -117,7 +127,7 @@ public class AncestralStateLogger extends TreeLikelihood implements Loggable {
 			}
 			
 		} else {
-			int [] parentSample = sample(node.getParent());
+			parentSample = sample(node.getParent());
 			
 			double [] p = new double[stateCount];
 			double [] partials = new double[dataInput.get().getPatternCount() * stateCount * m_siteModel.getCategoryCount()];
