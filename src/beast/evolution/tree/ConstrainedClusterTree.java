@@ -32,13 +32,13 @@ import beast.core.StateNodeInitialiser;
 import beast.core.parameter.RealParameter;
 import beast.core.util.Log;
 import beast.evolution.alignment.Alignment;
-import beast.evolution.alignment.TaxonSet;
 import beast.evolution.alignment.distance.Distance;
 import beast.evolution.alignment.distance.JukesCantorDistance;
 import beast.evolution.tree.Node;
 import beast.evolution.tree.Tree;
 import beast.math.distributions.MRCAPrior;
 import beast.math.distributions.MultiMonophyleticConstraint;
+import beast.math.distributions.ParametricDistribution;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -99,6 +99,7 @@ public class ConstrainedClusterTree extends Tree implements StateNodeInitialiser
     List<boolean[]> constraints;
     List<Integer> constraintsize;
     
+    
     @Override
     public void initAndValidate() throws Exception {
     	EPSILON = epsilonInput.get();
@@ -153,8 +154,6 @@ public class ConstrainedClusterTree extends Tree implements StateNodeInitialiser
 	        	constraintsize.add(size);
 	        }
         }
-        
-        
         
         final MultiMonophyleticConstraint mul = allConstraints.get();
         List<List<String>> allc = mul.getConstraints();
@@ -252,12 +251,129 @@ public class ConstrainedClusterTree extends Tree implements StateNodeInitialiser
             double height = node.getHeight();
             node.setHeight(height/clockRate.getValue());
         }
+        
+        
+        
+        Map<Node, MRCAPrior> nodeToBoundMap = new HashMap<>();
+        // calculate nodeToBoundMap
+        findConstrainedNodes(calibrations, nodeToBoundMap);
+        if (nodeToBoundMap.size() > 0) {
+        	// adjust node heights to MRCAPriors
+        	handlebounds(getRoot(), nodeToBoundMap);
+        }
 
         initStateNodes();
     }
+    
+
+    /** calculate nodeToBoundMap; for every MRCAPrior, a node will be added to the map **/
+    void findConstrainedNodes(List<MRCAPrior> calibrations, Map<Node, MRCAPrior> nodeToBoundMap) throws Exception {
+    	for (MRCAPrior calibration : calibrations) {
+    		int nrOfTaxa = calibration.taxonsetInput.get().getTaxonCount();
+    		findConstrainedNode(calibration, calibration.taxonsetInput.get().asStringList(),
+    				nodeToBoundMap, getRoot(),new int[1], nrOfTaxa);
+    	}
+    }
+
+    /** process a specific MRCAPrior for the nodeToBoundMap **/
+    int findConstrainedNode(MRCAPrior calibration, List<String> taxa,
+    		Map<Node, MRCAPrior> nodeToBoundMap,
+    		final Node node, final int[] nTaxonCount, int nrOfTaxa) {
+        if (node.isLeaf()) {
+            nTaxonCount[0]++;
+            
+            if (taxa.contains(node.getID())) {
+                return 1;
+            } else {
+                return 0;
+            }
+        } else {
+            int taxonCount = findConstrainedNode(calibration, taxa, nodeToBoundMap, node.getLeft(), nTaxonCount, nrOfTaxa);
+            final int nLeftTaxa = nTaxonCount[0];
+            nTaxonCount[0] = 0;
+            if (node.getRight() != null) {
+                taxonCount += findConstrainedNode(calibration, taxa, nodeToBoundMap, node.getRight(), nTaxonCount, nrOfTaxa);
+                final int nRightTaxa = nTaxonCount[0];
+                nTaxonCount[0] = nLeftTaxa + nRightTaxa;
+                if (taxonCount == nrOfTaxa) {
+                	if (nrOfTaxa == 1 && calibration.useOriginateInput.get()) {
+                		nodeToBoundMap.put(node, calibration);
+                        return taxonCount + 1;
+                	}
+                    // we are at the MRCA, so record the height
+                	if (calibration.useOriginateInput.get()) {
+                		Node parent = node.getParent();
+                		if (parent != null) {
+                    		nodeToBoundMap.put(parent, calibration);
+                		}
+                	} else {
+                		nodeToBoundMap.put(node, calibration);
+                	}
+                    return taxonCount + 1;
+                }
+            }
+            return taxonCount;
+        }
+    }
 
 
-    public ConstrainedClusterTree() {
+    /** go through MRCAPriors
+     * Since we can easily scale a clade, start with the highest MRCAPrior, then process the nested ones **/
+    private void handlebounds(Node node, Map<Node, MRCAPrior> nodeToBoundMap) throws Exception {
+    	if (!node.isLeaf()) {
+    		if (nodeToBoundMap.containsKey(node)) {
+    			MRCAPrior calibration = nodeToBoundMap.get(node);
+        		if (calibration.distInput.get() != null) {
+        			ParametricDistribution distr = calibration.distInput.get();
+        			distr.initAndValidate();
+                    double lower = distr.inverseCumulativeProbability(0.0) + distr.offsetInput.get();
+                    double upper = distr.inverseCumulativeProbability(1.0) + distr.offsetInput.get();
+    					
+    			
+    			
+    			// make sure the timing fits the constraint
+    			double height = node.getHeight();
+    			double newHeight = Double.NEGATIVE_INFINITY;
+    			if (height < lower) {
+    				if (Double.isFinite(upper)) {
+    					newHeight = (lower + upper)/2.0;
+    				} else {
+    					newHeight = lower;
+    				}
+    			}
+    			if (height > upper) {
+    				if (Double.isFinite(lower)) {
+    					newHeight = (lower + upper)/2.0;
+    				} else {
+    					newHeight = upper;
+    				}
+    			}
+    			if (Double.isFinite(newHeight)) {
+    				double scale = newHeight / height;
+    				
+    				// scale clade
+    				node.scale(scale);
+    				
+    				// adjust parents if necessary
+    				Node node2 = node;
+    				Node parent = node2.getParent();
+    				while (parent != null && parent.getHeight() < node2.getHeight()) {
+    					parent.setHeight(node2.getHeight() + EPSILON);
+    					node2 = node2.getParent(); 
+    					parent = node2.getParent();
+    				}
+    			}
+    			
+    		}
+    		}
+    		for (Node child : node.getChildren()) {
+    			handlebounds(child, nodeToBoundMap);
+    		}
+    	}
+	}
+
+
+	public ConstrainedClusterTree() {
     } // c'tor
 
 
@@ -368,6 +484,7 @@ public class ConstrainedClusterTree extends Tree implements StateNodeInitialiser
             node.getLeft().setParent(node);
             return node;
         }
+        
     } // class NodeX
 
     /**
@@ -705,7 +822,7 @@ public class ConstrainedClusterTree extends Tree implements StateNodeInitialiser
 	}
 
 
-	void merge(int iMin1, int iMin2, double fDist1, double fDist2, final List<Integer>[] nClusterID, final NodeX[] clusterNodes) {
+	NodeX merge(int iMin1, int iMin2, double fDist1, double fDist2, final List<Integer>[] nClusterID, final NodeX[] clusterNodes) {
         if (iMin1 > iMin2) {
             final int h = iMin1;
             iMin1 = iMin2;
@@ -738,6 +855,7 @@ public class ConstrainedClusterTree extends Tree implements StateNodeInitialiser
             node.setHeight(fDist1, fDist2);
         }
         clusterNodes[iMin1] = node;
+        return node;
     } // merge
 
     /**
