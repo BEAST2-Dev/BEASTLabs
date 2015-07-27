@@ -144,15 +144,47 @@ public class AncestralStateLogger extends TreeLikelihood implements Loggable {
 				likelihoodCore.getNodeMatrix(node.getNr(), 0, probabilities);
 			}
 
-            for (int j = 0; j < sample.length; j++) {
-                int parentIndex = parentSample[j] * stateCount;
-                int childIndex = dataInput.get().getPatternIndex(j) * stateCount;
-
-                for (int i = 0; i < stateCount; i++) {
-                    p[i] = partials[childIndex + i] * probabilities[parentIndex + i];
-                }
-
-				sample[j] = Randomizer.randomChoicePDF(p);
+			if (node.isLeaf() && !m_useAmbiguities.get()) {
+				// leaf node values come mainly from the states.
+				// only ambiguous sites are sampled
+				
+				int [] states = new int [stateCount];
+				if (beagle != null) {
+					throw new RuntimeException("BEAGLE is not supported yet");
+					// beagle.beagle.getPartials(arg0, arg1, arg2);
+	        		// getTransitionMatrix(nodeNum, probabilities);
+				} else {
+					likelihoodCore.getNodeStates(node.getNr(), states);
+				}
+				
+	            for (int j = 0; j < sample.length; j++) {
+	            	if (states[j] >= 0 && states[j] < stateCount) {
+	            		// copy state, if it is not ambiguous
+	            		sample[j] = states[j];
+	            	} else {
+	    				// only sample ambiguous sites
+		                int parentIndex = parentSample[j] * stateCount;
+		                int childIndex = dataInput.get().getPatternIndex(j) * stateCount;
+		
+		                for (int i = 0; i < stateCount; i++) {
+		                    p[i] = partials[childIndex + i] * probabilities[parentIndex + i];
+		                }
+		
+						sample[j] = Randomizer.randomChoicePDF(p);
+	            	}
+	            }				
+			} else {
+				// sample using transition matrix and parent states
+	            for (int j = 0; j < sample.length; j++) {
+	                int parentIndex = parentSample[j] * stateCount;
+	                int childIndex = dataInput.get().getPatternIndex(j) * stateCount;
+	
+	                for (int i = 0; i < stateCount; i++) {
+	                    p[i] = partials[childIndex + i] * probabilities[parentIndex + i];
+	                }
+	
+					sample[j] = Randomizer.randomChoicePDF(p);
+	            }
             }
 		}
 		return sample;
@@ -168,6 +200,10 @@ public class AncestralStateLogger extends TreeLikelihood implements Loggable {
         if (node.isLeaf()) {
             nTaxonCount[0]++;
             if (isInTaxaSet.contains(node.getID())) {
+                if (isInTaxaSet.size() == 1) {
+                	MRCA = node;
+                    return 2;
+                }
                 return 1;
             } else {
                 return 0;
