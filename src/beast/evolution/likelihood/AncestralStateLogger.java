@@ -140,29 +140,39 @@ public class AncestralStateLogger extends TreeLikelihood implements Loggable {
 				// beagle.beagle.getPartials(arg0, arg1, arg2);
         		// getTransitionMatrix(nodeNum, probabilities);
 			} else {
-				likelihoodCore.getNodePartials(node.getNr(), partials);
 				likelihoodCore.getNodeMatrix(node.getNr(), 0, probabilities);
 			}
 
-			if (node.isLeaf() && !m_useAmbiguities.get()) {
-				// leaf node values come mainly from the states.
-				// only ambiguous sites are sampled
-				
-				int [] states = new int [stateCount];
-				if (beagle != null) {
-					throw new RuntimeException("BEAGLE is not supported yet");
-					// beagle.beagle.getPartials(arg0, arg1, arg2);
-	        		// getTransitionMatrix(nodeNum, probabilities);
+			if (node.isLeaf()) { 
+				if (!m_useAmbiguities.get()) {
+					// leaf node values come mainly from the states.
+					// only ambiguous sites are sampled
+					
+					int [] states = new int [dataInput.get().getPatternCount() * m_siteModel.getCategoryCount()];
+					if (beagle != null) {
+						throw new RuntimeException("BEAGLE is not supported yet");
+						// beagle.beagle.getPartials(arg0, arg1, arg2);
+		        		// getTransitionMatrix(nodeNum, probabilities);
+					} else {
+						likelihoodCore.getNodeStates(node.getNr(), states);
+					}
+					
+		            for (int j = 0; j < sample.length; j++) {
+		            	int childIndex = dataInput.get().getPatternIndex(j);
+		            	if (states[childIndex] >= 0 && states[childIndex] < stateCount) {
+		            		// copy state, if it is not ambiguous
+		            		sample[j] = states[childIndex];
+		            	} else {
+		            		sample[j] = -1;
+		            	}
+		            }
 				} else {
-					likelihoodCore.getNodeStates(node.getNr(), states);
-				}
-				
-	            for (int j = 0; j < sample.length; j++) {
-	            	if (states[j] >= 0 && states[j] < stateCount) {
-	            		// copy state, if it is not ambiguous
-	            		sample[j] = states[j];
-	            	} else {
-	    				// only sample ambiguous sites
+					// useAmbiguities == true
+					// sample conditioned on child partials
+					likelihoodCore.getNodePartials(node.getNr(), partials);
+
+					// sample using transition matrix and parent states
+		            for (int j = 0; j < sample.length; j++) {
 		                int parentIndex = parentSample[j] * stateCount;
 		                int childIndex = dataInput.get().getPatternIndex(j) * stateCount;
 		
@@ -171,9 +181,11 @@ public class AncestralStateLogger extends TreeLikelihood implements Loggable {
 		                }
 		
 						sample[j] = Randomizer.randomChoicePDF(p);
-	            	}
-	            }				
+		            }
+				}
 			} else {
+				likelihoodCore.getNodePartials(node.getNr(), partials);
+
 				// sample using transition matrix and parent states
 	            for (int j = 0; j < sample.length; j++) {
 	                int parentIndex = parentSample[j] * stateCount;

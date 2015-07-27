@@ -203,7 +203,7 @@ filter="::">
         <log idref="bPopSizes.t:ringe"/>
         <log idref="bGroupSizes.t:ringe"/>
     </logger>
-    
+
     <logger id="ancestral state" fileName="ringe_proto_germanic.log" logEvery="1000">
         <log id="AncestralStateLogger" spec="AncestralStateLogger" data="@bin.ringe" branchRateModel="@RelaxedClock.c:ringe" tree="@Tree.t:ringe" siteModel="@SiteModel.s:ringe">
             <taxonset spec='TaxonSet' id="ProtoGermanic">
@@ -216,6 +216,15 @@ filter="::">
         </log>
     </logger>
 
+    <logger id="ancestral state2" fileName="ringe_latin.log" logEvery="1000">
+        <log id="AncestralStateLogger2" spec="AncestralStateLogger" logParent="true" data="@bin.ringe" branchRateModel="@RelaxedClock.c:ringe" tree="@Tree.t:ringe" siteModel="@SiteModel.s:ringe">
+	    <taxonset id="Latin.clade" spec="TaxonSet">
+		<taxon id="latin" spec="Taxon"/>
+	    </taxonset>
+        </log>
+    </logger>
+    
+    
     <logger id="screenlog" logEvery="1000">
         <log idref="posterior"/>
         <log id="ESS.0" spec="util.ESS" arg="@posterior"/>
@@ -228,5 +237,6 @@ filter="::">
     </logger>
 
 </run>
+
 
 </beast>
