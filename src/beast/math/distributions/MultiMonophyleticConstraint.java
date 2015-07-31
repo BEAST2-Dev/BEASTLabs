@@ -41,7 +41,7 @@ public class MultiMonophyleticConstraint extends Distribution {
     public void initAndValidate() throws Exception {
         taxonIDList = new ArrayList<List<Integer>>();
         tree = treeInput.get();
-        taxaList = tree.getTaxaNames();
+        taxaList = tree.getTaxonset().asStringList().toArray(new String[]{});
 
         parse(newickInput.get());
 

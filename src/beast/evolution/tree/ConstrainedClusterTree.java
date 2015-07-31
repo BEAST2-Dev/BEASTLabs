@@ -115,61 +115,13 @@ public class ConstrainedClusterTree extends Tree implements StateNodeInitialiser
     	}
 
     	
-    	int nrOfTaxa = taxaNames.size();
     	constraints = new ArrayList<boolean[]>();
     	constraintsize = new ArrayList<Integer>();
-    	List<MRCAPrior> calibrations = new ArrayList<>();
-
-    	// collect all calibrations
-    	calibrations.addAll(calibrationsInput.get());
-
-        //  pick up constraints from calibrations on m_initial input
-        if (m_initial.get() != null) {
-            for (final Object plugin : m_initial.get().getOutputs()) {
-                if (plugin instanceof MRCAPrior && !calibrations.contains(plugin)) {
-                    calibrations.add((MRCAPrior) plugin);
-                }
-            }
-        }
-
-        for (MRCAPrior prior : calibrations) {
-            final boolean [] bTaxa = new boolean[nrOfTaxa];
-            List<String> taxa = prior.taxonsetInput.get().asStringList();
-            if (taxa == null) {
-            	prior.taxonsetInput.get().initAndValidate();
-            	taxa = prior.taxonsetInput.get().asStringList();
-            }
-            int size = 0;
-	        for (final String sTaxonID : taxa) {
-	            final int iID = taxaNames.indexOf(sTaxonID);
-	            if (iID < 0) {
-	                throw new Exception("Taxon <" + sTaxonID + "> could not be found in list of taxa. Choose one of " + taxaNames.toArray(new String[0]));
-	            }
-	            bTaxa[iID] = true;
-	            size++;
-	        }
-	        if (prior.isMonophyleticInput.get() && size > 1) {
-	            // add any monophyletic constraint
-	        	constraints.add(bTaxa);
-	        	constraintsize.add(size);
-	        }
-        }
-        
-        final MultiMonophyleticConstraint mul = allConstraints.get();
-        List<List<String>> allc = mul.getConstraints();
-
-        for( List<String> c : allc ) {
-            final boolean [] bTaxa = new boolean[nrOfTaxa];
-            for( String sTaxonID : c ) {
-	            final int iID = taxaNames.indexOf(sTaxonID);
-	            if (iID < 0) {
-	                throw new Exception("Taxon <" + sTaxonID + "> could not be found in list of taxa. Choose one of " + taxaNames.toArray(new String[0]));
-	            }
-	            bTaxa[iID] = true;
-	        }
-        	constraints.add(bTaxa);
-        	constraintsize.add(c.size());
-        }
+    	
+    	List<MRCAPrior> calibrations  = 
+    			collectCalibrations(taxaNames, 
+    			m_initial.get(), allConstraints.get(), calibrationsInput.get(), constraints, constraintsize);
+    	
 
         if (Boolean.valueOf(System.getProperty("beast.resume")) &&
                 (isEstimatedInput.get() || (m_initial.get() != null && m_initial.get().isEstimatedInput.get()))) {
@@ -266,7 +218,81 @@ public class ConstrainedClusterTree extends Tree implements StateNodeInitialiser
     }
     
 
-    /** calculate nodeToBoundMap; for every MRCAPrior, a node will be added to the map **/
+    /**
+     * Collect all monophyletic constraints, through MRCAPRiors, MultiMonoPhyleticConstraints and MRCAPrior outputs of a Tree
+     * 
+     * @param taxaNames list of taxa names to use
+     * @param tree (optional) if present, output MRCAPriors are collected as well
+     * @param multiMonophyleticConstraint
+     * @param MRCAPriors
+     * @param constraints returns constraints encoded as boolean arrays
+     * @param constraintsize returns constraint sizes corresponding to 'constraints' array
+     * @return list of MRCAPriors so time calibrations can be taken care of
+     * @throws Exception when taxa in constraint cannot be found in taxaNames  
+     */
+    public static List<MRCAPrior> collectCalibrations(List<String> taxaNames, Tree tree,
+			MultiMonophyleticConstraint multiMonophyleticConstraint, List<MRCAPrior> MRCAPriors, 
+			List<boolean[]> constraints, List<Integer> constraintsize) throws Exception {
+    	List<MRCAPrior> calibrations = new ArrayList<>();
+
+    	int nrOfTaxa = taxaNames.size();
+
+    	// collect all calibrations
+    	calibrations.addAll(MRCAPriors);
+
+        //  pick up constraints from calibrations on m_initial input
+        if (tree != null) {
+            for (final Object plugin : tree.getOutputs()) {
+                if (plugin instanceof MRCAPrior && !calibrations.contains(plugin)) {
+                    calibrations.add((MRCAPrior) plugin);
+                }
+            }
+        }
+
+        for (MRCAPrior prior : calibrations) {
+            final boolean [] bTaxa = new boolean[nrOfTaxa];
+            List<String> taxa = prior.taxonsetInput.get().asStringList();
+            if (taxa == null) {
+            	prior.taxonsetInput.get().initAndValidate();
+            	taxa = prior.taxonsetInput.get().asStringList();
+            }
+            int size = 0;
+	        for (final String sTaxonID : taxa) {
+	            final int iID = taxaNames.indexOf(sTaxonID);
+	            if (iID < 0) {
+	                throw new Exception("Taxon <" + sTaxonID + "> could not be found in list of taxa. Choose one of " + taxaNames.toArray(new String[0]));
+	            }
+	            bTaxa[iID] = true;
+	            size++;
+	        }
+	        if (prior.isMonophyleticInput.get() && size > 1) {
+	            // add any monophyletic constraint
+	        	constraints.add(bTaxa);
+	        	constraintsize.add(size);
+	        }
+        }
+        
+        final MultiMonophyleticConstraint mul = multiMonophyleticConstraint;
+        List<List<String>> allc = mul.getConstraints();
+
+        for( List<String> c : allc ) {
+            final boolean [] bTaxa = new boolean[nrOfTaxa];
+            for( String sTaxonID : c ) {
+	            final int iID = taxaNames.indexOf(sTaxonID);
+	            if (iID < 0) {
+	                throw new Exception("Taxon <" + sTaxonID + "> could not be found in list of taxa. Choose one of " + taxaNames.toArray(new String[0]));
+	            }
+	            bTaxa[iID] = true;
+	        }
+        	constraints.add(bTaxa);
+        	constraintsize.add(c.size());
+        }
+        
+        return calibrations;
+	}
+
+
+	/** calculate nodeToBoundMap; for every MRCAPrior, a node will be added to the map **/
     void findConstrainedNodes(List<MRCAPrior> calibrations, Map<Node, MRCAPrior> nodeToBoundMap) throws Exception {
     	for (MRCAPrior calibration : calibrations) {
     		int nrOfTaxa = calibration.taxonsetInput.get().getTaxonCount();
