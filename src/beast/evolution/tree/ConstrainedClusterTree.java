@@ -72,6 +72,7 @@ public class ConstrainedClusterTree extends Tree implements StateNodeInitialiser
     enum Type {single, average, complete, upgma, mean, centroid, ward, adjcomplete, neighborjoining, neighborjoining2}
 
 
+    //  minimum branch length
     double EPSILON = 1e-10;
 
     public Input<Type> clusterTypeInput = new Input<Type>("clusterType", "type of clustering algorithm used for generating initial beast.tree. " +
@@ -208,10 +209,10 @@ public class ConstrainedClusterTree extends Tree implements StateNodeInitialiser
         
         Map<Node, MRCAPrior> nodeToBoundMap = new HashMap<>();
         // calculate nodeToBoundMap
-        findConstrainedNodes(calibrations, nodeToBoundMap);
+        findConstrainedNodes(calibrations, getRoot(), nodeToBoundMap);
         if (nodeToBoundMap.size() > 0) {
         	// adjust node heights to MRCAPriors
-        	handlebounds(getRoot(), nodeToBoundMap);
+        	handlebounds(getRoot(), nodeToBoundMap, EPSILON);
         }
 
         initStateNodes();
@@ -293,16 +294,16 @@ public class ConstrainedClusterTree extends Tree implements StateNodeInitialiser
 
 
 	/** calculate nodeToBoundMap; for every MRCAPrior, a node will be added to the map **/
-    void findConstrainedNodes(List<MRCAPrior> calibrations, Map<Node, MRCAPrior> nodeToBoundMap) throws Exception {
+    static public void findConstrainedNodes(List<MRCAPrior> calibrations, Node root, Map<Node, MRCAPrior> nodeToBoundMap) throws Exception {
     	for (MRCAPrior calibration : calibrations) {
     		int nrOfTaxa = calibration.taxonsetInput.get().getTaxonCount();
     		findConstrainedNode(calibration, calibration.taxonsetInput.get().asStringList(),
-    				nodeToBoundMap, getRoot(),new int[1], nrOfTaxa);
+    				nodeToBoundMap, root,new int[1], nrOfTaxa);
     	}
     }
 
     /** process a specific MRCAPrior for the nodeToBoundMap **/
-    int findConstrainedNode(MRCAPrior calibration, List<String> taxa,
+    static int findConstrainedNode(MRCAPrior calibration, List<String> taxa,
     		Map<Node, MRCAPrior> nodeToBoundMap,
     		final Node node, final int[] nTaxonCount, int nrOfTaxa) {
         if (node.isLeaf()) {
@@ -345,7 +346,7 @@ public class ConstrainedClusterTree extends Tree implements StateNodeInitialiser
 
     /** go through MRCAPriors
      * Since we can easily scale a clade, start with the highest MRCAPrior, then process the nested ones **/
-    private void handlebounds(Node node, Map<Node, MRCAPrior> nodeToBoundMap) throws Exception {
+    static public void handlebounds(Node node, Map<Node, MRCAPrior> nodeToBoundMap, double EPSILON) throws Exception {
     	if (!node.isLeaf()) {
     		if (nodeToBoundMap.containsKey(node)) {
     			MRCAPrior calibration = nodeToBoundMap.get(node);
@@ -393,7 +394,7 @@ public class ConstrainedClusterTree extends Tree implements StateNodeInitialiser
     		}
     		}
     		for (Node child : node.getChildren()) {
-    			handlebounds(child, nodeToBoundMap);
+    			handlebounds(child, nodeToBoundMap, EPSILON);
     		}
     	}
 	}

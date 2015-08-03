@@ -20,6 +20,8 @@ public class MultiMonophyleticConstraint extends Distribution {
     public final Input<String> newickInput = new Input<String>("newick", "the tree constraints specified as newick tree using polytopes, "
 	    		+ "e.g. ((human,chimp,bonobo),gorilla) specifies two monophyletic constraints,"
 	    		+ "one for human,chimp,bonobo' and one for 'human,chimp,bonobo,gorilla'", Validate.REQUIRED);
+    
+    public final Input<Boolean> isBinaryInput = new Input<>("isBinary", "flag to indicate tree is a binary tree instead of a polytopy (faster)", true);
 
     
     /** Constraints are encoded as a list of taxon numbers for each constraint
@@ -158,7 +160,7 @@ public class MultiMonophyleticConstraint extends Distribution {
 
 	@Override
     public double calculateLogP() throws Exception {
-        final boolean mono1 = isMonoJH();
+        final boolean mono1 = isBinaryInput.get() ? isMonoJH() : isMonoJHNonBinary();
         if( false ) assert mono1 == isMonoRB();   // assert is expensive. isMonoJH replaces the much slower isMonoRB
 
         logP = mono1 ? 0 : Double.NEGATIVE_INFINITY;
@@ -266,6 +268,59 @@ public class MultiMonophyleticConstraint extends Distribution {
                     }
                 }
             }
+        }
+        return true;
+    }
+    private boolean isMonoJHNonBinary() {
+        // this traversal is shared between all calling code in current cycle.
+        Node[] post = tree.listNodesPostOrder(null, null);
+        final int nNodes = post.length;
+        // per tree node, number of taxa in current monophyletic clade
+        int nodeCladeSize[] = new int[nNodes];
+        // per tree node, clade index (or assignment) of taxa in this sub tree.
+        int[] nodeClade = new int[nNodes];
+
+        for (final Node n : post) {
+        	if (n != null) {
+	            final int nr = n.getNr();
+	            if( n.isLeaf() ) {
+	                nodeClade[nr] = leafCladeAssignments[nr];
+	                if( nodeClade[nr] >= 0 ) {
+	                    nodeCladeSize[nr] = 1;
+	                    // a leaf in a clade of its own is ipso facto completed.
+	                    if( cladeSize[nodeClade[nr]] == 1 ) {
+	                        nodeClade[nr] = cladeParent[nodeClade[nr]];
+	                    }
+	                }
+	            } else {
+	                final int lnr = n.getLeft().getNr();
+	                final int l = nodeClade[lnr];
+	                if (l != -1) {
+	                	nodeCladeSize[nr] = nodeCladeSize[lnr];
+	                }
+	                for (int i = 1; i < n.getChildCount(); i++) {
+		                final int rnr = n.getChild(i).getNr();
+		                final int r = nodeClade[rnr];
+		
+		                if( l != r ) {
+		                    // A node with mixed taxa (from two mono clades or one clade and free taxa)
+		                    return false;
+		                }
+		
+		                nodeClade[nr] = l;
+		
+		                if( l != -1 ) {
+		                	nodeCladeSize[nr] += nodeCladeSize[rnr];
+		                }
+	                }
+	                if (l != -1 ) {
+		                if (nodeCladeSize[nr] == cladeSize[l] ) {
+		                    // clade root: set its assignment to parent, if any.
+		                    nodeClade[nr] = cladeParent[l];
+		                }
+	                }
+	            }
+        	}
         }
         return true;
     }
