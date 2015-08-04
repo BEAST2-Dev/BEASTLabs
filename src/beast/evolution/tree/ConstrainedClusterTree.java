@@ -316,29 +316,52 @@ public class ConstrainedClusterTree extends Tree implements StateNodeInitialiser
             }
         } else {
             int taxonCount = findConstrainedNode(calibration, taxa, nodeToBoundMap, node.getLeft(), nTaxonCount, nrOfTaxa);
-            final int nLeftTaxa = nTaxonCount[0];
+            int nMatchingTaxa = nTaxonCount[0];
             nTaxonCount[0] = 0;
-            if (node.getRight() != null) {
-                taxonCount += findConstrainedNode(calibration, taxa, nodeToBoundMap, node.getRight(), nTaxonCount, nrOfTaxa);
-                final int nRightTaxa = nTaxonCount[0];
-                nTaxonCount[0] = nLeftTaxa + nRightTaxa;
-                if (taxonCount == nrOfTaxa) {
-                	if (nrOfTaxa == 1 && calibration.useOriginateInput.get()) {
-                		nodeToBoundMap.put(node, calibration);
-                        return taxonCount + 1;
-                	}
-                    // we are at the MRCA, so record the height
-                	if (calibration.useOriginateInput.get()) {
-                		Node parent = node.getParent();
-                		if (parent != null) {
-                    		nodeToBoundMap.put(parent, calibration);
-                		}
-                	} else {
-                		nodeToBoundMap.put(node, calibration);
-                	}
-                    return taxonCount + 1;
-                }
+            for (int i = 1; i < node.getChildCount(); i++) {
+            	Node child = node.getChild(i);
+                taxonCount += findConstrainedNode(calibration, taxa, nodeToBoundMap, child, nTaxonCount, nrOfTaxa);
+                nMatchingTaxa += nTaxonCount[0];
             }
+            nTaxonCount[0] = nMatchingTaxa;
+            if (taxonCount == nrOfTaxa) {
+            	if (nrOfTaxa == 1 && calibration.useOriginateInput.get()) {
+            		nodeToBoundMap.put(node, calibration);
+                    return taxonCount + 1;
+            	}
+                // we are at the MRCA, so record the height
+            	if (calibration.useOriginateInput.get()) {
+            		Node parent = node.getParent();
+            		if (parent != null) {
+                		nodeToBoundMap.put(parent, calibration);
+            		}
+            	} else {
+            		nodeToBoundMap.put(node, calibration);
+            	}
+                return taxonCount + 1;
+            }
+            	
+//            if (node.getRight() != null) {
+//                taxonCount += findConstrainedNode(calibration, taxa, nodeToBoundMap, node.getRight(), nTaxonCount, nrOfTaxa);
+//                final int nRightTaxa = nTaxonCount[0];
+//                nTaxonCount[0] = nLeftTaxa + nRightTaxa;
+//                if (taxonCount == nrOfTaxa) {
+//                	if (nrOfTaxa == 1 && calibration.useOriginateInput.get()) {
+//                		nodeToBoundMap.put(node, calibration);
+//                        return taxonCount + 1;
+//                	}
+//                    // we are at the MRCA, so record the height
+//                	if (calibration.useOriginateInput.get()) {
+//                		Node parent = node.getParent();
+//                		if (parent != null) {
+//                    		nodeToBoundMap.put(parent, calibration);
+//                		}
+//                	} else {
+//                		nodeToBoundMap.put(node, calibration);
+//                	}
+//                    return taxonCount + 1;
+//                }
+//            }
             return taxonCount;
         }
     }
