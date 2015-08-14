@@ -149,6 +149,7 @@ public class TreeSetAnalyser {
                         new Arguments.Option("working", "Change working directory to input file's directory"),
                         new Arguments.IntegerOption("HPD", "HPD percentage to report, default 95%"),
                         new Arguments.IntegerOption("burnin", "Percentage of trees to be considered burn-in, default 10%"),
+                        new Arguments.IntegerOption("b", "Percentage of trees to be considered burn-in, default 10%"),
                         new Arguments.StringOption("file", "input-filename", "tree set file"),
                         new Arguments.Option("help", "Print this information and stop"),
                 });
@@ -215,8 +216,8 @@ public class TreeSetAnalyser {
 
             TreeSetAnalyserDialog dialog = new TreeSetAnalyserDialog(new JFrame(), titleString, icon);
 
-            if (arguments.hasOption("burnin")) {
-                int burnin = arguments.getIntegerOption("burnin");
+            if (arguments.hasOption("burnin") || arguments.hasOption("b")) {
+                int burnin = arguments.hasOption("burnin") ? arguments.getIntegerOption("burnin") : arguments.getIntegerOption("b");
                 dialog.burninText.setValue(burnin);
             } else {
                 dialog.burninText.setValue(10);
