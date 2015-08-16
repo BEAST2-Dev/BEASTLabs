@@ -42,9 +42,13 @@ import java.util.*;
 public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
     public Input<Alignment> taxaInput = new Input<>("taxa", "set of taxa to initialise tree specified by alignment");
 
-    public Input<List<MRCAPrior>> calibrationsInput = new Input<List<MRCAPrior>>("constraint", "specifies (monophyletic or height distribution) constraints on internal nodes", new ArrayList<MRCAPrior>());
-    public Input<Double> rootHeightInput = new Input<Double>("rootHeight", "If specified the tree will be scaled to match the root height, if constraints allow this");
-    public Input<Double> rateInput = new Input<Double>("branchMean", "Mean for branch length (exponential)", 1.0, Input.Validate.OPTIONAL);
+    public Input<List<MRCAPrior>> calibrationsInput =
+            new Input<List<MRCAPrior>>("constraint", "specifies (monophyletic or height distribution) constraints on internal nodes",
+                    new ArrayList<MRCAPrior>());
+    public Input<Double> rootHeightInput =
+            new Input<Double>("rootHeight", "If specified the tree will be scaled to match the root height, if constraints allow this");
+    public Input<Double> rateInput = new Input<Double>("branchMean", "Unrestricted brances will have an exponentialy distributed lengthwith this mean.",
+            1.0, Input.Validate.OPTIONAL);
 
     // total nr of taxa
     int nrOfTaxa;
