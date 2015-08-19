@@ -50,7 +50,20 @@ public class ConstrainedRandomTree extends RandomTree  {
 		return cons;
 	}
 
-	@Override
+    private void cleanup() {
+        final Tree itree = m_initial.get();
+
+        ArrayList<Object> ox = new ArrayList(itree.getOutputs());
+        for (Object o : ox) {
+            if( !outputs.contains(o) ) {
+                itree.getOutputs().remove(o);
+            }
+
+        }
+        outputs = null;
+    }
+
+    @Override
     public void initStateNodes() throws Exception {
     	List<MRCAPrior> cons = getCons();
         List<MRCAPrior> origCons = new ArrayList();
@@ -58,6 +71,7 @@ public class ConstrainedRandomTree extends RandomTree  {
         calibrationsInput.setValue(cons, this);
     	super.initStateNodes();
         calibrationsInput.get().clear();
+        cleanup();
         if (origCons.size() > 0)
         	calibrationsInput.setValue(origCons, this);
     }
