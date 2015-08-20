@@ -58,7 +58,7 @@ public class AttachOperator extends TreeOperator {
     public Input<DistanceProvider> weightsInput = new Input<>("weights", "Provide distances between clades (data, not tree based)", null, Input
             .Validate.OPTIONAL);
 
-    public Input<Boolean> tipsOnlyInput = new Input<Boolean>("tipsOnly", "Move only tips.", true);
+    public Input<Boolean> tipsOnlyInput = new Input<Boolean>("tipsOnly", "Move only nodes attached to tips.", false);
 
     public Input<Method> initMethod = new Input<Method>("method", "Sqrt takes square root of distance (default distance)",
             Method.DISTANCE, Method.values());
@@ -236,10 +236,15 @@ public class AttachOperator extends TreeOperator {
 
     private int ncheck = 1000;
 
+    int prevNodeCount = -1;
     @Override
     public double proposal() {
         final Tree tree = treeInput.get(this);
-
+        if (tree.getNodeCount() != prevNodeCount) {
+            nodeToCladeGroup = setupNodeGroup(tree);
+        	prevNodeCount = tree.getNodeCount();
+        }
+        
         Node[] post = new Node[tree.getNodeCount()];
         post = tree.listNodesPostOrder(null, post);
 
