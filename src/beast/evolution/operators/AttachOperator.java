@@ -78,7 +78,7 @@ public class AttachOperator extends TreeOperator {
 
     private boolean internalTest = false;
 
-    private Method method;
+    //private Method method;
 
     DistanceProvider.Data weights[];
 
@@ -120,7 +120,7 @@ public class AttachOperator extends TreeOperator {
 
         final int nc = tree.getNodeCount();
         weights = new DistanceProvider.Data[nc];
-        final Map<String, DistanceProvider.Data> init = weightProvider.init(new HashSet<String>(Arrays.asList(tree.getTaxaNames())));
+        final Map<String, DistanceProvider.Data> init = weightProvider.init(new HashSet<String>(tree.getTaxonset().asStringList()));
         for( Node tip : tree.getExternalNodes() ) {
             weights[tip.getNr()] = init.get(tip.getID());
         }
@@ -131,7 +131,7 @@ public class AttachOperator extends TreeOperator {
             }
         }
 
-        method =  initMethod.get();
+        //method =  initMethod.get();
     }
 
     private int[] setupNodeGroup(Tree tree) {
@@ -235,21 +235,17 @@ public class AttachOperator extends TreeOperator {
     }
 
     private int ncheck = 1000;
+    private int prevNodeCount = -1;
 
-    int prevNodeCount = -1;
     @Override
     public double proposal() {
         final Tree tree = treeInput.get(this);
-        if (tree.getNodeCount() != prevNodeCount) {
-            nodeToCladeGroup = setupNodeGroup(tree);
-        	prevNodeCount = tree.getNodeCount();
-        }
-        
         Node[] post = new Node[tree.getNodeCount()];
         post = tree.listNodesPostOrder(null, post);
 
-        if( nodeToCladeGroup == null ) {
+        if (tree.getNodeCount() != prevNodeCount) {
             nodeToCladeGroup = setupNodeGroup(tree);
+        	prevNodeCount = tree.getNodeCount();
         } else {
             if( ncheck == 0 && internalTest ) {
                 int[] xxx = setupNodeGroup(tree);
@@ -389,20 +385,20 @@ public class AttachOperator extends TreeOperator {
         return Math.log(px / pi);
     }
 
-    private double dist(double[] doubles, double[] doubles1) {
-        double s = 0;
-        for(int k = 0; k < doubles.length; ++k) {
-            double x = (doubles[k] - doubles1[k]);
-            s += x*x;
-        }
-        s = (s == 0) ? 1e-8 : s;
-        switch (method) {
-            case DISTANCE: break;
-            case SQRT: s = Math.sqrt(s); break;
-            case SQR: s =  s * s; break;
-        }
-        return s;
-    }
+//    private double dist(double[] doubles, double[] doubles1) {
+//        double s = 0;
+//        for(int k = 0; k < doubles.length; ++k) {
+//            double x = (doubles[k] - doubles1[k]);
+//            s += x*x;
+//        }
+//        s = (s == 0) ? 1e-8 : s;
+//        switch (method) {
+//            case DISTANCE: break;
+//            case SQRT: s = Math.sqrt(s); break;
+//            case SQR: s =  s * s; break;
+//        }
+//        return s;
+//    }
 
     private void detach(Node x, Node xP) {
         // remove xP from sons of xPP
