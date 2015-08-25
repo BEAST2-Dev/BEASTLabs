@@ -38,6 +38,15 @@ public class NNI extends RestrictedSubtreeSlide {
         if (nrOfTaxa.length > 0) {
         	// we do not want to choose nodes that are constrained
         	List<Node> candidates = getCandidateNodes(tree);
+        	for (int j = candidates.size() - 1; j  >= 0; j--) {
+        		i = candidates.get(j);
+        		if (root == i || i.getParent() == root) {
+        			candidates.remove(j);
+        		}
+        	}
+        	if (candidates.size() == 0) {
+        		return Double.NEGATIVE_INFINITY;
+        	}
 
 	        // get a random node where neither you or your father is the root
 	        do {

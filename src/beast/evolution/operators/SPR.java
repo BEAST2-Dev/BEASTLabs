@@ -47,7 +47,17 @@ public class SPR extends RestrictedSubtreeSlide {
 				// we do not want to choose nodes that are constrained
 				List<Node> candidates = getCandidateNodes(tree);
 			
-				// get a random node where neither you or your father is the root
+	        	for (int j = candidates.size() - 1; j  >= 0; j--) {
+	        		i = candidates.get(j);
+	        		if (root == i || i.getParent() == root) {
+	        			candidates.remove(j);
+	        		}
+	        	}
+	        	if (candidates.size() == 0) {
+	        		return Double.NEGATIVE_INFINITY;
+	        	}
+
+	        	// get a random node where neither you or your father is the root
 				do {
 			        i = candidates.get(Randomizer.nextInt(candidates.size()));
 			    } while( root == i || i.getParent() == root );
