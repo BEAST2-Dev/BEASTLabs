@@ -40,50 +40,76 @@ public class LogAnalyserAdv {
         LogFileTraces traces = new LogFileTraces(file.getName(), file);
         traces.loadTraces();
 
-        int percLower = 5;
-        int percUpper = 80;
-        int percIncremental = 5;
-//        double[][] essMatrix = new double[traceNames.length][(percUpper-percLower)/percIncremental+1];
-        double essThreshould = 100;
+        final int percLower = 5; // included
+        final int percUpper = 80; // included
+        final int percIncremental = 5;
 
         // get all ess, record burnin
-        int[] bestPercentage = new int[traceNames.length];
-        double[] maxESS = new double[traceNames.length];
-        int bestPerc = 0;
-        double maxSumESS = 0;
+        double[][] essMatrix = new double[traceNames.length][(percUpper-percLower)/percIncremental+1];
+        int[] percentages = new int[essMatrix[0].length];
+        int p = 0;
         for (int percentage = percLower; percentage <= percUpper; percentage+=percIncremental) {
-            long burnin = (traces.getMaxState() / 100) * percentage; // start from 10%
+            long burnin = (traces.getMaxState() / 100) * percentage; // state of burnin
             traces.setBurnIn(burnin);
 
-            double sumESS = 0;
             for (int n = 0; n < traceNames.length; n++) {
                 int traceIndex = traces.getTraceIndex(traceNames[n]);
                 TraceStatistics distribution = traces.analyseTrace(traceIndex);
-
-                double ess = distribution.getESS();
-                if (ess > maxESS[n]) {
-                    maxESS[n] = ess;
-                    bestPercentage[n] = percentage;
-                }
-                sumESS += ess;
+                essMatrix[n][p] = distribution.getESS();
             }
-            if (sumESS > maxSumESS) {
-                maxSumESS = sumESS;
-                bestPerc = percentage;
-            }
+            percentages[p] = percentage;
+            p++;
         }
 
-//        for (int n = 0; n < traceNames.length; n++) {
-//            if (maxESS[n] < 100) System.out.println(traceNames[n]  + "\t" + maxESS[n]);
-//        }
-
-        long burnin = (traces.getMaxState() / 100) * bestPerc; // best burnin detemined by max of sum of ess
+        long selectedBurnin = getBestBurninPercentage(essMatrix, percentages);
+        long burnin = (traces.getMaxState() / 100) * selectedBurnin; // best burnin detemined by max of sum of ess
         traces.setBurnIn(burnin);
         for (int i = 0; i < traces.getTraceCount(); i++) {
             TraceStatistics distribution = traces.analyseTrace(i);
         }
 
         return traces;
+    }
+
+    // choose best burnin: max of sum of ratio of ess and max ess
+    // essMatrix: 1st [] is traces, 2nd [] is percentage incremental
+    public static int getBestBurninPercentage(double[][] essMatrix, int[] percentages) {
+        final double essThre = 200;
+
+        double[] maxESS = new double[essMatrix.length];
+        for (int p = 0; p < essMatrix[0].length; p++) {
+            for (int n = 0; n < essMatrix.length; n++) {
+                if (essMatrix[n][p] > maxESS[n])
+                    maxESS[n] = essMatrix[n][p];
+            }
+        }
+
+        int bestPerc = 0;
+        int bestPerc1 = 0;
+        double maxESSSumRatio = 0;
+        double maxESSSumRatio1 = 0;
+
+        for (int p = 0; p < essMatrix[0].length; p++) {
+            double ratioSum = 0;
+            boolean allSucc = true;
+            for (int n = 0; n < essMatrix.length; n++) {
+                ratioSum += essMatrix[n][p] / maxESS[n];
+                allSucc = allSucc && essMatrix[n][p] >= essThre;
+            }
+            if (allSucc) {
+                if (ratioSum > maxESSSumRatio) {
+                    maxESSSumRatio = ratioSum;
+                    bestPerc = percentages[p];
+                }
+            } else {
+                if (ratioSum > maxESSSumRatio1) {
+                    maxESSSumRatio1 = ratioSum;
+                    bestPerc1 = percentages[p];
+                }
+            }
+        }
+
+        return (bestPerc > 0) ? bestPerc : bestPerc1;
     }
 
     /**
@@ -94,52 +120,57 @@ public class LogAnalyserAdv {
      * @throws test.beast.beast2vs1.trace.TraceException      if trace file in wrong format or corrupted
      */
     public static void shortReport(LogFileTraces traces, String[] traceNames) throws java.io.IOException, TraceException {
-        System.out.print(traces.getName() + "\t" + traces.getMaxState() + "\t" + traces.getBurnIn() + "\t");
+        System.out.print(traces.getName() + "\t" + traces.getMaxState() + "\t" + traces.getBurnIn());
 
         for (String traceName : traceNames) {
 //            if (traceName != null && traceName.equalsIgnoreCase(traces.getTraceName(i))) {
             int traceIndex = traces.getTraceIndex(traceName);
             TraceStatistics distribution = traces.analyseTrace(traceIndex);
 
-            System.out.print(traceName + "\t");
+//            System.out.print("\t" + traceName);
 
-            System.out.print(distribution.getMean() + "\t");
-//            System.out.print(distribution.getStdev() + "\t");
+            System.out.print("\t" + distribution.getMean());
+//            System.out.print("\t" + distribution.getStdev());
 
-//            System.out.print(distribution.getHpdLower() + "\t");
-//            System.out.print(distribution.getHpdUpper() + "\t");
+//            System.out.print("\t" + distribution.getHpdLower());
+//            System.out.print("\t" + distribution.getHpdUpper());
 
-//                System.out.print(formatter.format(distribution.getStdErrorOfMean()));
-//                System.out.print(formatter.format(distribution.getMinimum()));
-//                System.out.print(formatter.format(distribution.getMaximum()));
-//                System.out.print(formatter.format(distribution.getMedian()));
-//                System.out.print(formatter.format(distribution.getGeometricMean()));
-//                System.out.print(formatter.format(distribution.getVariance()));
-//                System.out.print(formatter.format(distribution.getCpdLower()));
-//                System.out.print(formatter.format(distribution.getCpdUpper()));
-            System.out.print(distribution.getAutoCorrelationTime() + "\t");
-//                System.out.print(formatter.format(distribution.getStdevAutoCorrelationTime()));
+//                System.out.print("\t" + formatter.format(distribution.getStdErrorOfMean()));
+//                System.out.print("\t" + formatter.format(distribution.getMinimum()));
+//                System.out.print("\t" + formatter.format(distribution.getMaximum()));
+//                System.out.print("\t" + formatter.format(distribution.getMedian()));
+//                System.out.print("\t" + formatter.format(distribution.getGeometricMean()));
+//                System.out.print("\t" + formatter.format(distribution.getVariance()));
+//                System.out.print("\t" + formatter.format(distribution.getCpdLower()));
+//                System.out.print("\t" + formatter.format(distribution.getCpdUpper()));
+            System.out.print("\t" + distribution.getAutoCorrelationTime());
+//                System.out.print("\t" + formatter.format(distribution.getStdevAutoCorrelationTime()));
 
             double ess = distribution.getESS();
-//            if (ess < 100) System.out.print("*");
-            System.out.print(distribution.getESS());
-//            if (ess < 100) System.out.print("*");
-            System.out.print("\t");
+            System.out.print("\t" + distribution.getESS());
+//            if (ess < 100) System.out.print("\t" + "*");
 //            System.out.println();
-//            }
+        }
+        System.out.println();
+    }
+
+    public static void shortReportHeader(String[] traceNames) {
+        System.out.print("file.name\tchain.length\tburnin");
+        for (String traceName : traceNames) {
+            System.out.print("\tmean." + traceName + "\tact." + traceName + "\tess." + traceName);
         }
         System.out.println();
     }
 
     //Main method
     public static void main(final String[] args) throws IOException, TraceException {
-        Path workPath = Paths.get(System.getProperty("user.home") + "/Documents/BEAST2/*BEAST-sim/Evolution2013/new100/sp13-2/");
+        Path workPath = Paths.get(System.getProperty("user.home") + "/Projects/BEAST2/PerfAccuStarBEAST/sp5-2/");
         System.out.println("\nWorking path = " + workPath);
 
         String[] traceNames = new String[]{"posterior", "TreeHeight.Species"}; //"posterior", "TreeHeight.Species"
 //        int burnIN = -1;
-        int[] trees = new int[] {32}; //2,4,8,16,32,64,128,256
-        boolean isCombined = false; // "true" analyses combined logs, "false" analyses an individual resumed/initial log
+        int[] trees = new int[] {256}; //2,4,8,16,32,64,128,256
+        boolean isCombined = true; // "true" analyses combined logs, "false" analyses an individual resumed/initial log
         int replicates = 100;
 
         if (!isCombined) {
@@ -188,6 +219,8 @@ public class LogAnalyserAdv {
 
         // read combined beast log
         for (int tree : trees) {
+            System.out.print("folder\treplicate\t");
+            shortReportHeader(traceNames);
             for (int r=0; r<replicates; r++) {
                 String folderName = isCombined ? Integer.toString(tree) + "-combined" : Integer.toString(tree);
                 System.out.print(folderName + "\t" + r + "\t");
