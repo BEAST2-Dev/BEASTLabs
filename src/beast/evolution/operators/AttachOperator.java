@@ -13,21 +13,21 @@ import java.util.*;
         "distance between clades via the DistanceProvider interface. Clades with lower distance should be more closely related and therefore the " +
         "move more likely to get accepted.")
 public class AttachOperator extends TreeOperator {
-    enum Method {
-        DISTANCE("distance"),
-        SQRT("sqrt"),
-        SQR("sqr");
-
-        Method(final String name) {
-            this.ename = name;
-        }
-
-        public String toString() {
-            return ename;
-        }
-
-        private final String ename;
-    }
+//    enum Method {
+//        DISTANCE("distance"),
+//        SQRT("sqrt"),
+//        SQR("sqr");
+//
+//        Method(final String name) {
+//            this.ename = name;
+//        }
+//
+//        public String toString() {
+//            return ename;
+//        }
+//
+//        private final String ename;
+//    }
 
     // Provide weights for attach operator. Weight is a clade based statistic that is based only on the properties associated with tips and not on
     // the clade topology. To be useful the distance between clades should reflect in some way the distance between those two groups, i.e. it
@@ -60,8 +60,8 @@ public class AttachOperator extends TreeOperator {
 
     public Input<Boolean> tipsOnlyInput = new Input<Boolean>("tipsOnly", "Move only nodes attached to tips.", false);
 
-    public Input<Method> initMethod = new Input<Method>("method", "Sqrt takes square root of distance (default distance)",
-            Method.DISTANCE, Method.values());
+    //public Input<Method> initMethod = new Input<Method>("method", "Sqrt takes square root of distance (default distance)",
+    //        Method.DISTANCE, Method.values());
 
     public Input<Boolean> topOnlyInput = new Input<Boolean>("topOnly", "Consider only nodes not under any monophyly constraint.", false);
 
@@ -133,83 +133,83 @@ public class AttachOperator extends TreeOperator {
 
         //method =  initMethod.get();
     }
-
-    private int[] setupNodeGroup(Tree tree) {
-        final MultiMonophyleticConstraint mc = constraintsInput.get();
-        final int nodeCount = tree.getNodeCount();
-        int[] nodeToCladeGroup = new int[nodeCount];
-        if( mc != null ) {
-            final List<List<String>> constraints = mc.getConstraints();
-            HashSet<String> u[] = new HashSet[constraints.size()];
-
-            for(int k = 0; k < constraints.size(); ++k) {
-                u[k] = new HashSet<>(constraints.get(k));
-            }
-
-            HashSet<Integer> x[] = new HashSet[nodeCount];
-            nodeToCladeGroup = new int[nodeCount];
-
-            Node[] post = new Node[nodeCount];
-            post = tree.listNodesPostOrder(null, post);
-            for( final Node n : post ) {
-                final int nr = n.getNr();
-                x[nr] = new HashSet<>();
-                if( n.isLeaf() ) {
-                    final String id = n.getID();
-                    for(int k = 0; k < u.length; ++k) {
-                        if( u[k].contains(id) ) {
-                            x[nr].add(k);
-                        }
-                    }
-                } else {
-                    for (int nc = 0; nc < n.getChildCount(); ++nc) {
-                        final int cnr = n.getChild(nc).getNr();
-                        if( x[nr].isEmpty() ) {
-                            x[nr].addAll(x[cnr]);
-                        } else {
-                            x[nr].retainAll(x[cnr]);
-                        }
-                    }
-                }
-                nodeToCladeGroup[nr] = -1;
-
-                if( x[nr].isEmpty() || (x[nr].size() == 1 && x[nr].contains(-1) )) {
-                    x[nr].add(-1);
-                } else {
-                    int sz = nodeToCladeGroup.length + 1;
-                    for (Integer i : x[nr]) {
-                        if( u[i].size() < sz ) {
-                            nodeToCladeGroup[nr] = i;
-                            sz = u[i].size();
-                        }
-                    }
-                }
-            }
-
-            if( internalTest ) {
-                for( final Node n : post ) {
-                    if( n.isRoot() ) {
-                        continue;
-                    }
-                    int nr = n.getNr();
-
-                    int z = nodeToCladeGroup[nr];
-                    if( z == -1 ) {
-                        assert nodeToCladeGroup[n.getParent().getNr()] == -1;
-                    } else {
-                        final List<Node> cn = n.getAllLeafNodes();
-                        for (Node c : cn) {
-                            assert u[z].contains(c.getID()) : c.getID();
-                        }
-                        if( z != nodeToCladeGroup[n.getParent().getNr()] ) {
-                            assert u[z].size() == cn.size();
-                        }
-                    }
-                }
-            }
-        }
-        return nodeToCladeGroup;
-    }
+//
+//    private int[] setupNodeGroup(Tree tree) {
+//        final MultiMonophyleticConstraint mc = constraintsInput.get();
+//        final int nodeCount = tree.getNodeCount();
+//        int[] nodeToCladeGroup = new int[nodeCount];
+//        if( mc != null ) {
+//            final List<List<String>> constraints = mc.getConstraints();
+//            HashSet<String> u[] = new HashSet[constraints.size()];
+//
+//            for(int k = 0; k < constraints.size(); ++k) {
+//                u[k] = new HashSet<>(constraints.get(k));
+//            }
+//
+//            HashSet<Integer> x[] = new HashSet[nodeCount];
+//            nodeToCladeGroup = new int[nodeCount];
+//
+//            Node[] post = new Node[nodeCount];
+//            post = tree.listNodesPostOrder(null, post);
+//            for( final Node n : post ) {
+//                final int nr = n.getNr();
+//                x[nr] = new HashSet<>();
+//                if( n.isLeaf() ) {
+//                    final String id = n.getID();
+//                    for(int k = 0; k < u.length; ++k) {
+//                        if( u[k].contains(id) ) {
+//                            x[nr].add(k);
+//                        }
+//                    }
+//                } else {
+//                    for (int nc = 0; nc < n.getChildCount(); ++nc) {
+//                        final int cnr = n.getChild(nc).getNr();
+//                        if( x[nr].isEmpty() ) {
+//                            x[nr].addAll(x[cnr]);
+//                        } else {
+//                            x[nr].retainAll(x[cnr]);
+//                        }
+//                    }
+//                }
+//                nodeToCladeGroup[nr] = -1;
+//
+//                if( x[nr].isEmpty() || (x[nr].size() == 1 && x[nr].contains(-1) )) {
+//                    x[nr].add(-1);
+//                } else {
+//                    int sz = nodeToCladeGroup.length + 1;
+//                    for (Integer i : x[nr]) {
+//                        if( u[i].size() < sz ) {
+//                            nodeToCladeGroup[nr] = i;
+//                            sz = u[i].size();
+//                        }
+//                    }
+//                }
+//            }
+//
+//            if( internalTest ) {
+//                for( final Node n : post ) {
+//                    if( n.isRoot() ) {
+//                        continue;
+//                    }
+//                    int nr = n.getNr();
+//
+//                    int z = nodeToCladeGroup[nr];
+//                    if( z == -1 ) {
+//                        assert nodeToCladeGroup[n.getParent().getNr()] == -1;
+//                    } else {
+//                        final List<Node> cn = n.getAllLeafNodes();
+//                        for (Node c : cn) {
+//                            assert u[z].contains(c.getID()) : c.getID();
+//                        }
+//                        if( z != nodeToCladeGroup[n.getParent().getNr()] ) {
+//                            assert u[z].size() == cn.size();
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//        return nodeToCladeGroup;
+//    }
 
     private Node getNode(Tree tree, final Node[] post) {
         boolean topOnly = topOnlyInput.get();
@@ -244,11 +244,11 @@ public class AttachOperator extends TreeOperator {
         post = tree.listNodesPostOrder(null, post);
 
         if (tree.getNodeCount() != prevNodeCount) {
-            nodeToCladeGroup = setupNodeGroup(tree);
+            nodeToCladeGroup = MonoCladesMapping.setupNodeGroup(tree, constraintsInput.get());
         	prevNodeCount = tree.getNodeCount();
         } else {
             if( ncheck == 0 && internalTest ) {
-                int[] xxx = setupNodeGroup(tree);
+                int[] xxx = MonoCladesMapping.setupNodeGroup(tree, constraintsInput.get());
                 for (Node n : post) {
                     if( xxx[n.getNr()] != nodeToCladeGroup[n.getNr()] ) {
                         String dd = n.toNewick()

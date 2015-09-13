@@ -257,16 +257,34 @@ public class RestrictedSubtreeSlide extends SubtreeSlide {
         return logq;
 	}
 
+    private int prevNodeCount = -1;
+    private int[] nodeToCladeGroup = null;
 
 	List<Node> getCandidateNodes(Tree tree) {
-		Set<Node> candidates = new HashSet<Node>();
-		for (int i = 0; i < nrOfTaxa.length; i++) {
-			calcPredecessorsOfClade(tree.getRoot(), new int[1], isInTaxaSet[i], nrOfTaxa[i], candidates);
-		}
-		List<Node> list = new ArrayList<Node>();
-		list.addAll(candidates);
-		return list;
-	}
+        List<Node> list = new ArrayList<Node>();
+
+        if( topLevelOnlyInput.get() ) {
+            if( tree.getNodeCount() != prevNodeCount ) {
+                nodeToCladeGroup = MonoCladesMapping.setupNodeGroup(tree, cladesSetInput.get());
+                prevNodeCount = tree.getNodeCount();
+            }
+
+            for (int k = 0; k < nodeToCladeGroup.length; ++k) {
+                if( nodeToCladeGroup[k] == -1 ) {
+                    list.add(tree.getNode(k));
+                }
+            }
+        } else {
+            Set<Node> candidates = new HashSet<Node>();
+            for (int i = 0; i < nrOfTaxa.length; i++) {
+                calcPredecessorsOfClade(tree.getRoot(), new int[1], isInTaxaSet[i], nrOfTaxa[i], candidates);
+            }
+            //List<Node> list = new ArrayList<Node>();
+            list.addAll(candidates);
+        }
+
+        return list;
+    }
 	
     int calcPredecessorsOfClade(final Node node, final int[] nTaxonCount, boolean[] isInTaxaSet, int nrOfTaxa, Set<Node> candidates) {
         if (node.isLeaf()) {
