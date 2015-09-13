@@ -13,8 +13,8 @@ import java.util.List;
         "with non-informative data (all sites are ambiguous).")
 public class PrunedAlignment extends Alignment {
     public Input<Alignment> m_srcAlignment = new Input<>("source", "alignment to prune", Validate.REQUIRED);
-    public Input<TaxonSet>  m_taxa = new Input<>("taxa",
-            "taxa to prune (defaults to all non-informative taxa, i.e. data is all '???')");
+//    public Input<TaxonSet> taxonSetInput = new Input<>("taxa",
+//            "taxa to prune (defaults to all non-informative taxa, i.e. data is all '???')");
     public Input<List<Integer>> m_sites = new Input<>("sites", "sites to retain (default all).", new ArrayList<Integer>());
 
   public PrunedAlignment() {}
@@ -34,7 +34,7 @@ public class PrunedAlignment extends Alignment {
       List<Integer> sites = m_sites.get();
 
       List<Sequence> sourceSeqs = source.sequenceInput.get();
-      final TaxonSet taxonSet = m_taxa.get();
+      final TaxonSet taxonSet = taxonSetInput.get();
 
       if( sourceSeqs == null || sourceSeqs.size() == 0 ) {
           // This is truly ugly: alignment object like AlignmentFromTrait don't have sequences, and construct
