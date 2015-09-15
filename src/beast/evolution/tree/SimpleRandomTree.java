@@ -520,6 +520,14 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
             final double h = rootHeightInput.get();
             root.setHeight(h);
         }
+
+        // for now fail - this happens rarely
+        for(int i = post.length-1; i >= 0; --i) {
+            final Node node = post[i];
+            if( !node.isRoot() && node.getLength() == 0 ) {
+               throw new ConstraintViolatedException();
+            }
+        }
     }
 
     @Override
