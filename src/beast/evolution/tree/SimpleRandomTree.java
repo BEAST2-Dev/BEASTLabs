@@ -29,10 +29,9 @@ package beast.evolution.tree;
 import beast.core.*;
 import beast.evolution.alignment.Alignment;
 import beast.evolution.alignment.TaxonSet;
-import beast.evolution.tree.coalescent.PopulationFunction;
+import beast.evolution.operators.DistanceProvider;
 import beast.math.distributions.MRCAPrior;
 import beast.math.distributions.ParametricDistribution;
-import beast.util.HeapSort;
 import beast.util.Randomizer;
 
 import java.util.*;
@@ -49,6 +48,8 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
             new Input<Double>("rootHeight", "If specified the tree will be scaled to match the root height, if constraints allow this");
     public Input<Double> rateInput = new Input<Double>("branchMean", "Unrestricted brances will have an exponentialy distributed lengthwith this mean.",
             1.0, Input.Validate.OPTIONAL);
+
+    public Input<DistanceProvider> distancesInput = new Input<>("weights", "");
 
     // total nr of taxa
     int nrOfTaxa;
@@ -90,6 +91,8 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
     // number of the next internal node, used when creating new internal nodes
     int nextNodeNr;
 
+    private DistanceProvider distances;
+
     // used to indicate one of the MRCA constraints could not be met
     protected class ConstraintViolatedException extends Exception {
         private static final long serialVersionUID = 1L;
@@ -103,6 +106,7 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
         } else {
             sTaxa.addAll(m_taxonset.get().asStringList());
         }
+        distances = distancesInput.get();
 
         nrOfTaxa = sTaxa.size();
 
@@ -263,7 +267,17 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
 
         buildTree(sTaxa);
         assert nextNodeNr == nodeCount;
-        setHeights();
+        final double rate = 1/rateInput.get();
+        boolean succ = false;
+        int ntries = 4;
+        while( !succ && ntries > 0 ) {
+            succ = setHeights(rate, false);
+            --ntries;
+        }
+        if( ! succ ) {
+           succ = setHeights(rate, true);
+        }
+        assert succ;
 
         internalNodeCount = sTaxa.size() - 1;
         leafNodeCount = sTaxa.size();
@@ -310,6 +324,8 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
         stateNodes.add(m_initial.get());
     }
 
+    DistanceProvider.Data[] weights = null;
+
     /**
      * build a tree conforming to the monophyly constraints.
      *
@@ -320,6 +336,7 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
             return;
 
         nextNodeNr = nrOfTaxa;
+
         final Set<Node> candidates = new HashSet<>();
         int nr = 0;
         for (String taxon : taxa) {
@@ -329,6 +346,14 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
             node.setHeight(0.0);
             candidates.add(node);
             nr += 1;
+        }
+
+        if( distances != null ) {
+            weights = new DistanceProvider.Data[2*nrOfTaxa-1];
+            final Map<String, DistanceProvider.Data> init = distances.init(taxa);
+            for( Node tip : candidates ) {
+                weights[tip.getNr()] = init.get(tip.getID());
+            }
         }
 
         // copy over tip traits, if any
@@ -343,6 +368,7 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
         for (Node node: candidates) {
             allCandidates.put(node.getID(),node);
         }
+
         root = buildTree(lastMonophyletic, candidates, allCandidates);
     }
 
@@ -391,7 +417,7 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
            // }
         }
 
-        Node c = joinNodes(remainingCandidates);
+        final Node c = joinNodes(remainingCandidates);
         if( monoCladeIndex < lastMonophyletic ) {
             final Bound bound = m_bounds.get(monoCladeIndex);
             final int nr = c.getNr();
@@ -416,10 +442,48 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
             h = Math.max(h, n.getHeight());
         }
         double dt = 1;
+
         while (nodes.size() > 1) {
             int k = nodes.size() - 1;
-            final Node left = nodes.remove(k);
-            final Node right = nodes.get(k-1);
+            int l = k, r = k-1;
+            if( k > 1 && distances != null ) {
+                double[] ds = new double[(k * (k + 1)) / 2];
+                int loc = 0;
+                for (int i = 0; i < k; ++i) {
+                    for (int j = i + 1; j < k+1; ++j) {
+                        double d = distances.dist(weights[nodes.get(i).getNr()], weights[nodes.get(j).getNr()]);
+                        ds[loc] = 1/d;
+                        ++loc;
+                    }
+                }
+                double s = 0.0;
+                for(int i = 0; i < loc; ++i) {
+                    s += ds[i];
+                }
+
+                double u = Randomizer.nextDouble();
+                int m = 0;
+                for (int i = 0; i < k; ++i) {
+                    for (int j = i + 1; j < k+1; ++j) {
+                        u -= ds[m]/s;
+                        m += 1;
+                        if( u < 0 ) {
+                            l = j;
+                            break;
+                        }
+                    }
+                    if( u < 0 ) {
+                        r = i;
+                        break;
+                    }
+                }
+                assert( u < 0 ) ;
+            }
+            assert( r < l );
+
+            final Node left = nodes.remove(l);
+            final Node right = nodes.get(r);
+
             final Node newNode = new Node();
             newNode.setNr(nextNodeNr++);   // multiple tries may generate an excess of nodes assert(nextNodeNr <= nrOfTaxa*2-1);
             h += dt;
@@ -428,16 +492,22 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
             left.setParent(newNode);
             newNode.setRight(right);
             right.setParent(newNode);
-            nodes.set(k-1, newNode);
+            if( distances != null ) {
+                final DistanceProvider.Data wr = weights[right.getNr()];
+                distances.update(wr, weights[left.getNr()]);
+                weights[newNode.getNr()] = wr;
+            }
+            nodes.set(r, newNode);
         }
         return nodes.get(0);
     }
 
-    private void setHeights() throws ConstraintViolatedException {
+    private boolean setHeights(final double rate, final boolean safe) throws ConstraintViolatedException {
         //  node low >= all child nodes low. node high < parent high
+        assert rate > 0;
         Node[] post = listNodesPostOrder(null, null);
         postCache = null; // can't figure out the javanese to call TreeInterface.listNodesPostOrder
-        final double rate = 1/rateInput.get();   assert rate > 0;
+
 
         for(int i = post.length-1; i >= 0; --i) {
             final Node node = post[i];
@@ -458,7 +528,7 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
         }
 
         for( Node node : post ) {
-            int nr = node.getNr();
+            final int nr = node.getNr();
             if( node.isLeaf() ) {
                //Bound b = boundPerNode[nr];  assert b != null;
             } else {
@@ -505,11 +575,19 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
                     if( !b.lower.isInfinite() ) {
                         h = Math.max(b.lower, h);
                     }
-                    double r = Randomizer.nextExponential(rate);
+
                     final double range = b.upper - h;
-                    if( r >= range ) {
-                       r = range * Randomizer.nextDouble();
+                    double r;
+                    if( safe ) {
+                        r = (range / post.length) * Randomizer.nextDouble();
+                        assert r > 0 && h + r < b.upper;
+                    } else {
+                        r = Randomizer.nextExponential(rate);
+                        if( r >= range ) {
+                            r = range * Randomizer.nextDouble();
+                        }
                     }
+                    assert h + r <= b.upper;
                     h += r;
                 }
                 node.setHeight(h);
@@ -525,9 +603,10 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
         for(int i = post.length-1; i >= 0; --i) {
             final Node node = post[i];
             if( !node.isRoot() && node.getLength() == 0 ) {
-               throw new ConstraintViolatedException();
+               return false;
             }
         }
+        return true;
     }
 
     @Override
