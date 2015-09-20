@@ -33,28 +33,6 @@ public class AttachOperator extends TreeOperator {
     // the clade topology. To be useful the distance between clades should reflect in some way the distance between those two groups, i.e. it
     // should be some kind of a "mean" statistic for tip values.
 
-    public interface DistanceProvider {
-        // Data associated with tip or node
-        interface Data {}
-
-        // Return a mapping from taxon name to its associated data for all taxa
-        Map<String,Data> init(Set<String> taxa);
-
-       // Data combine(Data info1, Data info2);
-
-        // return a new 'empty' entry
-        Data empty();
-
-        // clear an existing data entry
-        void clear(Data d);
-
-        // combine 'data' and 'with' and store the result back to 'data'
-        void update(Data info, Data with);
-
-        // distance between two summaries
-        double dist(Data info1, Data info2);
-    };
-
     public Input<DistanceProvider> weightsInput = new Input<>("weights", "Provide distances between clades (data, not tree based)", null, Input
             .Validate.OPTIONAL);
 
@@ -89,33 +67,7 @@ public class AttachOperator extends TreeOperator {
         final Tree tree = treeInput.get();
         weightProvider = weightsInput.get();
         if( weightProvider == null ) {
-            weightProvider = new DistanceProvider() {
-                @Override
-                public Map<String, Data> init(Set<String> taxa) {
-                    HashMap<String, Data> m = new HashMap<String, Data>();
-                    for( String s : taxa ) {
-                        m.put(s, empty());
-                    }
-                    return m;
-                }
-
-                class Data1 implements Data {};
-                @Override
-                public Data empty() {
-                    return new Data1();
-                }
-
-                @Override
-                public void clear(Data d) {}
-
-                @Override
-                public void update(Data info, Data with) {}
-
-                @Override
-                public double dist(Data info1, Data info2) {
-                    return 1;
-                }
-            };
+            weightProvider = DistanceProvider.uniform;
         }
 
         final int nc = tree.getNodeCount();
