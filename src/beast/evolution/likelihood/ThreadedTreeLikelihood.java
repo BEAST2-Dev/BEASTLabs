@@ -145,6 +145,8 @@ public class ThreadedTreeLikelihood extends Distribution {
     @Override
     public void initAndValidate() throws Exception {
 		m_nThreads = BeastMCMC.m_nThreads;
+        int nPatterns = m_data.get().getPatternCount();
+
 		if (maxNrOfThreads.get() > 0) {
 			m_nThreads = Math.min(maxNrOfThreads.get(), BeastMCMC.m_nThreads);
 		}
@@ -171,7 +173,11 @@ public class ThreadedTreeLikelihood extends Distribution {
         		String filterSpec = (patternPoints[i] +1) + "-" + (patternPoints[i + 1]);
         		m_beagle[i] = new BeagleTreeLikelihood();
         		FilteredAlignment filter = new FilteredAlignment();
-        		filter.initByName("data", m_data.get()/*, "userDataType", m_data.get().getDataType()*/, "filter", filterSpec);
+        		if (i == 0 && m_data.get() instanceof FilteredAlignment && ((FilteredAlignment)m_data.get()).constantSiteWeightsInput.get() != null) {
+        			filter.initByName("data", m_data.get()/*, "userDataType", m_data.get().getDataType()*/, "filter", filterSpec, "constantSiteWeights", ((FilteredAlignment)m_data.get()).constantSiteWeightsInput.get());
+        		} else {
+        			filter.initByName("data", m_data.get()/*, "userDataType", m_data.get().getDataType()*/, "filter", filterSpec);
+        		}
         		m_beagle[i].initByName("data", filter, "tree", m_tree.get(), "siteModel", m_pSiteModel.get(), "branchRateModel", m_pBranchRateModel.get(), "useAmbiguities", m_useAmbiguities.get());
         	}
     	}
@@ -204,7 +210,6 @@ public class ThreadedTreeLikelihood extends Distribution {
     	m_StoredBranchLengths = new double[nodeCount];
     	
         int nStateCount = m_data.get().getMaxStateCount();
-        int nPatterns = m_data.get().getPatternCount();
         if (nStateCount == 4) {
         	m_likelihoodCore = new ThreadedBeerLikelihoodCore4();
         } else {
