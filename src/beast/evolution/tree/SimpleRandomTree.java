@@ -49,7 +49,8 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
     public Input<Double> rateInput = new Input<Double>("branchMean", "Unrestricted brances will have an exponentialy distributed lengthwith this mean.",
             1.0, Input.Validate.OPTIONAL);
 
-    public Input<DistanceProvider> distancesInput = new Input<>("weights", "");
+    public Input<DistanceProvider> distancesInput = new Input<>("weights", "if provided, used to inform sampling distribution such that nodes that are "
+    		+ "closer have a higher chance of forming a clade");
 
     // total nr of taxa
     int nrOfTaxa;
