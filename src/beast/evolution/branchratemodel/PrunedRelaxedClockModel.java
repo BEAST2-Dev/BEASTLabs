@@ -1,19 +1,17 @@
 package beast.evolution.branchratemodel;
 
 
-import beast.core.CalculationNode;
+import beast.core.Description;
 import beast.core.Input;
 import beast.evolution.tree.Node;
 import beast.evolution.tree.PrunedTree;
 import beast.evolution.tree.TreeInterface;
 
-import java.util.HashSet;
-import java.util.Set;
-
+@Description("Tree containing a subset of nodes from another tree")
 public class PrunedRelaxedClockModel extends BranchRateModel.Base {
-    // We can't use a genetic BranchRateModel here, since there is no unifying API for getting which rates changed
-    public Input<UCRelaxedClockModel>  baseRates = new Input<UCRelaxedClockModel>("rates", "", Input.Validate.REQUIRED);
-    public Input<PrunedTree>  tree = new Input<PrunedTree>("tree", "", Input.Validate.REQUIRED);
+    // We can't use a generic BranchRateModel here, since there is no unifying API for getting which rates changed
+    public Input<UCRelaxedClockModel>  baseRates = new Input<UCRelaxedClockModel>("rates", "clock model used on original tree", Input.Validate.REQUIRED);
+    public Input<PrunedTree>  tree = new Input<PrunedTree>("tree", "source tree to be pruned", Input.Validate.REQUIRED);
 
     private PrunedTree ptree; // = tree.get();
     private UCRelaxedClockModel rates; // = baseRates.get();
