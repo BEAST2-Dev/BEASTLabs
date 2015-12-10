@@ -231,7 +231,7 @@ public class AttachOperator extends TreeOperator {
 
                 //int[] w = new int[weights.length];
                 for (final Node n : post) {
-                    if( n.getHeight() > nodeParentHeight ) {
+                    if( n.getHeight() >= nodeParentHeight ) {
                         continue;
                     }
                     assert !n.isRoot();
