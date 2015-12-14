@@ -1,8 +1,10 @@
 package beast.evolution.operators;
 
 
+import java.lang.reflect.Array;
 import java.util.*;
 
+import beast.app.util.Arguments;
 import beast.core.Description;
 import beast.core.Input;
 import beast.evolution.alignment.TaxonSet;
@@ -259,16 +261,71 @@ public class RestrictedSubtreeSlide extends SubtreeSlide {
 
     private int prevNodeCount = -1;
     private int[] nodeToCladeGroup = null;
+   // private int[] fixedCands = null;
+    private int[] ctops = null;
+
+    private void initForCandidates(Tree tree) {
+        Set<Integer> groups = new HashSet<>();
+        groups.add(-1);
+        List<Node> tops = new ArrayList<>();
+        for( int k = 0; k < nodeToCladeGroup.length; ++k ) {
+            Node n = tree.getNode(k);
+            if( ! n.isLeaf() ) {
+                int g = nodeToCladeGroup[k];
+                if( g != -1 ) {
+                    assert !n.isRoot();
+                    Node p = n.getParent();
+                    if( g != nodeToCladeGroup[p.getNr()] ) {
+                        groups.add(nodeToCladeGroup[p.getNr()]);
+                        tops.add(n);
+                    }
+                }
+            }
+        }
+//        List<Integer> canIDs = new ArrayList<>();
+//        for( int k = 0; k < nodeToCladeGroup.length; ++k ) {
+//            Node n = tree.getNode(k);
+//            if( ! n.isLeaf() ) {
+//                int g = nodeToCladeGroup[k];
+//                if( groups.contains(g) ) {
+//                   canIDs.add(k);
+//                }
+//            }
+//        }
+//        {
+//            // wonders of Java
+//            fixedCands = new int[canIDs.size()];
+//            int k = 0;
+//            for( int i : canIDs ) {
+//              fixedCands[k] = i;
+//                k += 1;
+//            }
+//        }
+        {
+            int[] c = new int[tops.size()];
+            int k = 0;
+            for (Node n : tops) {
+                if( !groups.contains(nodeToCladeGroup[n.getNr()]) ) {
+                    c[k] = n.getNr();
+                    ++k;
+                }
+            }
+            ctops = new int[k];
+            System.arraycopy(c,0,ctops,0,k);
+        }
+    }
 
 	List<Node> getCandidateNodes(Tree tree) {
         List<Node> list = new ArrayList<Node>();
+        if( tree.getNodeCount() != prevNodeCount ) {
+            nodeToCladeGroup = MonoCladesMapping.setupNodeGroup(tree, cladesSetInput.get());
+            prevNodeCount = tree.getNodeCount();
+            if( !topLevelOnlyInput.get() ) {
+                initForCandidates(tree);
+            }
+        }
 
         if( topLevelOnlyInput.get() ) {
-            if( tree.getNodeCount() != prevNodeCount ) {
-                nodeToCladeGroup = MonoCladesMapping.setupNodeGroup(tree, cladesSetInput.get());
-                prevNodeCount = tree.getNodeCount();
-            }
-
             for (int k = 0; k < nodeToCladeGroup.length; ++k) {
                 if( nodeToCladeGroup[k] == -1 ) {
                     list.add(tree.getNode(k));
@@ -276,10 +333,27 @@ public class RestrictedSubtreeSlide extends SubtreeSlide {
             }
         } else {
             Set<Node> candidates = new HashSet<Node>();
-            for (int i = 0; i < nrOfTaxa.length; i++) {
-                calcPredecessorsOfClade(tree.getRoot(), new int[1], isInTaxaSet[i], nrOfTaxa[i], candidates);
+            for(int k = 0; k < ctops.length; ++k) {
+                int nr = ctops[k];
+                Node n = tree.getNode(nr);
+                while( nodeToCladeGroup[nr] == nodeToCladeGroup[n.getParent().getNr()]) {
+                    n = n.getParent();
+                }
+                ctops[k] = n.getNr();
+
+                while( n != null && !candidates.contains(n) ) {
+                    candidates.add(n);
+                    n = n.getParent();
+                }
             }
-            //List<Node> list = new ArrayList<Node>();
+            if( false ) {  // ICC
+                 Set<Node> candidates1 = new HashSet<Node>();
+                for (int i = 0; i < nrOfTaxa.length; i++) {
+                    calcPredecessorsOfClade(tree.getRoot(), new int[1], isInTaxaSet[i], nrOfTaxa[i], candidates1);
+                }
+                final boolean b = candidates.equals(candidates1);
+                assert b;
+            }
             list.addAll(candidates);
         }
 
