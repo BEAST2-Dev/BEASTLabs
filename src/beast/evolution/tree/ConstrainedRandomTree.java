@@ -10,6 +10,7 @@ import beast.math.distributions.MultiMonophyleticConstraint;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Description("Random tree with constraints specified by one tree, just like multiple monophyly.")
 public class ConstrainedRandomTree extends RandomTree  {
@@ -53,14 +54,15 @@ public class ConstrainedRandomTree extends RandomTree  {
     private void cleanup() {
         final Tree itree = m_initial.get();
 
-        ArrayList<Object> ox = new ArrayList(itree.getOutputs());
+        Set outputs1 = itree.getOutputs();
+        ArrayList<Object> ox = new ArrayList(outputs1);
         for (Object o : ox) {
-            if( !outputs.contains(o) ) {
+            if( ! getOutputs().contains(o) ) {
                 itree.getOutputs().remove(o);
             }
 
         }
-        outputs = null;
+        //this.outputs = null;
     }
 
     @Override
