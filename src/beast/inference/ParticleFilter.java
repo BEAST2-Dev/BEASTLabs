@@ -143,7 +143,7 @@ public class ParticleFilter extends beast.core.Runnable {
 	        // State initialisation
 	        HashSet<StateNode> operatorStateNodes = new HashSet<StateNode>();
 	        for (Operator op : mcmc.operatorsInput.get()) {
-	        	for (BEASTInterface o : op.listActivePlugins()) {
+	        	for (BEASTInterface o : op.listActiveBEASTObjects()) {
 	        		if (o instanceof StateNode) {
 	        			operatorStateNodes.add((StateNode) o);
 	        		}
