@@ -25,11 +25,11 @@ public class PrunedAlignment extends Alignment {
 
       final DataType.Base udp = source.userDataTypeInput.get();
       if( udp != null ) {
-          userDataTypeInput = source.userDataTypeInput;
+          userDataTypeInput.setValue(udp, this);
       } else {
-          dataTypeInput = source.dataTypeInput;
+          dataTypeInput.setValue(source.dataTypeInput.get(), this);
       }
-      stateCountInput = source.stateCountInput;
+      stateCountInput.setValue(source.stateCountInput.get(), this);
 
       List<Integer> sites = m_sites.get();
 
