@@ -23,7 +23,7 @@ public class SimpleConstrainedRandomTree extends SimpleRandomTree  {
 
     @Override
     public void initAndValidate() throws Exception {
-        final Tree itree = m_initial.get();
+        //final Tree itree = m_initial.get();
 
         List<MRCAPrior> cons = getCons();
         List<MRCAPrior> origCons = new ArrayList();
@@ -34,6 +34,9 @@ public class SimpleConstrainedRandomTree extends SimpleRandomTree  {
         clearup();
         if (origCons.size() > 0)
         	calibrationsInput.setValue(origCons, this);
+//        if (m_initial.get() != null) {
+//       	  initStateNodes();
+//        }
     }
 
     private ArrayList<Object> outputs = null;
