@@ -268,15 +268,17 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
 
         buildTree(sTaxa);
         assert nextNodeNr == nodeCount;
-        final double rate = 1/rateInput.get();
+        double rate = 1/rateInput.get();
         boolean succ = false;
-        int ntries = 4;
+        int ntries = 6;
+        final double epsi = 0.01/rate;
         while( !succ && ntries > 0 ) {
-            succ = setHeights(rate, false);
+            succ = setHeights(rate, false, epsi);
             --ntries;
+            rate *= 2;
         }
         if( ! succ ) {
-           succ = setHeights(rate, true);
+           succ = setHeights(rate, true, 0);
         }
         assert succ;
 
@@ -503,7 +505,7 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
         return nodes.get(0);
     }
 
-    private boolean setHeights(final double rate, final boolean safe) throws ConstraintViolatedException {
+    private boolean setHeights(final double rate, final boolean safe, final double epsi) throws ConstraintViolatedException {
         //  node low >= all child nodes low. node high < parent high
         assert rate > 0;
         Node[] post = listNodesPostOrder(null, null);
@@ -589,6 +591,9 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
                         }
                     }
                     assert h + r <= b.upper;
+                    if( r <= epsi && h + r + epsi*1.001 < b.upper ) {
+                        r += 1.001*epsi;
+                    }
                     h += r;
                 }
                 node.setHeight(h);
@@ -603,7 +608,7 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
         // for now fail - this happens rarely
         for(int i = post.length-1; i >= 0; --i) {
             final Node node = post[i];
-            if( !node.isRoot() && node.getLength() == 0 ) {
+            if( !node.isRoot() && node.getLength() <= epsi ) {
                return false;
             }
         }
