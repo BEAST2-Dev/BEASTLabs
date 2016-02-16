@@ -30,6 +30,7 @@ package beast.evolution.likelihood;
 
 
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -78,6 +79,15 @@ public class ThreadedTreeLikelihood extends Distribution {
     enum Scaling {none, always, _default};
     final public Input<Scaling> scalingInput = new Input<>("scaling", "type of scaling to use, one of " + Arrays.toString(Scaling.values()) + ". If not specified, the -beagle_scaling flag is used.", Scaling._default, Scaling.values());
     
+    /** private list of likelihoods, to notify framework of TreeLikelihoods being created in initAndValidate() **/
+    final private Input<List<TreeLikelihood>> likelihoodsInput = new Input<>("xxx","",new ArrayList<>());
+    
+    @Override
+    public List<Input<?>> listInputs() {
+    	List<Input<?>> list =  super.listInputs();
+    	list.add(likelihoodsInput);
+    	return list;
+    }
     
     /** calculation engine **/
     private TreeLikelihood [] treelikelihood;
@@ -120,8 +130,16 @@ public class ThreadedTreeLikelihood extends Distribution {
     	
     	if (m_nThreads == 1) {    		
     		treelikelihood[0] = new TreeLikelihood();
-    		treelikelihood[0].initByName("data", dataInput.get(), "tree", treeInput.get(), "siteModel", m_pSiteModel.get(), "branchRateModel", branchRateModelInput.get(), "useAmbiguities", useAmbiguitiesInput.get());
+    		treelikelihood[0].setID(getID() + "0");
+    		treelikelihood[0].initByName("data", dataInput.get(), 
+    				"tree", treeInput.get(), 
+    				"siteModel", m_pSiteModel.get(), 
+    				"branchRateModel", branchRateModelInput.get(), 
+    				"useAmbiguities", useAmbiguitiesInput.get(),
+					"scaling" , scalingInput.get() + ""
+    				);
     		treelikelihood[0].getOutputs().add(this);
+    		likelihoodsInput.get().add(treelikelihood[0]);
     	} else {
     		
         	calcPatternPoints(dataInput.get().getSiteCount());
@@ -132,7 +150,10 @@ public class ThreadedTreeLikelihood extends Distribution {
         			filterSpec += data.excludefromInput.get() + "-" + data.excludetoInput.get() + "," + filterSpec;
         		}
         		treelikelihood[i] = new TreeLikelihood();
+        		treelikelihood[i].setID(getID() + i);
         		treelikelihood[i].getOutputs().add(this);
+        		likelihoodsInput.get().add(treelikelihood[i]);
+
         		FilteredAlignment filter = new FilteredAlignment();
         		if (i == 0 && dataInput.get() instanceof FilteredAlignment && ((FilteredAlignment)dataInput.get()).constantSiteWeightsInput.get() != null) {
         			filter.initByName("data", dataInput.get()/*, "userDataType", m_data.get().getDataType()*/, 
@@ -144,7 +165,10 @@ public class ThreadedTreeLikelihood extends Distribution {
         							"filter", filterSpec
         							);
         		}
-        		treelikelihood[i].initByName("data", filter, "tree", treeInput.get(), "siteModel", duplicate(m_pSiteModel.get(), i), "branchRateModel", duplicate(branchRateModelInput.get(), i), 
+        		treelikelihood[i].initByName("data", filter, 
+        				"tree", treeInput.get(), 
+        				"siteModel", duplicate(m_pSiteModel.get(), i), 
+        				"branchRateModel", duplicate(branchRateModelInput.get(), i), 
         				"useAmbiguities", useAmbiguitiesInput.get(),
 						"scaling" , scalingInput.get() + ""
         				);
@@ -278,7 +302,7 @@ public class ThreadedTreeLikelihood extends Distribution {
 	
     private double calculateLogPByBeagle() throws Exception {
 		try {
-			if (m_nThreads >= 1) {
+			if (m_nThreads > 1) {
 				m_nCountDown = new CountDownLatch(m_nThreads);
 		    	for (int iThread = 0; iThread < m_nThreads; iThread++) {
 		    		BeagleCoreRunnable coreRunnable = new BeagleCoreRunnable(iThread, treelikelihood[iThread]);
@@ -316,16 +340,18 @@ public class ThreadedTreeLikelihood extends Distribution {
 
     @Override
     public void store() {
-		for (TreeLikelihood b : treelikelihood) {
-			b.store();
-		}
+//		for (TreeLikelihood b : treelikelihood) {
+//			b.store();
+//		}
+    	super.store();
     }
 
     @Override
     public void restore() {
-		for (TreeLikelihood b : treelikelihood) {
-			b.restore();
-		}
+//		for (TreeLikelihood b : treelikelihood) {
+//			b.restore();
+//		}
+    	super.restore();
     }
         
     /**
