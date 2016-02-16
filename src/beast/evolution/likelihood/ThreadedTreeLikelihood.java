@@ -41,6 +41,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
 
 import beast.app.BeastMCMC;
+import beast.core.BEASTInterface;
 import beast.core.Description;
 import beast.core.Distribution;
 import beast.core.Input;
@@ -48,11 +49,9 @@ import beast.core.State;
 import beast.core.Input.Validate;
 import beast.core.util.Log;
 import beast.evolution.alignment.Alignment;
-import beast.evolution.alignment.AscertainedAlignment;
 import beast.evolution.alignment.FilteredAlignment;
 import beast.evolution.branchratemodel.BranchRateModel;
 import beast.evolution.branchratemodel.StrictClockModel;
-import beast.evolution.likelihood.BeagleTreeLikelihood;
 import beast.evolution.sitemodel.SiteModel;
 import beast.evolution.substitutionmodel.SubstitutionModel;
 import beast.evolution.tree.Node;
@@ -87,7 +86,7 @@ public class ThreadedTreeLikelihood extends Distribution {
     
     /** calculation engine **/
     protected ThreadedLikelihoodCore m_likelihoodCore;
-    BeagleTreeLikelihood [] m_beagle;
+    TreeLikelihood [] m_beagle;
     
     /** Plugin associated with inputs. Since none of the inputs are StateNodes, it
      * is safe to link to them only once, during initAndValidate.
@@ -157,28 +156,46 @@ public class ThreadedTreeLikelihood extends Distribution {
     		throw new Exception("The number of nodes in the tree does not match the number of sequences");
     	}
     	
-    	m_beagle = new BeagleTreeLikelihood[m_nThreads];
+    	m_beagle = new TreeLikelihood[m_nThreads];
     	String sJavaOnly = null;
     	if (useJava.get()) {
     		sJavaOnly = System.getProperty("java.only");
     		System.setProperty("java.only", "" + true);
     	}
-    	if (m_nThreads == 1) {
-    		m_beagle[0] = new BeagleTreeLikelihood();
+    	if (m_data.get().isAscertained) {
+    		Log.warning.println("Note, because the alignment is ascertained -- can only use single trhead per alignment");
+    		m_nThreads = 1;
+    	};
+    	if (m_nThreads == 1) {    		m_beagle[0] = new TreeLikelihood();
     		m_beagle[0].initByName("data", m_data.get(), "tree", m_tree.get(), "siteModel", m_pSiteModel.get(), "branchRateModel", m_pBranchRateModel.get(), "useAmbiguities", m_useAmbiguities.get());
+    		m_beagle[0].getOutputs().add(this);
     	} else {
     		
         	calcPatternPoints(m_data.get().getSiteCount());
         	for (int i = 0; i < m_nThreads; i++) {
+        		Alignment data = m_data.get();
         		String filterSpec = (patternPoints[i] +1) + "-" + (patternPoints[i + 1]);
-        		m_beagle[i] = new BeagleTreeLikelihood();
+        		if (data.isAscertained) {
+        			filterSpec += data.excludefromInput.get() + "-" + data.excludetoInput.get() + "," + filterSpec;
+        		}
+        		m_beagle[i] = new TreeLikelihood();
+        		m_beagle[i].getOutputs().add(this);
         		FilteredAlignment filter = new FilteredAlignment();
         		if (i == 0 && m_data.get() instanceof FilteredAlignment && ((FilteredAlignment)m_data.get()).constantSiteWeightsInput.get() != null) {
-        			filter.initByName("data", m_data.get()/*, "userDataType", m_data.get().getDataType()*/, "filter", filterSpec, "constantSiteWeights", ((FilteredAlignment)m_data.get()).constantSiteWeightsInput.get());
+        			filter.initByName("data", m_data.get()/*, "userDataType", m_data.get().getDataType()*/, 
+        							"filter", filterSpec, 
+        							"constantSiteWeights", ((FilteredAlignment)m_data.get()).constantSiteWeightsInput.get(),
+        							"excludeFrom" , 0,
+        							"excludeTo", data.excludetoInput.get() - data.excludefromInput.get(),
+        							"ascertained", data.isAscertained);
         		} else {
-        			filter.initByName("data", m_data.get()/*, "userDataType", m_data.get().getDataType()*/, "filter", filterSpec);
+        			filter.initByName("data", m_data.get()/*, "userDataType", m_data.get().getDataType()*/, 
+        							"filter", filterSpec,
+        							"excludeFrom" , 0,
+        							"excludeTo", data.excludetoInput.get() - data.excludefromInput.get(),
+        							"ascertained", data.isAscertained);
         		}
-        		m_beagle[i].initByName("data", filter, "tree", m_tree.get(), "siteModel", m_pSiteModel.get(), "branchRateModel", m_pBranchRateModel.get(), "useAmbiguities", m_useAmbiguities.get());
+        		m_beagle[i].initByName("data", filter, "tree", m_tree.get(), "siteModel", duplicate(m_pSiteModel.get(), i), "branchRateModel", duplicate(m_pBranchRateModel.get(), i), "useAmbiguities", m_useAmbiguities.get());
         	}
     	}
     	if (useJava.get()) {
@@ -189,7 +206,7 @@ public class ThreadedTreeLikelihood extends Distribution {
 	    	}
     	}
 
-    	if (m_beagle[0].beagle != null) {
+    	if (true || m_beagle[0].beagle != null) {
     		//a Beagle instance was found, so we use it
     		return;
     	}
@@ -242,7 +259,51 @@ public class ThreadedTreeLikelihood extends Distribution {
     	calcPatternPoints(nPatterns);
     }
     
-    void calcPatternPoints(int nPatterns) {
+    
+    /** create new instance of src object, connecting all inputs from src object
+     * Note if input is a SubstModel, it is duplicated as well.
+     * @param src object to be copied
+     * @param i index used to extend ID with.
+     * @return copy of src object
+     */
+    private Object duplicate(BEASTInterface src, int i) throws Exception {
+    	if (src == null) { 
+    		return null;
+    	}
+    	BEASTInterface copy;
+		try {
+			copy = src.getClass().newInstance();
+        	copy.setID(src.getID() + "_" + i);
+		} catch (InstantiationException | IllegalAccessException e) {
+			e.printStackTrace();
+			throw new RuntimeException("Programmer error: every object in the model should have a default constructor that is publicly accessible: " + src.getClass().getName());
+		}
+        for (Input<?> input : src.listInputs()) {
+            if (input.get() != null) {
+                if (input.get() instanceof List) {
+                    // handle lists
+                	//((List)copy.getInput(input.getName())).clear();
+                    for (Object o : (List<?>) input.get()) {
+                        if (o instanceof BEASTInterface) {
+                        	// make sure it is not already in the list
+                            copy.setInputValue(input.getName(), o);
+                        }
+                    }
+                } else if (input.get() instanceof SubstitutionModel) {
+                	// duplicate subst models
+                	BEASTInterface substModel = (BEASTInterface) duplicate((BEASTInterface) input.get(), i);
+            		copy.setInputValue(input.getName(), substModel);
+            	} else {
+                    // it is some other value
+            		copy.setInputValue(input.getName(), input.get());
+            	}
+            }
+        }
+        copy.initAndValidate();
+		return copy;
+	}
+
+	void calcPatternPoints(int nPatterns) {
 		patternPoints = new int[m_nThreads + 1];
 		if (proportionsInput.get() == null) {
 			int range = nPatterns / m_nThreads;
@@ -390,7 +451,7 @@ public class ThreadedTreeLikelihood extends Distribution {
 
     @Override
     public double calculateLogP() throws Exception {
-    	if (m_beagle != null) {
+    	if (true || m_beagle != null) {
     		logP =  calculateLogPByBeagle();
     		return logP;
     	}
@@ -622,9 +683,9 @@ public class ThreadedTreeLikelihood extends Distribution {
 	
 	class BeagleCoreRunnable implements Runnable {
 		int m_iThread;
-		BeagleTreeLikelihood beagle;
+		TreeLikelihood beagle;
 		
-		BeagleCoreRunnable(int iThread, BeagleTreeLikelihood beagle) {
+		BeagleCoreRunnable(int iThread, TreeLikelihood beagle) {
 			    m_iThread = iThread;
 			    this.beagle = beagle;
 		}
@@ -806,7 +867,7 @@ public class ThreadedTreeLikelihood extends Distribution {
     protected boolean requiresRecalculation() {
     	if (m_beagle != null) {
     		boolean requiresRecalculation = false;
-    		for (BeagleTreeLikelihood b : m_beagle) {
+    		for (TreeLikelihood b : m_beagle) {
     			requiresRecalculation |= b.requiresRecalculation();
     		}
     		return requiresRecalculation;
@@ -831,7 +892,7 @@ public class ThreadedTreeLikelihood extends Distribution {
     @Override
     public void store() {
     	if (m_beagle != null) {
-    		for (BeagleTreeLikelihood b : m_beagle) {
+    		for (TreeLikelihood b : m_beagle) {
     			b.store();
     		}
     		return;
@@ -846,7 +907,7 @@ public class ThreadedTreeLikelihood extends Distribution {
     @Override
     public void restore() {
     	if (m_beagle != null) {
-    		for (BeagleTreeLikelihood b : m_beagle) {
+    		for (TreeLikelihood b : m_beagle) {
     			b.restore();
     		}
     		return;
