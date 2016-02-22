@@ -84,7 +84,7 @@ public class TreeReport extends Logger {
 	}
 
 	@Override
-	public void init() throws Exception { }
+	public void init() { }
 
 	@Override
 	public void log(int nSample) {

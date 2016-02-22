@@ -124,7 +124,7 @@ public class FilteredValuable extends CalculationNode implements Function, Logga
      * logging of values happens in derived classes) *
      */
     @Override
-    public void init(final PrintStream out) throws Exception {
+    public void init(final PrintStream out) {
         if (getDimension() == 1) {
             out.print(getID() + "\t");
         } else {

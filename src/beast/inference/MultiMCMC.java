@@ -2,6 +2,7 @@ package beast.inference;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
@@ -118,7 +119,7 @@ public class MultiMCMC extends MCMC {
 	
 	@SuppressWarnings("unchecked")
 	@Override 
-	public void run() throws Exception {
+	public void run() throws IOException {
 		// start threads with individual chains here.
 		m_threads = new Thread[m_chains.length];
 		int k = 0;
@@ -161,7 +162,11 @@ public class MultiMCMC extends MCMC {
 		}
 		
 		// wait 5 seconds for the log to complete
-		Thread.sleep(5000);
+		try {
+			Thread.sleep(5000);
+		} catch (InterruptedException e) {
+			// ingore
+		}
 	} // run
 	
 	/** Represents class that tails all logs files and tree log files.

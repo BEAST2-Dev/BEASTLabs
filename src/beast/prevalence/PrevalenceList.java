@@ -86,7 +86,7 @@ public class PrevalenceList extends StateNode {
 	
 	public List<Item> getItems() {return m_items;}
 	
-	public int indexOfNode(int nNodeID) throws Exception {
+	public int indexOfNode(int nNodeID) {
 //		// linear search
 //		for (int iTime = 0; iTime < m_items.size(); iTime++) {
 //			if (m_items.get(iTime).m_nNodeID == nNodeID) {
@@ -101,7 +101,7 @@ public class PrevalenceList extends StateNode {
 			int iTime = Arrays.binarySearch(m_items.toArray(), item);
 			return iTime;
 		}
-		throw new Exception("Cannot find item for node ID " + nNodeID + ". " +
+		throw new IllegalArgumentException("Cannot find item for node ID " + nNodeID + ". " +
 				"Choose on of " + m_nodeIDtoItemMap.keySet().toString());
 	}
 	
@@ -168,7 +168,7 @@ public class PrevalenceList extends StateNode {
 	
 	/** move entry at index iTem to fTargetTime.
 	 * throws Exception if iTime is outside range of list. **/
-	public void move(int iTime, double fTargetTime) throws Exception {
+	public void move(int iTime, double fTargetTime) {
 		if (iTime >= 0 && iTime < m_items.size()) {
 			Item item = m_items.get(iTime);
 			m_items.remove(iTime);
@@ -185,7 +185,7 @@ public class PrevalenceList extends StateNode {
 			}
 			return;
 		}
-		throw new Exception("Cannot move an item outside the range of the list");
+		throw new IllegalArgumentException("Cannot move an item outside the range of the list");
 	}
 	
 	
@@ -293,7 +293,7 @@ public class PrevalenceList extends StateNode {
 
 	@Override
 	/** scale only those items associated with a node and leave the rest **/
-	public int scale(double fScale) throws Exception {
+	public int scale(double fScale) {
 		Set<Integer> nodes = m_nodeIDtoItemMap.keySet();
 		for (Integer nNodeID : nodes) {
 			int iTime = indexOfNode(nNodeID);
@@ -314,7 +314,7 @@ public class PrevalenceList extends StateNode {
 	}
 
 	@Override
-	public void init(PrintStream out) throws Exception {
+	public void init(PrintStream out) {
 	}
 
 	@Override

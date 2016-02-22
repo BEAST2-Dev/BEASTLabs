@@ -133,7 +133,7 @@ public class ParameterConstrainer extends CalculationNode implements Loggable {
         return parameter;
     }
 
-    public void init(PrintStream out) throws Exception {
+    public void init(PrintStream out) {
         if (dim == 1) {
             out.print(getID() + "\t");
         } else {

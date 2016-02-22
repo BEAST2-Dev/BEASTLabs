@@ -1,7 +1,12 @@
 package beast.inference;
 
 
+import java.io.IOException;
 import java.util.Collections;
+
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.xml.sax.SAXException;
 
 import beast.core.Description;
 import beast.core.Distribution;
@@ -32,12 +37,12 @@ public class HeatedMCMC extends MCMC {
 		return oldLogLikelihood / temperature;
 	};
 
-	public void setChainNr(int i, int resampleEvery) throws Exception {
+	public void setChainNr(int i, int resampleEvery) {
 		temperature = 1 + i * LAMBDA;
 		this.resampleEvery = resampleEvery;
 	}
 
-	protected double calcCurrentLogLikelihoodRobustly() throws Exception {
+	protected double calcCurrentLogLikelihoodRobustly() {
 		oldLogLikelihood = robustlyCalcPosterior(posterior);
 		return getCurrentLogLikelihood();
 	};
@@ -49,7 +54,7 @@ public class HeatedMCMC extends MCMC {
 //	}
 	
     @Override
-    public void run() throws Exception {
+    public void run() throws IOException, SAXException, ParserConfigurationException {
         // set up state (again). Other plugins may have manipulated the
         // StateNodes, e.g. set up bounds or dimensions
         state.initAndValidate();
@@ -90,7 +95,7 @@ public class HeatedMCMC extends MCMC {
         System.err.println("Start likelihood: " + oldLogLikelihood + " " + (nInitialisationAttempts > 1 ? "after " + nInitialisationAttempts + " initialisation attempts" : ""));
         if (Double.isInfinite(oldLogLikelihood) || Double.isNaN(oldLogLikelihood)) {
             reportLogLikelihoods(posterior, "");
-            throw new Exception("Could not find a proper state to initialise. Perhaps try another seed.");
+            throw new RuntimeException("Could not find a proper state to initialise. Perhaps try another seed.");
         }
 
         loggers = loggersInput.get();

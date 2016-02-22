@@ -1,5 +1,6 @@
 package beast.inference;
 
+import java.io.IOException;
 import java.io.PrintStream;
 
 import beast.core.Description;
@@ -31,7 +32,7 @@ public class SimulatedAnnealing extends MCMC implements Loggable {
 	
 	@Override
     /** main MCMC loop **/ 
-    protected void doLoop() throws Exception {
+    protected void doLoop() throws IOException {
         String sBestXML = state.toXML(0);
         double fBestLogLikelihood = oldLogLikelihood;
 		double fTemp0 = startTemp.get();
@@ -116,7 +117,7 @@ public class SimulatedAnnealing extends MCMC implements Loggable {
                 double fLogLikelihood = robustlyCalcPosterior(posterior); 
                 if (Math.abs(fLogLikelihood - oldLogLikelihood) > 1e-6) {
                 	reportLogLikelihoods(posterior, "");
-                    throw new Exception("At sample "+ iSample + "\nLikelihood incorrectly calculated: " + oldLogLikelihood + " != " + fLogLikelihood
+                    throw new RuntimeException("At sample "+ iSample + "\nLikelihood incorrectly calculated: " + oldLogLikelihood + " != " + fLogLikelihood
                     		+ " Operator: " + operator.getClass().getName());
                 }
                 if (iSample > NR_OF_DEBUG_SAMPLES * 3) {
@@ -134,7 +135,7 @@ public class SimulatedAnnealing extends MCMC implements Loggable {
 
 
 	@Override
-	public void init(PrintStream out) throws Exception {
+	public void init(PrintStream out) {
 		out.append("temperature\t");
 	}
 

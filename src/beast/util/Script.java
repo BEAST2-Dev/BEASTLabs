@@ -313,7 +313,7 @@ public class Script extends CalculationNode implements Loggable, beast.core.Func
 
     // Loggable implementation
     @Override
-    public void init(final PrintStream out) throws Exception {
+    public void init(final PrintStream out) {
         if (value.length == 1)
             out.print(this.getID() + "\t");
         else

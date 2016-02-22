@@ -91,7 +91,7 @@ public class AncestralStateLogger extends TreeLikelihood implements Loggable {
 	
 
 	@Override
-	public void init(PrintStream out) throws Exception {
+	public void init(PrintStream out) {
 		String values = valueInput.get();
 		if (values != null && values.trim().length() > 0) {
 			// use values as labels

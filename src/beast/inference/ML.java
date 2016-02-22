@@ -1,5 +1,7 @@
 package beast.inference;
 
+import java.io.IOException;
+
 import beast.core.Description;
 import beast.core.MCMC;
 import beast.core.Operator;
@@ -10,7 +12,7 @@ public class ML extends MCMC {
 	
 	@Override
     /** main MCMC loop **/ 
-    protected void doLoop() throws Exception {
+    protected void doLoop() throws IOException {
         String sBestXML = state.toXML(0);
         double fBestLogLikelihood = oldLogLikelihood;
 		
@@ -81,7 +83,7 @@ public class ML extends MCMC {
                 double fLogLikelihood = robustlyCalcPosterior(posterior); 
                 if (Math.abs(fLogLikelihood - oldLogLikelihood) > 1e-6) {
                 	reportLogLikelihoods(posterior, "");
-                    throw new Exception("At sample "+ iSample + "\nLikelihood incorrectly calculated: " + oldLogLikelihood + " != " + fLogLikelihood
+                    throw new RuntimeException("At sample "+ iSample + "\nLikelihood incorrectly calculated: " + oldLogLikelihood + " != " + fLogLikelihood
                     		+ " Operator: " + operator.getClass().getName());
                 }
                 if (iSample > NR_OF_DEBUG_SAMPLES * 3) {

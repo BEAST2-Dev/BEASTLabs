@@ -51,7 +51,7 @@ public class Slice extends CalculationNode implements Function, Loggable {
     }
 
     @Override
-    public void init(PrintStream out) throws Exception {
+    public void init(PrintStream out) {
         for (int i=0; i<count; i++)
             out.print(((BEASTObject)functionInput.get()).getID()
                     + "[" + (indexStart + i) + "]\t");

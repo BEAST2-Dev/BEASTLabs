@@ -3,6 +3,7 @@ package beast.inference;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.util.List;
 
 import beast.core.Description;
@@ -137,7 +138,7 @@ public class MCMCMC extends MCMC {
 	}
 	
 	@Override 
-	public void run() throws Exception {
+	public void run() throws IOException {
 		
 		int successfullSwaps = 0, successfullSwaps0 = 0;
 //		for (HeatedMCMC chain:m_chains) {
@@ -210,7 +211,11 @@ public class MCMCMC extends MCMC {
 		System.err.println("#Successfull swaps = " + successfullSwaps);
 		System.err.println("#Successfull swaps with cold chain = " + successfullSwaps0);
 		// wait 5 seconds for the log to complete
-		Thread.sleep(5000);
+		try {
+			Thread.sleep(5000);
+		} catch (InterruptedException e) {
+			// ignore
+		}
 	} // run
 	
 	private void assignState(HeatedMCMC mcmc1, HeatedMCMC mcmc2) {

@@ -35,7 +35,7 @@ public class LoggableSum extends BEASTObject implements Loggable {
      * Loggable interface implementation follows  
      */
     @Override
-	public void init(PrintStream out) throws Exception {
+	public void init(PrintStream out) {
         out.print("sum("+((BEASTObject)m_valuable).getID() + ")\t");
     }
 
