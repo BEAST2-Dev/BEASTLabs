@@ -27,9 +27,9 @@ public class MultiMonophyleticConstraint extends Distribution {
     /** Constraints are encoded as a list of taxon numbers for each constraint
      * TaxonIDList contains a list of constraints
      */
-    List<List<Integer>> taxonIDList;
+    protected List<List<Integer>> taxonIDList;
 
-    Tree tree;
+    protected Tree tree;
     String[] taxaList;
 
     // indexed by node number, the (smallest monophyletic) clade this leaf belongs to (0 .. #clades). -1 for free taxa.
@@ -40,7 +40,7 @@ public class MultiMonophyleticConstraint extends Distribution {
     int[] cladeParent;
 
     @Override
-    public void initAndValidate() throws Exception {
+    public void initAndValidate() {
         taxonIDList = new ArrayList<List<Integer>>();
         tree = treeInput.get();
         taxaList = tree.getTaxonset().asStringList().toArray(new String[]{});
@@ -108,7 +108,7 @@ public class MultiMonophyleticConstraint extends Distribution {
 	/** extract clades from Newick string,
 	 * and add constraints for all internal nodes (except the root if it contains all taxa)
 	 **/
-	private void parse(String newick) {
+	protected void parse(String newick) {
 		// get rid of initial and trailing spaces
 		newick = newick.trim();
 		// remove comments
@@ -149,7 +149,7 @@ public class MultiMonophyleticConstraint extends Distribution {
 	}
 
 
-    private int indexOf(String taxon) {
+    protected int indexOf(String taxon) {
 		for (int k = 0; k < taxaList.length; k++) {
 			if (taxon.equals(taxaList[k])) {
 				return k;
@@ -159,10 +159,13 @@ public class MultiMonophyleticConstraint extends Distribution {
 	}
 
 	@Override
-    public double calculateLogP() throws Exception {
-        final boolean mono1 = isBinaryInput.get() ? isMonoJH() : isMonoJHNonBinary();
+    public double calculateLogP() {
+        boolean mono1 = isBinaryInput.get() ? isMonoJH() : isMonoJHNonBinary();
         if( false ) assert mono1 == isMonoRB();   // assert is expensive. isMonoJH replaces the much slower isMonoRB
 
+        if (!mono1) {
+        	//mono1 = isMonoRB();
+        }
         logP = mono1 ? 0 : Double.NEGATIVE_INFINITY;
         return logP;
     }

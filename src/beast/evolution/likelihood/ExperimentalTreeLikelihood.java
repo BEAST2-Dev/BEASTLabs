@@ -107,10 +107,10 @@ public class ExperimentalTreeLikelihood extends Distribution {
     List<Integer> m_iConstantPattern = null;
     
     @Override
-    public void initAndValidate() throws Exception {
+    public void initAndValidate() {
     	// sanity check: alignment should have same #taxa as tree
     	if (m_data.get().getNrTaxa() != m_tree.get().getLeafNodeCount()) {
-    		throw new Exception("The number of nodes in the tree does not match the number of sequences");
+    		throw new IllegalArgumentException("The number of nodes in the tree does not match the number of sequences");
     	}
     	
         int nNodeCount = m_tree.get().getNodeCount();
@@ -281,7 +281,7 @@ public class ExperimentalTreeLikelihood extends Distribution {
     int m_nScale = 0;
     int X = 100;
     @Override
-    public double calculateLogP() throws Exception {
+    public double calculateLogP() {
         Tree tree = m_tree.get();
 
        	traverse(tree.getRoot());
@@ -311,7 +311,7 @@ public class ExperimentalTreeLikelihood extends Distribution {
         return logP;
     }
 
-    private void calcLogP() throws Exception {
+    private void calcLogP() {
         //m_likelihoodCore.getPatternLogLikelihoods(m_fPatternLogLikelihoods);
         if (m_bAscertainedSitePatterns) {
             logP = 0.0;
@@ -328,7 +328,7 @@ public class ExperimentalTreeLikelihood extends Distribution {
     }
 
     /* Assumes there IS a branch rate model as opposed to traverse() */
-    int traverse(Node node) throws Exception {
+    int traverse(Node node) {
 
         int update = (node.isDirty()| m_nHasDirt);
 
@@ -375,7 +375,7 @@ public class ExperimentalTreeLikelihood extends Distribution {
                 if (m_siteModel.integrateAcrossCategories()) {
                     m_likelihoodCore.calculatePartials(childNum1, childNum2, iNode);
                 } else {
-                    throw new Exception("Error TreeLikelihood 201: Site categories not supported");
+                    throw new RuntimeException("Error TreeLikelihood 201: Site categories not supported");
                     //m_pLikelihoodCore->calculatePartials(childNum1, childNum2, nodeNum, siteCategories);
                 }
 

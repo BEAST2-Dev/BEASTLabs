@@ -43,7 +43,7 @@ public class MCMCParticleAsync extends MCMCParticle {
 	double m_fThreshHold;
 	
 	@Override
-	public void initAndValidate() throws Exception {
+	public void initAndValidate() {
 		super.initAndValidate();
 
 		m_nParticles = 0;

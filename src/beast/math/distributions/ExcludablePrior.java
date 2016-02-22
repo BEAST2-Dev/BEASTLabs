@@ -37,7 +37,7 @@ public class ExcludablePrior extends Prior {
             + " of x to include", Validate.REQUIRED);
     
     @Override
-    public void initAndValidate() throws Exception {        
+    public void initAndValidate() {        
         super.initAndValidate();
         
         Function x = m_x.get();
@@ -49,7 +49,7 @@ public class ExcludablePrior extends Prior {
     }
     
     @Override
-    public double calculateLogP() throws Exception {
+    public double calculateLogP() {
         Function x = m_x.get();
         if (x instanceof RealParameter || x instanceof IntegerParameter) {
         	// test that parameter is inside its bounds

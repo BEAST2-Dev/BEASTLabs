@@ -20,7 +20,7 @@ public class PrunedAlignment extends Alignment {
   public PrunedAlignment() {}
 
   @Override
-  public void initAndValidate() throws Exception {
+  public void initAndValidate() {
       final Alignment source = m_srcAlignment.get();
 
       final DataType.Base udp = source.userDataTypeInput.get();

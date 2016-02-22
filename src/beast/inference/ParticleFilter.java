@@ -3,6 +3,7 @@ package beast.inference;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
@@ -76,7 +77,7 @@ public class ParticleFilter extends beast.core.Runnable {
 
 
 	@Override
-	public void initAndValidate() throws Exception {
+	public void initAndValidate() {
 		m_nParticles = m_nParticlesInput.get();
 		m_sScript = m_sScriptInput.get();
 		int nStepSize = m_nStepSizeInput.get();
@@ -90,10 +91,10 @@ public class ParticleFilter extends beast.core.Runnable {
 		
 		File rootDir = new File(m_sRootDir.get());
 		if (!rootDir.exists()) {
-			throw new Exception("Directory " + m_sRootDir.get() + " does not exist.");
+			throw new IllegalArgumentException("Directory " + m_sRootDir.get() + " does not exist.");
 		}
 		if (!rootDir.isDirectory()) {
-			throw new Exception(m_sRootDir.get() + " is not a directory.");
+			throw new IllegalArgumentException(m_sRootDir.get() + " is not a directory.");
 		}
 		
 		// initialise MCMC
@@ -124,13 +125,18 @@ public class ParticleFilter extends beast.core.Runnable {
 		for (int i = 0; i < m_nParticles; i++) {
 			File particleDir = new File(getParticleDir(i));
 			if (!particleDir.exists() && !particleDir.mkdir()) {
-				throw new Exception("Failed to make directory " + particleDir.getName());
+				throw new IllegalArgumentException("Failed to make directory " + particleDir.getName());
 			}
 			particleDir.setWritable(true, false);
-        	FileOutputStream xmlFile = new FileOutputStream(particleDir.getAbsoluteFile() + "/beast.xml");
-        	PrintStream out = new PrintStream(xmlFile);
-            out.print(sXML);
-			out.close();
+			try {
+	        	FileOutputStream xmlFile;
+				xmlFile = new FileOutputStream(particleDir.getAbsoluteFile() + "/beast.xml");
+	        	PrintStream out = new PrintStream(xmlFile);
+	            out.print(sXML);
+				out.close();
+			} catch (FileNotFoundException e) {
+				throw new IllegalArgumentException(e);
+			}
 		}
 		
 		m_sStates = new String[m_nParticles];

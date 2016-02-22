@@ -19,7 +19,7 @@ public class PrunedRelaxedClockModel extends BranchRateModel.Base {
     private boolean normed = false;
 
     @Override
-    public void initAndValidate() throws Exception {
+    public void initAndValidate() {
         ptree = tree.get();
         ptree.keepTrack();
 

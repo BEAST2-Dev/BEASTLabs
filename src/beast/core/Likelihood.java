@@ -18,7 +18,7 @@ import beast.core.util.CompoundDistribution;
 public class Likelihood extends CompoundDistribution {
 	
 	@Override
-    public void initAndValidate() throws Exception {
+    public void initAndValidate() {
         // Check no DataNode has two likelihoods defined for it
 		// first, find all state nodes that have any references
 		List<Distribution> likelihoods = pDistributions.get();
@@ -30,7 +30,7 @@ public class Likelihood extends CompoundDistribution {
 			collectDataNodes(distribution, DataNodesPerLikelihood[k]);
 			// sanity check
 			if (DataNodesPerLikelihood[k].size() == 0) {
-				throw new Exception("Likelihood (id=" + likelihoods.get(k).getID() + ") does not cover any DataNode. " +
+				throw new IllegalArgumentException("Likelihood (id=" + likelihoods.get(k).getID() + ") does not cover any DataNode. " +
 						"This indicates the model is not valid.");
 			}
 		}
@@ -41,7 +41,7 @@ public class Likelihood extends CompoundDistribution {
 		DataNodes.addAll(DataNodesPerLikelihood[0]);
 		for (k = 1; k < nLikelihoods; k++) {
 			if (DataNodes.containsAll(DataNodesPerLikelihood[k])) {
-				throw new Exception("Likelihood (id=" + likelihoods.get(k).getID() + ") does not cover a DataNode exclusively. " +
+				throw new IllegalArgumentException("Likelihood (id=" + likelihoods.get(k).getID() + ") does not cover a DataNode exclusively. " +
 						"This indicates the model is not valid.");
 			}
 			DataNodes.addAll(DataNodesPerLikelihood[k]);
@@ -49,7 +49,7 @@ public class Likelihood extends CompoundDistribution {
 		
     } // initAndValidate
 
-	void collectDataNodes(BEASTInterface plugin, Set<DataNode> DataNodes) throws Exception {
+	void collectDataNodes(BEASTInterface plugin, Set<DataNode> DataNodes) {
 		for (BEASTInterface o : plugin.listActiveBEASTObjects()) {
 			if (o instanceof DataNode) {
 				DataNodes.add((DataNode) o);

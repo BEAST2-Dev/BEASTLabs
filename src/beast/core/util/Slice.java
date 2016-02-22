@@ -22,7 +22,7 @@ public class Slice extends CalculationNode implements Function, Loggable {
     protected int indexStart, indexEnd, count;
 
     @Override
-    public void initAndValidate() throws Exception {
+    public void initAndValidate() {
         indexStart = startIndexInput.get();
         count = countInput.get();
         indexEnd = indexStart + count - 1;

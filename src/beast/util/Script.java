@@ -33,7 +33,7 @@ public class Script extends CalculationNode implements Loggable, beast.core.Func
     boolean isScript = true; // otherwise it is an expression
     double [] value;
 
-    @Override public void initAndValidate() throws Exception {
+    @Override public void initAndValidate() {
         // create a script engine manager
         ScriptEngineManager factory = new ScriptEngineManager();
         // create a JavaScript engine
@@ -43,7 +43,11 @@ public class Script extends CalculationNode implements Loggable, beast.core.Func
 
         Object o = null;
         if (scriptInput.get() != null && scriptInput.get().trim().length() > 0) { 
-	        o = engine.eval(scriptInput.get());
+	        try {
+				o = engine.eval(scriptInput.get());
+			} catch (ScriptException e) {
+				throw new IllegalArgumentException(e);
+			}
         } else {
         	StringBuilder f = new StringBuilder();
         	// create function with argument list
@@ -69,7 +73,12 @@ public class Script extends CalculationNode implements Loggable, beast.core.Func
         	f.append(expressionInput.get());
         	f.append(";}\n}");
         	Log.info.println(f);
-	        o = engine.eval(f.toString());
+        	try {
+        		o = engine.eval(f.toString());
+			} catch (ScriptException e) {
+				throw new IllegalArgumentException(e);
+			}
+
         }
 //        if (o instanceof NativeArray) {
 //            value = new double[((NativeArray)o).size()];

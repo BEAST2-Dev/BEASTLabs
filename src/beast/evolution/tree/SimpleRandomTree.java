@@ -27,6 +27,7 @@ package beast.evolution.tree;
 
 
 import beast.core.*;
+import beast.core.util.Log;
 import beast.evolution.alignment.Alignment;
 import beast.evolution.alignment.TaxonSet;
 import beast.evolution.operators.DistanceProvider;
@@ -35,6 +36,8 @@ import beast.math.distributions.ParametricDistribution;
 import beast.util.Randomizer;
 
 import java.util.*;
+
+import org.apache.commons.math.MathException;
 
 
 @Description("This class provides the basic engine for coalescent simulation of a given demographic model over a given time period. ")
@@ -100,7 +103,7 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
     }
 
     @Override
-    public void initAndValidate() throws Exception {
+    public void initAndValidate() {
         sTaxa = new LinkedHashSet<>();
         if (taxaInput.get() != null) {
             sTaxa.addAll(taxaInput.get().getTaxaNames());
@@ -122,11 +125,11 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
         list.set(j, tmp);
     }
 
-    public void initStateNodes() throws Exception {
+    public void initStateNodes() {
         doTheWork();
     }
 
-    public void doTheWork() throws Exception {
+    public void doTheWork() {
         // find taxon sets we are dealing with
         taxonSets = new ArrayList<>();
         m_bounds = new ArrayList<>();
@@ -169,7 +172,7 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
 	            for (final String sTaxonID : taxonSet.asStringList()) {
 
 	                if (!sTaxa.contains(sTaxonID)) {
-	                    throw new Exception("Taxon <" + sTaxonID + "> could not be found in list of taxa. Choose one of " + sTaxa.toArray(new String[0]));
+	                    throw new IllegalArgumentException("Taxon <" + sTaxonID + "> could not be found in list of taxa. Choose one of " + sTaxa.toArray(new String[0]));
 	                }
 	                bTaxa.add(sTaxonID);
 	            }
@@ -181,8 +184,12 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
 	        		for (int i = plugins.size() - 1; i >= 0 ; i--) {
 	        			plugins.get(i).initAndValidate();
 	        		}
-	                bounds.lower = distr.inverseCumulativeProbability(0.0) + distr.offsetInput.get();
-	                bounds.upper = distr.inverseCumulativeProbability(1.0) + distr.offsetInput.get();
+	                try {
+						bounds.lower = distr.inverseCumulativeProbability(0.0) + distr.offsetInput.get();
+		                bounds.upper = distr.inverseCumulativeProbability(1.0) + distr.offsetInput.get();
+					} catch (MathException e) {
+						Log.warning.println("Could not set bounds in SimpleRandomTree::doTheWork : " + e.getMessage());
+					}
 	            }
 
 	            if (prior.isMonophyleticInput.get()) {
@@ -223,7 +230,7 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
                     // o taxonset1 is superset of taxonset2 OR
                     // o taxonset1 does not intersect taxonset2
                     if (!(bIsSubset || bIsSubset2)) {
-                        throw new Exception("333: Don't know how to generate a Random Tree for taxon sets that intersect, " +
+                        throw new IllegalArgumentException("333: Don't know how to generate a Random Tree for taxon sets that intersect, " +
                                 "but are not inclusive. Taxonset " + taxonSetIDs.get(i) + " and " + taxonSetIDs.get(j));
                     }
                     // swap i & j if b1 subset of b2
@@ -273,12 +280,20 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
         int ntries = 6;
         final double epsi = 0.01/rate;
         while( !succ && ntries > 0 ) {
-            succ = setHeights(rate, false, epsi);
+            try {
+				succ = setHeights(rate, false, epsi);
+			} catch (ConstraintViolatedException e) {
+				throw new RuntimeException("Contraint failed: " + e.getMessage());
+			}
             --ntries;
             rate *= 2;
         }
         if( ! succ ) {
-           succ = setHeights(rate, true, 0);
+           try {
+        	   succ = setHeights(rate, true, 0);
+           } catch (ConstraintViolatedException e) {
+        	   throw new RuntimeException("Contraint failed: " + e.getMessage());
+           }
         }
         assert succ;
 

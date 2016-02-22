@@ -49,7 +49,7 @@ public class MCMCMC extends MCMC {
 	List<StateNode> tmpStateNodes;
 
 	@Override
-	public void initAndValidate() throws Exception {
+	public void initAndValidate() {
 		if (nrOfChainsInput.get() < 1) {
 			throw new RuntimeException("chains must be at least 1");
 		}
@@ -87,20 +87,24 @@ public class MCMCMC extends MCMC {
 			String sXML2 = sXML;
 			sXML2 = sXML2.replaceAll("\\$\\(seed\\)", nSeed+i+"");
 
-	        FileWriter outfile = new FileWriter(new File("/tmp/MCMCMC.xml"));
-	        outfile.write(sXML2);
-	        outfile.close();
+			try {
+		        FileWriter outfile = new FileWriter(new File("/tmp/MCMCMC.xml"));
+		        outfile.write(sXML2);
+		        outfile.close();
+				
+				chains[i] = (HeatedMCMC) parser.parseFragment(sXML2, true);
+	
+				// remove all loggers, except for main cahin
+				if (i != 0) {
+					chains[i].loggersInput.get().clear();
+				}
+				chains[i].setChainNr(i, resampleEvery);
+				chains[i].setStateFile(stateFileName + "." +i, restoreFromFile);
 			
-			chains[i] = (HeatedMCMC) parser.parseFragment(sXML2, true);
-
-			// remove all loggers, except for main cahin
-			if (i != 0) {
-				chains[i].loggersInput.get().clear();
+				chains[i].run();
+			} catch (Exception e) {
+				throw new RuntimeException(e);
 			}
-			chains[i].setChainNr(i, resampleEvery);
-			chains[i].setStateFile(stateFileName + "." +i, restoreFromFile);
-			
-			chains[i].run();
 		}
 	
 		// reopen log files for main chain, which were closed at the end of run(); 

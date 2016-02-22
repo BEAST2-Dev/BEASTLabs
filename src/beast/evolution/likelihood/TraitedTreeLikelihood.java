@@ -31,7 +31,7 @@ public class TraitedTreeLikelihood extends TreeLikelihood {
 	}
 	
 	@Override
-	public void initAndValidate() throws Exception {
+	public void initAndValidate() {
     	// sanity check: alignment should have same #taxa as tree
 //    	if (m_traitSet.get().getNrTaxa() != m_tree.get().getLeafNodeCount()) {
 //    		throw new Exception("The number of nodes in the tree does not match the number of sequences");
@@ -40,7 +40,7 @@ public class TraitedTreeLikelihood extends TreeLikelihood {
     	
         int nodeCount = treeInput.get().getNodeCount();
         if (!(siteModelInput.get() instanceof SiteModel.Base)) {
-        	throw new Exception ("siteModel input should be of type SiteModel.Base");
+        	throw new IllegalArgumentException ("siteModel input should be of type SiteModel.Base");
         }
         m_siteModel = (SiteModel.Base) siteModelInput.get();
 
@@ -105,13 +105,13 @@ public class TraitedTreeLikelihood extends TreeLikelihood {
 	}
 	
     /** set leaf states in likelihood core **/
-    void setTraitStates(Node node, int patternCount) throws Exception {
+    void setTraitStates(Node node, int patternCount) {
         if (node.isLeaf()) {
             int[] states = new int[patternCount];
     		DataType dataType = m_dataTypeInput.get();
         	String sValue = m_traitSet.get().getStringValue(node.getNr());
         	if (sValue == null) {
-        		throw new Exception("Trait not specified for " + node.getID());
+        		throw new IllegalArgumentException("Trait not specified for " + node.getID());
         	}
         	List<Integer> iStates = dataType.string2state(sValue);
         	for (int iPattern = 0; iPattern < patternCount; iPattern++) {
@@ -132,7 +132,7 @@ public class TraitedTreeLikelihood extends TreeLikelihood {
     }
 	
 	
-    void setTraitPartials(Node node, int patternCount) throws Exception {
+    void setTraitPartials(Node node, int patternCount) {
         if (node.isLeaf()) {
     		DataType dataType = m_dataTypeInput.get();
         	int nStates = dataType.getStateCount();
@@ -140,7 +140,7 @@ public class TraitedTreeLikelihood extends TreeLikelihood {
 
         	String sValue = m_traitSet.get().getStringValue(node.getNr());
         	if (sValue == null) {
-        		throw new Exception("Trait not specified for " + node.getID());
+        		throw new IllegalArgumentException("Trait not specified for " + node.getID());
         	}
         	List<Integer> iStates = dataType.string2state(sValue);
 
@@ -161,7 +161,7 @@ public class TraitedTreeLikelihood extends TreeLikelihood {
     }
 	
     @Override
-    void calcLogP() throws Exception {
+    void calcLogP() {
         logP = 0.0;
         for (int i = 0; i < m_nPatterns; i++) {
             logP += patternLogLikelihoods[i];

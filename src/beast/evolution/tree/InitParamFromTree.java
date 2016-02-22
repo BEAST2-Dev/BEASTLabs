@@ -21,7 +21,7 @@ public class InitParamFromTree extends beast.core.BEASTObject implements StateNo
 	public Input<String> m_sPattern = new Input<String>("pattern","name of the metadata item to be parsed", Validate.REQUIRED);
 	
 	@Override
-	public void initAndValidate() throws Exception {
+	public void initAndValidate() {
 		initStateNodes();
 	}
 	

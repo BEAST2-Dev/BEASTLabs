@@ -28,7 +28,7 @@ public class TreeWithMetaDataRandomWalker extends Operator {
 	int windowSize;
 	
 	@Override
-	public void initAndValidate() throws Exception {
+	public void initAndValidate() {
 		treeoperator = treeoperatorInput.get();
 		treeoperator.setOperatorSchedule(new OperatorSchedule());
 		parameter = parameterInput.get();

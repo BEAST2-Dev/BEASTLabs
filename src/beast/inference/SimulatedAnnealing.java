@@ -21,7 +21,7 @@ public class SimulatedAnnealing extends MCMC implements Loggable {
 	double m_fDeltaLogTemp;
 	
 	@Override
-	public void initAndValidate() throws Exception {
+	public void initAndValidate() {
 		super.initAndValidate();
 		m_fDeltaLogTemp = Math.log(endTemp.get()) - Math.log(startTemp.get());
 	}

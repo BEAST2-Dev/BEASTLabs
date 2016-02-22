@@ -91,7 +91,7 @@ public class MCMC2 extends Runnable {
     final protected int NR_OF_DEBUG_SAMPLES = 2000;
 
     @Override
-    public void initAndValidate() throws Exception {
+    public void initAndValidate() {
         System.out.println("======================================================");
         System.out.println("Please cite the following when publishing this model:\n");
         System.out.println(getCitations());

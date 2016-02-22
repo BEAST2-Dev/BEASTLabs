@@ -53,7 +53,7 @@ public class ParameterConstrainer extends CalculationNode implements Loggable {
 
 
     @Override
-    public void initAndValidate() throws Exception {
+    public void initAndValidate() {
 
         dim = m_parameter.get().getDimension();
         tree = m_tree.get();
@@ -66,7 +66,7 @@ public class ParameterConstrainer extends CalculationNode implements Loggable {
         }
 
         if (startTime.get() < 0 || startTime.get() > youngestTipDate || endTime.get() < 0 || endTime.get() > youngestTipDate){
-            throw new Exception("Out of bounds: startTime or endTime is not within (0, T)");
+            throw new IllegalArgumentException("Out of bounds: startTime or endTime is not within (0, T)");
         }
         start = (int) (startTime.get() / dim);
         end = endTime.get();
@@ -74,7 +74,7 @@ public class ParameterConstrainer extends CalculationNode implements Loggable {
        initialConstrain();
     }
 
-    public void initialConstrain() throws Exception{
+    public void initialConstrain() {
         parameter = m_parameter.get();
 
         Double[] temp = baseParameter.get().getValues();

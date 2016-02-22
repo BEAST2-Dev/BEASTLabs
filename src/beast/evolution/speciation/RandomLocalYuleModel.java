@@ -34,7 +34,7 @@ public class RandomLocalYuleModel extends UltrametricSpeciationModel {
 //    private NumberFormat format = NumberFormat.getNumberInstance(Locale.ENGLISH);
  
     @Override
-    public void initAndValidate() throws Exception {
+    public void initAndValidate() {
 //        super.initAndValidate();
         tree = treeInput.get();
         this.birthRates = new double[tree.getNodeCount()];

@@ -22,7 +22,7 @@ public class SimpleConstrainedRandomTree extends SimpleRandomTree  {
 
 
     @Override
-    public void initAndValidate() throws Exception {
+    public void initAndValidate() {
         //final Tree itree = m_initial.get();
 
         List<MRCAPrior> cons = getCons();
@@ -41,7 +41,7 @@ public class SimpleConstrainedRandomTree extends SimpleRandomTree  {
 
     private ArrayList<Object> outputs = null;
 
-    private List<MRCAPrior> getCons() throws Exception {
+    private List<MRCAPrior> getCons() {
         final Tree tree = m_initial.get();
         outputs = new ArrayList(tree.getOutputs());
         final MultiMonophyleticConstraint mul = allConstraints.get();
@@ -78,7 +78,7 @@ public class SimpleConstrainedRandomTree extends SimpleRandomTree  {
     }
 
 	@Override
-    public void initStateNodes() throws Exception {
+    public void initStateNodes() {
     	List<MRCAPrior> cons = getCons();
         List<MRCAPrior> origCons = new ArrayList();
         origCons.addAll(calibrationsInput.get());

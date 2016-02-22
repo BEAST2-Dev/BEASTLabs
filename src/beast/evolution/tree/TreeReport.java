@@ -58,12 +58,12 @@ public class TreeReport extends Logger {
 	TreeTraceAnalysis traceAnalysis;
 
 	@Override
-	public void initAndValidate() throws Exception {
+	public void initAndValidate() {
 
 		List<BEASTObject> loggers = loggersInput.get();
         final int nLoggers = loggers.size();
         if (nLoggers == 0) {
-            throw new Exception("Logger with nothing to log specified");
+            throw new IllegalArgumentException("Logger with nothing to log specified");
         }
 
 		if (everyInput.get() != null)

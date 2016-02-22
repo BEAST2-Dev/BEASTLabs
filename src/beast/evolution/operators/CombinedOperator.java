@@ -23,7 +23,7 @@ public class CombinedOperator extends Operator {
 	Operator operator2;
 	
 	@Override
-	public void initAndValidate() throws Exception {
+	public void initAndValidate() {
 		operatorGroup1 = operatorGroup1Input.get();
 		operatorGroup2 = operatorGroup2Input.get();
 	}
@@ -56,7 +56,7 @@ public class CombinedOperator extends Operator {
 	}
 	
 	@Override
-	public List<StateNode> listStateNodes() throws Exception {
+	public List<StateNode> listStateNodes() {
 		List<StateNode> list = new ArrayList<StateNode>();
 		for (Operator operator : operatorGroup1) {
 			List<StateNode> list2 = operator.listStateNodes();

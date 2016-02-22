@@ -50,7 +50,7 @@ public class PrunedTree extends Tree {
     }
 
     @Override
-    public void initAndValidate() throws Exception {
+    public void initAndValidate() {
         expensiveAsserts = m_assert.get();
 
         final Tree tree = m_tree.get();
@@ -66,7 +66,7 @@ public class PrunedTree extends Tree {
         }
 
         if( !treeTaxa.containsAll(taxaNames) ) {
-            throw new Exception("Taxa is not a subset of base tree taxa.");
+            throw new IllegalArgumentException("Taxa is not a subset of base tree taxa.");
         }
 
         final int nTaxa = taxaNames.size();

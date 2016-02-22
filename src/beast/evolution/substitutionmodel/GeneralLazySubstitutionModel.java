@@ -54,7 +54,7 @@ public class GeneralLazySubstitutionModel extends GeneralSubstitutionModel {
 
 	
 	@Override
-    public void initAndValidate() throws Exception {
+    public void initAndValidate() {
 		m_relaxationMode = m_modeInput.get();
 		super.initAndValidate();
     } // initAndValidate

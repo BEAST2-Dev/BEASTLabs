@@ -20,7 +20,7 @@ public class MCMCParticle extends MCMC {
 	int k;
 	
 	@Override
-	public void initAndValidate() throws Exception {
+	public void initAndValidate() {
 		m_nStepSize = m_stepSize.get();
 		m_sParticleDir = System.getProperty("beast.particle.dir");
 		System.err.println("MCMCParticle living in " + m_sParticleDir);

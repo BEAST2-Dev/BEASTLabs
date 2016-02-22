@@ -13,7 +13,7 @@ import beast.core.util.CompoundDistribution;
 public class Prior extends CompoundDistribution {
 
 	@Override
-    public void initAndValidate() throws Exception {
+    public void initAndValidate() {
         // Check no StateNode has two priors defined for it
 		// first, find all state nodes that have any references
 		List<Distribution> priors = pDistributions.get();
@@ -25,7 +25,7 @@ public class Prior extends CompoundDistribution {
 			collectStateNodes(distribution, stateNodesPerPrior[k]);
 			// sanity check
 			if (stateNodesPerPrior[k].size() == 0) {
-				throw new Exception("Prior (id=" + priors.get(k).getID() + ") does not cover any StateNode. " +
+				throw new IllegalArgumentException("Prior (id=" + priors.get(k).getID() + ") does not cover any StateNode. " +
 						"This indicates the model is not valid.");
 			}
 		}
@@ -36,7 +36,7 @@ public class Prior extends CompoundDistribution {
 		stateNodes.addAll(stateNodesPerPrior[0]);
 		for (k = 1; k < nPriors; k++) {
 			if (stateNodes.containsAll(stateNodesPerPrior[k])) {
-				throw new Exception("Prior (id=" + priors.get(k).getID() + ") does not cover a StateNode exclusively. " +
+				throw new IllegalArgumentException("Prior (id=" + priors.get(k).getID() + ") does not cover a StateNode exclusively. " +
 						"This indicates the model is not valid.");
 			}
 			stateNodes.addAll(stateNodesPerPrior[k]);
@@ -44,7 +44,7 @@ public class Prior extends CompoundDistribution {
 		
     } // initAndValidate
 
-	void collectStateNodes(BEASTInterface plugin, Set<StateNode> stateNodes) throws Exception {
+	void collectStateNodes(BEASTInterface plugin, Set<StateNode> stateNodes) {
 		for (BEASTInterface o : plugin.listActiveBEASTObjects()) {
 			if (o instanceof StateNode) {
 				stateNodes.add((StateNode) o);

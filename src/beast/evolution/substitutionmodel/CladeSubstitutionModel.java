@@ -47,10 +47,10 @@ public class CladeSubstitutionModel extends SubstitutionModel.Base {
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public void initAndValidate() throws Exception{
+	public void initAndValidate(){
     	super.initAndValidate();
 		if (m_clades.get().size() != m_clademodel.get().size()) {
-			throw new Exception("The number of clades should match the number of (non-default) substitution models");
+			throw new IllegalArgumentException("The number of clades should match the number of (non-default) substitution models");
 		}
 		
 		m_substitutionModels = new SubstitutionModel[1+m_clademodel.get().size()];
@@ -72,7 +72,7 @@ public class CladeSubstitutionModel extends SubstitutionModel.Base {
 				while (!data.get(iTaxon).taxonInput.get().equals(sLabel)) {
 					iTaxon++;
 					if (iTaxon == data.size()) {
-						throw new Exception("Unknown taxon (" + sLabel + ") in clade number " + (i+1));
+						throw new IllegalArgumentException("Unknown taxon (" + sLabel + ") in clade number " + (i+1));
 					}
 				}
 				m_nLeafNrs[i].add(iTaxon);

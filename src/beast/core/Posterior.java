@@ -11,7 +11,7 @@ public class Posterior extends Distribution {
 	public Input<Likelihood> m_likelihood = new Input<Likelihood>("likelihood", "Likelihood distribution over the data", Validate.REQUIRED);
 	
 	@Override 
-    public double calculateLogP() throws Exception {
+    public double calculateLogP() {
         logP = m_prior.get().calculateLogP();
         if (Double.isInfinite(logP)) {
         	return logP;

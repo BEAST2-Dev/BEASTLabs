@@ -27,12 +27,12 @@ public class FilteredValuable extends CalculationNode implements Function, Logga
 	int[] indices;
 
 	@Override
-	public void initAndValidate() throws Exception {
+	public void initAndValidate() {
 		parameter = parameterInput.get();
 		parseFilterSpec();
 	}
 
-	private void parseFilterSpec() throws Exception {
+	private void parseFilterSpec() {
 		// parse filter specification
 		String range = rangeInput.get();
 		String[] filters = range.split(",");
@@ -64,7 +64,7 @@ public class FilteredValuable extends CalculationNode implements Function, Logga
 				to[i] = from[i];
 				step[i] = 1;
 			} else {
-				throw new Exception("Don't know how to parse filter " + range);
+				throw new IllegalArgumentException("Don't know how to parse filter " + range);
 			}
 		}
 

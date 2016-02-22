@@ -36,7 +36,7 @@ public class MonophyleticConstraint extends Distribution {
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public void initAndValidate() throws Exception {
+	public void initAndValidate() {
 		List<TaxonSet> taxonsets = m_set.get();
 		m_nIDs = new ArrayList[taxonsets.size()];
 		List<Sequence> data = m_taxa.get().sequenceInput.get();
@@ -49,7 +49,7 @@ public class MonophyleticConstraint extends Distribution {
 			m_nIDs[i] = new ArrayList<Integer>();
 			List<Taxon> set = taxonset.taxonsetInput.get();
 			if (set.size() <= 1) {
-				throw new Exception("Taxon set should contain at least two taxa");
+				throw new IllegalArgumentException("Taxon set should contain at least two taxa");
 			}
 			for (Taxon taxon : set) {
 				String sLabel = taxon.getID();
@@ -57,7 +57,7 @@ public class MonophyleticConstraint extends Distribution {
 				while (!data.get(iTaxon).taxonInput.get().equals(sLabel)) {
 					iTaxon++;
 					if (iTaxon == data.size()) {
-						throw new Exception("Unknown taxon (" + sLabel + ") in set (typo?)");
+						throw new IllegalArgumentException("Unknown taxon (" + sLabel + ") in set (typo?)");
 					}
 				}
 				m_nIDs[i].add(iTaxon);
@@ -70,7 +70,7 @@ public class MonophyleticConstraint extends Distribution {
 	} // initAndValidate
 	
 	@Override
-    public double calculateLogP() throws Exception {
+    public double calculateLogP() {
 //		for (int i = 0; i < m_nIDs.length; i++) {
 //			if (!isMonoPhyletic(m_nIDs[i])) {
 //				return Double.NEGATIVE_INFINITY;

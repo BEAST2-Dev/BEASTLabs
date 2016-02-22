@@ -44,6 +44,8 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.*;
 
+import org.apache.commons.math.MathException;
+
 
 
 
@@ -102,7 +104,7 @@ public class ConstrainedClusterTree extends Tree implements StateNodeInitialiser
     
     
     @Override
-    public void initAndValidate() throws Exception {
+    public void initAndValidate() {
     	EPSILON = epsilonInput.get();
         RealParameter clockRate = clockRateInput.get();
 
@@ -110,7 +112,7 @@ public class ConstrainedClusterTree extends Tree implements StateNodeInitialiser
     		taxaNames = dataInput.get().getTaxaNames();
     	} else {
     		if (m_taxonset.get() == null) {
-    			throw new Exception("At least one of taxa and taxonset input needs to be specified");
+    			throw new IllegalArgumentException("At least one of taxa and taxonset input needs to be specified");
     		}
     		taxaNames = m_taxonset.get().asStringList();
     	}
@@ -212,7 +214,11 @@ public class ConstrainedClusterTree extends Tree implements StateNodeInitialiser
         findConstrainedNodes(calibrations, getRoot(), nodeToBoundMap);
         if (nodeToBoundMap.size() > 0) {
         	// adjust node heights to MRCAPriors
-        	handlebounds(getRoot(), nodeToBoundMap, EPSILON);
+        	try {
+				handlebounds(getRoot(), nodeToBoundMap, EPSILON);
+			} catch (MathException e) {
+				Log.warning.println("Bounds could not be set");
+			}
         }
 
         initStateNodes();
@@ -233,7 +239,7 @@ public class ConstrainedClusterTree extends Tree implements StateNodeInitialiser
      */
     public static List<MRCAPrior> collectCalibrations(List<String> taxaNames, Tree tree,
 			MultiMonophyleticConstraint multiMonophyleticConstraint, List<MRCAPrior> MRCAPriors, 
-			List<boolean[]> constraints, List<Integer> constraintsize) throws Exception {
+			List<boolean[]> constraints, List<Integer> constraintsize) {
     	List<MRCAPrior> calibrations = new ArrayList<>();
 
     	int nrOfTaxa = taxaNames.size();
@@ -261,7 +267,7 @@ public class ConstrainedClusterTree extends Tree implements StateNodeInitialiser
 	        for (final String sTaxonID : taxa) {
 	            final int iID = taxaNames.indexOf(sTaxonID);
 	            if (iID < 0) {
-	                throw new Exception("Taxon <" + sTaxonID + "> could not be found in list of taxa. Choose one of " + taxaNames.toArray(new String[0]));
+	                throw new IllegalArgumentException("Taxon <" + sTaxonID + "> could not be found in list of taxa. Choose one of " + taxaNames.toArray(new String[0]));
 	            }
 	            bTaxa[iID] = true;
 	            size++;
@@ -281,7 +287,7 @@ public class ConstrainedClusterTree extends Tree implements StateNodeInitialiser
             for( String sTaxonID : c ) {
 	            final int iID = taxaNames.indexOf(sTaxonID);
 	            if (iID < 0) {
-	                throw new Exception("Taxon <" + sTaxonID + "> could not be found in list of taxa. Choose one of " + taxaNames.toArray(new String[0]));
+	                throw new IllegalArgumentException("Taxon <" + sTaxonID + "> could not be found in list of taxa. Choose one of " + taxaNames.toArray(new String[0]));
 	            }
 	            bTaxa[iID] = true;
 	        }
@@ -294,7 +300,7 @@ public class ConstrainedClusterTree extends Tree implements StateNodeInitialiser
 
 
 	/** calculate nodeToBoundMap; for every MRCAPrior, a node will be added to the map **/
-    static public void findConstrainedNodes(List<MRCAPrior> calibrations, Node root, Map<Node, MRCAPrior> nodeToBoundMap) throws Exception {
+    static public void findConstrainedNodes(List<MRCAPrior> calibrations, Node root, Map<Node, MRCAPrior> nodeToBoundMap) {
     	for (MRCAPrior calibration : calibrations) {
     		int nrOfTaxa = calibration.taxonsetInput.get().getTaxonCount();
     		findConstrainedNode(calibration, calibration.taxonsetInput.get().asStringList(),
@@ -368,8 +374,9 @@ public class ConstrainedClusterTree extends Tree implements StateNodeInitialiser
 
 
     /** go through MRCAPriors
-     * Since we can easily scale a clade, start with the highest MRCAPrior, then process the nested ones **/
-    static public void handlebounds(Node node, Map<Node, MRCAPrior> nodeToBoundMap, double EPSILON) throws Exception {
+     * Since we can easily scale a clade, start with the highest MRCAPrior, then process the nested ones 
+     * @throws MathException **/
+    static public void handlebounds(Node node, Map<Node, MRCAPrior> nodeToBoundMap, double EPSILON) throws MathException {
     	if (!node.isLeaf()) {
     		if (nodeToBoundMap.containsKey(node)) {
     			MRCAPrior calibration = nodeToBoundMap.get(node);
@@ -496,7 +503,7 @@ public class ConstrainedClusterTree extends Tree implements StateNodeInitialiser
             }
         }
 
-        Node toNode() throws Exception {
+        Node toNode() {
             final Node node = newNode();
             node.setHeight(m_fHeight);
             if (m_left == null) {
@@ -586,7 +593,7 @@ public class ConstrainedClusterTree extends Tree implements StateNodeInitialiser
 
 
     @SuppressWarnings("unchecked")
-    public Node buildClusterer() throws Exception {
+    public Node buildClusterer() {
         final int nTaxa = taxaNames.size();
         if (nTaxa == 1) {
             // pathological case

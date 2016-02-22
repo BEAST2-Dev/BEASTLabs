@@ -103,7 +103,7 @@ public class ThreadedTreeLikelihood extends Distribution {
     private int [] patternPoints;
 	
     @Override
-    public void initAndValidate() throws Exception {
+    public void initAndValidate() {
 		m_nThreads = BeastMCMC.m_nThreads;
 
 		if (maxNrOfThreadsInput.get() > 0) {
@@ -113,7 +113,7 @@ public class ThreadedTreeLikelihood extends Distribution {
 
     	// sanity check: alignment should have same #taxa as tree
     	if (dataInput.get().getTaxonCount() != treeInput.get().getLeafNodeCount()) {
-    		throw new Exception("The number of nodes in the tree does not match the number of sequences");
+    		throw new IllegalArgumentException("The number of nodes in the tree does not match the number of sequences");
     	}
     	
     	treelikelihood = new TreeLikelihood[m_nThreads];
@@ -190,7 +190,7 @@ public class ThreadedTreeLikelihood extends Distribution {
      * @param i index used to extend ID with.
      * @return copy of src object
      */
-    private Object duplicate(BEASTInterface src, int i) throws Exception {
+    private Object duplicate(BEASTInterface src, int i) {
     	if (src == null) { 
     		return null;
     	}
@@ -270,7 +270,7 @@ public class ThreadedTreeLikelihood extends Distribution {
 
 
     @Override
-    public double calculateLogP() throws Exception {
+    public double calculateLogP() {
 		logP =  calculateLogPByBeagle();
 		return logP;
     }
@@ -300,7 +300,7 @@ public class ThreadedTreeLikelihood extends Distribution {
 
 	} // CoreRunnable
 	
-    private double calculateLogPByBeagle() throws Exception {
+    private double calculateLogPByBeagle() {
 		try {
 			if (m_nThreads > 1) {
 				m_nCountDown = new CountDownLatch(m_nThreads);
@@ -316,7 +316,7 @@ public class ThreadedTreeLikelihood extends Distribution {
 			} else {
 				logP = treelikelihood[0].calculateLogP();
 			}
-		} catch (RejectedExecutionException e) {
+		} catch (RejectedExecutionException | InterruptedException e) {
 			e.printStackTrace();
 			System.exit(0);
 		}

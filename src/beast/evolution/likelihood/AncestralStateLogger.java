@@ -10,6 +10,7 @@ import beast.core.Description;
 import beast.core.Input;
 import beast.core.Input.Validate;
 import beast.core.Loggable;
+import beast.evolution.alignment.Alignment;
 import beast.evolution.alignment.TaxonSet;
 import beast.evolution.tree.Node;
 import beast.util.Randomizer;
@@ -28,12 +29,44 @@ public class AncestralStateLogger extends TreeLikelihood implements Loggable {
     boolean logParent;
     
     @Override
-	public void initAndValidate() throws Exception {
+	public void initAndValidate() {
 		// ensure we do not use BEAGLE
         boolean forceJava = Boolean.valueOf(System.getProperty("java.only"));
         System.setProperty("java.only", "true");
 		super.initAndValidate();
         System.setProperty("java.only", "" + forceJava);
+        
+        
+// print out duplicates
+//        boolean headerShown = false;
+//        Alignment data = dataInput.get();
+//        for (int i = 0; i < data.getPatternCount(); i++) {
+//        	if (data.getPatternWeight(i) > 1) {
+//        		int [] pattern = data.getPattern(i);
+//        		int k = 0;
+//        		for (int j : pattern) {
+//        			if (j == 1) {k++;}
+//        		}
+//        		if (k >= 1) {
+//        			if (!headerShown) {
+//        				System.out.println("Pattern with multiple occurances that are not (singletons/lexemes)");
+//        			}
+//        			System.out.print(getID() + " (");
+//            		for (int j = 0; j < pattern.length; j++) {
+//            			if (pattern[j] == 1) {
+//            				System.out.print(data.getTaxaNames().get(j) + " ");
+//            			}            			
+//            		}
+//            		System.out.print(")");
+//        			for (int j = 0; j < data.getSiteCount(); j++) {
+//        				if (data.getPatternIndex(j) == i) {
+//        					System.out.print("site " + j + " ");
+//        				}
+//        			}
+//        			System.out.println();//"(contains " + k+ " 1s):" + Arrays.toString(pattern));
+//        		}
+//        	}
+//        }
 
 	
         isInTaxaSet.clear();
@@ -42,10 +75,10 @@ public class AncestralStateLogger extends TreeLikelihood implements Loggable {
         for (final String sTaxon : set) {
             final int iTaxon = taxaNames.indexOf(sTaxon);
             if (iTaxon < 0) {
-                throw new Exception("Cannot find taxon " + sTaxon + " in data");
+                throw new IllegalArgumentException("Cannot find taxon " + sTaxon + " in data");
             }
             if (isInTaxaSet.contains(sTaxon)) {
-                throw new Exception("Taxon " + sTaxon + " is defined multiple times, while they should be unique");
+                throw new IllegalArgumentException("Taxon " + sTaxon + " is defined multiple times, while they should be unique");
             }
             isInTaxaSet.add(sTaxon);
         }

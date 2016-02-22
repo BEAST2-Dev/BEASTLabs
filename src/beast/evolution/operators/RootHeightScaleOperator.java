@@ -13,7 +13,7 @@ public class RootHeightScaleOperator extends TreeOperator {
     double m_fScaleFactor;
     
 	@Override
-	public void initAndValidate() throws Exception {
+	public void initAndValidate() {
         m_fScaleFactor = m_pScaleFactor.get();
     }
 	

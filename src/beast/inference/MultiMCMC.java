@@ -16,6 +16,7 @@ import beast.evolution.tree.Node;
 import beast.util.Randomizer;
 import beast.util.TreeParser;
 import beast.util.XMLParser;
+import beast.util.XMLParserException;
 import beast.util.XMLProducer;
 
 
@@ -58,7 +59,7 @@ public class MultiMCMC extends MCMC {
 	int m_iLog = 0;
 
 	@Override
-	public void initAndValidate() throws Exception {
+	public void initAndValidate() {
 		m_chains = new MCMC[m_nrOfChains.get()];
 
 		// the difference between the various chains is
@@ -86,9 +87,13 @@ public class MultiMCMC extends MCMC {
 			sXML2 = sXML2.replaceAll("\\$\\(seed\\)", nSeed+i+"");
 			if (sXML2.equals(sXML)) {
 				// Uh oh, no seed in log name => logs will overwrite
-				throw new Exception("Use $(seed) in log file name to guarantee log files do not overwrite");
+				throw new IllegalArgumentException("Use $(seed) in log file name to guarantee log files do not overwrite");
 			}
-			m_chains[i] = (MCMC) parser.parseFragment(sXML2, true);
+			try {
+				m_chains[i] = (MCMC) parser.parseFragment(sXML2, true);
+			} catch (XMLParserException e) {
+				throw new IllegalArgumentException(e);
+			}
 			// remove log to stdout, if any
 			for (int iLogger = m_chains[i].loggersInput.get().size()-1; iLogger >= 0; iLogger--) {
 				if (m_chains[i].loggersInput.get().get(iLogger).fileNameInput.get() == null) {
@@ -107,7 +112,7 @@ public class MultiMCMC extends MCMC {
 		int nEveryLog = m_chains[0].loggersInput.get().get(m_iLog).everyInput.get();
 		int nEveryTree = m_chains[0].loggersInput.get().get(m_iTreeLog).everyInput.get();
 		if (nEveryLog != nEveryTree) {
-			throw new Exception("log frequencey and tree log frequencey should be the same.");
+			throw new IllegalArgumentException("log frequencey and tree log frequencey should be the same.");
 		}
 	} // initAndValidate
 	

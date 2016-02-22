@@ -16,7 +16,7 @@ public class TimeLogger extends BEASTObject implements Loggable {
 	reportUnits report;
 	
 	@Override
-	public void initAndValidate() throws Exception {
+	public void initAndValidate() {
 		report = reportInput.get();
 	}
 

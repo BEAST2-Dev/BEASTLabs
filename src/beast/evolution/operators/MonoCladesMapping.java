@@ -12,12 +12,14 @@ public class MonoCladesMapping {
     static private boolean internalTest = false;
 
     // Return a mapping from nodes to their 'constraint group'. Every node has a "most recent monophyletic ancestor" (MRMA), which is the first
-    // node that is a root of a monophyletic clade on the path from the node to the root (nodes which are not under any specific constarint have
+    // node that is a root of a monophyletic clade on the path from the node to the root (nodes which are not under any specific constraint have
     // the root as their MRMA, since the root is monophyletic by construction). Two nodes are in the same constraint group if they have the same
     // MRMA.
     //
     // Return a mapping from nodes to their MRMA "index", a number between -1 (the index of the root group) and k, where k is the number of
     // explicit constraints in mc. The mapping is indeed by node number.
+    //
+    // NB tree must conform to all constraints. Expect nonsensical numbering otherwise 
     //
     static public int[] setupNodeGroup(Tree tree, final MultiMonophyleticConstraint mc) {
         final int nodeCount = tree.getNodeCount();

@@ -50,10 +50,10 @@ public final class LazyHKY extends HKY {
 
 	
 	@Override
-    public void initAndValidate() throws Exception {
+    public void initAndValidate() {
 		m_relaxationMode = m_modeInput.get();
 		if (m_relaxationMode != RelaxationMode.exponential && m_theta.get() == null) {
-			throw new Exception("theta parameter should be specified if mode is " + m_relaxationMode);
+			throw new IllegalArgumentException("theta parameter should be specified if mode is " + m_relaxationMode);
 		}
 		super.initAndValidate();
     } // initAndValidate

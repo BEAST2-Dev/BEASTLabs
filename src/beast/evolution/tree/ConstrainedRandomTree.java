@@ -18,7 +18,7 @@ public class ConstrainedRandomTree extends RandomTree  {
     public final Input<MultiMonophyleticConstraint> allConstraints = new Input<>("constraints",
                 "all constraints as encoded by one unresolved tree.", Input.Validate.REQUIRED);
     @Override
-    public void initAndValidate() throws Exception {
+    public void initAndValidate() {
     	List<MRCAPrior> cons = getCons();
         List<MRCAPrior> origCons = new ArrayList();
         origCons.addAll(calibrationsInput.get());
@@ -29,7 +29,7 @@ public class ConstrainedRandomTree extends RandomTree  {
         	calibrationsInput.setValue(origCons, this);
     }
     
-    private List<MRCAPrior> getCons() throws Exception {
+    private List<MRCAPrior> getCons() {
         final Tree tree = m_initial.get();
         final MultiMonophyleticConstraint mul = allConstraints.get();
         List<List<String>> allc = mul.getConstraints();
@@ -66,7 +66,7 @@ public class ConstrainedRandomTree extends RandomTree  {
     }
 
     @Override
-    public void initStateNodes() throws Exception {
+    public void initStateNodes() {
     	List<MRCAPrior> cons = getCons();
         List<MRCAPrior> origCons = new ArrayList();
         origCons.addAll(calibrationsInput.get());

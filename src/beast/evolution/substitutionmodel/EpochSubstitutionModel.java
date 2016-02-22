@@ -25,7 +25,7 @@ public class EpochSubstitutionModel extends Base {
 	SubstitutionModel [] m_substitutionModels;
 	
 	@Override
-	public void initAndValidate() throws Exception {
+	public void initAndValidate() {
     	super.initAndValidate();
 		m_substitutionModels = new SubstitutionModel[m_models.get().size()];
 		int i = 0;
@@ -34,7 +34,7 @@ public class EpochSubstitutionModel extends Base {
 		}
 		// ensure the number of epoch dates is one less than the nr of models
 		if (m_substitutionModels.length != m_epochDates.get().getDimension()+1) {
-			throw new Exception("The number of epoch dates should be one less than the number of substitution models");
+			throw new IllegalArgumentException("The number of epoch dates should be one less than the number of substitution models");
 		}
 	}
 	
