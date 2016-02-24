@@ -105,8 +105,9 @@ public class MultiMonophyleticConstraint extends Distribution {
         }
     }
 
-	/** extract clades from Newick string,
-	 * and add constraints for all internal nodes (except the root if it contains all taxa)
+    /** extract clades from Newick string, and add constraints for all internal nodes
+     ** (except the root if it contains all taxa). This code populates taxonIDList.
+     **
 	 **/
 	protected void parse(String newick) {
 		// get rid of initial and trailing spaces
@@ -274,6 +275,7 @@ public class MultiMonophyleticConstraint extends Distribution {
         }
         return true;
     }
+
     private boolean isMonoJHNonBinary() {
         // this traversal is shared between all calling code in current cycle.
         Node[] post = tree.listNodesPostOrder(null, null);
