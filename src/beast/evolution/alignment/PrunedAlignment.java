@@ -13,8 +13,8 @@ import java.util.List;
         "with non-informative data (all sites are ambiguous).")
 public class PrunedAlignment extends Alignment {
     public Input<Alignment> m_srcAlignment = new Input<>("source", "alignment to prune from", Validate.REQUIRED);
-//    public Input<TaxonSet> taxonSetInput = new Input<>("taxa",
-//            "taxa to prune (defaults to all non-informative taxa, i.e. data is all '???')");
+    public Input<TaxonSet> taxonSetInput = new Input<>("prunedTaxa",
+           "taxa to prune (defaults to all non-informative taxa, i.e. data is all '???')");
     public Input<List<Integer>> m_sites = new Input<>("sites", "sites to retain (default all).", new ArrayList<Integer>());
 
   public PrunedAlignment() {}
