@@ -68,7 +68,7 @@ public class ExperimentalTreeLikelihood extends Distribution {
     /** Plugin associated with inputs. Since none of the inputs are StateNodes, it
      * is safe to link to them only once, during initAndValidate.
      */
-    SubstitutionModel.Base m_substitutionModel;
+    SubstitutionModel m_substitutionModel;
     protected SiteModel.Base m_siteModel;
     BranchRateModel.Base m_branchRateModel;
 
