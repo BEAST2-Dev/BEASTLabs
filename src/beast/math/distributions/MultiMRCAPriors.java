@@ -1,0 +1,131 @@
+package beast.math.distributions;
+
+import beast.core.Description;
+import beast.core.Input;
+import beast.core.State;
+import beast.evolution.operators.MonoCladesMapping;
+import beast.evolution.tree.Node;
+
+import java.util.*;
+
+@Description("A single distribution which efficiently takes care of a set of MRCA constraints.")
+public class MultiMRCAPriors extends MultiMonophyleticConstraint {
+
+    public Input<List<MRCAPrior>> calibrationsInput =
+                new Input<List<MRCAPrior>>("distribution", "Set of calibrated nodes", new ArrayList<MRCAPrior>());
+
+    private int[] nodeToCladeGroup = null;
+    private int prevNodeCount = -1;
+    private int[] ctops = null;
+
+    @Override
+    public void initAndValidate() {
+        super.initAndValidate();
+    }
+
+    @Override
+    protected void parse(String newick) {
+        super.parse(newick);
+        for( MRCAPrior m : calibrationsInput.get() ) {
+            if( ! m.tree.equals(this.tree) ) {
+                throw new IllegalArgumentException("All constraints must be on the same tree");
+            }
+            List<Integer> list = new ArrayList<Integer>();
+            for( String taxon : m.taxonsetInput.get().getTaxaNames() ) {
+                list.add(indexOf(taxon));
+            }
+            boolean add = true;
+            Set<Integer> slist = new HashSet<>(list);
+
+            for( List l : taxonIDList ) {
+                if( l.size() == slist.size() && slist.containsAll(l) ) {
+                    add = false;
+                    break;
+                }
+            }
+            if( add ) {
+                taxonIDList.add(list);
+            }
+        }
+    }
+
+    @Override
+    public double calculateLogP() {
+        double logp = super.calculateLogP();
+        if( logp != Double.NEGATIVE_INFINITY ) {
+            List<MRCAPrior> mrcaPriors = calibrationsInput.get();
+
+            if( tree.getNodeCount() != prevNodeCount ) {
+                nodeToCladeGroup = MonoCladesMapping.setupNodeGroup(tree, this);
+                prevNodeCount = tree.getNodeCount();
+
+                final int nCals = mrcaPriors.size();
+                ctops = new int[nCals];
+                int i = 0;
+                for( MRCAPrior m : mrcaPriors ) {
+                    m.calculateLogP(); // init
+                    ctops[i] = m.getCommonAncestor().getNr();
+                    i += 1;
+                }
+            }
+            for(int k = 0; k < ctops.length; ++k) {
+                final int nr = ctops[k];
+                Node n = tree.getNode(nr);
+                final int ng = nodeToCladeGroup[nr];
+                while( ng == nodeToCladeGroup[n.getParent().getNr()] ) {
+                    n = n.getParent();
+                }
+                ctops[k] = n.getNr();
+                {
+                    boolean ICC = false;
+                    if( ICC ) {
+                        mrcaPriors.get(k).calculateLogP();
+                        assert mrcaPriors.get(k).getCommonAncestor().equals(n);
+                    }
+                }
+                final double MRCATime = n.getDate();
+                ParametricDistribution dist = mrcaPriors.get(k).dist;
+                if( dist != null ) {
+                    final double v = dist.logDensity(MRCATime);
+                    if( v == Double.NEGATIVE_INFINITY ) {
+                        logp = Double.NEGATIVE_INFINITY;
+                        break;
+                    }
+                    logp += v;
+                }
+            }
+
+        }
+        logP = logp;
+        return logp;
+    }
+
+    @Override
+    public void store() {
+        super.store();
+    }
+
+    @Override
+    public void restore() {
+        super.restore();
+    }
+
+    @Override
+    protected boolean requiresRecalculation() {
+        return super.requiresRecalculation();
+    }
+
+    @Override
+    public void sample(final State state, final Random random) {
+    }
+
+    @Override
+    public List<String> getArguments() {
+        return null;
+    }
+
+    @Override
+    public List<String> getConditions() {
+        return null;
+    }
+}
