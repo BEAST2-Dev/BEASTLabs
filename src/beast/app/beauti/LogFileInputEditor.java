@@ -1,18 +1,18 @@
 package beast.app.beauti;
 
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 
 import javax.swing.JButton;
 
-import beast.app.draw.InputEditor;
 import beast.app.util.LogFile;
 import beast.app.util.Utils;
 import beast.core.BEASTInterface;
 import beast.core.Input;
 
-public class LogFileInputEditor extends InputEditor.Base {
+public class LogFileInputEditor extends FileInputEditor {
 	
 	private static final long serialVersionUID = 1L;
 
@@ -57,22 +57,5 @@ public class LogFileInputEditor extends InputEditor.Base {
 		});
 		add(button);
 	}
-
-	@Override
-	protected void setValue(Object o) {
-		String file = o.toString();
-		if (file.equals("")) {
-			return;
-		}
-		String fileSep = System.getProperty("file.separator");
-		String origFile = ((File) m_input.get()).getAbsolutePath();
-		if (origFile.indexOf(fileSep) >= 0 && file.indexOf(fileSep) < 0) {
-			if (origFile.contains(origFile)) {
-				file = origFile.substring(0, origFile.lastIndexOf(fileSep) + 1) + file;
-			}
-		}
-		m_input.setValue(file, m_beastObject);	
-   	}
-	
 
 }

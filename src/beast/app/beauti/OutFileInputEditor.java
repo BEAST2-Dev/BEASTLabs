@@ -12,9 +12,8 @@ import beast.app.util.OutFile;
 import beast.app.util.Utils;
 import beast.core.BEASTInterface;
 import beast.core.Input;
-import beast.app.draw.InputEditor;
 
-public class OutFileInputEditor extends InputEditor.Base {
+public class OutFileInputEditor extends FileInputEditor {
 	
 	private static final long serialVersionUID = 1L;
 
@@ -60,23 +59,5 @@ public class OutFileInputEditor extends InputEditor.Base {
 		add(button);
 	}
 	
-
-	@Override
-	protected void setValue(Object o) {
-		String file = o.toString();
-		if (file.equals("")) {
-			return;
-		}
-		String fileSep = System.getProperty("file.separator");
-		String origFile = ((File) m_input.get()).getAbsolutePath();
-		if (origFile.indexOf(fileSep) >= 0 && file.indexOf(fileSep) < 0) {
-			if (origFile.contains(origFile)) {
-				file = origFile.substring(0, origFile.lastIndexOf(fileSep) + 1) + file;
-			}
-		}
-		m_input.setValue(file, m_beastObject);	
-   	}
-	
-
 
 }
