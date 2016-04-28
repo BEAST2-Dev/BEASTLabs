@@ -17,6 +17,7 @@ import beast.core.Input;
  * use OutFile when you need a file for writing
  */
 public class FileInputEditor extends InputEditor.Base {
+	final static String SEPARATOR = Utils.isWindows() ? "\\\\" : "/";
 	
 	private static final long serialVersionUID = 1L;
 
@@ -47,15 +48,7 @@ public class FileInputEditor extends InputEditor.Base {
 			
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				File defaultFile;
-				if (m_input.get() != null && ((File) m_input.get()).exists()) {
-					defaultFile = (File) m_input.get();
-					if (defaultFile.getParent() == null) {
-						defaultFile = new File(Beauti.g_sDir);
-					}
-				} else {
-					defaultFile = new File(Beauti.g_sDir);
-				}
+				File defaultFile = getDefaultFile((File) m_input.get());
 				File file = Utils.getLoadFile(m_input.getTipText(), defaultFile, "All files", "");
 				try {
 					m_entry.setText(file.getName());
@@ -92,5 +85,29 @@ public class FileInputEditor extends InputEditor.Base {
 		m_input.setValue(file, m_beastObject);	
    	}
 	
+
+	static File getDefaultFile(File file) {
+		File defaultFile;
+		if (file.exists()) {
+			defaultFile = file;
+			if (defaultFile.getParent() == null) {
+				defaultFile = new File(Beauti.g_sDir);
+				if (defaultFile.isDirectory()) {
+					defaultFile = new File(Beauti.g_sDir + FileInputEditor.SEPARATOR + file.getName());
+				} else {
+					defaultFile = new File(new File(Beauti.g_sDir).getParent() + FileInputEditor.SEPARATOR + file.getName());
+				}
+			}
+		} else {
+			defaultFile = new File(Beauti.g_sDir);
+			if (defaultFile.isDirectory()) {
+				defaultFile = new File(Beauti.g_sDir + FileInputEditor.SEPARATOR + file.getName());
+			} else {
+				defaultFile = new File(new File(Beauti.g_sDir).getParent() + FileInputEditor.SEPARATOR + file.getName());
+			}
+		}
+		return defaultFile;
+	}
+
 
 }

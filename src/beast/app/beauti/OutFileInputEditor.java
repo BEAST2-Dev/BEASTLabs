@@ -38,15 +38,8 @@ public class OutFileInputEditor extends InputEditor.Base {
 			
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				File defaultFile;
-				if (((File) m_input.get()).exists()) {
-					defaultFile = (File) m_input.get();
-					if (defaultFile.getParent() == null) {
-						defaultFile = new File(Beauti.g_sDir);
-					}
-				} else {
-					defaultFile = new File(Beauti.g_sDir);
-				}
+				
+				File defaultFile = FileInputEditor.getDefaultFile((File) m_input.get());
 				File file = Utils.getSaveFile(m_input.getTipText(), defaultFile, "All files", "");
 				if (file != null) 
 					file = new OutFile(file.getPath());
@@ -64,5 +57,4 @@ public class OutFileInputEditor extends InputEditor.Base {
 		add(button);
 	}
 	
-
 }
