@@ -2,6 +2,7 @@ package beast.app.beauti;
 
 
 
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -9,11 +10,12 @@ import java.io.File;
 import javax.swing.JButton;
 
 import beast.app.util.OutFile;
+import beast.app.draw.InputEditor;
 import beast.app.util.Utils;
 import beast.core.BEASTInterface;
 import beast.core.Input;
 
-public class OutFileInputEditor extends FileInputEditor {
+public class OutFileInputEditor extends InputEditor.Base {
 	
 	private static final long serialVersionUID = 1L;
 
@@ -39,6 +41,9 @@ public class OutFileInputEditor extends FileInputEditor {
 				File defaultFile;
 				if (((File) m_input.get()).exists()) {
 					defaultFile = (File) m_input.get();
+					if (defaultFile.getParent() == null) {
+						defaultFile = new File(Beauti.g_sDir);
+					}
 				} else {
 					defaultFile = new File(Beauti.g_sDir);
 				}

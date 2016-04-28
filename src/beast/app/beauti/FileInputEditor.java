@@ -31,6 +31,10 @@ public class FileInputEditor extends InputEditor.Base {
 
 	@Override
 	public void init(Input<?> input, BEASTInterface plugin, int itemNr, ExpandOption bExpandOption, boolean bAddButtons) {
+		init(input, plugin, itemNr, bExpandOption, bAddButtons, "All files", "");
+	}
+	
+	protected void init(Input<?> input, BEASTInterface plugin, int itemNr, ExpandOption bExpandOption, boolean bAddButtons, String fileDescription, String fileType) {
 		super.init(input, plugin, itemNr, bExpandOption, bAddButtons);
 		if (input.get() == null) {
 			m_entry.setText("[[none]]");
@@ -46,6 +50,9 @@ public class FileInputEditor extends InputEditor.Base {
 				File defaultFile;
 				if (m_input.get() != null && ((File) m_input.get()).exists()) {
 					defaultFile = (File) m_input.get();
+					if (defaultFile.getParent() == null) {
+						defaultFile = new File(Beauti.g_sDir);
+					}
 				} else {
 					defaultFile = new File(Beauti.g_sDir);
 				}
