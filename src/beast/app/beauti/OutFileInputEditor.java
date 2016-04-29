@@ -31,7 +31,11 @@ public class OutFileInputEditor extends InputEditor.Base {
 	@Override
 	public void init(Input<?> input, BEASTInterface plugin, int itemNr, ExpandOption bExpandOption, boolean bAddButtons) {
 		super.init(input, plugin, itemNr, bExpandOption, bAddButtons);
-		m_entry.setText(((File) m_input.get()).getName());
+		if (input.get() == null) {
+			m_entry.setText("[[none]]");
+		} else {
+			m_entry.setText(((File) m_input.get()).getName());
+		}
 		
 		JButton button = new JButton("browse");
 		button.addActionListener(new ActionListener() {
