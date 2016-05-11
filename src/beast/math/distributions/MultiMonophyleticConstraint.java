@@ -9,7 +9,6 @@ import beast.core.Distribution;
 import beast.core.Input;
 import beast.core.State;
 import beast.core.Input.Validate;
-import beast.core.util.Log;
 import beast.evolution.tree.Node;
 import beast.evolution.tree.Tree;
 
@@ -110,6 +109,8 @@ public class MultiMonophyleticConstraint extends Distribution {
      **
 	 **/
 	protected void parse(String newick) {
+        assert taxonIDList.size() == 0;
+
 		// get rid of initial and trailing spaces
 		newick = newick.trim();
 		// remove comments
@@ -120,6 +121,7 @@ public class MultiMonophyleticConstraint extends Distribution {
 		Matcher m = pattern.matcher(newick);
 		
 		//List<String> taxaList = taxonsetInput.get().asStringList();
+		String prev = "";
 		while (m.find()) {
 			String group = m.group();
 			String [] taxa = group.substring(1,group.length()-1).split(",");
@@ -138,7 +140,9 @@ public class MultiMonophyleticConstraint extends Distribution {
 					list.add(i);
 				}
 			}
-			if (list.size() < tree.getLeafNodeCount()) {
+			// 1. only add when it is not the complete taxonset
+			// 2. make sure it is not equal to previous set -- happens with one-node-branches
+			if (list.size() < tree.getLeafNodeCount() && !group.equals(prev)) {
 				taxonIDList.add(list);
 				//Log.trace.println("Constraining " + group);// + " " + Arrays.toString(list.toArray()));			
 			}
@@ -146,6 +150,7 @@ public class MultiMonophyleticConstraint extends Distribution {
 			newick = newick.replaceAll("([\\(,]),", "$1");
 			newick = newick.replaceAll(",\\)", ")");
 			m = pattern.matcher(newick);
+			prev = group;
 		}
 	}
 
@@ -163,7 +168,7 @@ public class MultiMonophyleticConstraint extends Distribution {
     public double calculateLogP() {
         boolean mono1 = isBinaryInput.get() ? isMonoJH() : isMonoJHNonBinary();
         if( false ) assert mono1 == isMonoRB();   // assert is expensive. isMonoJH replaces the much slower isMonoRB
-
+        
         if (!mono1) {
         	//mono1 = isMonoRB();
         }
