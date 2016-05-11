@@ -2,6 +2,8 @@ package beast.app.beauti;
 
 
 
+import java.io.File;
+
 import beast.app.util.XMLFile;
 import beast.core.BEASTInterface;
 import beast.core.Input;
@@ -23,4 +25,9 @@ public class XMLFileInputEditor extends FileInputEditor {
 	public void init(Input<?> input, BEASTInterface plugin, int itemNr, ExpandOption bExpandOption, boolean bAddButtons) {
 		init(input, plugin, itemNr, bExpandOption, bAddButtons, "BEAST XML files", "xml");
 	}
+	
+	protected File newFile(File file) {
+		return new XMLFile(file.getPath());
+	}
+
 }

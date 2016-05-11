@@ -51,10 +51,12 @@ public class FileInputEditor extends InputEditor.Base {
 				File defaultFile = getDefaultFile((File) m_input.get());
 				File file = Utils.getLoadFile(m_input.getTipText(), defaultFile, "All files", "");
 				try {
-					m_entry.setText(file.getName());
-					m_input.setValue(file, m_beastObject);
-					String path = file.getPath();
-					Beauti.g_sDir = path;
+					if (file != null) {	
+						m_entry.setText(file.getName());
+						m_input.setValue(newFile(file), m_beastObject);
+						String path = file.getPath();
+						Beauti.g_sDir = path;
+					}
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -108,6 +110,10 @@ public class FileInputEditor extends InputEditor.Base {
 		}
 		return defaultFile;
 	}
-
+	
+	/** to be overridded by file editors that produce specific file types **/
+	protected File newFile(File file) {
+		return file;
+	}
 
 }

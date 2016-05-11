@@ -1,6 +1,8 @@
 package beast.app.beauti;
 
 
+import java.io.File;
+
 import beast.app.util.LogFile;
 import beast.core.BEASTInterface;
 import beast.core.Input;
@@ -21,6 +23,10 @@ public class LogFileInputEditor extends FileInputEditor {
 	@Override
 	public void init(Input<?> input, BEASTInterface plugin, int itemNr, ExpandOption bExpandOption, boolean bAddButtons) {
 		init(input, plugin, itemNr, bExpandOption, bAddButtons, "trace files", "log");
+	}
+
+	protected File newFile(File file) {
+		return new LogFile(file.getPath());
 	}
 
 }
