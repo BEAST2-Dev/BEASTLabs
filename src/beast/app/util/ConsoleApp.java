@@ -11,6 +11,7 @@ import javax.swing.Icon;
 import javax.swing.WindowConstants;
 
 import beast.app.BEASTVersion;
+import beast.core.util.Log;
 
 public class ConsoleApp {
 	PathSampleConsoleApp consoleApp = null;
@@ -54,6 +55,13 @@ public class ConsoleApp {
         handler = new ErrorLogHandler(maxErrorCount);
         handler.setLevel(Level.ALL);//INFO);
         logger.addHandler(handler);
+        
+        // make sure Log output ends up in the console
+		Log.err = System.err;
+		Log.warning = System.err;
+		Log.info = System.out;
+		Log.debug = System.out;
+		Log.trace = System.out;
 	}
 
 	
@@ -73,4 +81,11 @@ public class ConsoleApp {
             getDefaultFrame().setTitle(title);
         }
     }
+    
+    
+    
+    
+    
+    
+    
 }
