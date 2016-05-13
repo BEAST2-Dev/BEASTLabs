@@ -1,91 +1,222 @@
 package beast.app.util;
 
-import java.io.IOException;
-import java.util.logging.Filter;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
-import java.util.logging.Logger;
+import javafx.application.Platform;
+import javafx.embed.swing.JFXPanel;
+import javafx.scene.Scene;
+import javafx.scene.web.WebEngine;
+import javafx.scene.web.WebView;
 
-import javax.swing.Icon;
-import javax.swing.WindowConstants;
+import javax.swing.*;
 
-import beast.app.BEASTVersion;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
+import beast.app.BEASTVersion2;
 import beast.core.util.Log;
 
-public class ConsoleApp {
-	PathSampleConsoleApp consoleApp = null;
-	
-	
-	public ConsoleApp(String nameString, String title, Icon icon) throws IOException {
-        Utils.loadUIManager();
-        System.setProperty("com.apple.macos.useScreenMenuBar", "true");
-        System.setProperty("apple.laf.useScreenMenuBar", "true");
-        System.setProperty("apple.awt.showGrowBox", "true");
-        System.setProperty("beast.useWindow", "true");
+import java.awt.*;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.List;
 
-        int maxErrorCount = 100;
 
-        BEASTVersion version = new BEASTVersion();
-        
-        final String aboutString = "<html><div style=\"font-family:sans-serif;\"><center>" +
-                "<div style=\"font-size:12;\"><p>Bayesian Evolutionary Analysis Sampling Trees<br>" +
-                "Version " + version.getVersionString() + ", " + version.getDateString() + "</p>" +
-                version.getHTMLCredits() +
-                "</div></center></div></html>";
+public class ConsoleApp extends JFrame {
 
-        consoleApp = new PathSampleConsoleApp(nameString, aboutString, icon);
-		
-        consoleApp.setTitle(title);
+	private static final long serialVersionUID = 1L;
+	private final JFXPanel jfxPanel = new JFXPanel();
+	private WebEngine engine;
+	static String title = "BEAST " + new BEASTVersion2().getVersionString();
 
-        // Add a handler to handle warnings and errors. This is a ConsoleHandler
-        // so the messages will go to StdOut..
-        final Logger logger = Logger.getLogger("beast");
+	private final JPanel panel = new JPanel(new BorderLayout());
 
-        Handler handler = new MessageLogHandler();
-        handler.setFilter(new Filter() {
-            @Override
-            public boolean isLoggable(final LogRecord record) {
-                return record.getLevel().intValue() < Level.SEVERE.intValue();
-            }
-        });
-        logger.addHandler(handler);
-        logger.setUseParentHandlers(false);
-
-        handler = new ErrorLogHandler(maxErrorCount);
-        handler.setLevel(Level.ALL);//INFO);
-        logger.addHandler(handler);
-        
-        // make sure Log output ends up in the console
-		Log.err = System.err;
-		Log.warning = System.err;
-		Log.info = System.out;
-		Log.debug = System.out;
-		Log.trace = System.out;
+	public ConsoleApp() {
+		super();
 	}
 
-	
-    static class PathSampleConsoleApp extends jam.console.ConsoleApplication {
+	public ConsoleApp(String title, String header, Object o) {
+		ConsoleApp.title = ConsoleApp.title + " " + title;
+		ConsoleApp.main(new String[] {});
+	}
 
-        public PathSampleConsoleApp(final String nameString, final String aboutString, final javax.swing.Icon icon) throws IOException {
-            super(nameString, aboutString, icon, false);
-            getDefaultFrame().setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-        }
+	public void initComponents() {
+		createScene();
 
-        @Override
-        public void doStop() {
-            // thread.stop is deprecated so need to send a message to running threads...
-        }
+		PrintStream p1 = new PrintStream(new BOAS("color:blue"));
+		PrintStream p2 = new PrintStream(new BOAS("color:red"));
+		PrintStream p3 = new PrintStream(new BOAS("color:green"));
+		System.setOut(p1);
+		System.setErr(p2);
+		Log.err = p2;
+		Log.warning = p2;
+		Log.info = p1;
+		Log.debug = p3;
+		Log.trace = p3;
 
-        public void setTitle(final String title) {
-            getDefaultFrame().setTitle(title);
-        }
-    }
-    
-    
-    
-    
-    
-    
-    
+		// Log.info.println("BEAST " + new BEASTVersion().getVersionString());
+
+		new Thread() {
+			public void run() {
+				try {
+					sleep(2000);
+					// clear backlog if any
+					logToView(null, null);
+				} catch (InterruptedException e) {
+				}
+			};
+		}.start();
+
+		panel.add(jfxPanel, BorderLayout.CENTER);
+
+		getContentPane().add(panel);
+
+		setPreferredSize(new Dimension(1024, 600));
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		pack();
+		setTitle(title);
+
+	}
+
+	private void createScene() {
+
+		Platform.runLater(new Runnable() {
+			@Override
+			public void run() {
+
+				WebView view = new WebView();
+				engine = view.getEngine();
+
+				StringBuilder script = new StringBuilder().append("<html>");
+				script.append("<head>");
+				script.append("   <script language=\"javascript\" type=\"text/javascript\">");
+				script.append("       function toBottom(){");
+				script.append("           window.scrollTo(0,document.body.scrollHeight);");
+				script.append("       }");
+				script.append("   </script>");
+				script.append("</head>");
+				script.append("<body onload='toBottom()'>");
+				script.append("<div id='content' style='color:#0000D0;padding:0;border:0;margin:0;'> "
+						+ "<pre id='pre'></pre></div></body></html>");
+				engine.loadContent(script.toString());
+
+				jfxPanel.setScene(new Scene(view));
+			}
+		});
+	}
+
+
+	class Message {
+		public Message(String data, String style) {
+			this.data = data;
+			this.style = style;
+		}
+
+		String data;
+		String style;
+	};
+
+	List<Message> backLog = new ArrayList<>();
+
+	void logToView(String _data, String _style) {
+		// new Runnable() {
+		// public void run() {
+		Platform.runLater(new Runnable() {
+			public void run() { /* your code here */
+				Document doc = engine.getDocument();
+				if (_style != null) {
+					backLog.add(new Message(_data, _style));
+				}
+				if (doc == null) {
+					return;
+				}
+				for (Message msg : backLog) {
+					String data = msg.data;
+					String style = msg.style;
+					Element newLine = doc.createElement("DIV");
+					newLine.setAttribute("style", "padding: 0 0 0 0;" + style);
+					newLine.appendChild(doc.createTextNode(data));
+					Element el = doc.getElementById("pre");
+					el.appendChild(newLine);
+					// el.appendChild(doc.createElement("BR"));
+				}
+				engine.executeScript("toBottom()");
+				backLog.clear();
+			}
+		});
+		// }
+		// };
+
+	}
+
+	/** logging with colour **/
+	class BOAS extends ByteArrayOutputStream {
+		String style;
+		StringBuilder buf = new StringBuilder();
+
+		BOAS(String style) {
+			this.style = style;
+		}
+
+		@Override
+		public synchronized void write(byte[] b, int off, int len) {
+			super.write(b, off, len);
+			log(b, off, len);
+		};
+
+		@Override
+		public synchronized void write(int b) {
+			super.write(b);
+			log(b);
+		};
+
+		@Override
+		public void write(byte[] b) throws java.io.IOException {
+			super.write(b);
+			log(b);
+		};
+
+		private void log(byte[] b, int off, int len) {
+			for (int i = off; i < len; i++) {
+				log(b[i]);
+			}
+		}
+
+		private void log(int b) {
+			if (b == '\n') {
+				logToView(buf.toString(), style);
+				buf = new StringBuilder();
+			} else {
+				buf.append((char) b);
+			}
+
+		}
+
+		private void log(byte[] b) {
+			for (byte i : b) {
+				if (i == 0) {
+					return;
+				}
+				log(i);
+			}
+		}
+
+		@Override
+		public void flush() throws java.io.IOException {
+			super.flush();
+		};
+
+		@Override
+		public void close() throws IOException {
+			super.close();
+		}
+	};
+
+	public static void main(String[] args) {
+		ConsoleApp browser = new ConsoleApp();
+		browser.initComponents();
+		browser.setTitle(title);
+		browser.setVisible(true);
+		Log.info.println("ok");
+	}
 }
