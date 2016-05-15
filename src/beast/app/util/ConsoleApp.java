@@ -1,15 +1,11 @@
 package beast.app.util;
 
-import javafx.application.Platform;
-import javafx.embed.swing.JFXPanel;
-import javafx.scene.Scene;
-import javafx.scene.web.WebEngine;
-import javafx.scene.web.WebView;
 
 import javax.swing.*;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyleContext;
 
 import beast.app.BEASTVersion2;
 import beast.core.util.Log;
@@ -20,16 +16,15 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 
 public class ConsoleApp extends JFrame {
 
 	private static final long serialVersionUID = 1L;
-	private final JFXPanel jfxPanel = new JFXPanel();
-	private WebEngine engine;
+	private JTextPane jfxPanel;
 	static String title = "BEAST " + new BEASTVersion2().getVersionString();
 
-	private final JPanel panel = new JPanel(new BorderLayout());
 
 	public ConsoleApp() {
 		super();
@@ -41,11 +36,11 @@ public class ConsoleApp extends JFrame {
 	}
 
 	public void initComponents() {
-		createScene();
+		jfxPanel = new JTextPane();
 
-		PrintStream p1 = new PrintStream(new BOAS("color:blue"));
-		PrintStream p2 = new PrintStream(new BOAS("color:red"));
-		PrintStream p3 = new PrintStream(new BOAS("color:green"));
+		PrintStream p1 = new PrintStream(new BOAS(Color.blue));
+		PrintStream p2 = new PrintStream(new BOAS(Color.red));
+		PrintStream p3 = new PrintStream(new BOAS(Color.green));
 		System.setOut(p1);
 		System.setErr(p2);
 		Log.err = p2;
@@ -54,107 +49,91 @@ public class ConsoleApp extends JFrame {
 		Log.debug = p3;
 		Log.trace = p3;
 
-		// Log.info.println("BEAST " + new BEASTVersion().getVersionString());
+//		new Thread() {
+//			public void run() {
+//				try {
+//					sleep(2000);
+//					// clear backlog if any
+//					logToView(null, null);
+//				} catch (InterruptedException e) {
+//				}
+//			};
+//		}.start();
 
-		new Thread() {
-			public void run() {
-				try {
-					sleep(2000);
-					// clear backlog if any
-					logToView(null, null);
-				} catch (InterruptedException e) {
-				}
-			};
-		}.start();
+		JPanel panel = new JPanel();
+		JScrollPane scroller = new JScrollPane(jfxPanel);
+		panel.setPreferredSize(new Dimension(1024, 600));
+		panel.add(scroller, BorderLayout.CENTER);
 
-		panel.add(jfxPanel, BorderLayout.CENTER);
+		//jfxPanel.setText("Hello world");
+		jfxPanel.setBackground(Color.white);
+		jfxPanel.setAlignmentX(LEFT_ALIGNMENT);
 
-		getContentPane().add(panel);
-
+		getContentPane().add(scroller);
 		setPreferredSize(new Dimension(1024, 600));
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		pack();
 		setTitle(title);
 
+		//Log.info.println("BEAST " + new BEASTVersion().getVersionString());
 	}
 
-	private void createScene() {
-
-		Platform.runLater(new Runnable() {
-			@Override
-			public void run() {
-
-				WebView view = new WebView();
-				engine = view.getEngine();
-
-				StringBuilder script = new StringBuilder().append("<html>");
-				script.append("<head>");
-				script.append("   <script language=\"javascript\" type=\"text/javascript\">");
-				script.append("       function toBottom(){");
-				script.append("           window.scrollTo(0,document.body.scrollHeight);");
-				script.append("       }");
-				script.append("   </script>");
-				script.append("</head>");
-				script.append("<body onload='toBottom()'>");
-				script.append("<div id='content' style='color:#0000D0;padding:0;border:0;margin:0;'> "
-						+ "<pre id='pre'></pre></div></body></html>");
-				engine.loadContent(script.toString());
-
-				jfxPanel.setScene(new Scene(view));
-			}
-		});
-	}
 
 
 	class Message {
-		public Message(String data, String style) {
+		public Message(String data, Color style) {
 			this.data = data;
 			this.style = style;
 		}
 
 		String data;
-		String style;
+		Color style;
 	};
 
 	List<Message> backLog = new ArrayList<>();
 
-	void logToView(String _data, String _style) {
+	void logToView(String _data, Color _style) {
 		// new Runnable() {
+//		backLog.add(new Message(_data,_style));
 		// public void run() {
-		Platform.runLater(new Runnable() {
-			public void run() { /* your code here */
-				Document doc = engine.getDocument();
-				if (_style != null) {
-					backLog.add(new Message(_data, _style));
-				}
-				if (doc == null) {
-					return;
-				}
-				for (Message msg : backLog) {
-					String data = msg.data;
-					String style = msg.style;
-					Element newLine = doc.createElement("DIV");
-					newLine.setAttribute("style", "padding: 0 0 0 0;" + style);
-					newLine.appendChild(doc.createTextNode(data));
-					Element el = doc.getElementById("pre");
-					el.appendChild(newLine);
-					// el.appendChild(doc.createElement("BR"));
-				}
-				engine.executeScript("toBottom()");
-				backLog.clear();
-			}
-		});
+//		SwingUtilities.invokeLater(new Runnable() {
+//			public void run() { /* your code here */
+//				for (Message msg : backLog) {
+//					String data = msg.data;
+					Color c = _style;
+					AttributeSet aset = null;
+					try {
+			        StyleContext sc = StyleContext.getDefaultStyleContext();
+			         aset = sc.addAttribute(SimpleAttributeSet.EMPTY, StyleConstants.Foreground, c);
+
+			        //aset = sc.addAttribute(aset, StyleConstants.FontFamily, "Lucida Console");
+			        aset = sc.addAttribute(aset, StyleConstants.Alignment, StyleConstants.ALIGN_JUSTIFIED);
+					} catch (Exception e) {
+						// ignore
+					}
+
+			        int len = jfxPanel.getDocument().getLength();
+			        jfxPanel.setCaretPosition(len);
+			        if (aset != null) {
+			        	jfxPanel.setCharacterAttributes(aset, false);
+			        }
+			        jfxPanel.replaceSelection(_data + "\n");
+//				}
+//				backLog.clear();
+//			}
+//		});
 		// }
 		// };
 
 	}
 
+
 	/** logging with colour **/
 	class BOAS extends ByteArrayOutputStream {
-		String style;
+		Color style;
 		StringBuilder buf = new StringBuilder();
 
-		BOAS(String style) {
+		BOAS(Color style) {
 			this.style = style;
 		}
 
@@ -213,10 +192,21 @@ public class ConsoleApp extends JFrame {
 	};
 
 	public static void main(String[] args) {
-		ConsoleApp browser = new ConsoleApp();
-		browser.initComponents();
-		browser.setTitle(title);
-		browser.setVisible(true);
-		Log.info.println("ok");
+//		final CountDownLatch latch = new CountDownLatch(1);
+//		SwingUtilities.invokeLater(new Runnable() {
+//			public void run() {
+				ConsoleApp browser = new ConsoleApp();
+				browser.initComponents();
+				browser.setTitle(title);
+				browser.setVisible(true);
+//				Log.info.println("ok");
+//		        latch.countDown();
+//			}
+//		});
+//		try {
+//			latch.await();
+//		} catch (InterruptedException e) {
+//			e.printStackTrace();
+//		}
 	}
 }
