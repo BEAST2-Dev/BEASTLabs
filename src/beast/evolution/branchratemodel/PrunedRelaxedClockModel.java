@@ -68,7 +68,7 @@ public class PrunedRelaxedClockModel extends BranchRateModel.Base {
 
     private boolean rq() {
         // before tree, since tree might not be valid if only rates changed
-        if( rates.distribution.isDirtyCalculation() ) {
+        if( rates.distribution.isDirtyCalculation() || rates.meanRate.somethingIsDirty() ) {
             return true;
         }
 
