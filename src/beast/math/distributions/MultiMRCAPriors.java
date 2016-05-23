@@ -17,6 +17,7 @@ public class MultiMRCAPriors extends MultiMonophyleticConstraint {
     private int[] nodeToCladeGroup = null;
     private int prevNodeCount = -1;
     private int[] ctops = null;
+    private boolean[] ctopParent = null;
 
     @Override
     public void initAndValidate() {
@@ -61,10 +62,12 @@ public class MultiMRCAPriors extends MultiMonophyleticConstraint {
 
                 final int nCals = mrcaPriors.size();
                 ctops = new int[nCals];
+                ctopParent = new boolean[nCals];
                 int i = 0;
                 for( MRCAPrior m : mrcaPriors ) {
                     m.calculateLogP(); // init
                     ctops[i] = m.getCommonAncestor().getNr();
+                    ctopParent[i] = m.useOriginate;
                     i += 1;
                 }
             }
@@ -83,7 +86,7 @@ public class MultiMRCAPriors extends MultiMonophyleticConstraint {
                         assert mrcaPriors.get(k).getCommonAncestor().equals(n);
                     }
                 }
-                final double MRCATime = n.getDate();
+                final double MRCATime = ctopParent[k] ? n.getParent().getDate() : n.getDate();
                 ParametricDistribution dist = mrcaPriors.get(k).dist;
                 if( dist != null ) {
                     final double v = dist.logDensity(MRCATime);
