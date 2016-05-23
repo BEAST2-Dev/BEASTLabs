@@ -86,7 +86,9 @@ public class MultiMRCAPriors extends MultiMonophyleticConstraint {
                         assert mrcaPriors.get(k).getCommonAncestor().equals(n);
                     }
                 }
-                final double MRCATime = ctopParent[k] ? n.getParent().getDate() : n.getDate();
+                final double MRCATime = ctopParent[k] ? 
+                 		  n.isRoot() ? n.getDate() : n.getParent().getDate() 
+              			: n.getDate();
                 ParametricDistribution dist = mrcaPriors.get(k).dist;
                 if( dist != null ) {
                     final double v = dist.logDensity(MRCATime);
