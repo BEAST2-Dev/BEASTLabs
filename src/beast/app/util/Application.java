@@ -1,11 +1,20 @@
 package beast.app.util;
 
 
+import java.awt.Desktop;
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.json.JSONObject;
 
+import beast.app.beauti.BeautiConfig;
+import beast.app.beauti.BeautiDoc;
+import beast.app.draw.BEASTObjectDialog;
+import beast.app.draw.BEASTObjectPanel;
 import beast.core.BEASTObject;
 import beast.core.Description;
 import beast.core.Input;
@@ -20,6 +29,44 @@ public class Application {
 	public Application(BEASTObject myBeastObject) {
 		this.myBeastObject = myBeastObject;
 	}
+	
+	public Application(beast.core.Runnable analyser, String title, String[] args) throws Exception {
+		
+		analyser.setID(title);
+
+		if (args.length == 0) {
+			// create BeautiDoc and beauti configuration
+			BeautiDoc doc = new BeautiDoc();
+			doc.beautiConfig = new BeautiConfig();
+			doc.beautiConfig.initAndValidate();
+					
+			// create panel with entries for the application
+			BEASTObjectPanel panel = new BEASTObjectPanel(analyser, analyser.getClass(), doc);
+			
+			// wrap panel in a dialog
+			BEASTObjectDialog dialog = new BEASTObjectDialog(panel, null);
+
+			// show the dialog
+			if (dialog.showDialog()) {
+				dialog.accept(analyser, doc);
+				// create a console to show standard error and standard output
+				ConsoleApp app = new ConsoleApp(title, 
+						title,
+						null
+						);
+				analyser.initAndValidate();
+				analyser.run();
+			}
+			return;
+		}
+
+		Application main = new Application(analyser);
+		main.parseArgs(args, false);
+		analyser.initAndValidate();
+		analyser.run();
+	}
+
+
 
 	/** default input used for argument parsing **/
 	protected Input<?> defaultInput = null;
@@ -150,5 +197,63 @@ public class Application {
 			}
 		}
 	}
+
+	// utility function to open a webpage written by an application in a web browser
+		static public void openUrl(String url) throws IOException {
+			url = url.replaceAll(" ", "%20");
+		    if(Desktop.isDesktopSupported()){
+		        Desktop desktop = Desktop.getDesktop();
+		        try {
+		            desktop.browse(new URI(url));
+		            return;
+		        } catch (IOException | URISyntaxException e) {
+		            // TODO Auto-generated catch block
+		            e.printStackTrace();
+		        }
+		    }
+		    if (Utils.isWindows()) {
+		    	Runtime rt = Runtime.getRuntime();
+		    	rt.exec( "rundll32 url.dll,FileProtocolHandler " + url);
+		    } else if (Utils.isMac()) {
+		    	Runtime rt = Runtime.getRuntime();
+		    	rt.exec( "open" + url);
+		    } else {
+		    	// Linux:
+		    	Runtime rt = Runtime.getRuntime();
+		    	String[] browsers = {"epiphany", "firefox", "mozilla", "konqueror",
+		    	                                 "netscape","opera","links","lynx"};
+
+		    	StringBuffer cmd = new StringBuffer();
+		    	for (int i=0; i<browsers.length; i++) {
+		    	     cmd.append( (i==0  ? "" : " || " ) + browsers[i] +" \"" + url + "\" ");
+		    	}
+		    	rt.exec(new String[] { "sh", "-c", cmd.toString() });
+		    }
+		    
+		   }
+		
+		// return path containing package jar file
+		public static String getPackagePath(String jar) {
+			jar = jar.toLowerCase();
+			String classpath = System.getProperty("java.class.path");
+			String[] classpathEntries = classpath.split(File.pathSeparator);
+			String FILESEP = "/";
+			if (Utils.isWindows()) {
+				FILESEP = "\\\\";
+			}
+			for (String pathEntry : classpathEntries) {
+				//Log.debug.print("Trying >" + pathEntry + "< ");
+				if (new File(pathEntry).getName().toLowerCase().equals(jar)) {
+					Log.debug.println("Got it!");
+					File parentFile = (new File(pathEntry)).getParentFile().getParentFile();
+					String parent = parentFile.getPath();
+					return parent + FILESEP;
+				}
+				//Log.debug.println("No luck ");
+			}
+			String jsPath = System.getProperty("user.dir") + FILESEP;
+			//Log.debug.println("Using default: " + jsPath);
+			return jsPath;
+		}
 
 }
