@@ -180,7 +180,7 @@ public class AttachOperator extends TreeOperator {
             final int k = Randomizer.nextInt(post.length);
             n = post[k];
         } while( n.isRoot() || n.getParent().isRoot() ||
-                ( topOnly && nodeToCladeGroup[n.getParent().getNr()] != -1 )   ||
+                ( topOnly && nodeToCladeGroup[n.getParent().getNr()] != -1 ) ||
                 (nodeToCladeGroup != null &&
                         nodeToCladeGroup[n.getParent().getNr()] != nodeToCladeGroup[n.getParent().getParent().getNr()]) );
         return n;
@@ -271,6 +271,11 @@ public class AttachOperator extends TreeOperator {
                 }
             } while (cans.size() == 0 && ntries > 0);
         }
+
+        if( cans.size() == 0 ) {
+            return Double.NEGATIVE_INFINITY;
+        }
+
         final int nodeNr = node.getNr();
         final Node parent = node.getParent();
         final int nParent = parent.getNr();
@@ -278,10 +283,6 @@ public class AttachOperator extends TreeOperator {
         assert !(parent.isRoot());
 
         final double nodeParentHeight = parent.getHeight();
-
-        if( cans.size() == 0 ) {
-           return Double.NEGATIVE_INFINITY;
-        }
 
         if( cans.size() == 1 ) {
             final Node n = tree.getNode(cans.get(0));
