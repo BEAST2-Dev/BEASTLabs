@@ -75,7 +75,7 @@ public class Application {
 	 * Arguments of the form -name value are processed by finding Inputs with
 	 * matching name and setting their value.
 	 * 
-	 * If the input is a boolean that needs to be set to true, the 'value' a
+	 * If the input is a boolean that needs to be set to true, the 'value'
 	 * argument can be omitted.
 	 * 
 	 * The last argument is assigned to the defaultInput.
@@ -92,35 +92,56 @@ public class Application {
 			if (arg.startsWith("-")) {
 				String name = arg.substring(1);
 				String value = (i < args.length - 1 ? args[i + 1] : null);
+				Input<?> matchingInput = null;
 				for (Input<?> input : inputs) {
 					if (input.getName().equals(name)) {
-						try {
-							if (input.getType() == Boolean.class) {
-								if (value != null
-										&& (value.toLowerCase().equals("true") || value
-												.toLowerCase().equals("false"))) {
-									input.setValue(value, null);
-									i++;
-								} else {
-									input.setValue(Boolean.TRUE, null);
-								}
-							} else {
-								input.setValue(value, myBeastObject);
-								i++;
-							}
-						} catch (Exception e) {
-							throw new Exception("Problem parsing arguments:\n"
-									+ e.getMessage());
-						}
-						done = true;
+						matchingInput = input;
 						break;
 					}
 				}
+				if (matchingInput == null) {
+					// nothing matches, see whether a unique prefix match exists
+					for (Input<?> input : inputs) {
+						if (input.getName().startsWith(name)) {
+							if (matchingInput == null) {
+								matchingInput = input;
+							} else {
+								throw new IllegalArgumentException("Multiple matches for argument -"+name + ". Use more letters in the argument name.");
+							}
+							break;
+						}
+					}
+				}
+				if (matchingInput != null) {
+					try {
+						if (matchingInput.getType() == Boolean.class) {
+							if (value != null
+									&& (value.toLowerCase().equals("true") || value
+											.toLowerCase().equals("false"))) {
+								matchingInput.setValue(value, null);
+								i++;
+							} else {
+								matchingInput.setValue(Boolean.TRUE, null);
+							}
+						} else {
+							matchingInput.setValue(value, myBeastObject);
+							i++;
+						}
+					} catch (Exception e) {
+						throw new IllegalArgumentException("Problem parsing arguments:\n"
+								+ e.getMessage());
+					}
+					done = true;
+					break;
+				}
 				if (name.equals("help")) {
-					throw new Exception(""); // calling app should call getUsage()
+					throw new IllegalArgumentException(""); // calling app should call getUsage()
+				}
+				if (matchingInput == null) {
+					throw new IllegalArgumentException("Could not find match for argument -" + name);
 				}
 			} else {
-				if (i == args.length - 1) {
+				if (i == args.length - 1 && defaultInput != null) {
 					defaultInput.setValue(arg, null);
 					done = true;
 				}
@@ -131,7 +152,7 @@ public class Application {
 							+ " ignored.");
 					i++;
 				} else {
-					throw new Exception("Unknown argument: " + args[i] + "\n");
+					throw new IllegalArgumentException("Unknown argument: " + args[i] + "\n");
 							//+ getUsage());
 				}
 			}
