@@ -84,11 +84,11 @@ public class FileInputEditor extends InputEditor.Base {
 				file = origFile.substring(0, origFile.lastIndexOf(fileSep) + 1) + file;
 			}
 		}
-		if (file.equals("[[none]]")) {
-			m_input.setValue(null, m_beastObject);
-		} else {
+//		if (file.equals("[[none]]")) {
+//			m_input.setValue(null, m_beastObject);
+//		} else {
 			m_input.setValue(file, m_beastObject);	
-		}
+//		}
    	}
 	
 

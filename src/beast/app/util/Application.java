@@ -132,10 +132,10 @@ public class Application {
 								+ e.getMessage());
 					}
 					done = true;
-					break;
-				}
-				if (name.equals("help")) {
-					throw new IllegalArgumentException(""); // calling app should call getUsage()
+				} else if (name.equals("help")) {
+					Log.info.println(getUsage());
+					// CLI usage only
+					System.exit(0);
 				}
 				if (matchingInput == null) {
 					throw new IllegalArgumentException("Could not find match for argument -" + name);
