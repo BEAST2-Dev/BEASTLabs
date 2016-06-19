@@ -6,6 +6,7 @@ import beast.core.State;
 import beast.evolution.operators.MonoCladesMapping;
 import beast.evolution.tree.Node;
 
+import java.io.PrintStream;
 import java.util.*;
 
 @Description("A single distribution which efficiently takes care of a set of MRCA constraints.")
@@ -118,6 +119,34 @@ public class MultiMRCAPriors extends MultiMonophyleticConstraint {
     @Override
     protected boolean requiresRecalculation() {
         return super.requiresRecalculation();
+    }
+
+
+    @Override
+    public void init(PrintStream out) {
+        final List<MRCAPrior> mrcaPriors = calibrationsInput.get();
+        for( MRCAPrior prior : mrcaPriors ) {
+            out.append("mrca(" + prior.getID()+")\t");
+            if( ! (prior.dist instanceof beast.math.distributions.Uniform) )  {
+                out.append("logP(mrca(" + prior.getID()+"))\t");
+            }
+        }
+    }
+
+    @Override
+    public void log(int sample, PrintStream out) {
+        final List<MRCAPrior> mrcaPriors = calibrationsInput.get();
+        for( MRCAPrior prior : mrcaPriors ) {
+            prior.calculateLogP();
+            out.append(prior.MRCATime+"\t");
+            if( ! (prior.dist instanceof beast.math.distributions.Uniform) )  {
+               out.append(prior.getCurrentLogP()+"\t");
+            }
+        }
+    }
+
+    @Override
+    public void close(PrintStream out) {
     }
 
     @Override
