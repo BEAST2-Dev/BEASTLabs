@@ -45,7 +45,7 @@ public class PrunedAlignment extends Alignment {
           stateCounts = new ArrayList<>();
 
           final List<String> srcTaxa = source.taxaNames;
-          final List<List<Integer>> srcCounts = source.counts;
+          final List<List<Integer>> srcCounts = source.getCounts();
           if( taxonSet != null ) {
              for(int i = 0; i < source.taxaNames.size(); ++i) {
 
