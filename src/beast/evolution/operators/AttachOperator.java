@@ -13,22 +13,6 @@ import java.util.*;
         "distance between clades via the DistanceProvider interface. Clades with lower distance should be more closely related and therefore the " +
         "move more likely to get accepted.")
 public class AttachOperator extends TreeOperator {
-//    enum Method {
-//        DISTANCE("distance"),
-//        SQRT("sqrt"),
-//        SQR("sqr");
-//
-//        Method(final String name) {
-//            this.ename = name;
-//        }
-//
-//        public String toString() {
-//            return ename;
-//        }
-//
-//        private final String ename;
-//    }
-
     // Provide weights for attach operator. Weight is a clade based statistic that is based only on the properties associated with tips and not on
     // the clade topology. To be useful the distance between clades should reflect in some way the distance between those two groups, i.e. it
     // should be some kind of a "mean" statistic for tip values.
@@ -38,14 +22,13 @@ public class AttachOperator extends TreeOperator {
 
     public Input<Boolean> tipsOnlyInput = new Input<Boolean>("tipsOnly", "Move only nodes attached to tips.", false);
 
-    //public Input<Method> initMethod = new Input<Method>("method", "Sqrt takes square root of distance (default distance)",
-    //        Method.DISTANCE, Method.values());
-
     public Input<Boolean> topOnlyInput = new Input<Boolean>("topOnly", "Consider only nodes not under any monophyly constraint.", false);
 
     public final Input<MultiMonophyleticConstraint> constraintsInput =
               new Input<>("constraints", "Respect clade constrainted, i.e make no moves which violate some constraint.",
                       null, Input.Validate.OPTIONAL);
+
+    private boolean markClades;
 
     private DistanceProvider weightProvider;
 
@@ -62,7 +45,8 @@ public class AttachOperator extends TreeOperator {
 
     @Override
     public void initAndValidate() {
-        assert ! markCladesInput.get();  // need to implement SOON!!
+        //assert ! markCladesInput.get();  // need to implement SOON!!
+        markClades = markCladesInput.get();
 
         final Tree tree = treeInput.get();
         weightProvider = weightsInput.get();
@@ -82,86 +66,7 @@ public class AttachOperator extends TreeOperator {
               weights[n.getNr()] = weightProvider.empty();
             }
         }
-
-        //method =  initMethod.get();
     }
-//
-//    private int[] setupNodeGroup(Tree tree) {
-//        final MultiMonophyleticConstraint mc = constraintsInput.get();
-//        final int nodeCount = tree.getNodeCount();
-//        int[] nodeToCladeGroup = new int[nodeCount];
-//        if( mc != null ) {
-//            final List<List<String>> constraints = mc.getConstraints();
-//            HashSet<String> u[] = new HashSet[constraints.size()];
-//
-//            for(int k = 0; k < constraints.size(); ++k) {
-//                u[k] = new HashSet<>(constraints.get(k));
-//            }
-//
-//            HashSet<Integer> x[] = new HashSet[nodeCount];
-//            nodeToCladeGroup = new int[nodeCount];
-//
-//            Node[] post = new Node[nodeCount];
-//            post = tree.listNodesPostOrder(null, post);
-//            for( final Node n : post ) {
-//                final int nr = n.getNr();
-//                x[nr] = new HashSet<>();
-//                if( n.isLeaf() ) {
-//                    final String id = n.getID();
-//                    for(int k = 0; k < u.length; ++k) {
-//                        if( u[k].contains(id) ) {
-//                            x[nr].add(k);
-//                        }
-//                    }
-//                } else {
-//                    for (int nc = 0; nc < n.getChildCount(); ++nc) {
-//                        final int cnr = n.getChild(nc).getNr();
-//                        if( x[nr].isEmpty() ) {
-//                            x[nr].addAll(x[cnr]);
-//                        } else {
-//                            x[nr].retainAll(x[cnr]);
-//                        }
-//                    }
-//                }
-//                nodeToCladeGroup[nr] = -1;
-//
-//                if( x[nr].isEmpty() || (x[nr].size() == 1 && x[nr].contains(-1) )) {
-//                    x[nr].add(-1);
-//                } else {
-//                    int sz = nodeToCladeGroup.length + 1;
-//                    for (Integer i : x[nr]) {
-//                        if( u[i].size() < sz ) {
-//                            nodeToCladeGroup[nr] = i;
-//                            sz = u[i].size();
-//                        }
-//                    }
-//                }
-//            }
-//
-//            if( internalTest ) {
-//                for( final Node n : post ) {
-//                    if( n.isRoot() ) {
-//                        continue;
-//                    }
-//                    int nr = n.getNr();
-//
-//                    int z = nodeToCladeGroup[nr];
-//                    if( z == -1 ) {
-//                        assert nodeToCladeGroup[n.getParent().getNr()] == -1;
-//                    } else {
-//                        final List<Node> cn = n.getAllLeafNodes();
-//                        for (Node c : cn) {
-//                            assert u[z].contains(c.getID()) : c.getID();
-//                        }
-//                        if( z != nodeToCladeGroup[n.getParent().getNr()] ) {
-//                            assert u[z].size() == cn.size();
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//        return nodeToCladeGroup;
-//    }
 
     private Node getNode(Tree tree, final Node[] post) {
         boolean topOnly = topOnlyInput.get();
@@ -338,27 +243,15 @@ public class AttachOperator extends TreeOperator {
         return Math.log(px / pi);
     }
 
-//    private double dist(double[] doubles, double[] doubles1) {
-//        double s = 0;
-//        for(int k = 0; k < doubles.length; ++k) {
-//            double x = (doubles[k] - doubles1[k]);
-//            s += x*x;
-//        }
-//        s = (s == 0) ? 1e-8 : s;
-//        switch (method) {
-//            case DISTANCE: break;
-//            case SQRT: s = Math.sqrt(s); break;
-//            case SQR: s =  s * s; break;
-//        }
-//        return s;
-//    }
-
-    private void detach(Node x, Node xP) {
+    // Detach xP from tree together with its single child x
+    // xP is bypassed - that is the parent of xP is connected to xP other child.
+    // This leaves xP floating with x as a single child.
+    // return parent of xP - for propagating tree dirtiness.
+    private Node detach(Node x, Node xP) {
+        Node xPP = xP.getParent();
         // remove xP from sons of xPP
         // go over other sons of xP, make them sons of xPP instead of xP
-        //
-        // This leaves xP floating with x as a single child
-        Node xPP = xP.getParent();
+
         xPP.removeChild(xP);
         final List<Node> children = new ArrayList<Node>(xP.getChildren());
         for( Node c : children ) {
@@ -369,9 +262,11 @@ public class AttachOperator extends TreeOperator {
             }
         }
         xPP.makeDirty(Tree.IS_FILTHY);
-
+        return xPP;
     }
 
+    // make 'son' a child of 'n' instead of 'instead'
+    // 'instead' turns into 'son' child.
     private void makeSon(Node n, Node son, Node instead) {
         n.removeChild(instead);
         son.addChild(instead);
@@ -379,14 +274,26 @@ public class AttachOperator extends TreeOperator {
 
         n.makeDirty(Tree.IS_FILTHY);
         son.makeDirty(Tree.IS_FILTHY);
+        instead.makeDirty(Tree.IS_FILTHY);
     }
 
     void reAttach(Node moving, Node newSibling) {
         // move node 'moving' so that after the move it is a sibling of 'newSibling'
 
         Node movingP = moving.getParent();
-        detach(moving, movingP);
+        Node breakPoint = detach(moving, movingP);
         Node newSiblingP = newSibling.getParent();
         makeSon(newSiblingP, movingP, newSibling);
+        if( markClades ) {
+            while( newSiblingP != breakPoint ) {
+                if( newSiblingP.getHeight() < breakPoint.getHeight() ) {
+                    newSiblingP = newSiblingP.getParent();
+                    newSiblingP.makeDirty(Tree.IS_FILTHY);
+                } else {
+                    breakPoint = breakPoint.getParent();
+                    breakPoint.makeDirty(Tree.IS_FILTHY);
+                }
+            }
+        }
     }
 }
