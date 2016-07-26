@@ -35,6 +35,7 @@ public class Application {
 		analyser.setID(title);
 
 		if (args.length == 0) {
+			Utils.loadUIManager();
 			// create BeautiDoc and beauti configuration
 			BeautiDoc doc = new BeautiDoc();
 			doc.beautiConfig = new BeautiConfig();
