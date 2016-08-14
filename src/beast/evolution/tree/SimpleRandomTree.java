@@ -165,7 +165,7 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
         for (final MRCAPrior prior : calibrations) {
             final TaxonSet taxonSet = prior.taxonsetInput.get();
             if (taxonSet != null && !prior.onlyUseTipsInput.get()) {
-	            final Set<String> bTaxa = new HashSet<>();
+	            final Set<String> bTaxa = new LinkedHashSet<>();
 	        	if (taxonSet.asStringList() == null) {
 	        		taxonSet.initAndValidate();
 	        	}
@@ -219,7 +219,7 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
         for (int i = 0; i < lastMonophyletic; i++) {
             for (int j = i + 1; j < lastMonophyletic; j++) {
 
-                Set<String> intersection = new HashSet<>(taxonSets.get(i));
+                Set<String> intersection = new LinkedHashSet<>(taxonSets.get(i));
                 intersection.retainAll(taxonSets.get(j));
 
                 if (intersection.size() > 0) {
@@ -283,7 +283,7 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
             try {
 				succ = setHeights(rate, false, epsi);
 			} catch (ConstraintViolatedException e) {
-				throw new RuntimeException("Contraint failed: " + e.getMessage());
+				throw new RuntimeException("Constraint failed: " + e.getMessage());
 			}
             --ntries;
             rate *= 2;
@@ -292,7 +292,7 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
            try {
         	   succ = setHeights(rate, true, 0);
            } catch (ConstraintViolatedException e) {
-        	   throw new RuntimeException("Contraint failed: " + e.getMessage());
+        	   throw new RuntimeException("Constraint failed: " + e.getMessage());
            }
         }
         assert succ;
@@ -355,7 +355,7 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
 
         nextNodeNr = nrOfTaxa;
 
-        final Set<Node> candidates = new HashSet<>();
+        final Set<Node> candidates = new LinkedHashSet<>();
         int nr = 0;
         for (String taxon : taxa) {
             final Node node = new Node();
@@ -410,7 +410,7 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
         // build all subtrees
         for (final int iMonoNode : children[monoCladeIndex]) {
             // create list of leaf nodes for this monophyletic MRCA
-            final Set<Node> candidates2 = new HashSet<>();
+            final Set<Node> candidates2 = new LinkedHashSet<>();
             final Set<String> bTaxonSet = taxonSets.get(iMonoNode);
             for (String taxon : bTaxonSet) {
                 candidates2.add(allCandidates.get(taxon));
