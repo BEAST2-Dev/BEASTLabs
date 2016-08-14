@@ -139,7 +139,9 @@ public class Application {
 					System.exit(0);
 				}
 				if (matchingInput == null) {
-					throw new IllegalArgumentException("Could not find match for argument -" + name);
+					
+					throw new IllegalArgumentException("Could not find match for argument -" + name + "\n"
+							+ getUsage());
 				}
 			} else {
 				if (i == args.length - 1 && defaultInput != null) {
