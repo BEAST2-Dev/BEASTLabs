@@ -19,7 +19,7 @@ import beast.util.XMLParser;
 import beast.util.XMLProducer;
 
 // Altekar G, Dwarkadas S, Huelsenbeck J and Ronquist F (2004). 
-// “Parallel Metropolis Coupled Markov Chain Monte Carlo For Bayesian Phylogenetic Inference.” 
+// Parallel Metropolis Coupled Markov Chain Monte Carlo For Bayesian Phylogenetic Inference.
 // Bioinformatics, 20. ISSN 1367-4803, 
 // http://dx.doi.org/10.1093/bioinformatics/btg427.
 

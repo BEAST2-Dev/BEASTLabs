@@ -1,5 +1,5 @@
-<addon name='BEASTLabs' version='1.5.3'>
-	<depends on='beast2' atleast='2.4.0'/>
+<addon name='BEASTLabs' version='1.6.0'>
+	<depends on='beast2' atleast='2.4.3'/>
     <addonapp description="BEAST model spreadsheet"
               class="beast.app.draw.SpreadSheet"
               args=""

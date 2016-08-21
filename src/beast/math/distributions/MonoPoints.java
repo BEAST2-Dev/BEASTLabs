@@ -17,8 +17,8 @@ import java.util.*;
         "logger ignores the 'useOriginate' directive by design.")
 public class MonoPoints extends BEASTObject implements Loggable {
 
-    public Input<List<MRCAPrior>> cladesInput = new Input<List<MRCAPrior>>("clades", "The set of clades", new ArrayList<MRCAPrior>());
-    public Input<MultiMRCAPriors> multiInput = new Input<MultiMRCAPriors>("multiclades", "Collection of clades.");
+    public Input<List<MRCAPrior>> cladesInput = new Input<List<MRCAPrior>>("clades", "The set of clades represented as MRCAPriors", new ArrayList<MRCAPrior>());
+    public Input<MultiMRCAPriors> multiInput = new Input<MultiMRCAPriors>("multiclades", "Set of clades represented as MultiMRCAPriors");
     public final Input<MultiMonophyleticConstraint> constraintsInput = new Input<>("constraints",
             "all constraints as encoded by one unresolved tree.");
 
