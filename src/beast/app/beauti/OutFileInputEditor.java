@@ -44,7 +44,7 @@ public class OutFileInputEditor extends InputEditor.Base {
 			public void actionPerformed(ActionEvent arg0) {
 				
 				File defaultFile = FileInputEditor.getDefaultFile((File) m_input.get());
-				File file = Utils.getSaveFile(m_input.getTipText(), defaultFile, "All files", "");
+				File file = Utils.getSaveFile(m_input.getTipText(), defaultFile, "All files", Utils.isWindows() ? "*" : "");
 				if (file != null) 
 					file = new OutFile(file.getPath());
 				try {

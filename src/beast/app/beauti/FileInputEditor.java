@@ -32,7 +32,7 @@ public class FileInputEditor extends InputEditor.Base {
 
 	@Override
 	public void init(Input<?> input, BEASTInterface plugin, int itemNr, ExpandOption bExpandOption, boolean bAddButtons) {
-		init(input, plugin, itemNr, bExpandOption, bAddButtons, "All files", "");
+		init(input, plugin, itemNr, bExpandOption, bAddButtons, "All files", Utils.isWindows() ? "*" : "");
 	}
 	
 	protected void init(Input<?> input, BEASTInterface plugin, int itemNr, ExpandOption bExpandOption, boolean bAddButtons, String fileDescription, String fileType) {
@@ -49,7 +49,7 @@ public class FileInputEditor extends InputEditor.Base {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				File defaultFile = getDefaultFile((File) m_input.get());
-				File file = Utils.getLoadFile(m_input.getTipText(), defaultFile, "All files", "");
+				File file = Utils.getLoadFile(m_input.getTipText(), defaultFile, "All files", Utils.isWindows() ? "*" : "");
 				try {
 					if (file != null) {	
 						m_entry.setText(file.getName());
