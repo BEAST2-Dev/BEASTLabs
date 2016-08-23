@@ -231,7 +231,8 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
                     // o taxonset1 does not intersect taxonset2
                     if (!(bIsSubset || bIsSubset2)) {
                         throw new IllegalArgumentException("333: Don't know how to generate a Random Tree for taxon sets that intersect, " +
-                                "but are not inclusive. Taxonset " + taxonSetIDs.get(i) + " and " + taxonSetIDs.get(j));
+                                "but are not inclusive. Taxonset " + (taxonSetIDs.get(i) == null ? taxonSets.get(i) :  taxonSetIDs.get(i)) + 
+                                		" and " + (taxonSetIDs.get(j) == null ? taxonSets.get(j) : taxonSetIDs.get(j)));
                     }
                     // swap i & j if b1 subset of b2
                     if (bIsSubset) {
