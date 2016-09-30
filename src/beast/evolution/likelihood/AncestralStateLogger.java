@@ -36,7 +36,16 @@ public class AncestralStateLogger extends TreeLikelihood implements Loggable {
 		super.initAndValidate();
         System.setProperty("java.only", "" + forceJava);
         
-        
+        String values = valueInput.get();
+		if (values != null && values.trim().length() > 0) {
+			// use values as labels
+			values = values.trim().replaceAll("\\s+", "\t");
+			String [] strs = values.split("\t");
+			if (strs.length != dataInput.get().getSiteCount()) {
+				throw new IllegalArgumentException("Number of labels (" + strs.length + ") does not match amountof data (" + dataInput.get().getSiteCount() +")");
+			}
+		}
+		
 // print out duplicates
 //        boolean headerShown = false;
 //        Alignment data = dataInput.get();
