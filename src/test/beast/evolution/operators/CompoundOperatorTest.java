@@ -1,4 +1,4 @@
-package test.beast.evolution.operator;
+package test.beast.evolution.operators;
 
 
 import java.io.File;
