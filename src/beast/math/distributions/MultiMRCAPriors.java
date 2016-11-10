@@ -76,7 +76,8 @@ public class MultiMRCAPriors extends MultiMonophyleticConstraint {
                 final int nr = ctops[k];
                 Node n = tree.getNode(nr);
                 final int ng = nodeToCladeGroup[nr];
-                while( ng == nodeToCladeGroup[n.getParent().getNr()] ) {
+                // update clade MRCA if root node changed by operator
+                while( !n.isRoot() && ng == nodeToCladeGroup[n.getParent().getNr()] ) {
                     n = n.getParent();
                 }
                 ctops[k] = n.getNr();

@@ -49,7 +49,7 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
                     new ArrayList<MRCAPrior>());
     public Input<Double> rootHeightInput =
             new Input<Double>("rootHeight", "If specified the tree will be scaled to match the root height, if constraints allow this");
-    public Input<Double> rateInput = new Input<Double>("branchMean", "Unrestricted brances will have an exponentialy distributed lengthwith this mean.",
+    public Input<Double> rateInput = new Input<Double>("branchMean", "Unrestricted branches will be exponentially distributed with this mean.",
             1.0, Input.Validate.OPTIONAL);
 
     public Input<DistanceProvider> distancesInput = new Input<>("weights", "if provided, used to inform sampling distribution such that nodes that are "
@@ -526,7 +526,6 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
         assert rate > 0;
         Node[] post = listNodesPostOrder(null, null);
         postCache = null; // can't figure out the javanese to call TreeInterface.listNodesPostOrder
-
 
         for(int i = post.length-1; i >= 0; --i) {
             final Node node = post[i];
