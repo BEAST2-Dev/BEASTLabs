@@ -17,8 +17,9 @@ import java.util.Set;
 @Description("Random tree with constraints specified by one tree, just like multiple monophyly.")
 public class SimpleConstrainedRandomTree extends SimpleRandomTree  {
     // The tree in the XML should have a taxon set, since it is not fully initialized at this stage
-    public final Input<MultiMonophyleticConstraint> allConstraints = new Input<>("constraints",
-                "all constraints as encoded by one unresolved tree.", Input.Validate.REQUIRED);
+    public final Input<List<MultiMonophyleticConstraint>> allConstraints = new Input<>("constraints",
+                "all constraints as encoded by one unresolved tree.",  new ArrayList<MultiMonophyleticConstraint>(),
+            Input.Validate.REQUIRED);
 
 
     @Override
@@ -44,21 +45,23 @@ public class SimpleConstrainedRandomTree extends SimpleRandomTree  {
     private List<MRCAPrior> getCons() {
         final Tree tree = m_initial.get();
         outputs = new ArrayList(tree.getOutputs());
-        final MultiMonophyleticConstraint mul = allConstraints.get();
-        List<List<String>> allc = mul.getConstraints();
+        final List<MultiMonophyleticConstraint> allmul = allConstraints.get();
 
         List<MRCAPrior> cons = new ArrayList<>();
-        for( List<String> c : allc ) {
-            if (c.size() > 1) {
-	            final MRCAPrior m = new MRCAPrior();
-	            final List<Taxon> t = new ArrayList<>();
-	            for( String s : c ) {
-	                t.add(new Taxon(s));
-	            }
-	            final TaxonSet ts = new TaxonSet();
-	            ts.initByName("taxon", t);
-	            m.initByName("tree", tree, "taxonset", ts, "monophyletic", true);
-	            cons.add(m);
+        for( final MultiMonophyleticConstraint mul : allmul ) {
+            List<List<String>> allc = mul.getConstraints();
+            for (List<String> c : allc) {
+                if( c.size() > 1 ) {
+                    final MRCAPrior m = new MRCAPrior();
+                    final List<Taxon> t = new ArrayList<>();
+                    for (String s : c) {
+                        t.add(new Taxon(s));
+                    }
+                    final TaxonSet ts = new TaxonSet();
+                    ts.initByName("taxon", t);
+                    m.initByName("tree", tree, "taxonset", ts, "monophyletic", true);
+                    cons.add(m);
+                }
             }
         }
 		return cons;
