@@ -42,7 +42,18 @@ public class MultiMonophyleticConstraint extends Distribution {
     public void initAndValidate() {
         taxonIDList = new ArrayList<List<Integer>>();
         tree = treeInput.get();
-        taxaList = tree.getTaxonset().asStringList().toArray(new String[]{});
+
+        Node [] nodes = tree.getNodesAsArray();
+        taxaList = new String[tree.getLeafNodeCount()];
+        for(int k = 0; k < taxaList.length; ++k) {
+            Node n = tree.getNode(k);                                assert n.isLeaf();
+            taxaList[k] = n.getID();
+        }
+
+        // Code line below made the (incorrect) assumption that the list from the taxonset will have
+        // the same order as tree nodes.
+        //
+        //taxaList = tree.getTaxonset().asStringList().toArray(new String[]{});
 
         parse(newickInput.get());
 
@@ -54,7 +65,7 @@ public class MultiMonophyleticConstraint extends Distribution {
         cladeParent = new int[taxonIDList.size()];
         Arrays.fill(cladeParent, -1);
 
-        Node [] nodes = tree.getNodesAsArray();
+
         for(int k = 0; k < taxonIDList.size(); ++k ) {
             cladeSize[k] = taxonIDList.get(k).size();
         }
@@ -87,6 +98,9 @@ public class MultiMonophyleticConstraint extends Distribution {
                 }
             }
         }
+//        for( Node n : tree.getExternalNodes() ) {
+//            System.out.println( "" + n.getID() + "(" + n.getNr() + ") : " + leafCladeAssignments[n.getNr()]);
+//        }
     }
 
     private void updateCladeParent(int subClade, int clade) {
@@ -169,9 +183,9 @@ public class MultiMonophyleticConstraint extends Distribution {
         boolean mono1 = isBinaryInput.get() ? isMonoJH() : isMonoJHNonBinary();
         if( false ) assert mono1 == isMonoRB();   // assert is expensive. isMonoJH replaces the much slower isMonoRB
         
-        if (!mono1) {
+        //if (!mono1) {
         	//mono1 = isMonoRB();
-        }
+        // }
         logP = mono1 ? 0 : Double.NEGATIVE_INFINITY;
         return logP;
     }
@@ -230,9 +244,9 @@ public class MultiMonophyleticConstraint extends Distribution {
      *  and then the function immediately returns false.
      *  Each taxon is assigned a clade index/assignment, the smallest clade it belongs to.
      *  A clade count is calculated for each internal node, that is the number of taxa in the current clade it is
-     *  embedding in. The node inherits the clade index/assignment from its children. When the root of a clade is
-     *  reached, i.e. when the count is equal to the known size of the clade, its clade assignment is updated to be the
-     *  assignment of its parent (if any).
+     *  embedded in. The node inherits the clade index/assignment from its children. When the root of a clade is
+     *  reached, i.e. when the computed count is equal to the known size of the clade, its clade assignment is updated to be the
+     *  assignment of its parent (if it has one).
      *
      * @return  true if all monophyly constraints are met, false otherwise
      */
@@ -303,7 +317,7 @@ public class MultiMonophyleticConstraint extends Distribution {
 	                    }
 	                }
 	            } else {
-	                final int lnr = n.getLeft().getNr();
+	                final int lnr = n.getChild(0).getNr();
 	                final int l = nodeClade[lnr];
 	                if (l != -1) {
 	                	nodeCladeSize[nr] = nodeCladeSize[lnr];
