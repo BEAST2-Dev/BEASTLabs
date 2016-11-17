@@ -1,18 +1,26 @@
 package beast.app.beauti;
 
+
 import java.io.File;
 import java.io.IOException;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import beast.app.beauti.BeautiAlignmentProvider;
 import beast.app.beauti.BeautiDoc;
 import beast.core.BEASTInterface;
 import beast.core.BEASTObject;
 import beast.core.Description;
+import beast.core.Distribution;
 import beast.core.Input;
+import beast.core.MCMC;
 import beast.core.Param;
+import beast.core.util.CompoundDistribution;
 import beast.evolution.alignment.Alignment;
+import beast.evolution.tree.TreeDistribution;
 import beast.math.distributions.MRCAPrior;
+import beast.util.XMLProducer;
 
 @Description("Compact BEAST analysis specification in NEXUS like format.")
 public class CompactAnalysisSpec extends BEASTObject {
@@ -37,8 +45,6 @@ public class CompactAnalysisSpec extends BEASTObject {
 		doc = new BeautiDoc();
 		doc.beautiConfig = new BeautiConfig();
 		doc.beautiConfig.initAndValidate();
-		doc.beautiConfig.setDoc(doc);
-
 
 		String [] cmds = spec.split(";");
 		int cmdCount = 1;
@@ -56,7 +62,7 @@ public class CompactAnalysisSpec extends BEASTObject {
 		if (cmdCount == 1 && !cmd.toLowerCase().startsWith("template")) {
 			doc.processTemplate("Standard.xml");
 		}
-		String [] strs = cmd.split("=");
+		String [] strs = cmd.split("\\s+");
 		for (int i = 0; i < strs.length; i++) {
 			strs[i] = strs[i].trim();
 		}
@@ -72,15 +78,19 @@ public class CompactAnalysisSpec extends BEASTObject {
 				throw new IllegalArgumentException("Command " + cmdCount + ": 'template=<template name>;' can only be at the start, not at command " + cmdCount);
 			}
 			String template = strs[1];
-			doc.processTemplate(template);
+			if (!template.toLowerCase().endsWith("xml")) {
+				template += ".xml";
+			}
+			doc.loadNewTemplate(template);
 		} else if (cmd.toLowerCase().startsWith("import")) {
 
 			// import an alignment form file
 			// import=<alignment file>;
 			if (strs.length != 2) {
-				throw new IllegalArgumentException("Command " + cmdCount + ": Expected 'import=<alignment file>;' but got " + cmd);
+				throw new IllegalArgumentException("Command " + cmdCount + ": Expected 'import <alignment file>;' but got " + cmd);
 			}
 			BeautiAlignmentProvider provider = new BeautiAlignmentProvider();
+			provider.template.setValue(doc.beautiConfig.partitionTemplate.get(), provider);
 	        List<BEASTInterface> beastObjects = provider.getAlignments(doc, new File[]{new File(strs[1])});
 	        if (beastObjects != null) {
 		        for (BEASTInterface o : beastObjects) {
@@ -111,18 +121,42 @@ public class CompactAnalysisSpec extends BEASTObject {
 		} else if (cmd.toLowerCase().startsWith("unlink")) {
 			// 
 		} else if (cmd.toLowerCase().startsWith("set")) {
+			if (strs.length > 2) {
+				throw new IllegalArgumentException("Command " + cmdCount + ": expected 'set <id pattern> =  <value>;' but got " + cmd);
+			}
+
 			// set <identifier> = <value>;
+			String pattern = strs[0];
+			String value = strs[1];
+			
+			boolean matchFound = false; 
+			for (String id : doc.pluginmap.keySet()) {
+				BEASTInterface o = doc.pluginmap.get(id);
+				for (String name : o.getInputs().keySet()) {
+					if ((id + "." + name).matches(pattern)) {
+						Input<?> in = o.getInputs().get(name);
+						in.setValue(value, o);
+						matchFound = true;
+					}
+				}
+			}
+			if (!matchFound) {
+				throw new IllegalArgumentException("Command " + cmdCount + ": cannot find suitable match for " + cmd);
+			}
 		} else {
 			// assume this specifies a subtemplate
 			// [<id pattern> =]? <SubTemplate>;
-			if (strs.length > 2) {
+			if (strs.length > 3) {
 				throw new IllegalArgumentException("Command " + cmdCount + ": expected [<id pattern> =]? <SubTemplate>; but got " + cmd);
 			}
 			String pattern;
 			String subTemplateName;
-			if (strs.length == 2) {
+			if (strs.length == 3) {
 				pattern = strs[0];
-				subTemplateName = strs[1];
+				if (!strs[1].equals("=")) {
+					throw new IllegalArgumentException("Command " + cmdCount + ": expected [<id pattern> =]? <SubTemplate>; but got " + cmd);
+				}
+				subTemplateName = strs[2];
 			} else {
 				// match anything
 				pattern =".*";
@@ -130,33 +164,90 @@ public class CompactAnalysisSpec extends BEASTObject {
 			}
 			
 			BEASTInterface bo = null;
+    		List<PartitionContext> p = doc.partitionNames;
+    		PartitionContext partitionContext = p.get(p.size() - 1);
+    		
             for (BeautiSubTemplate subTemplate : doc.beautiConfig.subTemplates) {
-            	if (subTemplate.getID().equals(subTemplateName)) {
-            		bo = subTemplate.createSubNet(new PartitionContext(), true);
+            	if (subTemplate.getID().matches(subTemplateName)) {
+            		bo = subTemplate.createSubNet(partitionContext, true);
             	}
             }
 			if (bo == null) {
 				throw new IllegalArgumentException("Command " + cmdCount + ": cannot find template '" + subTemplateName + "'");
 			}
 
-			boolean matchFound = false; 
-			for (String id : doc.pluginmap.keySet()) {
-				BEASTInterface o = doc.pluginmap.get(id);
-				for (String name : o.getInputs().keySet()) {
-					if ((id + "." + name).matches(pattern)) {
-						Input<?> in = o.getInputs().get(name);
-						if (in.canSetValue(bo, o)) {
-							in.setValue(bo, o);
-							matchFound = true;
+			Map<Input<?>, BEASTInterface> inputMap = getMatchingInputs(pattern, bo);
+			
+			if (inputMap.size() == 0) {
+				throw new IllegalArgumentException("Command " + cmdCount + ": cannot find suitable match for " + cmd);
+			} else {
+				doc.scrubAll(false, false);
+			}
+
+			for(Input<?> in : inputMap.keySet()) {
+				BEASTInterface o = inputMap.get(in);
+				if (o instanceof CompoundDistribution && in.getName().equals("distribution") && bo instanceof TreeDistribution) {
+					// may need to replace existing distribution
+					CompoundDistribution dist = (CompoundDistribution) o;
+					Distribution treeDist = null;
+					Alignment a = doc.getPartition(bo);
+					for (Distribution d : dist.pDistributions.get()) {
+						if (d instanceof TreeDistribution && doc.getPartition(d).equals(a)) {
+							treeDist = d;
 						}
 					}
+					if (treeDist != null) {
+						dist.pDistributions.get().remove(treeDist);
+					}
 				}
-			}
-			if (!matchFound) {
-				throw new IllegalArgumentException("Command " + cmdCount + ": cannot find suitable match for " + cmd);
+				in.setValue(bo, o);
 			}
 			
 		}
 	}
 
+	
+	private Map<Input<?>, BEASTInterface> getMatchingInputs(String pattern, BEASTInterface bo) {
+		Map<Input<?>, BEASTInterface> inputMap = new LinkedHashMap<>();
+		for (String id : doc.pluginmap.keySet()) {
+			BEASTInterface o = doc.pluginmap.get(id);
+			for (String name : o.getInputs().keySet()) {
+				if ((id + "." + name).matches(pattern)) { // <=== match id + name
+					Input<?> in = o.getInputs().get(name);
+					if (in.getType() != null && in.getType().isAssignableFrom(bo.getClass()) && in.canSetValue(bo, o)) {
+						inputMap.put(in, o);
+					}
+				}
+			}
+		}
+		if (inputMap.size() == 0) {
+			// no match found -- try matching id only
+			for (String id : doc.pluginmap.keySet()) {
+				BEASTInterface o = doc.pluginmap.get(id);
+				for (String name : o.getInputs().keySet()) {
+					if ((id).matches(pattern)) { // <=== match id only
+						Input<?> in = o.getInputs().get(name);
+						if (in.getType() != null && in.getType().isAssignableFrom(bo.getClass()) && in.canSetValue(bo, o)) {
+							inputMap.put(in, o);
+						}
+					}
+				}
+			}
+		}
+		return inputMap;
+	}
+
+	public static void main(String[] args) {
+		String cmds = "template Standard;\n" +
+				"import ../beast2/examples/nexus/dna.nex;"
+				+ "GTR;"
+				+ "prior = CoalescentConstantPopulation;"
+				+ "RelaxedClockLogNormal;";
+		;
+		CompactAnalysisSpec analysis = new CompactAnalysisSpec(cmds);
+		analysis.initAndValidate();
+		XMLProducer xmlProducer = new XMLProducer();
+		MCMC mcmc = (MCMC) analysis.doc.mcmc.get();
+		System.out.println(xmlProducer.toXML(mcmc));
+	}
 }
