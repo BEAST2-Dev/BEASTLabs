@@ -4,9 +4,12 @@ package beast.app.beauti;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import beast.app.beauti.BeautiAlignmentProvider;
 import beast.app.beauti.BeautiDoc;
@@ -20,7 +23,12 @@ import beast.core.Param;
 import beast.core.parameter.Parameter;
 import beast.core.util.CompoundDistribution;
 import beast.evolution.alignment.Alignment;
+import beast.evolution.alignment.FilteredAlignment;
+import beast.evolution.branchratemodel.BranchRateModel;
+import beast.evolution.likelihood.GenericTreeLikelihood;
+import beast.evolution.sitemodel.SiteModelInterface;
 import beast.evolution.tree.TreeDistribution;
+import beast.evolution.tree.TreeInterface;
 import beast.math.distributions.MRCAPrior;
 import beast.util.XMLProducer;
 
@@ -28,7 +36,7 @@ import beast.util.XMLProducer;
 public class CompactAnalysisSpec extends BEASTObject {
 	private String spec;
 	private BeautiDoc doc;
-	private PartitionContext partitionContext;
+	private Set<PartitionContext> partitionContext;
 
 	
 	public CompactAnalysisSpec(@Param(name="value", description="specification of the analysis") String spec) {
@@ -45,6 +53,7 @@ public class CompactAnalysisSpec extends BEASTObject {
 
 	@Override
 	public void initAndValidate() {
+		partitionContext = new LinkedHashSet<>();
 		doc = new BeautiDoc();
 		doc.beautiConfig = new BeautiConfig();
 		doc.beautiConfig.initAndValidate();
@@ -63,7 +72,7 @@ public class CompactAnalysisSpec extends BEASTObject {
 
 	private void processCommand(String cmd, int cmdCount) throws IOException {
 		if (cmdCount == 1 && !cmd.toLowerCase().startsWith("template")) {
-			doc.processTemplate("Standard.xml");
+			doc.loadNewTemplate("Standard.xml");
 		}
 		String [] strs = cmdsplit(cmd);
 		for (int i = 0; i < strs.length; i++) {
@@ -88,15 +97,63 @@ public class CompactAnalysisSpec extends BEASTObject {
 		} else if (cmd.toLowerCase().startsWith("import")) {
 
 			// import an alignment form file
-			// import=<alignment file>;
-			if (strs.length != 2) {
+			// import [Alignment provider id] <alignment file>;
+			if (strs.length < 2) {
 				throw new IllegalArgumentException("Command " + cmdCount + ": Expected 'import <alignment file>;' but got " + cmd);
 			}
 			importData(strs);
 		} else if (cmd.toLowerCase().startsWith("partition")) {
-			// 
+			String pattern = strs[1];
+			partitionContext.clear();
+			for (PartitionContext p : doc.partitionNames) {
+				if (p.partition.matches(pattern)) {
+					partitionContext.add(new PartitionContext(p.partition, p.siteModel, p.clockModel, p.tree));
+				}
+			}
 		} else if (cmd.toLowerCase().startsWith("link")) {
-			// 
+			if (partitionContext.size() <= 1) {
+				throw new IllegalArgumentException("Command " + cmdCount + ": At least two partitions must be selected " + cmd);
+			}
+			PartitionContext [] contexts = partitionContext.toArray(new PartitionContext[]{});
+			GenericTreeLikelihood [] treelikelihood = new GenericTreeLikelihood[contexts.length];
+			CompoundDistribution likelihoods = (CompoundDistribution) doc.pluginmap.get("likelihood");
+
+			for (int i = 0; i < partitionContext.size(); i++) {
+				String partition = contexts[i].partition;
+				for (int j = 0; j < likelihoods.pDistributions.get().size(); j++) {
+					GenericTreeLikelihood likelihood = (GenericTreeLikelihood) likelihoods.pDistributions.get().get(i);
+					assert (likelihood != null);
+					if (likelihood.dataInput.get().getID().equals(partition)) {
+						treelikelihood[i] = likelihood;
+					}
+				}
+			}
+
+			switch (strs[1]) {
+			case "site" :
+				SiteModelInterface sitemodel = treelikelihood[0].siteModelInput.get();
+				for (int i = 1; i < contexts.length; i++) {
+					treelikelihood[i].siteModelInput.setValue(sitemodel, treelikelihood[i]);
+					contexts[i].siteModel = contexts[0].siteModel;
+				}
+				break;
+			case "clock" :
+				BranchRateModel clockmodel = treelikelihood[0].branchRateModelInput.get();
+				for (int i = 1; i < contexts.length; i++) {
+					treelikelihood[i].branchRateModelInput.setValue(clockmodel, treelikelihood[i]);
+					contexts[i].clockModel = contexts[0].clockModel;
+				}
+				break;
+			case "tree" :
+				TreeInterface tree = treelikelihood[0].treeInput.get();
+				for (int i = 1; i < contexts.length; i++) {
+					treelikelihood[i].treeInput.setValue(tree, treelikelihood[i]);
+					contexts[i].tree = contexts[0].tree;
+				}
+				break;
+			default:
+				throw new IllegalArgumentException("Command " + cmdCount + ": expected 'link [site|clock|tree] but got " + cmd);
+			}
 		} else if (cmd.toLowerCase().startsWith("unlink")) {
 			// 
 		} else if (cmd.toLowerCase().startsWith("set")) {
@@ -144,24 +201,37 @@ public class CompactAnalysisSpec extends BEASTObject {
 			// collect parameters
 			List<String> param = new ArrayList<>();
 			List<String> value = new ArrayList<>();
+			if (partitionContext.size() != 1) {
+				throw new IllegalArgumentException("Command " + cmdCount + ": partition context does not contain exactly 1 partition but " + partitionContext.size()  + " " + partitionContext.toString());
+			}
+			
+			PartitionContext pc = partitionContext.toArray(new PartitionContext[]{})[0];
+			String oldId = pc.partition;
+			String id = pc.partition;
  			if (subTemplateName.indexOf('(') > -1) {
-				String [] x = subTemplateName.substring(subTemplateName.indexOf('(')+1, subTemplateName.indexOf(')')).split(",");
+ 				String parameters = subTemplateName.substring(subTemplateName.indexOf('(')+1, subTemplateName.lastIndexOf(')'));
+				String [] x = parameters.split(",");
 				for (String s : x) {
-					String [] x2 = s.split("=");
+					String [] x2 = s.replaceAll("&44;",",").split("=");
 					if (x2.length != 2) {
 						throw new IllegalArgumentException("Command " + cmdCount + ": expected 'param=value' pair but got " + s + " in \n" +cmd);
 					}
-					param.add(x2[0].trim());
-					value.add(x2[1].trim());
+					if (x2[0].trim().toLowerCase().equals("id")) {
+						id = x2[1].trim();
+					} else {
+						param.add(x2[0].trim());
+						value.add(x2[1].trim());
+					}
 				}
 				subTemplateName = subTemplateName.substring(0, subTemplateName.indexOf('('));
 			}
 			
 			BEASTInterface bo = null;
     		
+			pc.partition = id;
             for (BeautiSubTemplate subTemplate : doc.beautiConfig.subTemplates) {
             	if (subTemplate.getID().matches(subTemplateName)) {
-            		bo = subTemplate.createSubNet(partitionContext, true);
+            		bo = subTemplate.createSubNet(pc, true);
             		for (int i = 0; i < param.size(); i++) {
             			Input<?> in = bo.getInput(param.get(i));
             			if (in.get() instanceof Parameter.Base) {
@@ -173,7 +243,9 @@ public class CompactAnalysisSpec extends BEASTObject {
             		}
             	}
             }
-			if (bo == null) {
+			pc.partition = oldId;
+
+            if (bo == null) {
 				throw new IllegalArgumentException("Command " + cmdCount + ": cannot find template '" + subTemplateName + "'");
 			}
 
@@ -201,7 +273,19 @@ public class CompactAnalysisSpec extends BEASTObject {
 						dist.pDistributions.get().remove(treeDist);
 					}
 				}
-				in.setValue(bo, o);
+				if (in.get() instanceof Collection<?>) {
+					boolean found = false;
+					for (Object o2 : (Collection<?>) in.get()) {
+						if (o2 == bo) {
+							found = true;
+						}
+					}
+					if (!found) {
+						in.setValue(bo, o);
+					}
+				} else {
+					in.setValue(bo, o);
+				}
 			}
 			
 		}
@@ -220,6 +304,8 @@ public class CompactAnalysisSpec extends BEASTObject {
 				} else if (Character.isWhitespace(c) && !markSpaces && b.length() > 0) {
 					strs.add(b.toString());
 					b = new StringBuilder();
+				} else if (c == ',' && markSpaces) {
+					b.append("&44;");
 				} else {
 					b.append(c);
 				} 
@@ -301,12 +387,40 @@ public class CompactAnalysisSpec extends BEASTObject {
 	}
 
 	private void importData(String[] strs) {
-		BeautiAlignmentProvider provider = new BeautiAlignmentProvider();
-		provider.template.setValue(doc.beautiConfig.partitionTemplate.get(), provider);
-        List<BEASTInterface> beastObjects = provider.getAlignments(doc, new File[]{new File(strs[1])});
+		String providerID = "Import Alignment";
+		if (strs.length > 2) {
+			providerID = ".*" + strs[1];
+			for (int i = 2; i < strs.length - 1; i++) {
+				providerID += " " + strs[i];
+			}
+			providerID += ".*";
+		}
+		
+		List<BeautiAlignmentProvider> providerList = doc.beautiConfig.alignmentProvider;
+		BeautiAlignmentProvider provider = null;
+		for (BeautiAlignmentProvider p : providerList) {
+			if (p.getID().matches(providerID)) {
+				provider = p;
+			}
+		}
+		if (provider == null) {
+			String providers = providerList.get(0).getID();
+			for (int i = 1; i < providerList.size(); i++) {
+				providers += "," + providerList.get(i).getID();
+			}
+			throw new IllegalArgumentException("Could not match '" + providerID+"' to one of these providers: " + providers);
+		}
+		
+		//provider.template.setValue(doc.beautiConfig.partitionTemplate.get(), provider);
+        List<BEASTInterface> beastObjects = provider.getAlignments(doc, new File[]{new File(strs[strs.length - 1])});
+        if (!provider.getClass().equals(BeautiAlignmentProvider.class)) {
+            provider.addAlignments(doc, beastObjects);
+        }
+
         if (beastObjects != null) {
 	        for (BEASTInterface o : beastObjects) {
 	        	if (o instanceof Alignment) {
+	        		
 	        		try {
 	        			BeautiDoc.createTaxonSet((Alignment) o, doc);
 	        		} catch(Exception ex) {
@@ -326,12 +440,20 @@ public class CompactAnalysisSpec extends BEASTObject {
 	        	}
 	        }
         }
-		List<PartitionContext> p = doc.partitionNames;
-		partitionContext = p.get(p.size() - 1);
+        // set partition context to latest partition
+		PartitionContext p = doc.partitionNames.get(doc.partitionNames.size() - 1);
+		partitionContext.clear();
+		partitionContext.add(new PartitionContext(p.partition, p.siteModel, p.clockModel, p.tree));
 	}
 
 	private Map<Input<?>, BEASTInterface> getMatchingInputs(String pattern, BEASTInterface bo) {
 		Map<Input<?>, BEASTInterface> inputMap = new LinkedHashMap<>();
+		if (bo instanceof Distribution) {
+			CompoundDistribution distr = (CompoundDistribution) doc.pluginmap.get("prior");
+			inputMap.put(distr.pDistributions, distr);
+			return inputMap;
+		}
+		
 		for (String id : doc.pluginmap.keySet()) {
 			BEASTInterface o = doc.pluginmap.get(id);
 			for (String name : o.getInputs().keySet()) {
@@ -360,13 +482,27 @@ public class CompactAnalysisSpec extends BEASTObject {
 		return inputMap;
 	}
 
+	
+	
 	public static void main(String[] args) {
+		String cmds0 = "import ../morph-models/examples/nexus/penguins_dna.nex;" +
+				"import Morph ../morph-models/examples/nexus/penguins_morph.nex;";
+		
 		String cmds = "template Standard;\n" +
-				"import ../beast2/examples/nexus/dna.nex;"
-				+ "'Gamma Site Model'(gammaCategoryCount=4);set gammaShape.*estimate = true;"
-				+ "HKY(kappa=3.0);"
-				+ "prior = CoalescentConstantPopulation;"
-				+ "PopSizePrior.*distr = Gamma(alpha=0.1,beta=10.0)"
+				"import Alignment ../beast2/examples/nexus/primate-mtDNA.nex;"
+				+ "partition .*;"
+				+ "link tree;"
+		;
+
+		String cmds1 = "template Standard;\n" +
+				"import Alignment ../beast2/examples/nexus/dna.nex;"
+				+ "MultiMonoConstraint(id=c1,newick='(Cow,Carp,Human,Whale)');"
+				+ "partition dna;"
+				+ "MultiMonoConstraint(id=c2,newick='((Cow,Carp),(Human,Whale))');"
+//				+ "'Gamma Site Model(gammaCategoryCount=4)';set gammaShape.*estimate = true;"
+//				+ "HKY(kappa=3.0);"
+//				+ "prior = CoalescentConstantPopulation;"
+//				+ "PopSizePrior.*distr = Gamma(alpha=0.1,beta=10.0)"
 //				+ "'BEAST Model Test';"
 //				+ "RelaxedClockLogNormal;"
 //				+ "set birthRate.*upper = 2.5;"
@@ -381,4 +517,20 @@ public class CompactAnalysisSpec extends BEASTObject {
 		MCMC mcmc = (MCMC) analysis.doc.mcmc.get();
 		System.out.println(xmlProducer.toXML(mcmc));
 	}
+	
+	
+//	static public void main(String args[]) {
+//		// create a scanner so we can read the command-line input
+//	    Scanner scanner = new Scanner(System.in);
+//
+//	    //  prompt for the user's name
+//
+//	    // get their input as a String
+//	    while (true) {
+//		    System.out.print("> ");
+//	    	String username = scanner.next();
+//	    	if (username == null) break;
+//			System.out.println(username);
+//	    }
+//	}
 }
