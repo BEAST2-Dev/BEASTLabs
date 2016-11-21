@@ -1,6 +1,7 @@
 package beast.evolution.tree;
 
 
+import beast.core.BEASTInterface;
 import beast.core.BEASTObject;
 import beast.core.Description;
 import beast.core.Input;
@@ -18,33 +19,27 @@ import java.util.Set;
 public class SimpleConstrainedRandomTree extends SimpleRandomTree  {
     // The tree in the XML should have a taxon set, since it is not fully initialized at this stage
     public final Input<List<MultiMonophyleticConstraint>> allConstraints = new Input<>("constraints",
-                "all constraints as encoded by one unresolved tree.",  new ArrayList<MultiMonophyleticConstraint>(),
-            Input.Validate.REQUIRED);
-
+                "all constraints as encoded by one unresolved tree.",  new ArrayList<MultiMonophyleticConstraint>(), Input.Validate.REQUIRED);
 
     @Override
     public void initAndValidate() {
-        //final Tree itree = m_initial.get();
-
         List<MRCAPrior> cons = getCons();
-        List<MRCAPrior> origCons = new ArrayList();
+        List<MRCAPrior> origCons = new ArrayList<>();
         origCons.addAll(calibrationsInput.get());
         calibrationsInput.setValue(cons, this);
         super.initAndValidate();
         calibrationsInput.get().clear();
         clearup();
-        if (origCons.size() > 0)
-        	calibrationsInput.setValue(origCons, this);
-//        if (m_initial.get() != null) {
-//       	  initStateNodes();
-//        }
+        if (origCons.size() > 0) {
+            calibrationsInput.setValue(origCons, this);
+        }
     }
 
     private ArrayList<Object> outputs = null;
 
     private List<MRCAPrior> getCons() {
         final Tree tree = m_initial.get();
-        outputs = new ArrayList(tree.getOutputs());
+        outputs = new ArrayList<>(tree.getOutputs());
         final List<MultiMonophyleticConstraint> allmul = allConstraints.get();
 
         List<MRCAPrior> cons = new ArrayList<>();
@@ -70,8 +65,8 @@ public class SimpleConstrainedRandomTree extends SimpleRandomTree  {
     private void clearup() {
         final Tree itree = m_initial.get();
 
-        ArrayList<Object> ox = new ArrayList(itree.getOutputs());
-        for (Object o : ox) {
+        ArrayList<BEASTInterface> ox = new ArrayList<>(itree.getOutputs());
+        for (BEASTInterface o : ox) {
             if( !outputs.contains(o) ) {
                 itree.getOutputs().remove(o);
             }
@@ -83,7 +78,7 @@ public class SimpleConstrainedRandomTree extends SimpleRandomTree  {
 	@Override
     public void initStateNodes() {
     	List<MRCAPrior> cons = getCons();
-        List<MRCAPrior> origCons = new ArrayList();
+        List<MRCAPrior> origCons = new ArrayList<>();
         origCons.addAll(calibrationsInput.get());
         calibrationsInput.setValue(cons, this);
     	super.initStateNodes();
