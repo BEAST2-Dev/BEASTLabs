@@ -37,7 +37,8 @@ public class CompactAnalysisSpec extends BEASTObject {
 	private String spec;
 	private BeautiDoc doc;
 	private Set<PartitionContext> partitionContext;
-
+	private String cmd;
+	private int cmdCount;
 	
 	public CompactAnalysisSpec(@Param(name="value", description="specification of the analysis") String spec) {
 		this.spec = spec;
@@ -59,10 +60,12 @@ public class CompactAnalysisSpec extends BEASTObject {
 		doc.beautiConfig.initAndValidate();
 
 		String [] cmds = spec.split(";");
-		int cmdCount = 1;
+		cmdCount = 1;
 		try {
 			for (String cmd : cmds) {
-				processCommand(cmd.trim(), cmdCount++);
+				this.cmd = cmd.trim();
+				processCommand();
+				cmdCount++;
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -70,7 +73,7 @@ public class CompactAnalysisSpec extends BEASTObject {
 		}
 	}
 
-	private void processCommand(String cmd, int cmdCount) throws IOException {
+	private void processCommand() throws IOException {
 		if (cmdCount == 1 && !cmd.toLowerCase().startsWith("template")) {
 			doc.loadNewTemplate("Standard.xml");
 		}
@@ -80,364 +83,452 @@ public class CompactAnalysisSpec extends BEASTObject {
 		}
 
 		if (cmd.toLowerCase().startsWith("template")) {
-			
-			// set template -- must be at start of file
-			// template=<template name>;
-			if (strs.length != 2) {
-				throw new IllegalArgumentException("Command " + cmdCount + ": Expected 'template=<template name>;' but got " + cmd);
-			}
-			if (cmdCount != 1) {
-				throw new IllegalArgumentException("Command " + cmdCount + ": 'template=<template name>;' can only be at the start, not at command " + cmdCount);
-			}
-			String template = strs[1];
-			if (!template.toLowerCase().endsWith("xml")) {
-				template += ".xml";
-			}
-			doc.loadNewTemplate(template);
+			processTemplateCmd(strs);
 		} else if (cmd.toLowerCase().startsWith("import")) {
-
-			// import an alignment form file
-			// import [Alignment provider id] <alignment file>;
-			if (strs.length < 2) {
-				throw new IllegalArgumentException("Command " + cmdCount + ": Expected 'import <alignment file>;' but got " + cmd);
-			}
-			importData(strs);
+			processImportCmd(strs);
 		} else if (cmd.toLowerCase().startsWith("partition")) {
-			String pattern = strs[1];
-			partitionContext.clear();
-			for (PartitionContext p : doc.partitionNames) {
-				if (p.partition.matches(pattern)) {
-					partitionContext.add(new PartitionContext(p.partition, p.siteModel, p.clockModel, p.tree));
-				}
-			}
+			processPartitionCmd(strs);
 		} else if (cmd.toLowerCase().startsWith("link")) {
-			if (partitionContext.size() <= 1) {
-				throw new IllegalArgumentException("Command " + cmdCount + ": At least two partitions must be selected " + cmd);
-			}
-			PartitionContext [] contexts = partitionContext.toArray(new PartitionContext[]{});
-			GenericTreeLikelihood [] treelikelihood = new GenericTreeLikelihood[contexts.length];
-			CompoundDistribution likelihoods = (CompoundDistribution) doc.pluginmap.get("likelihood");
-
-			for (int i = 0; i < partitionContext.size(); i++) {
-				String partition = contexts[i].partition;
-				for (int j = 0; j < likelihoods.pDistributions.get().size(); j++) {
-					GenericTreeLikelihood likelihood = (GenericTreeLikelihood) likelihoods.pDistributions.get().get(i);
-					assert (likelihood != null);
-					if (likelihood.dataInput.get().getID().equals(partition)) {
-						treelikelihood[i] = likelihood;
-					}
-				}
-			}
-
-			switch (strs[1]) {
-			case "site" :
-				SiteModelInterface sitemodel = treelikelihood[0].siteModelInput.get();
-				for (int i = 1; i < contexts.length; i++) {
-					PartitionContext oldContext = new PartitionContext(treelikelihood[i]);
-
-					SiteModelInterface oldSiteModel = treelikelihood[i].siteModelInput.get();
-					for (Object beastObject : BEASTInterface.getOutputs(oldSiteModel).toArray()) { //.toArray(new BEASTInterface[0])) {
-						for (Input<?> input : ((BEASTInterface)beastObject).listInputs()) {
-							try {
-							if (input.get() == oldSiteModel) {
-								if (input.getRule() != Input.Validate.REQUIRED) {
-									input.setValue(sitemodel /*null*/, (BEASTInterface) beastObject);
-								//} else {
-									//input.setValue(tree, (BEASTInterface) beastObject);
-								}
-							} else if (input.get() instanceof List) {
-								List list = (List) input.get();
-								if (list.contains(oldSiteModel)) { // && input.getRule() != Validate.REQUIRED) {
-									list.remove(oldSiteModel);
-									if (!list.contains(sitemodel)) {
-										list.add(sitemodel);
-									}
-								}
-							}
-							} catch (Exception e) {
-								e.printStackTrace();
-							}
-						}
-					}
-					
-					treelikelihood[i].siteModelInput.setValue(sitemodel, treelikelihood[i]);
-					contexts[i].siteModel = contexts[0].siteModel;
-					repartition(oldContext);
-				}
-				break;
-			case "clock" :
-				BranchRateModel clockmodel = treelikelihood[0].branchRateModelInput.get();
-				for (int i = 1; i < contexts.length; i++) {
-					PartitionContext oldContext = new PartitionContext(treelikelihood[i]);
-
-					BranchRateModel oldClock = treelikelihood[i].branchRateModelInput.get();
-					for (Object beastObject : BEASTInterface.getOutputs(oldClock).toArray()) { //.toArray(new BEASTInterface[0])) {
-						for (Input<?> input : ((BEASTInterface)beastObject).listInputs()) {
-							try {
-							if (input.get() == oldClock) {
-								if (input.getRule() != Input.Validate.REQUIRED) {
-									input.setValue(clockmodel /*null*/, (BEASTInterface) beastObject);
-								//} else {
-									//input.setValue(tree, (BEASTInterface) beastObject);
-								}
-							} else if (input.get() instanceof List) {
-								List list = (List) input.get();
-								if (list.contains(oldClock)) { // && input.getRule() != Validate.REQUIRED) {
-									list.remove(oldClock);
-									if (!list.contains(clockmodel)) {
-										list.add(clockmodel);
-									}
-								}
-							}
-							} catch (Exception e) {
-								e.printStackTrace();
-							}
-						}
-					}
-					
-					treelikelihood[i].branchRateModelInput.setValue(clockmodel, treelikelihood[i]);
-					contexts[i].clockModel = contexts[0].clockModel;
-					repartition(oldContext);
-				}
-				break;
-			case "tree" :
-				TreeInterface tree = treelikelihood[0].treeInput.get();
-				for (int i = 1; i < contexts.length; i++) {
-					PartitionContext oldContext = new PartitionContext(treelikelihood[i]);
-
-					TreeInterface oldTree = treelikelihood[i].treeInput.get();
-					treelikelihood[i].treeInput.setValue(tree, treelikelihood[i]);
-					contexts[i].tree = contexts[0].tree;
-					
-                	// use toArray to prevent ConcurrentModificationException
-					for (Object beastObject : BEASTInterface.getOutputs(oldTree).toArray()) { //.toArray(new BEASTInterface[0])) {
-						for (Input<?> input : ((BEASTInterface)beastObject).listInputs()) {
-							try {
-							if (input.get() == oldTree) {
-								if (input.getRule() != Input.Validate.REQUIRED) {
-									input.setValue(tree/*null*/, (BEASTInterface) beastObject);
-								//} else {
-									//input.setValue(tree, (BEASTInterface) beastObject);
-								}
-							} else if (input.get() instanceof List) {
-								@SuppressWarnings("unchecked")
-								List<TreeInterface> list = (List<TreeInterface>) input.get();
-								if (list.contains(oldTree)) { // && input.getRule() != Validate.REQUIRED) {
-									list.remove(oldTree);
-									if (!list.contains(tree)) {
-										list.add(tree);
-									}
-								}
-							}
-							} catch (Exception e) {
-								e.printStackTrace();
-							}
-						}
-					}
-					repartition(oldContext);
-
-				}
-				break;
-			default:
-				throw new IllegalArgumentException("Command " + cmdCount + ": expected 'link [site|clock|tree] but got " + cmd);
-			}
-			doc.determinePartitions();
-			doc.scrubAll(true, false);
-	
+			processLinkCmd(strs);
 		} else if (cmd.toLowerCase().startsWith("unlink")) {
-			if (partitionContext.size() <= 1) {
-				throw new IllegalArgumentException("Command " + cmdCount + ": At least two partitions must be selected " + cmd);
-			}
-			PartitionContext [] contexts = partitionContext.toArray(new PartitionContext[]{});
-			GenericTreeLikelihood [] treelikelihood = new GenericTreeLikelihood[contexts.length];
-			CompoundDistribution likelihoods = (CompoundDistribution) doc.pluginmap.get("likelihood");
-
-			for (int i = 0; i < partitionContext.size(); i++) {
-				String partition = contexts[i].partition;
-				for (int j = 0; j < likelihoods.pDistributions.get().size(); j++) {
-					GenericTreeLikelihood likelihood = (GenericTreeLikelihood) likelihoods.pDistributions.get().get(i);
-					assert (likelihood != null);
-					if (likelihood.dataInput.get().getID().equals(partition)) {
-						treelikelihood[i] = likelihood;
-					}
-				}
-			}
-
-			switch (strs[1]) {
-			case "site" :
-				SiteModelInterface sitemodel = treelikelihood[0].siteModelInput.get();
-				for (int i = 1; i < contexts.length; i++) {
-					PartitionContext oldContext = new PartitionContext(treelikelihood[i]);
-					contexts[i].siteModel = contexts[i].partition;
-
-					SiteModelInterface newSitemodel = (SiteModelInterface) BeautiDoc.deepCopyPlugin((BEASTInterface) sitemodel, treelikelihood[i], (MCMC) doc.mcmc.get(), oldContext, contexts[i], doc, new ArrayList<>());
-					treelikelihood[i].siteModelInput.setValue(newSitemodel, treelikelihood[i]);
-					repartition(contexts[i]);
-				}
-				break;
-			case "clock" :
-				BranchRateModel clockModel = treelikelihood[0].branchRateModelInput.get();
-				for (int i = 1; i < contexts.length; i++) {
-					PartitionContext oldContext = new PartitionContext(treelikelihood[i]);
-					contexts[i].clockModel = contexts[i].partition;
-
-					BranchRateModel newClockmodel = (BranchRateModel) BeautiDoc.deepCopyPlugin((BEASTInterface) clockModel, treelikelihood[i], (MCMC) doc.mcmc.get(), oldContext, contexts[i], doc, new ArrayList<>());
-					treelikelihood[i].siteModelInput.setValue(newClockmodel, treelikelihood[i]);
-					repartition(contexts[i]);
-				}
-				break;
-			case "tree" :
-				TreeInterface tree = treelikelihood[0].treeInput.get();
-				for (int i = 1; i < contexts.length; i++) {
-					PartitionContext oldContext = new PartitionContext(treelikelihood[i]);
-					contexts[i].tree = contexts[i].partition;
-
-					TreeInterface newTree = (TreeInterface) BeautiDoc.deepCopyPlugin((BEASTInterface) tree, treelikelihood[i], (MCMC) doc.mcmc.get(), oldContext, contexts[i], doc, new ArrayList<>());
-					treelikelihood[i].treeInput.setValue(newTree, treelikelihood[i]);
-					repartition(contexts[i]);
-				}
-				break;
-			default:
-				throw new IllegalArgumentException("Command " + cmdCount + ": expected 'unlink [site|clock|tree] but got " + cmd);
-			}
-			doc.determinePartitions();
-			doc.scrubAll(true, false);
-
+			processUnlinkCmd(strs);
 		} else if (cmd.toLowerCase().startsWith("set")) {
-			if (strs.length != 4) {
-				throw new IllegalArgumentException("Command " + cmdCount + ": expected 'set <id pattern> =  <value>;' but got " + cmd);
-			}
-
-			// set <identifier> = <value>;
-			String pattern = strs[1];
-			String value = strs[3];
-			
-			
-			Map<Input<?>, BEASTInterface> inputMap = getMatchingInputs(pattern + ".*.value");
-			if (inputMap.size() == 0) {
-				inputMap = getMatchingInputs(pattern);
-			}
-			for(Input<?> in : inputMap.keySet()) {
-				BEASTInterface o = inputMap.get(in);
-				in.setValue(value, o);
-			}
-
-			if (inputMap.size() == 0) {
-				throw new IllegalArgumentException("Command " + cmdCount + ": cannot find suitable match for " + cmd);
-			}
+			processSetCmd(strs);
 		} else {
-			// assume this specifies a subtemplate
-			// [<id pattern> =]? <SubTemplate>[(param1=value[,param2=value,...])];
-			if (strs.length > 3) {
-				throw new IllegalArgumentException("Command " + cmdCount + ": expected [<id pattern> =]? <SubTemplate>[(param1=value[,param2=value...])]; but got " + cmd);
-			}
-			String pattern;
-			String subTemplateName;
-			if (strs.length == 3) {
-				pattern = strs[0];
-				if (!strs[1].equals("=")) {
-					throw new IllegalArgumentException("Command " + cmdCount + ": expected [<id pattern> =]? <SubTemplate>; but got " + cmd);
-				}
-				subTemplateName = strs[2];
-			} else {
-				// match anything
-				pattern =".*";
-				subTemplateName = strs[0];
-			}
-			
-			// collect parameters
-			List<String> param = new ArrayList<>();
-			List<String> value = new ArrayList<>();
-			if (partitionContext.size() != 1) {
-				throw new IllegalArgumentException("Command " + cmdCount + ": partition context does not contain exactly 1 partition but " + partitionContext.size()  + " " + partitionContext.toString());
-			}
-			
-			PartitionContext pc = partitionContext.toArray(new PartitionContext[]{})[0];
-			String oldId = pc.partition;
-			String id = pc.partition;
- 			if (subTemplateName.indexOf('(') > -1) {
- 				String parameters = subTemplateName.substring(subTemplateName.indexOf('(')+1, subTemplateName.lastIndexOf(')'));
-				String [] x = parameters.split(",");
-				for (String s : x) {
-					String [] x2 = s.replaceAll("&44;",",").split("=");
-					if (x2.length != 2) {
-						throw new IllegalArgumentException("Command " + cmdCount + ": expected 'param=value' pair but got " + s + " in \n" +cmd);
-					}
-					if (x2[0].trim().toLowerCase().equals("id")) {
-						id = x2[1].trim();
-					} else {
-						param.add(x2[0].trim());
-						value.add(x2[1].trim());
-					}
-				}
-				subTemplateName = subTemplateName.substring(0, subTemplateName.indexOf('('));
-			}
-			
-			BEASTInterface bo = null;
-    		
-			pc.partition = id;
-            for (BeautiSubTemplate subTemplate : doc.beautiConfig.subTemplates) {
-            	if (subTemplate.getID().matches(subTemplateName)) {
-            		bo = subTemplate.createSubNet(pc, true);
-            		for (int i = 0; i < param.size(); i++) {
-            			Input<?> in = bo.getInput(param.get(i));
-            			if (in.get() instanceof Parameter.Base) {
-            				Parameter.Base<?>  p = (Parameter.Base<?>) in.get();
-            				p.valuesInput.setValue(value.get(i), p);
-            			} else {
-            				bo.setInputValue(param.get(i), value.get(i));
-            			}
-            		}
-            	}
-            }
-			pc.partition = oldId;
-
-            if (bo == null) {
-				throw new IllegalArgumentException("Command " + cmdCount + ": cannot find template '" + subTemplateName + "'");
-			}
-
-			Map<Input<?>, BEASTInterface> inputMap = getMatchingInputs(pattern, bo);
-			
-			if (inputMap.size() == 0) {
-				throw new IllegalArgumentException("Command " + cmdCount + ": cannot find suitable match for " + cmd);
-			} else {
-				doc.scrubAll(false, false);
-			}
-
-			for(Input<?> in : inputMap.keySet()) {
-				BEASTInterface o = inputMap.get(in);
-				if (o instanceof CompoundDistribution && in.getName().equals("distribution") && bo instanceof TreeDistribution) {
-					// may need to replace existing distribution
-					CompoundDistribution dist = (CompoundDistribution) o;
-					Distribution treeDist = null;
-					Alignment a = doc.getPartition(bo);
-					for (Distribution d : dist.pDistributions.get()) {
-						if (d instanceof TreeDistribution && doc.getPartition(d).equals(a)) {
-							treeDist = d;
-						}
-					}
-					if (treeDist != null) {
-						dist.pDistributions.get().remove(treeDist);
-					}
-				}
-				if (in.get() instanceof Collection<?>) {
-					boolean found = false;
-					for (Object o2 : (Collection<?>) in.get()) {
-						if (o2 == bo) {
-							found = true;
-						}
-					}
-					if (!found) {
-						in.setValue(bo, o);
-					}
-				} else {
-					in.setValue(bo, o);
-				}
-			}
+			processSubTemplate(strs);
 			
 		}
 	}
+	
+	private void processTemplateCmd(String[] strs) {
+		// set template -- must be at start of file
+		// template=<template name>;
+		if (strs.length != 2) {
+			throw new IllegalArgumentException("Command " + cmdCount + ": Expected 'template=<template name>;' but got " + cmd);
+		}
+		if (cmdCount != 1) {
+			throw new IllegalArgumentException("Command " + cmdCount + ": 'template=<template name>;' can only be at the start, not at command " + cmdCount);
+		}
+		String template = strs[1];
+		if (!template.toLowerCase().endsWith("xml")) {
+			template += ".xml";
+		}
+		doc.loadNewTemplate(template);
+	}
 
+	private void processPartitionCmd(String[] strs) {
+		String pattern = strs[1];
+		partitionContext.clear();
+		for (PartitionContext p : doc.partitionNames) {
+			if (p.partition.matches(pattern)) {
+				partitionContext.add(new PartitionContext(p.partition, p.siteModel, p.clockModel, p.tree));
+			}
+		}
+	}
+
+
+	private void processImportCmd(String[] strs) {
+		// import an alignment form file
+		// import [Alignment provider id] <alignment file>;
+		if (strs.length < 2) {
+			throw new IllegalArgumentException("Command " + cmdCount + ": Expected 'import <alignment file>;' but got " + cmd);
+		}
+
+		String providerID = "Import Alignment";
+		if (strs.length > 2) {
+			providerID = ".*" + strs[1];
+			for (int i = 2; i < strs.length - 1; i++) {
+				providerID += " " + strs[i];
+			}
+			providerID += ".*";
+		}
+		
+		List<BeautiAlignmentProvider> providerList = doc.beautiConfig.alignmentProvider;
+		BeautiAlignmentProvider provider = null;
+		for (BeautiAlignmentProvider p : providerList) {
+			if (p.getID().matches(providerID)) {
+				provider = p;
+			}
+		}
+		if (provider == null) {
+			String providers = providerList.get(0).getID();
+			for (int i = 1; i < providerList.size(); i++) {
+				providers += "," + providerList.get(i).getID();
+			}
+			throw new IllegalArgumentException("Could not match '" + providerID+"' to one of these providers: " + providers);
+		}
+		
+		//provider.template.setValue(doc.beautiConfig.partitionTemplate.get(), provider);
+        List<BEASTInterface> beastObjects = provider.getAlignments(doc, new File[]{new File(strs[strs.length - 1])});
+        if (!provider.getClass().equals(BeautiAlignmentProvider.class)) {
+            provider.addAlignments(doc, beastObjects);
+        }
+
+        if (beastObjects != null) {
+	        for (BEASTInterface o : beastObjects) {
+	        	if (o instanceof Alignment) {
+	        		
+	        		try {
+	        			BeautiDoc.createTaxonSet((Alignment) o, doc);
+	        		} catch(Exception ex) {
+	        			ex.printStackTrace();
+	        		}
+	        	}
+	        }
+        }
+
+        doc.connectModel();
+        doc.fireDocHasChanged();
+        
+        if (beastObjects != null) {
+	        for (BEASTInterface o : beastObjects) {
+	        	if (o instanceof MRCAPrior) {
+        			doc.addMRCAPrior((MRCAPrior) o);
+	        	}
+	        }
+        }
+        // set partition context to latest partition
+		PartitionContext p = doc.partitionNames.get(doc.partitionNames.size() - 1);
+		partitionContext.clear();
+		partitionContext.add(new PartitionContext(p.partition, p.siteModel, p.clockModel, p.tree));
+	}
+	
+
+	private void processLinkCmd(String[] strs) {
+		if (partitionContext.size() <= 1) {
+			throw new IllegalArgumentException("Command " + cmdCount + ": At least two partitions must be selected " + cmd);
+		}
+		PartitionContext [] contexts = partitionContext.toArray(new PartitionContext[]{});
+		GenericTreeLikelihood [] treelikelihood = new GenericTreeLikelihood[contexts.length];
+		CompoundDistribution likelihoods = (CompoundDistribution) doc.pluginmap.get("likelihood");
+
+		for (int i = 0; i < partitionContext.size(); i++) {
+			String partition = contexts[i].partition;
+			for (int j = 0; j < likelihoods.pDistributions.get().size(); j++) {
+				GenericTreeLikelihood likelihood = (GenericTreeLikelihood) likelihoods.pDistributions.get().get(i);
+				assert (likelihood != null);
+				if (likelihood.dataInput.get().getID().equals(partition)) {
+					treelikelihood[i] = likelihood;
+				}
+			}
+		}
+
+		switch (strs[1]) {
+		case "site" :
+			SiteModelInterface sitemodel = treelikelihood[0].siteModelInput.get();
+			for (int i = 1; i < contexts.length; i++) {
+				PartitionContext oldContext = new PartitionContext(treelikelihood[i]);
+
+				SiteModelInterface oldSiteModel = treelikelihood[i].siteModelInput.get();
+				for (Object beastObject : BEASTInterface.getOutputs(oldSiteModel).toArray()) { //.toArray(new BEASTInterface[0])) {
+					for (Input<?> input : ((BEASTInterface)beastObject).listInputs()) {
+						try {
+						if (input.get() == oldSiteModel) {
+							if (input.getRule() != Input.Validate.REQUIRED) {
+								input.setValue(sitemodel /*null*/, (BEASTInterface) beastObject);
+							//} else {
+								//input.setValue(tree, (BEASTInterface) beastObject);
+							}
+						} else if (input.get() instanceof List) {
+							List list = (List) input.get();
+							if (list.contains(oldSiteModel)) { // && input.getRule() != Validate.REQUIRED) {
+								list.remove(oldSiteModel);
+								if (!list.contains(sitemodel)) {
+									list.add(sitemodel);
+								}
+							}
+						}
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
+				}
+				
+				treelikelihood[i].siteModelInput.setValue(sitemodel, treelikelihood[i]);
+				contexts[i].siteModel = contexts[0].siteModel;
+				repartition(oldContext);
+			}
+			break;
+		case "clock" :
+			BranchRateModel clockmodel = treelikelihood[0].branchRateModelInput.get();
+			for (int i = 1; i < contexts.length; i++) {
+				PartitionContext oldContext = new PartitionContext(treelikelihood[i]);
+
+				BranchRateModel oldClock = treelikelihood[i].branchRateModelInput.get();
+				for (Object beastObject : BEASTInterface.getOutputs(oldClock).toArray()) { //.toArray(new BEASTInterface[0])) {
+					for (Input<?> input : ((BEASTInterface)beastObject).listInputs()) {
+						try {
+						if (input.get() == oldClock) {
+							if (input.getRule() != Input.Validate.REQUIRED) {
+								input.setValue(clockmodel /*null*/, (BEASTInterface) beastObject);
+							//} else {
+								//input.setValue(tree, (BEASTInterface) beastObject);
+							}
+						} else if (input.get() instanceof List) {
+							List list = (List) input.get();
+							if (list.contains(oldClock)) { // && input.getRule() != Validate.REQUIRED) {
+								list.remove(oldClock);
+								if (!list.contains(clockmodel)) {
+									list.add(clockmodel);
+								}
+							}
+						}
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
+				}
+				
+				treelikelihood[i].branchRateModelInput.setValue(clockmodel, treelikelihood[i]);
+				contexts[i].clockModel = contexts[0].clockModel;
+				repartition(oldContext);
+			}
+			break;
+		case "tree" :
+			TreeInterface tree = treelikelihood[0].treeInput.get();
+			for (int i = 1; i < contexts.length; i++) {
+				PartitionContext oldContext = new PartitionContext(treelikelihood[i]);
+
+				TreeInterface oldTree = treelikelihood[i].treeInput.get();
+				treelikelihood[i].treeInput.setValue(tree, treelikelihood[i]);
+				contexts[i].tree = contexts[0].tree;
+				
+            	// use toArray to prevent ConcurrentModificationException
+				for (Object beastObject : BEASTInterface.getOutputs(oldTree).toArray()) { //.toArray(new BEASTInterface[0])) {
+					for (Input<?> input : ((BEASTInterface)beastObject).listInputs()) {
+						try {
+						if (input.get() == oldTree) {
+							if (input.getRule() != Input.Validate.REQUIRED) {
+								input.setValue(tree/*null*/, (BEASTInterface) beastObject);
+							//} else {
+								//input.setValue(tree, (BEASTInterface) beastObject);
+							}
+						} else if (input.get() instanceof List) {
+							@SuppressWarnings("unchecked")
+							List<TreeInterface> list = (List<TreeInterface>) input.get();
+							if (list.contains(oldTree)) { // && input.getRule() != Validate.REQUIRED) {
+								list.remove(oldTree);
+								if (!list.contains(tree)) {
+									list.add(tree);
+								}
+							}
+						}
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
+				}
+				repartition(oldContext);
+
+			}
+			break;
+		default:
+			throw new IllegalArgumentException("Command " + cmdCount + ": expected 'link [site|clock|tree] but got " + cmd);
+		}
+		doc.determinePartitions();
+		doc.scrubAll(true, false);
+	}
+
+	private void processUnlinkCmd(String[] strs) {
+		if (partitionContext.size() <= 1) {
+			throw new IllegalArgumentException("Command " + cmdCount + ": At least two partitions must be selected " + cmd);
+		}
+		PartitionContext [] contexts = partitionContext.toArray(new PartitionContext[]{});
+		GenericTreeLikelihood [] treelikelihood = new GenericTreeLikelihood[contexts.length];
+		CompoundDistribution likelihoods = (CompoundDistribution) doc.pluginmap.get("likelihood");
+
+		for (int i = 0; i < partitionContext.size(); i++) {
+			String partition = contexts[i].partition;
+			for (int j = 0; j < likelihoods.pDistributions.get().size(); j++) {
+				GenericTreeLikelihood likelihood = (GenericTreeLikelihood) likelihoods.pDistributions.get().get(i);
+				assert (likelihood != null);
+				if (likelihood.dataInput.get().getID().equals(partition)) {
+					treelikelihood[i] = likelihood;
+				}
+			}
+		}
+
+		switch (strs[1]) {
+		case "site" :
+			SiteModelInterface sitemodel = treelikelihood[0].siteModelInput.get();
+			for (int i = 1; i < contexts.length; i++) {
+				PartitionContext oldContext = new PartitionContext(treelikelihood[i]);
+				contexts[i].siteModel = contexts[i].partition;
+
+				SiteModelInterface newSitemodel = (SiteModelInterface) BeautiDoc.deepCopyPlugin((BEASTInterface) sitemodel, treelikelihood[i], (MCMC) doc.mcmc.get(), oldContext, contexts[i], doc, new ArrayList<>());
+				treelikelihood[i].siteModelInput.setValue(newSitemodel, treelikelihood[i]);
+				repartition(contexts[i]);
+			}
+			break;
+		case "clock" :
+			BranchRateModel clockModel = treelikelihood[0].branchRateModelInput.get();
+			for (int i = 1; i < contexts.length; i++) {
+				PartitionContext oldContext = new PartitionContext(treelikelihood[i]);
+				contexts[i].clockModel = contexts[i].partition;
+
+				BranchRateModel newClockmodel = (BranchRateModel) BeautiDoc.deepCopyPlugin((BEASTInterface) clockModel, treelikelihood[i], (MCMC) doc.mcmc.get(), oldContext, contexts[i], doc, new ArrayList<>());
+				treelikelihood[i].siteModelInput.setValue(newClockmodel, treelikelihood[i]);
+				repartition(contexts[i]);
+			}
+			break;
+		case "tree" :
+			TreeInterface tree = treelikelihood[0].treeInput.get();
+			for (int i = 1; i < contexts.length; i++) {
+				PartitionContext oldContext = new PartitionContext(treelikelihood[i]);
+				contexts[i].tree = contexts[i].partition;
+
+				TreeInterface newTree = (TreeInterface) BeautiDoc.deepCopyPlugin((BEASTInterface) tree, treelikelihood[i], (MCMC) doc.mcmc.get(), oldContext, contexts[i], doc, new ArrayList<>());
+				treelikelihood[i].treeInput.setValue(newTree, treelikelihood[i]);
+				repartition(contexts[i]);
+			}
+			break;
+		default:
+			throw new IllegalArgumentException("Command " + cmdCount + ": expected 'unlink [site|clock|tree] but got " + cmd);
+		}
+		doc.determinePartitions();
+		doc.scrubAll(true, false);
+	}
+
+	private void processSetCmd(String[] strs) {
+		if (strs.length != 4) {
+			throw new IllegalArgumentException("Command " + cmdCount + ": expected 'set <id pattern> =  <value>;' but got " + cmd);
+		}
+
+		// set <identifier> = <value>;
+		String pattern = strs[1];
+		String value = strs[3];
+		
+		
+		Map<Input<?>, BEASTInterface> inputMap = getMatchingInputs(pattern + ".*.value");
+		if (inputMap.size() == 0) {
+			inputMap = getMatchingInputs(pattern);
+		}
+		for(Input<?> in : inputMap.keySet()) {
+			BEASTInterface o = inputMap.get(in);
+			in.setValue(value, o);
+		}
+
+		if (inputMap.size() == 0) {
+			throw new IllegalArgumentException("Command " + cmdCount + ": cannot find suitable match for " + cmd);
+		}
+	}
+
+	private void processSubTemplate(String[] strs) {
+		// assume this specifies a subtemplate
+		// [<id pattern> =]? <SubTemplate>[(param1=value[,param2=value,...])];
+		if (strs.length > 3) {
+			throw new IllegalArgumentException("Command " + cmdCount + ": expected [<id pattern> =]? <SubTemplate>[(param1=value[,param2=value...])]; but got " + cmd);
+		}
+		String pattern;
+		String subTemplateName;
+		if (strs.length == 3) {
+			pattern = strs[0];
+			if (!strs[1].equals("=")) {
+				throw new IllegalArgumentException("Command " + cmdCount + ": expected [<id pattern> =]? <SubTemplate>; but got " + cmd);
+			}
+			subTemplateName = strs[2];
+		} else {
+			// match anything
+			pattern =".*";
+			subTemplateName = strs[0];
+		}
+		
+		// collect parameters
+		List<String> param = new ArrayList<>();
+		List<String> value = new ArrayList<>();
+		if (partitionContext.size() != 1) {
+			throw new IllegalArgumentException("Command " + cmdCount + ": partition context does not contain exactly 1 partition but " + partitionContext.size()  + " " + partitionContext.toString());
+		}
+		
+		PartitionContext pc = partitionContext.toArray(new PartitionContext[]{})[0];
+		String oldId = pc.partition;
+		String id = pc.partition;
+			if (subTemplateName.indexOf('(') > -1) {
+				String parameters = subTemplateName.substring(subTemplateName.indexOf('(')+1, subTemplateName.lastIndexOf(')'));
+			String [] x = parameters.split(",");
+			for (String s : x) {
+				String [] x2 = s.replaceAll("&44;",",").split("=");
+				if (x2.length != 2) {
+					throw new IllegalArgumentException("Command " + cmdCount + ": expected 'param=value' pair but got " + s + " in \n" +cmd);
+				}
+				if (x2[0].trim().toLowerCase().equals("id")) {
+					id = x2[1].trim();
+				} else {
+					param.add(x2[0].trim());
+					value.add(x2[1].trim());
+				}
+			}
+			subTemplateName = subTemplateName.substring(0, subTemplateName.indexOf('('));
+		}
+		
+		BEASTInterface bo = null;
+		
+		pc.partition = id;
+        for (BeautiSubTemplate subTemplate : doc.beautiConfig.subTemplates) {
+        	if (subTemplate.getID().matches(subTemplateName)) {
+        		bo = subTemplate.createSubNet(pc, true);
+        		for (int i = 0; i < param.size(); i++) {
+        			Input<?> in = bo.getInput(param.get(i));
+        			if (in.get() instanceof Parameter.Base) {
+        				Parameter.Base<?>  p = (Parameter.Base<?>) in.get();
+        				p.valuesInput.setValue(value.get(i), p);
+        			} else {
+        				bo.setInputValue(param.get(i), value.get(i));
+        			}
+        		}
+        	}
+        }
+		pc.partition = oldId;
+
+        if (bo == null) {
+			throw new IllegalArgumentException("Command " + cmdCount + ": cannot find template '" + subTemplateName + "'");
+		}
+
+		Map<Input<?>, BEASTInterface> inputMap = getMatchingInputs(pattern, bo);
+		
+		if (inputMap.size() == 0) {
+			throw new IllegalArgumentException("Command " + cmdCount + ": cannot find suitable match for " + cmd);
+		} else {
+			doc.scrubAll(false, false);
+		}
+
+		for(Input<?> in : inputMap.keySet()) {
+			BEASTInterface o = inputMap.get(in);
+			if (o instanceof CompoundDistribution && in.getName().equals("distribution") && bo instanceof TreeDistribution) {
+				// may need to replace existing distribution
+				CompoundDistribution dist = (CompoundDistribution) o;
+				Distribution treeDist = null;
+				Alignment a = doc.getPartition(bo);
+				for (Distribution d : dist.pDistributions.get()) {
+					if (d instanceof TreeDistribution && doc.getPartition(d).equals(a)) {
+						treeDist = d;
+					}
+				}
+				if (treeDist != null) {
+					dist.pDistributions.get().remove(treeDist);
+				}
+			}
+			if (in.get() instanceof Collection<?>) {
+				boolean found = false;
+				for (Object o2 : (Collection<?>) in.get()) {
+					if (o2 == bo) {
+						found = true;
+					}
+				}
+				if (!found) {
+					in.setValue(bo, o);
+				}
+			} else {
+				in.setValue(bo, o);
+			}
+		}	}
+
+
+	
+	
+	
+	
+	
 	
 	private void repartition(PartitionContext oldContext) {
 		List<BeautiSubTemplate> templates = new ArrayList<>();
@@ -548,65 +639,6 @@ public class CompactAnalysisSpec extends BEASTObject {
 		return false;
 	}
 
-	private void importData(String[] strs) {
-		String providerID = "Import Alignment";
-		if (strs.length > 2) {
-			providerID = ".*" + strs[1];
-			for (int i = 2; i < strs.length - 1; i++) {
-				providerID += " " + strs[i];
-			}
-			providerID += ".*";
-		}
-		
-		List<BeautiAlignmentProvider> providerList = doc.beautiConfig.alignmentProvider;
-		BeautiAlignmentProvider provider = null;
-		for (BeautiAlignmentProvider p : providerList) {
-			if (p.getID().matches(providerID)) {
-				provider = p;
-			}
-		}
-		if (provider == null) {
-			String providers = providerList.get(0).getID();
-			for (int i = 1; i < providerList.size(); i++) {
-				providers += "," + providerList.get(i).getID();
-			}
-			throw new IllegalArgumentException("Could not match '" + providerID+"' to one of these providers: " + providers);
-		}
-		
-		//provider.template.setValue(doc.beautiConfig.partitionTemplate.get(), provider);
-        List<BEASTInterface> beastObjects = provider.getAlignments(doc, new File[]{new File(strs[strs.length - 1])});
-        if (!provider.getClass().equals(BeautiAlignmentProvider.class)) {
-            provider.addAlignments(doc, beastObjects);
-        }
-
-        if (beastObjects != null) {
-	        for (BEASTInterface o : beastObjects) {
-	        	if (o instanceof Alignment) {
-	        		
-	        		try {
-	        			BeautiDoc.createTaxonSet((Alignment) o, doc);
-	        		} catch(Exception ex) {
-	        			ex.printStackTrace();
-	        		}
-	        	}
-	        }
-        }
-
-        doc.connectModel();
-        doc.fireDocHasChanged();
-        
-        if (beastObjects != null) {
-	        for (BEASTInterface o : beastObjects) {
-	        	if (o instanceof MRCAPrior) {
-        			doc.addMRCAPrior((MRCAPrior) o);
-	        	}
-	        }
-        }
-        // set partition context to latest partition
-		PartitionContext p = doc.partitionNames.get(doc.partitionNames.size() - 1);
-		partitionContext.clear();
-		partitionContext.add(new PartitionContext(p.partition, p.siteModel, p.clockModel, p.tree));
-	}
 
 	private Map<Input<?>, BEASTInterface> getMatchingInputs(String pattern, BEASTInterface bo) {
 		Map<Input<?>, BEASTInterface> inputMap = new LinkedHashMap<>();
