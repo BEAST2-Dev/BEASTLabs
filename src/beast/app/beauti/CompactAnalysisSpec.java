@@ -2,6 +2,7 @@ package beast.app.beauti;
 
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -23,7 +24,6 @@ import beast.core.Param;
 import beast.core.parameter.Parameter;
 import beast.core.util.CompoundDistribution;
 import beast.evolution.alignment.Alignment;
-import beast.evolution.alignment.FilteredAlignment;
 import beast.evolution.branchratemodel.BranchRateModel;
 import beast.evolution.likelihood.GenericTreeLikelihood;
 import beast.evolution.sitemodel.SiteModelInterface;
@@ -133,29 +133,176 @@ public class CompactAnalysisSpec extends BEASTObject {
 			case "site" :
 				SiteModelInterface sitemodel = treelikelihood[0].siteModelInput.get();
 				for (int i = 1; i < contexts.length; i++) {
+					PartitionContext oldContext = new PartitionContext(treelikelihood[i]);
+
+					SiteModelInterface oldSiteModel = treelikelihood[i].siteModelInput.get();
+					for (Object beastObject : BEASTInterface.getOutputs(oldSiteModel).toArray()) { //.toArray(new BEASTInterface[0])) {
+						for (Input<?> input : ((BEASTInterface)beastObject).listInputs()) {
+							try {
+							if (input.get() == oldSiteModel) {
+								if (input.getRule() != Input.Validate.REQUIRED) {
+									input.setValue(sitemodel /*null*/, (BEASTInterface) beastObject);
+								//} else {
+									//input.setValue(tree, (BEASTInterface) beastObject);
+								}
+							} else if (input.get() instanceof List) {
+								List list = (List) input.get();
+								if (list.contains(oldSiteModel)) { // && input.getRule() != Validate.REQUIRED) {
+									list.remove(oldSiteModel);
+									if (!list.contains(sitemodel)) {
+										list.add(sitemodel);
+									}
+								}
+							}
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+						}
+					}
+					
 					treelikelihood[i].siteModelInput.setValue(sitemodel, treelikelihood[i]);
 					contexts[i].siteModel = contexts[0].siteModel;
+					repartition(oldContext);
 				}
 				break;
 			case "clock" :
 				BranchRateModel clockmodel = treelikelihood[0].branchRateModelInput.get();
 				for (int i = 1; i < contexts.length; i++) {
+					PartitionContext oldContext = new PartitionContext(treelikelihood[i]);
+
+					BranchRateModel oldClock = treelikelihood[i].branchRateModelInput.get();
+					for (Object beastObject : BEASTInterface.getOutputs(oldClock).toArray()) { //.toArray(new BEASTInterface[0])) {
+						for (Input<?> input : ((BEASTInterface)beastObject).listInputs()) {
+							try {
+							if (input.get() == oldClock) {
+								if (input.getRule() != Input.Validate.REQUIRED) {
+									input.setValue(clockmodel /*null*/, (BEASTInterface) beastObject);
+								//} else {
+									//input.setValue(tree, (BEASTInterface) beastObject);
+								}
+							} else if (input.get() instanceof List) {
+								List list = (List) input.get();
+								if (list.contains(oldClock)) { // && input.getRule() != Validate.REQUIRED) {
+									list.remove(oldClock);
+									if (!list.contains(clockmodel)) {
+										list.add(clockmodel);
+									}
+								}
+							}
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+						}
+					}
+					
 					treelikelihood[i].branchRateModelInput.setValue(clockmodel, treelikelihood[i]);
 					contexts[i].clockModel = contexts[0].clockModel;
+					repartition(oldContext);
 				}
 				break;
 			case "tree" :
 				TreeInterface tree = treelikelihood[0].treeInput.get();
 				for (int i = 1; i < contexts.length; i++) {
+					PartitionContext oldContext = new PartitionContext(treelikelihood[i]);
+
+					TreeInterface oldTree = treelikelihood[i].treeInput.get();
 					treelikelihood[i].treeInput.setValue(tree, treelikelihood[i]);
 					contexts[i].tree = contexts[0].tree;
+					
+                	// use toArray to prevent ConcurrentModificationException
+					for (Object beastObject : BEASTInterface.getOutputs(oldTree).toArray()) { //.toArray(new BEASTInterface[0])) {
+						for (Input<?> input : ((BEASTInterface)beastObject).listInputs()) {
+							try {
+							if (input.get() == oldTree) {
+								if (input.getRule() != Input.Validate.REQUIRED) {
+									input.setValue(tree/*null*/, (BEASTInterface) beastObject);
+								//} else {
+									//input.setValue(tree, (BEASTInterface) beastObject);
+								}
+							} else if (input.get() instanceof List) {
+								@SuppressWarnings("unchecked")
+								List<TreeInterface> list = (List<TreeInterface>) input.get();
+								if (list.contains(oldTree)) { // && input.getRule() != Validate.REQUIRED) {
+									list.remove(oldTree);
+									if (!list.contains(tree)) {
+										list.add(tree);
+									}
+								}
+							}
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+						}
+					}
+					repartition(oldContext);
+
 				}
 				break;
 			default:
 				throw new IllegalArgumentException("Command " + cmdCount + ": expected 'link [site|clock|tree] but got " + cmd);
 			}
+			doc.determinePartitions();
+			doc.scrubAll(true, false);
+	
 		} else if (cmd.toLowerCase().startsWith("unlink")) {
-			// 
+			if (partitionContext.size() <= 1) {
+				throw new IllegalArgumentException("Command " + cmdCount + ": At least two partitions must be selected " + cmd);
+			}
+			PartitionContext [] contexts = partitionContext.toArray(new PartitionContext[]{});
+			GenericTreeLikelihood [] treelikelihood = new GenericTreeLikelihood[contexts.length];
+			CompoundDistribution likelihoods = (CompoundDistribution) doc.pluginmap.get("likelihood");
+
+			for (int i = 0; i < partitionContext.size(); i++) {
+				String partition = contexts[i].partition;
+				for (int j = 0; j < likelihoods.pDistributions.get().size(); j++) {
+					GenericTreeLikelihood likelihood = (GenericTreeLikelihood) likelihoods.pDistributions.get().get(i);
+					assert (likelihood != null);
+					if (likelihood.dataInput.get().getID().equals(partition)) {
+						treelikelihood[i] = likelihood;
+					}
+				}
+			}
+
+			switch (strs[1]) {
+			case "site" :
+				SiteModelInterface sitemodel = treelikelihood[0].siteModelInput.get();
+				for (int i = 1; i < contexts.length; i++) {
+					PartitionContext oldContext = new PartitionContext(treelikelihood[i]);
+					contexts[i].siteModel = contexts[i].partition;
+
+					SiteModelInterface newSitemodel = (SiteModelInterface) BeautiDoc.deepCopyPlugin((BEASTInterface) sitemodel, treelikelihood[i], (MCMC) doc.mcmc.get(), oldContext, contexts[i], doc, new ArrayList<>());
+					treelikelihood[i].siteModelInput.setValue(newSitemodel, treelikelihood[i]);
+					repartition(contexts[i]);
+				}
+				break;
+			case "clock" :
+				BranchRateModel clockModel = treelikelihood[0].branchRateModelInput.get();
+				for (int i = 1; i < contexts.length; i++) {
+					PartitionContext oldContext = new PartitionContext(treelikelihood[i]);
+					contexts[i].clockModel = contexts[i].partition;
+
+					BranchRateModel newClockmodel = (BranchRateModel) BeautiDoc.deepCopyPlugin((BEASTInterface) clockModel, treelikelihood[i], (MCMC) doc.mcmc.get(), oldContext, contexts[i], doc, new ArrayList<>());
+					treelikelihood[i].siteModelInput.setValue(newClockmodel, treelikelihood[i]);
+					repartition(contexts[i]);
+				}
+				break;
+			case "tree" :
+				TreeInterface tree = treelikelihood[0].treeInput.get();
+				for (int i = 1; i < contexts.length; i++) {
+					PartitionContext oldContext = new PartitionContext(treelikelihood[i]);
+					contexts[i].tree = contexts[i].partition;
+
+					TreeInterface newTree = (TreeInterface) BeautiDoc.deepCopyPlugin((BEASTInterface) tree, treelikelihood[i], (MCMC) doc.mcmc.get(), oldContext, contexts[i], doc, new ArrayList<>());
+					treelikelihood[i].treeInput.setValue(newTree, treelikelihood[i]);
+					repartition(contexts[i]);
+				}
+				break;
+			default:
+				throw new IllegalArgumentException("Command " + cmdCount + ": expected 'unlink [site|clock|tree] but got " + cmd);
+			}
+			doc.determinePartitions();
+			doc.scrubAll(true, false);
+
 		} else if (cmd.toLowerCase().startsWith("set")) {
 			if (strs.length != 4) {
 				throw new IllegalArgumentException("Command " + cmdCount + ": expected 'set <id pattern> =  <value>;' but got " + cmd);
@@ -292,6 +439,21 @@ public class CompactAnalysisSpec extends BEASTObject {
 	}
 
 	
+	private void repartition(PartitionContext oldContext) {
+		List<BeautiSubTemplate> templates = new ArrayList<>();
+		templates.add(doc.beautiConfig.partitionTemplate.get());
+		templates.addAll(doc.beautiConfig.subTemplates);
+		// keep applying rules till model does not change
+		doc.setUpActivePlugins();
+		int n;
+		do {
+			n = doc.posteriorPredecessors.size();
+			doc.applyBeautiRules(templates, false, oldContext);
+			doc.setUpActivePlugins();
+		} while (n != doc.posteriorPredecessors.size());
+		doc.determinePartitions();		
+	}
+
 	private String[] cmdsplit(String cmd) {
 		if (cmd.indexOf("'") >= 0) {
 			List<String> strs = new ArrayList<>();
@@ -484,14 +646,15 @@ public class CompactAnalysisSpec extends BEASTObject {
 
 	
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 		String cmds0 = "import ../morph-models/examples/nexus/penguins_dna.nex;" +
 				"import Morph ../morph-models/examples/nexus/penguins_morph.nex;";
 		
 		String cmds = "template Standard;\n" +
-				"import Alignment ../beast2/examples/nexus/primate-mtDNA.nex;"
+				"import Alignment ../beast2/examples/nexus/Primates.nex;"
+				+ "HKY;"
 				+ "partition .*;"
-				+ "link tree;"
+				+ "link site;"
 		;
 
 		String cmds1 = "template Standard;\n" +
@@ -515,7 +678,12 @@ public class CompactAnalysisSpec extends BEASTObject {
 		analysis.initAndValidate();
 		XMLProducer xmlProducer = new XMLProducer();
 		MCMC mcmc = (MCMC) analysis.doc.mcmc.get();
-		System.out.println(xmlProducer.toXML(mcmc));
+		//System.out.println(xmlProducer.toXML(mcmc));
+
+		FileWriter outfile = new FileWriter(new File("/tmp/beastc.xml"));
+        outfile.write(xmlProducer.toXML(mcmc));
+        outfile.close();
+        System.err.println("Results in /tmp/beastc.xml");
 	}
 	
 	
