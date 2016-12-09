@@ -50,10 +50,10 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
     public Input<Double> rootHeightInput =
             new Input<Double>("rootHeight", "If specified the tree will be scaled to match the root height, if constraints allow this");
 
-    public Input<Double> branchMeanInput = new Input<Double>("branchMean", "Branches will be exponentially distributed with this mean (bounds " +
+    public Input<Double> branchMeanInput = new Input<>("branchMean", "Branches will be exponentially distributed with this mean (bounds " +
             "permitting).", -1.0, Input.Validate.OPTIONAL);
 
-    public Input<Double> clampInput = new Input<Double>("limitCalibrations", "Initialize node height to be in the center of its calibration. For " +
+    public Input<Double> clampInput = new Input<>("limitCalibrations", "Initialize node height to be in the center of its calibration. For " +
             "example, a value of 0.9 will restrict the height to be in the [5%,95%] percentile range. 1 means takes the full range.",
             0.95, Input.Validate.OPTIONAL);
 
@@ -65,10 +65,15 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
 
     class Bound {
         Double upper = Double.POSITIVE_INFINITY;
-        Double lower = Double.NEGATIVE_INFINITY;
+        Double lower = 0.0 ; // Double.NEGATIVE_INFINITY;
 
         public String toString() {
             return "[" + lower + "," + upper + "]";
+        }
+
+        public void restrict(final Bound bound) {
+            upper = Math.min(upper, bound.upper);
+            lower = Math.max(lower, bound.lower);
         }
     }
 
@@ -210,8 +215,9 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
 	        		}
 	                try {
                         final double offset = distr.offsetInput.get();
-                        bounds.lower = distr.inverseCumulativeProbability(0.0) + offset;
+                        bounds.lower = Math.max(distr.inverseCumulativeProbability(0.0) + offset, 0.0);
 		                bounds.upper = distr.inverseCumulativeProbability(1.0) + offset;
+                        assert bounds.lower <= bounds.upper;
 					} catch (MathException e) {
 						Log.warning.println("Could not set bounds in SimpleRandomTree::doTheWork : " + e.getMessage());
 					}
@@ -221,8 +227,7 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
 	                // add any monophyletic constraint
                     boolean isDuplicate = false;
                     for(int k = 0; k < lastMonophyletic; ++k) {
-                        //Yes, YEwindl3 assert prior.useOriginateInput.get().equals(onParent.get(k)) == (prior.useOriginateInput.get() == onParent.get
-                        // (k));
+                        // assert prior.useOriginateInput.get().equals(onParent.get(k)) == (prior.useOriginateInput.get() == onParent.get(k));
                         if( bTaxa.size() == taxonSets.get(k).size() && bTaxa.equals(taxonSets.get(k)) &&
                                 prior.useOriginateInput.get().equals(onParent.get(k)) ) {
                             if( distr != null ) {
@@ -268,7 +273,6 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
                         if( i_in_j && j_in_i ) {
                             ok = (boolean) (onParent.get(i)) != (boolean) onParent.get(j);
                         }
-                        //ok = !tj.equals(ti) || (!onParent.get(i) && onParent.get(j));
                         assert ok : "" + i + ' ' + j + ' ' + ' ' + taxonSetIDs.get(i) + ' ' + taxonSetIDs.get(j);
                     } else {
                         Set<String> tmp = new HashSet<>(tj);
@@ -380,53 +384,88 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
                         }
                     }
                 }
-//                {
-//                    for (String c : canTaxa) {
-//                        for (int z = 0; z < enclosingIndex; ++z) {
-//                            assert !taxonSets.get(z).contains(c) : "" + z + ' ' + c;
-//                        }
-//                    }
-//                }
 
                 final int sz1 = canTaxa.size();
                 final int sz2 = candidateClades.size();
-                assert sz1 + sz2 > 0;
 
-                final int k = Randomizer.nextInt(sz1 + sz2);
-                Set<String> connectTo;
-                int insertPoint;
-                if( k < sz1 ) {
-                    // from taxa
-                    connectTo = new HashSet<>(1);
-                    connectTo.add(canTaxa.get(k));
-                    insertPoint = i + 1;
+                if( sz1 + sz2 == 0 && i + 1 == enclosingIndex  ) {
+                    final Bound ebound = m_bounds.get(enclosingIndex);
+                    ebound.restrict(m_bounds.get(i));
                 } else {
-                    // from clade
-                    final Iterator<Integer> it = candidateClades.iterator();
-                    for(j = 0; j < k - sz1 - 1; ++j) {
-                         it.next();
+                    assert sz1 + sz2 > 0;
+                    // prefer taxa over clades (less chance of clades useOriginate clashing)
+                    final int k = Randomizer.nextInt(sz1 > 0 ? sz1 : sz2);
+                    Set<String> connectTo;
+                    int insertPoint;
+                    if( k < sz1 ) {
+                        // from taxa
+                        connectTo = new HashSet<>(1);
+                        connectTo.add(canTaxa.get(k));
+                        insertPoint = i + 1;
+                    } else {
+                        // from clade
+                        final Iterator<Integer> it = candidateClades.iterator();
+                        for (j = 0; j < k - sz1 - 1; ++j) {
+                            it.next();
+                        }
+                        insertPoint = it.next();
+                        connectTo = new HashSet<>(taxonSets.get(insertPoint));
+                        insertPoint = Math.max(insertPoint, i) + 1;
                     }
-                    insertPoint = it.next();
-                    connectTo = new HashSet<String>(taxonSets.get(insertPoint));
-                    insertPoint = Math.max(insertPoint,i)+1;
-                }
-                connectTo.addAll(taxonSets.get(i));
-                if( !connectTo.equals(enclosingTaxa) ) { // equal when clade already exists
-                    taxonSets.add(insertPoint, connectTo);
-                    distributions.add(insertPoint, distributions.get(i));
-                    onParent.add(insertPoint, false);
-                    m_bounds.add(insertPoint, m_bounds.get(i));
-                    final String tid = taxonSetIDs.get(i);
-                    taxonSetIDs.add(insertPoint, tid);
 
+                    final HashSet<String> cc = new HashSet<String>(connectTo);
+
+                    connectTo.addAll(taxonSets.get(i));
+                    if( !connectTo.equals(enclosingTaxa) || enclosingTaxa == sTaxa ) { // equal when clade already exists
+
+                        taxonSets.add(insertPoint, connectTo);
+                        distributions.add(insertPoint, distributions.get(i));
+                        onParent.add(insertPoint, false);
+                        m_bounds.add(insertPoint, m_bounds.get(i));
+                        final String tid = taxonSetIDs.get(i);
+                        taxonSetIDs.add(insertPoint, tid);
+                        lastMonophyletic += 1;
+                    } else {
+                        // we lose distribution i :(
+                        final Bound ebound = m_bounds.get(enclosingIndex);
+                        ebound.restrict(m_bounds.get(i));
+                    }
+                }
+                if( true ) {
+                    taxonSets.set(i, new HashSet<>());
                     distributions.set(i, null);
                     m_bounds.set(i, new Bound());
+                    final String tid = taxonSetIDs.get(i);
                     if( tid != null ) {
                         taxonSetIDs.set(i, "was-" + tid);
                     }
-                    lastMonophyletic += 1;
                 }
             }
+        }
+
+        {
+            int icur = 0;
+            for (int i = 0; i < lastMonophyletic; ++i, ++icur) {
+                final Set<String> ti = taxonSets.get(i);
+                if( ti.isEmpty() ) {
+                    icur -= 1;
+                } else {
+                    if( icur < i ) {
+                        taxonSets.set(icur, taxonSets.get(i));
+                        distributions.set(icur, distributions.get(i));
+                        m_bounds.set(icur, m_bounds.get(i));
+                        taxonSetIDs.set(icur, taxonSetIDs.get(i));
+                        onParent.set(icur, onParent.get(i));
+                    }
+                }
+            }
+            taxonSets.subList(icur, lastMonophyletic).clear();
+            distributions.subList(icur, lastMonophyletic).clear();
+            m_bounds.subList(icur, lastMonophyletic).clear();
+            taxonSetIDs.subList(icur, lastMonophyletic).clear();
+            onParent.subList(icur, lastMonophyletic).clear();
+
+            lastMonophyletic = icur;
         }
 
         if( ICC ) {
@@ -453,7 +492,7 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
         final int[] nParent = new int[lastMonophyletic];
         children = new List[lastMonophyletic + 1];
         for (int i = 0; i < lastMonophyletic + 1; i++) {
-            children[i] = new ArrayList<Integer>();
+            children[i] = new ArrayList<>();
         }
         for (int i = 0; i < lastMonophyletic; i++) {
             int j = i + 1;
@@ -469,6 +508,7 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
             if (nParent[i] < lastMonophyletic ) {
                 if (m_bounds.get(i).upper > m_bounds.get(nParent[i]).upper) {
                     m_bounds.get(i).upper = m_bounds.get(nParent[i]).upper - 1e-100;
+                    assert m_bounds.get(i).lower <=  m_bounds.get(i).upper: i;
                 }
             }
         }
@@ -661,6 +701,7 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
                 // this can happen when we have a duplicate constraint, like when two 'useOriginate' nodes share the same parent.
                 boundPerNode[nr].upper = Math.min(boundPerNode[nr].upper, bound.upper);
                 boundPerNode[nr].lower = Math.max(boundPerNode[nr].lower, bound.lower);
+                assert boundPerNode[nr].lower <= boundPerNode[nr].upper : nr;
             } else {
                 boundPerNode[nr] = bound;
             }
@@ -799,9 +840,6 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
                // Bound b = boundPerNode[nr];  assert b != null;
             } else {
                 Bound b = bounds[nr];       assert(b != null);
-//                if( b == null ) {
-//                   bounds[nr] = b = new Bound();
-//                }
                 for( Node c : node.getChildren() ) {
                     final Bound cbnd = bounds[c.getNr()];
                     b.lower = Math.max(b.lower, cbnd.lower);
