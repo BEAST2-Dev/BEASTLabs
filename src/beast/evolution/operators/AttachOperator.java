@@ -4,6 +4,7 @@ import beast.core.Description;
 import beast.core.Input;
 import beast.evolution.tree.Node;
 import beast.evolution.tree.Tree;
+import beast.math.distributions.MRCAPrior;
 import beast.math.distributions.MultiMonophyleticConstraint;
 import beast.util.Randomizer;
 
@@ -25,8 +26,11 @@ public class AttachOperator extends TreeOperator {
     public Input<Boolean> topOnlyInput = new Input<Boolean>("topOnly", "Consider only nodes not under any monophyly constraint.", false);
 
     public final Input<MultiMonophyleticConstraint> constraintsInput =
-              new Input<>("constraints", "Respect clade constrainted, i.e make no moves which violate some constraint.",
+              new Input<>("constraints", "Respect clade constraints, i.e make no moves which violate some constraint.",
                       null, Input.Validate.OPTIONAL);
+
+    public Input<List<MRCAPrior>> useOnlyInput =
+            new Input<>("restricted", "Use only those nodes (MRCAs of some clades)", new ArrayList<>());
 
     private boolean markClades;
 
@@ -39,9 +43,9 @@ public class AttachOperator extends TreeOperator {
 
     private boolean internalTest = false;
 
-    //private Method method;
-
     DistanceProvider.Data weights[];
+
+    private List<MRCAPrior> useOnly = null;
 
     @Override
     public void initAndValidate() {
@@ -66,9 +70,21 @@ public class AttachOperator extends TreeOperator {
               weights[n.getNr()] = weightProvider.empty();
             }
         }
+
+        useOnly = useOnlyInput.get();
+        if( useOnly.size() == 0 ) {
+            useOnly = null;
+        }
     }
 
     private Node getNode(Tree tree, final Node[] post) {
+        if( useOnly != null ) {
+            int k = Randomizer.nextInt( useOnly.size() );
+            final MRCAPrior mrcaPrior = useOnly.get(k);
+            final Node node = mrcaPrior.getCommonAncestor();
+            return node;
+        }
+
         boolean topOnly = topOnlyInput.get();
 
         if( tipsOnlyInput.get() ) {

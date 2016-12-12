@@ -1,15 +1,16 @@
 package beast.evolution.operators;
 
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
-import beast.core.Description;
-import beast.core.Input;
-import beast.core.Operator;
-import beast.core.StateNode;
+import beast.core.*;
 import beast.core.Input.Validate;
+import beast.core.util.Log;
 import beast.util.Randomizer;
-
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 
 @Description("Combines propoosals by randomly selecting from two groups of operators")
@@ -48,10 +49,10 @@ public class CombinedOperator extends Operator {
 	}
 	
 	@Override
-	public void reject() {
-		operator1.reject();
+	public void reject(int reason) {
+		operator1.reject(reason);
 		if (operator2 != null) {
-			operator2.reject();
+			operator2.reject(reason);
 		}
 	}
 	
@@ -69,5 +70,76 @@ public class CombinedOperator extends Operator {
 			
 		}
 		return list;
+	}
+
+	@Override
+	public void storeToFile(PrintWriter out) {
+		out.print("{\"id\":\"" + getID() + "\",\"operators\":[\n");
+		int k = 0;
+		for (Operator o : operatorGroup1 ) {
+			o.storeToFile(out);
+			out.println(",");
+		}
+		for (Operator o : operatorGroup2 ) {
+			o.storeToFile(out);
+			if (k++ < operatorGroup2.size() - 1) {
+				out.println(",");
+			}
+		}
+		out.print("]}");
+	}
+
+	@Override
+	public void restoreFromFile(JSONObject o) {
+		try {
+			JSONArray operatorlist = o.getJSONArray("operators");
+			for (int i = 0; i < operatorlist.length(); i++) {
+				JSONObject item = operatorlist.getJSONObject(i);
+				String id = item.getString("id");
+				boolean found = false;
+				if (!id.equals("null")) {
+					for (Operator operator: operatorGroup1 ) {
+						if (id.equals(operator.getID())) {
+							operator.restoreFromFile(item);
+							found = true;
+							break;
+						}
+					}
+					for (Operator operator: operatorGroup2 ) {
+						if (id.equals(operator.getID())) {
+							operator.restoreFromFile(item);
+							found = true;
+							break;
+						}
+					}
+				}
+				if (!found) {
+					Log.warning.println("Operator (" + id + ") found in state file that is not in operator list any more");
+				}
+			}
+			for (Operator operator: operatorGroup1) {
+				if (operator.getID() == null) {
+					Log.warning.println("Operator (" + operator.getClass() + ") found in BEAST file that could not be restored because it has not ID");
+				}
+			}
+			for (Operator operator: operatorGroup2) {
+				if (operator.getID() == null) {
+					Log.warning.println("Operator (" + operator.getClass() + ") found in BEAST file that could not be restored because it has not ID");
+				}
+			}
+		} catch (JSONException e) {
+			// it is not a JSON file -- probably a version 2.0.X state file
+		}
+	}
+
+	public void setOperatorSchedule(final OperatorSchedule operatorSchedule) {
+		super.setOperatorSchedule(operatorSchedule);
+
+		for (Operator operator : operatorGroup1) {
+			operator.setOperatorSchedule(operatorSchedule);
+		}
+		for (Operator operator : operatorGroup2) {
+			operator.setOperatorSchedule(operatorSchedule);
+		}
 	}
 }
