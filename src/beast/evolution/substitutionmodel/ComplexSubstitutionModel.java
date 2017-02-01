@@ -25,6 +25,7 @@
 
 package beast.evolution.substitutionmodel;
 
+
 import java.util.Arrays;
 
 import beast.core.Citation;
@@ -45,9 +46,19 @@ public class ComplexSubstitutionModel extends GeneralSubstitutionModel {
 	
 	@Override
 	public void initAndValidate() {
-		super.initAndValidate();
-        // int stateCount = getStateCount();
-        // probability = new double[stateCount * stateCount];
+        updateMatrix = true;
+        frequencies = frequenciesInput.get();
+        nrOfStates = frequencies.getFreqs().length;
+        
+        try {
+			eigenSystem = createEigenSystem();
+		} catch (SecurityException e) {
+			throw new IllegalArgumentException(e.getMessage());
+		}
+
+        rateMatrix = new double[nrOfStates][nrOfStates];
+        relativeRates = new double[ratesInput.get().getDimension()];
+        storedRelativeRates = new double[ratesInput.get().getDimension()];
 	}
 	
 	
