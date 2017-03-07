@@ -23,9 +23,9 @@ import java.nio.file.Paths;
         "percLower and percUpper are the percentage of all states to start and end for auto optimizing burnin.\n" +
         "percIncremental defines the incremental of percentage each search for auto optimizing burnin.\n" +
         "")
-@Citation(value= "Alexei J. Drummond, Joseph Heled, and Dong Xie, " +
-        "Bayesian Species Tree Estimation: Computational Performance and Comparison to Concatenation, " +
-        "Systematic Biology")
+@Citation(value= "HA Ogilvie, J Heled, D Xie, AJ Drummond, " +
+        "Computational performance and statistical accuracy of *BEAST and comparisons with other methods, " +
+        "Systematic Biology, 2016")
 public class LogAnalyserAdv {
 
     /**
