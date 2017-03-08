@@ -35,6 +35,7 @@ public class Application {
 		analyser.setID(title);
 
 		if (args.length == 0) {
+			Utils6.startSplashScreen();
 			Utils.loadUIManager();
 			// create BeautiDoc and beauti configuration
 			BeautiDoc doc = new BeautiDoc();
@@ -47,6 +48,7 @@ public class Application {
 			// wrap panel in a dialog
 			BEASTObjectDialog dialog = new BEASTObjectDialog(panel, null);
 
+			Utils6.endSplashScreen();
 			// show the dialog
 			if (dialog.showDialog()) {
 				dialog.accept(analyser, doc);
