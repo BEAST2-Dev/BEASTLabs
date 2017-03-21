@@ -39,12 +39,18 @@ public class MultiMRCAPriors extends MultiMonophyleticConstraint {
             boolean add = true;
             Set<Integer> slist = new HashSet<>(list);
 
+            // Don't add a taxon list which was already added by the supermethod
             for( List l : taxonIDList ) {
                 if( l.size() == slist.size() && slist.containsAll(l) ) {
                     add = false;
                     break;
                 }
             }
+            // Don't add a taxon list containing the entire tree, to be consistent
+            // with the superclass.
+            if (list.size() == tree.getLeafNodeCount()) {
+		add = false;
+	    }
             if( add ) {
                 taxonIDList.add(list);
             }
