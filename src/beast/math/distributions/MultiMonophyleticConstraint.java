@@ -18,7 +18,8 @@ public class MultiMonophyleticConstraint extends Distribution {
     //public final Input<TaxonSet> taxonsetInput = new Input<TaxonSet>("taxonset", "set of taxa for which prior information is available");
     public final Input<String> newickInput = new Input<String>("newick", "the tree constraints specified as newick tree using polytopes, "
 	    		+ "e.g. ((human,chimp,bonobo),gorilla) specifies two monophyletic constraints,"
-	    		+ "one for human,chimp,bonobo' and one for 'human,chimp,bonobo,gorilla'", Validate.REQUIRED);
+	    		+ "one for human,chimp,bonobo' and one for 'human,chimp,bonobo,gorilla'\n"
+	    		+ "Make sure the starting tree is compatible with these constraints.", Validate.REQUIRED);
     
     public final Input<Boolean> isBinaryInput = new Input<>("isBinary", "flag to indicate tree is a binary tree instead of a polytopy (faster)", true);
 
