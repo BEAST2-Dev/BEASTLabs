@@ -19,7 +19,7 @@ import java.util.Random;
 public class SupertreeLikelihood extends Distribution {
 
 
-    final public Input<List<Tree>> dataInput = new Input<>("data", "sub trees", new ArrayList<>(), Input.Validate.REQUIRED);
+    final public Input<List<Tree>> dataInput = new Input<>("data", "list of sub trees", new ArrayList<>(), Input.Validate.REQUIRED);
 
     final public Input<TreeInterface> treeInput = new Input<>("tree", "the super tree to be estimated.", Input.Validate.REQUIRED);
 
