@@ -1,5 +1,6 @@
 package beast.evolution.likelihood;
 
+
 import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
@@ -10,7 +11,6 @@ import beast.core.Description;
 import beast.core.Input;
 import beast.core.Input.Validate;
 import beast.core.Loggable;
-import beast.evolution.alignment.Alignment;
 import beast.evolution.alignment.TaxonSet;
 import beast.evolution.tree.Node;
 import beast.util.Randomizer;

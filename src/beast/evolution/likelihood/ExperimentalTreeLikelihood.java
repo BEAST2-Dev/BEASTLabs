@@ -28,6 +28,7 @@
 package beast.evolution.likelihood;
 
 
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -41,7 +42,6 @@ import beast.core.State;
 import beast.core.Input.Validate;
 import beast.core.util.Log;
 import beast.evolution.alignment.Alignment;
-import beast.evolution.alignment.AscertainedAlignment;
 import beast.evolution.branchratemodel.BranchRateModel;
 import beast.evolution.branchratemodel.StrictClockModel;
 import beast.evolution.sitemodel.SiteModel;
@@ -109,7 +109,7 @@ public class ExperimentalTreeLikelihood extends Distribution {
     @Override
     public void initAndValidate() {
     	// sanity check: alignment should have same #taxa as tree
-    	if (m_data.get().getNrTaxa() != m_tree.get().getLeafNodeCount()) {
+    	if (m_data.get().getTaxonCount() != m_tree.get().getLeafNodeCount()) {
     		throw new IllegalArgumentException("The number of nodes in the tree does not match the number of sequences");
     	}
     	
@@ -154,7 +154,7 @@ public class ExperimentalTreeLikelihood extends Distribution {
         m_fProbabilities = new double[(nStateCount +1)* (nStateCount+1)];
         Arrays.fill(m_fProbabilities, 1.0);
 
-        if (m_data.get() instanceof AscertainedAlignment) {
+        if (m_data.get().isAscertained) {
             m_bAscertainedSitePatterns = true;
         }
     }
@@ -316,7 +316,7 @@ public class ExperimentalTreeLikelihood extends Distribution {
         if (m_bAscertainedSitePatterns) {
             logP = 0.0;
             m_likelihoodCore.getPatternLogLikelihoods(m_fPatternLogLikelihoods);
-            double ascertainmentCorrection = ((AscertainedAlignment)m_data.get()).getAscertainmentCorrection(m_fPatternLogLikelihoods);
+            double ascertainmentCorrection = (m_data.get()).getAscertainmentCorrection(m_fPatternLogLikelihoods);
             for (int i = 0; i < m_data.get().getPatternCount(); i++) {
             	logP += (m_fPatternLogLikelihoods[i] - ascertainmentCorrection) * m_data.get().getPatternWeight(i);
             }
