@@ -85,7 +85,7 @@ public class CompactAnalysisSpec extends BEASTObject {
 		if (cmd.toLowerCase().startsWith("template")) {
 			processTemplateCmd(strs);
 		} else if (cmd.toLowerCase().startsWith("import")) {
-			processImportCmd(strs);
+			processImportCmd(cmd);
 		} else if (cmd.toLowerCase().startsWith("partition")) {
 			processPartitionCmd(strs);
 		} else if (cmd.toLowerCase().startsWith("link")) {
@@ -127,11 +127,22 @@ public class CompactAnalysisSpec extends BEASTObject {
 	}
 
 
-	private void processImportCmd(String[] strs) {
+	private void processImportCmd(String cmd) {
+		final String grammar = "import [<alignment provider name>] <alignment file>[(<arg1>,<arg2>,...)];";
+		String [] args = null;
+		if (cmd.indexOf("(") > 0) {
+			String args0 = cmd.substring(cmd.indexOf("(") + 1, cmd.lastIndexOf(")")).trim();
+			if (args0.length() == 0) {
+				throw new IllegalArgumentException("Expected at least one argument in form '" + grammar + "'\n but got " + cmd);
+			}			
+			cmd = cmd.substring(0, cmd.indexOf("("));
+			args = args0.split(",");
+		}
+		String[] strs = cmdsplit(cmd);
 		// import an alignment form file
 		// import [Alignment provider id] <alignment file>;
 		if (strs.length < 2) {
-			throw new IllegalArgumentException("Command " + cmdCount + ": Expected 'import <alignment file>;' but got " + cmd);
+			throw new IllegalArgumentException("Command " + cmdCount + ": Expected '" + grammar + "'\n but got " + cmd);
 		}
 
 		String providerID = "Import Alignment";
@@ -148,6 +159,7 @@ public class CompactAnalysisSpec extends BEASTObject {
 		for (BeautiAlignmentProvider p : providerList) {
 			if (p.getID().matches(providerID)) {
 				provider = p;
+				break;
 			}
 		}
 		if (provider == null) {
@@ -159,15 +171,14 @@ public class CompactAnalysisSpec extends BEASTObject {
 		}
 		
 		//provider.template.setValue(doc.beautiConfig.partitionTemplate.get(), provider);
-        List<BEASTInterface> beastObjects = provider.getAlignments(doc, new File[]{new File(strs[strs.length - 1])});
-        if (!provider.getClass().equals(BeautiAlignmentProvider.class)) {
-            provider.addAlignments(doc, beastObjects);
-        }
+        List<BEASTInterface> beastObjects = provider.getAlignments(doc, new File[]{new File(strs[strs.length - 1])}, args);
+//        if (!provider.getClass().equals(BeautiAlignmentProvider.class)) {
+//            provider.addAlignments(doc, beastObjects);
+//        }
 
         if (beastObjects != null) {
 	        for (BEASTInterface o : beastObjects) {
-	        	if (o instanceof Alignment) {
-	        		
+	        	if (o instanceof Alignment) {	        		
 	        		try {
 	        			BeautiDoc.createTaxonSet((Alignment) o, doc);
 	        		} catch(Exception ex) {
@@ -191,6 +202,8 @@ public class CompactAnalysisSpec extends BEASTObject {
 		PartitionContext p = doc.partitionNames.get(doc.partitionNames.size() - 1);
 		partitionContext.clear();
 		partitionContext.add(new PartitionContext(p.partition, p.siteModel, p.clockModel, p.tree));
+
+		doc.scrubAll(true, false);
 	}
 	
 
@@ -679,15 +692,17 @@ public class CompactAnalysisSpec extends BEASTObject {
 	
 	
 	public static void main(String[] args) throws IOException {
-		String cmds0 = "import ../morph-models/examples/nexus/penguins_dna.nex;" +
+		String cmds2 = "import ../morph-models/examples/nexus/penguins_dna.nex;" +
 				"import Morph ../morph-models/examples/nexus/penguins_morph.nex;";
 		
-		String cmds = "template Standard;\n" +
+		String cmds0 = "template Standard;\n" +
 				"import Alignment ../beast2/examples/nexus/Primates.nex;"
 				+ "HKY;"
 				+ "partition .*;"
 				+ "link site;"
 		;
+		String cmds = "import ../beast-geo/examples/nexus/HBV.nex;" +
+				"import Spherical Geography ../beast-geo/examples/nexus/HBV_locations.dat(geo,HBV);";
 
 		String cmds1 = "template Standard;\n" +
 				"import Alignment ../beast2/examples/nexus/dna.nex;"
