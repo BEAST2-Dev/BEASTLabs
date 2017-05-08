@@ -289,7 +289,7 @@ public class TreeSetAnalyser {
 			double HPDpercentage = arguments.getIntegerOption("HPD");
 	        
 	        TreeTraceAnalysis analyser = new TreeTraceAnalysis(parser.trees, burnInpercentage);
-            analyser.analyze(HPDpercentage);
+            analyser.computeCredibleSet(HPDpercentage);
        		new TreeSetAnalyser(analyser, consoleApp, maxErrorCount);
        } catch (RuntimeException rte) {
             if (window) {
