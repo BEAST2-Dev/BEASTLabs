@@ -819,6 +819,9 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
                             }
                         }
                     } catch (MathException e) {
+                    } catch (RuntimeException e) {
+                    	b.lower = 0.0;
+                    	b.upper = Double.POSITIVE_INFINITY;
                         //e.printStackTrace();
                     }
                 }
