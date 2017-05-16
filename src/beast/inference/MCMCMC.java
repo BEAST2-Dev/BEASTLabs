@@ -32,6 +32,7 @@ public class MCMCMC extends MCMC {
 	public Input<Integer> nrOfChainsInput = new Input<Integer>("chains", " number of chains to run in parallel (default 2)", 2);
 	public Input<Integer> resampleEveryInput = new Input<Integer>("resampleEvery", "number of samples in between resampling (and possibly swappping) states", 1000);
 	public Input<String> heatedMCMCClassInput = new Input<String>("heatedMCMCClass", "Name of the class used for heated chains", HeatedMCMC.class.getName());
+	public Input<String> tempDirInput = new Input<>("tempDir","directory where temporary files are written","/tmp/");
 	
 	// nr of samples between re-arranging states
 	int resampleEvery = 10;
@@ -89,7 +90,7 @@ public class MCMCMC extends MCMC {
 			sXML2 = sXML2.replaceAll("\\$\\(seed\\)", nSeed+i+"");
 
 			try {
-		        FileWriter outfile = new FileWriter(new File("/tmp/MCMCMC.xml"));
+		        FileWriter outfile = new FileWriter(new File(tempDirInput.get() + "MCMCMC.xml"));
 		        outfile.write(sXML2);
 		        outfile.close();
 				
