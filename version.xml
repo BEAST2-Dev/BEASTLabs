@@ -5,4 +5,9 @@
               args=""
               icon=""
             />
+    <addonapp description="View parametric distributions"
+              class="beast.app.beauti.DistributionViewer"
+              args=""
+              icon=""
+            />
 </addon>
