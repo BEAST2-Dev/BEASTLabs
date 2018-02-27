@@ -29,7 +29,11 @@ public class MixtureDistribution extends Distribution {
 		double [] logPs = new double[distrs.size()];
 		int k = 0;
 		for (Distribution d : distrs) {
-			logPs[k++] = d.getCurrentLogP();
+			if (d.isDirtyCalculation()) {
+				logPs[k++] = d.calculateLogP();
+			} else {
+				logPs[k++] = d.getCurrentLogP();
+			}
 		}
 		logP = LogTricks.logSum(logPs) - Math.log(distrs.size());
 		return logP;
