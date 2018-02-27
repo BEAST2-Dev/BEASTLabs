@@ -31,7 +31,7 @@ public class MixtureDistribution extends Distribution {
 		for (Distribution d : distrs) {
 			logPs[k++] = d.getCurrentLogP();
 		}
-		logP = LogTricks.logSum(logPs);
+		logP = LogTricks.logSum(logPs) - Math.log(distrs.size());
 		return logP;
 	}
 		
