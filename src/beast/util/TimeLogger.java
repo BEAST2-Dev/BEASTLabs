@@ -31,7 +31,7 @@ public class TimeLogger extends BEASTObject implements Loggable {
 	}
 
 	@Override
-	public void log(int sample, PrintStream out) {
+	public void log(long sample, PrintStream out) {
 		long elapsed = System.currentTimeMillis() - start;
 		switch (report) {
 		case milliseconds: 

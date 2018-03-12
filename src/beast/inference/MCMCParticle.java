@@ -39,7 +39,7 @@ public class MCMCParticle extends MCMC {
 	
 	
 	@Override
-	protected void callUserFunction(int iSample) {
+	protected void callUserFunction(long iSample) {
 		if (iSample % m_nStepSize == 0) {
 			if (iSample == 0) {
 				return;
@@ -48,7 +48,7 @@ public class MCMCParticle extends MCMC {
 		}
 	}
 	
-	protected void doUpdateState(int iSample) {
+	protected void doUpdateState(long iSample) {
 		File f2 = new File(m_sParticleDir + "/particlelock" + k);
 		File f = new File(m_sParticleDir + "/threadlock" + k);
 		try {

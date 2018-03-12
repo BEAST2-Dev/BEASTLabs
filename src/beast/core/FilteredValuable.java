@@ -135,7 +135,7 @@ public class FilteredValuable extends CalculationNode implements Function, Logga
     }
 
 	@Override
-	public void log(int nSample, PrintStream out) {
+	public void log(long nSample, PrintStream out) {
         for (int iValue = 0; iValue < getDimension(); iValue++) {
             out.print(getArrayValue(iValue) + "\t");
         }

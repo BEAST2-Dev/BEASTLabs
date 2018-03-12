@@ -40,7 +40,7 @@ public class LoggableSum extends BEASTObject implements Loggable {
     }
 
     @Override
-	public void log(int nSample, PrintStream out) {
+	public void log(long nSample, PrintStream out) {
         final int nDimension = m_valuable.getDimension();
         double fSum = 0;
         for (int iValue = 0; iValue < nDimension; iValue++) {

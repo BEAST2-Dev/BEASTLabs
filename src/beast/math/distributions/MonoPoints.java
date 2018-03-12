@@ -214,7 +214,7 @@ public class MonoPoints extends BEASTObject implements Loggable {
     }
 
     @Override
-    public void log(int sample, PrintStream out) {
+    public void log(long sample, PrintStream out) {
         int[] tops = getTops();
         for (int k = 0; k < tops.length; ++k) {
             int taxonNr = tops[k];

@@ -141,7 +141,7 @@ public class MultiMRCAPriors extends MultiMonophyleticConstraint {
     }
 
     @Override
-    public void log(int sample, PrintStream out) {
+    public void log(long sample, PrintStream out) {
         final List<MRCAPrior> mrcaPriors = calibrationsInput.get();
         for( MRCAPrior prior : mrcaPriors ) {
             prior.calculateLogP();

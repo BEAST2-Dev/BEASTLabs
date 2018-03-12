@@ -13,6 +13,8 @@ import beast.core.Input.*;
 import beast.core.parameter.RealParameter;
 import beast.core.util.*;
 import beast.evolution.tree.*;
+import jdk.nashorn.api.scripting.ScriptObjectMirror;
+import jdk.nashorn.internal.objects.NativeArray;
 
 @Description("Base class for Script-BEAST interoperation")
 public class Script extends CalculationNode implements Loggable, beast.core.Function {
@@ -124,14 +126,14 @@ public class Script extends CalculationNode implements Loggable, beast.core.Func
         try {
        		Object o = inv.invokeFunction("f", args);
 
-//            if (o instanceof NativeArray) {
-//                value = new double[((NativeArray)o).size()];
-//                for (int i = 0; i < value.length; i++) {
-//                    this.value[i] = Double.parseDouble(((NativeArray)o).get(i).toString());
-//                }
-//            } else {
+            if (o instanceof ScriptObjectMirror) {
+                value = new double[((ScriptObjectMirror)o).values().size()];
+                for (int i = 0; i < value.length; i++) {
+                    this.value[i] = Double.parseDouble(((ScriptObjectMirror)o).get(i).toString());
+                }
+            } else {
                 this.value[0] = Double.parseDouble(o.toString());
-//            }
+            }
         } catch (NoSuchMethodException | ScriptException e) {
             this.value[0] = Double.NaN;
             Log.err.println(e.getMessage());
@@ -248,7 +250,8 @@ public class Script extends CalculationNode implements Loggable, beast.core.Func
       RealParameter b = new RealParameter("4.0");
       b.setID("b");
       Script jsBEAST = new Script();
-      jsBEAST.initByName("expression", "3 * sin(a[0]) + log(a[1]) * b", "x", a, "x", b);
+//      jsBEAST.initByName("expression", "3 * sin(a[0]) + log(a[1]) * b", "x", a, "x", b);
+      jsBEAST.initByName("expression", "a * b", "x", a, "x", b);
       System.out.println(jsBEAST.expressionInput.get() + "  = " + jsBEAST.getArrayValue());
 
       jsBEAST.requiresRecalculation();
@@ -322,7 +325,7 @@ public class Script extends CalculationNode implements Loggable, beast.core.Func
     }
 
     @Override
-    public void log(final int nSample, final PrintStream out) {
+    public void log(final long nSample, final PrintStream out) {
     	isUpToDate = false;
         for (int i = 0; i < value.length; i++)
             out.print(getArrayValue(i) + "\t");

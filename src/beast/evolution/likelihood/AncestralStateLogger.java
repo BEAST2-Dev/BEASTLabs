@@ -116,7 +116,7 @@ public class AncestralStateLogger extends TreeLikelihood implements Loggable {
 	}
 	
 	@Override
-	public void log(int nSample, PrintStream out) {
+	public void log(long nSample, PrintStream out) {
 		try {
 			// force fresh recalculation of likelihood at this stage
 			Arrays.fill(m_branchLengths, 0);

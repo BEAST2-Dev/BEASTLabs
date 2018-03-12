@@ -57,7 +57,7 @@ public class ParticleFilter extends beast.core.Runnable {
 
 	int m_nParticles;
 	// nr of steps = MCMC.chainLength / step size
-	int m_nSteps;
+	long m_nSteps;
 	String m_sScript;
 	String [] m_sHosts;
 	

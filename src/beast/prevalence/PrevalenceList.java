@@ -318,7 +318,7 @@ public class PrevalenceList extends StateNode {
 	}
 
 	@Override
-	public void log(int nSample, PrintStream out) {
+	public void log(long nSample, PrintStream out) {
 	}
 
 	/** Valuable interface methods **/

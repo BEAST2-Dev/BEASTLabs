@@ -143,7 +143,7 @@ public class ParameterConstrainer extends CalculationNode implements Loggable {
         }
     }
 
-    public void log(int i, PrintStream out) {
+    public void log(long i, PrintStream out) {
         for (int iValue = 0; iValue < dim; iValue++) {
             out.print(parameter.getValue(iValue) + "\t");
         }

@@ -39,7 +39,7 @@ public class SimulatedAnnealing extends MCMC implements Loggable {
 		fTemp = fTemp0;
 		
 		// find lowest log frequency
-		int nLogEvery = chainLength;
+		long nLogEvery = chainLength;
 		for (Logger logger :  loggersInput.get()) {
 			nLogEvery = Math.min(logger.everyInput.get(), nLogEvery);
 		}
@@ -141,7 +141,7 @@ public class SimulatedAnnealing extends MCMC implements Loggable {
 
 
 	@Override
-	public void log(int nSample, PrintStream out) {
+	public void log(long nSample, PrintStream out) {
 		out.append(fTemp + "\t");
 	}
 
