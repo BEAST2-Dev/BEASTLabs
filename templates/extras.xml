@@ -12,6 +12,22 @@
 			<connect srcID="MultiMonophyleticConstraint.$(n)" targetID="prior" inputName="distribution" if="isInitializing"/>
         </subtemplate>
 
+
+        <subtemplate id='SimpleRandomTree' class='beast.evolution.tree.SimpleRandomTree' mainid='SimpleRandomTree.t:$(n)'
+        	suppressInputs="
+        	beast.evolution.tree.SimpleRandomTree.weights,
+	        beast.evolution.tree.SimpleRandomTree.taxa,
+	        beast.evolution.tree.SimpleRandomTree.estimate,
+        	beast.evolution.tree.SimpleRandomTree.trait,
+        	beast.evolution.tree.SimpleRandomTree.taxonset,
+        	beast.evolution.tree.SimpleRandomTree.nodetype,
+        	beast.evolution.tree.SimpleRandomTree.initial">
+<![CDATA[
+            <tree spec='beast.evolution.tree.SimpleRandomTree' id='SimpleRandomTree.t:$(n)' estimate='false' initial="@Tree.t:$(n)">
+                <taxa idref='data'/>
+            </tree>
+]]>
+        </subtemplate>
     </mergewith>
 </beast>
 

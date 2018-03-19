@@ -1,11 +1,11 @@
 package beast.math.distributions;
 
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import com.sun.org.glassfish.gmbal.Description;
-
+import beast.core.Description;
 import beast.core.Distribution;
 import beast.core.Input;
 import beast.core.Input.Validate;
