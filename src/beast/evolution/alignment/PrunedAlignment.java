@@ -83,6 +83,7 @@ public class PrunedAlignment extends Alignment {
           }
 
           calcPatterns();
+          setupAscertainment();
           return;
       }
 
