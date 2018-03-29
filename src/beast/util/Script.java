@@ -3,18 +3,22 @@ package beast.util;
 
 
 
-import java.io.PrintStream;
-import java.util.*;
-
-import javax.script.*;
-
 import beast.core.*;
-import beast.core.Input.*;
+import beast.core.Input.Validate;
 import beast.core.parameter.RealParameter;
-import beast.core.util.*;
-import beast.evolution.tree.*;
+import beast.core.util.Log;
+import beast.evolution.tree.Node;
+import beast.evolution.tree.Tree;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
-import jdk.nashorn.internal.objects.NativeArray;
+
+import javax.script.Invocable;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
+import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 @Description("Base class for Script-BEAST interoperation")
 public class Script extends CalculationNode implements Loggable, beast.core.Function {
