@@ -523,7 +523,7 @@ public class MultiMCMC extends MCMC {
 			}
 		}
         long nLogTime = System.currentTimeMillis();
-        int nOffset = Logger.getSampleOffset();
+        long nOffset = Logger.getSampleOffset();
         if (nOffset < fLine[0]) {
 	        int nSecondsPerMSamples = (int) ((nLogTime - m_nStartLogTime) * 1000.0 / (fLine[0] - nOffset + 1.0));
 	        String sTimePerMSamples =
