@@ -114,7 +114,13 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
 
     // used to indicate one of the MRCA constraints could not be met
     protected class ConstraintViolatedException extends Exception {
-        private static final long serialVersionUID = 1L;
+        public ConstraintViolatedException(String string) {
+			super(string);
+		}
+        public ConstraintViolatedException() {
+		}
+
+		private static final long serialVersionUID = 1L;
     }
 
     @Override
@@ -154,7 +160,7 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
         }
     }
 
-    private final boolean ICC = false;
+    private final boolean ICC = true;
 
     public void doTheWork() {
         // find taxon sets we are dealing with
@@ -288,6 +294,20 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
         lastMonophyletic = taxonSets.size();
 
         // sort constraints in increasing set inclusion order, i.e. such that if taxon set i is subset of taxon set j, then i < j
+//        for (int i = 0; i < lastMonophyletic; i++) {
+//            for (int j = i + 1; j < lastMonophyletic; j++) {
+//                final Set<String> taxai = taxonSets.get(i);
+//                final Set<String> taxaj = taxonSets.get(j);
+//                if (taxai.size() > taxaj.size() ||
+//                	(taxai.size() == taxaj.size() && onParent.get(i))) {
+//                    swap(taxonSets, i, j);
+//                    swap(distributions, i, j);
+//                    swap(m_bounds, i, j);
+//                    swap(taxonSetIDs, i, j);
+//                    swap(onParent, i, j);                	
+//                }
+//            }
+//        }
         for (int i = 0; i < lastMonophyletic; i++) {
             for (int j = i + 1; j < lastMonophyletic; j++) {
 
@@ -357,6 +377,10 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
                         }
                     }
                 }
+                if (i == 54) {
+                	int h = 3;
+                	h++;
+                }
                 final int enclosingIndex = (j == lastMonophyletic) ? j : j;
                 Set<String> candidates = new HashSet<>(enclosingTaxa);
                 candidates.removeAll(iTaxa);
@@ -371,7 +395,7 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
                                         break;
                                     }
                                 } else {
-                                  if( ! (m_bounds.get(k).lower <= m_bounds.get(i).lower) ) {
+                                  if(m_bounds.get(k).lower - 1e10 > m_bounds.get(i).lower) {
                                       break;
                                   }
                                 }
@@ -392,6 +416,10 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
                     final Bound ebound = m_bounds.get(enclosingIndex);
                     ebound.restrict(m_bounds.get(i));
                 } else {
+                	if (sz1 + sz2 == 0) {
+                		int h = 3;
+                				h++;
+                	}
                     assert sz1 + sz2 > 0;
                     // prefer taxa over clades (less chance of clades useOriginate clashing)
                     final int k = Randomizer.nextInt(sz1 > 0 ? sz1 : sz2);
@@ -508,6 +536,11 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
             if (nParent[i] < lastMonophyletic ) {
                 if (m_bounds.get(i).upper > m_bounds.get(nParent[i]).upper) {
                     m_bounds.get(i).upper = m_bounds.get(nParent[i]).upper - 1e-100;
+                    
+                    if (m_bounds.get(i).lower >  m_bounds.get(i).upper) {
+                    	int h = 3;
+                    	h++;
+                    }
                     assert m_bounds.get(i).lower <=  m_bounds.get(i).upper: i;
                 }
             }
@@ -548,7 +581,7 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
             try {
 				succ = setHeights(rate, false, epsi, clamp);
 			} catch (ConstraintViolatedException e) {
-				throw new RuntimeException("Constraint failed: " + e.getMessage());
+				throw new RuntimeException("Constraint failed setting heights: " + e.getMessage() + " Perhaps setting/reducing 'branchMean' helps");
 			}
             --ntries;
             rate *= 2;
@@ -558,7 +591,7 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
            try {
         	   succ = setHeights(rate, true, 0, 0);
            } catch (ConstraintViolatedException e) {
-        	   throw new RuntimeException("Constraint failed: " + e.getMessage());
+				throw new RuntimeException("Constraint failed setting heights: " + e.getMessage() + " Perhaps setting/reducing 'branchMean' helps");
            }
         }
         assert succ;
@@ -849,7 +882,7 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
                     cbnd.upper = Math.min(cbnd.upper, b.upper);
                 }
                 if( b.lower > b.upper ) {
-                    throw new ConstraintViolatedException();
+                    throw new ConstraintViolatedException(b.lower + " >" + b.upper);
                 }
             }
         }
@@ -871,7 +904,7 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
                     h = Math.max(c.getHeight(), h);
                 }
                 if( h > b.upper ) {
-                    throw new ConstraintViolatedException();
+                    throw new ConstraintViolatedException(h + " > " + b);
                 }
                 if( b.upper.isInfinite() ) {
                     if( ! b.lower.isInfinite() ) {

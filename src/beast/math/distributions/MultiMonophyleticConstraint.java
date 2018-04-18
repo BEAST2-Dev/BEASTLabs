@@ -193,10 +193,19 @@ public class MultiMonophyleticConstraint extends Distribution {
 
 
     private boolean isMonoRB() {
+    	int k = 0;
         for (List<Integer> list : taxonIDList) {
             if( !isMonophyletic(list) ) {
+            	String [] taxa = tree.getTaxaNames();
+            	System.err.print(k + " " + list.size() + ":");
+            	for (Integer i : list) {
+            		System.err.print(taxa[i] + ",");
+            	}
+            	System.err.println();
+            	isMonophyletic(list);
                 return false;
             }
+        	k++;
         }
         return true;
     }

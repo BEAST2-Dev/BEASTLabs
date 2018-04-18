@@ -28,6 +28,24 @@
             </tree>
 ]]>
         </subtemplate>
+        
+
+        <subtemplate id='SimpleConstrainedRandomTree' class='beast.evolution.tree.SimpleConstrainedRandomTree' mainid='SimpleConstrainedRandomTree.t:$(n)'
+        	suppressInputs="
+        	beast.evolution.tree.SimpleConstrainedRandomTree.weights,
+	        beast.evolution.tree.SimpleConstrainedRandomTree.taxa,
+	        beast.evolution.tree.SimpleConstrainedRandomTree.estimate,
+        	beast.evolution.tree.SimpleConstrainedRandomTree.trait,
+        	beast.evolution.tree.SimpleConstrainedRandomTree.taxonset,
+        	beast.evolution.tree.SimpleConstrainedRandomTree.nodetype,
+        	beast.evolution.tree.SimpleConstrainedRandomTree.initial">
+<![CDATA[
+            <tree spec='beast.evolution.tree.SimpleConstrainedRandomTree' id='SimpleConstrainedRandomTree.t:$(n)' estimate='false' initial="@Tree.t:$(n)">
+                <taxa idref='data'/>
+                <constraints spec="beast.math.distributions.MultiMonophyleticConstraint" tree="@Tree.t:$(n)" newick="()"/>
+            </tree>
+]]>
+        </subtemplate>
     </mergewith>
 </beast>
 

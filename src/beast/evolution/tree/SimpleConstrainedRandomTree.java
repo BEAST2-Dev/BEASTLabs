@@ -1,6 +1,7 @@
 package beast.evolution.tree;
 
 
+import beast.app.beauti.Beauti;
 import beast.core.BEASTInterface;
 import beast.core.BEASTObject;
 import beast.core.Description;
@@ -23,6 +24,9 @@ public class SimpleConstrainedRandomTree extends SimpleRandomTree  {
 
     @Override
     public void initAndValidate() {
+    	if (Beauti.isInBeauti()) {
+    		return;
+    	}
         List<MRCAPrior> cons = getCons();
         List<MRCAPrior> origCons = new ArrayList<>();
         origCons.addAll(calibrationsInput.get());
@@ -83,8 +87,25 @@ public class SimpleConstrainedRandomTree extends SimpleRandomTree  {
         calibrationsInput.setValue(cons, this);
     	super.initStateNodes();
         calibrationsInput.get().clear();
+        
+        int n = countNodes(getRoot());
+        System.err.println("\n\n#leafs = " + n + " " + getLeafNodeCount() + "\n\n");
+        Tree init = (Tree) m_initial.get();
+        System.err.println("\n\n#leafs = " + countNodes(init.getRoot()) + " " + init.getLeafNodeCount() + " " + init.getRoot().getHeight() + "\n\n");
+        
         clearup();
         if (origCons.size() > 0)
         	calibrationsInput.setValue(origCons, this);
     }
+
+	private int countNodes(Node node) {
+		if (node.isLeaf()) {
+			return 1;
+		}
+		int n = 0;
+		for (Node c : node.getChildren()) {
+			n += countNodes(c);
+		}
+		return n;
+	}
 }
