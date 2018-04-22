@@ -38,7 +38,7 @@ public class RestrictedSubtreeSlide extends SubtreeSlide {
             Collections.addAll(sTaxaNames, tree.getTaxaNames());
 
             final List<List<String>> constraints = cladesSetInput.get() != null ? cladesSetInput.get().getConstraints() : null;
-            if (topLevelOnlyInput.get()) {
+            if (topLevelOnlyInput.get() && constraints != null) {
             	// remove nested constraints
             	for (int i = 0; i < constraints.size(); i++) {
             		List<String> c1 = constraints.get(i);
