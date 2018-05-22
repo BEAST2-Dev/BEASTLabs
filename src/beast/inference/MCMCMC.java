@@ -1,28 +1,27 @@
 package beast.inference;
 
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.List;
-
-import beast.core.Description;
-import beast.core.Input;
-import beast.core.Logger;
-import beast.core.Logger.LogFileMode;
-import beast.core.MCMC;
-import beast.core.State;
-import beast.core.StateNode;
+import beast.core.*;
 import beast.core.util.Log;
 import beast.util.Randomizer;
 import beast.util.XMLParser;
 import beast.util.XMLProducer;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.List;
 
 // Altekar G, Dwarkadas S, Huelsenbeck J and Ronquist F (2004). 
 // Parallel Metropolis Coupled Markov Chain Monte Carlo For Bayesian Phylogenetic Inference.
 // Bioinformatics, 20. ISSN 1367-4803, 
 // http://dx.doi.org/10.1093/bioinformatics/btg427.
 
+@Citation(value= "Altekar G, Dwarkadas S, Huelsenbeck J and Ronquist F (2004). \n" +
+				"  Parallel Metropolis Coupled Markov Chain Monte Carlo For Bayesian Phylogenetic Inference.\n" +
+				"  Bioinformatics, 20(3), 407-415."
+		, year = 2004, firstAuthorSurname = "Altekar",
+		DOI="10.1093/bioinformatics/btg427")
 @Description("Metropolis-Coupled Markov Chain Monte Carlo" +
 		"" +
 		"Note that log file names should have $(seed) in their name so " +
