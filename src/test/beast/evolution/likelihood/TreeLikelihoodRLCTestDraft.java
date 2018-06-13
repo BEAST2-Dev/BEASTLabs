@@ -2,8 +2,10 @@ package test.beast.evolution.likelihood;
 
 
 import beast.core.parameter.BooleanParameter;
+import beast.core.parameter.IntegerParameter;
 import beast.core.parameter.RealParameter;
 import beast.evolution.alignment.Alignment;
+import beast.evolution.alignment.FilteredAlignment;
 import beast.evolution.alignment.Sequence;
 import beast.evolution.branchratemodel.RandomLocalClockModel;
 import beast.evolution.likelihood.TreeLikelihood;
@@ -38,27 +40,41 @@ public class TreeLikelihoodRLCTestDraft extends TestCase {
         return new TreeLikelihood();
     }
 
+    private Alignment getAlignment() {
+        Sequence seq1 = new Sequence("taxon1", "GTCGGTCAGTCA");
+        Sequence seq2 = new Sequence("taxon2", "TCAGTTAGTCAG");
+        Sequence seq3 = new Sequence("taxon3", "CAGTCAGTCAGT");
+
+        Alignment alignment = new Alignment();
+        alignment.initByName("sequence", seq1, "sequence", seq2, "sequence", seq3, "dataType", "nucleotide");
+        return alignment;
+    }
+
+    private FilteredAlignment getFilteredAlignment() {
+        Alignment alignment = getAlignment();
+
+        IntegerParameter constantSiteWeights = new IntegerParameter(new Integer[]{1000000,1000000,1000000,1000000});
+        FilteredAlignment filteredAlignment = new FilteredAlignment();
+        filteredAlignment.initByName("data", alignment, "filter", "-",
+                "constantSiteWeights", constantSiteWeights, "dataType", "nucleotide");
+        return filteredAlignment;
+    }
+
     /**
      *
      */
     @Test
     public void testBeagleRLCLikelihood() throws Exception {
 
-        Sequence seq1 = new Sequence("taxon1", "GTCGGTCAGTCA");
-        Sequence seq2 = new Sequence("taxon2", "TCAGTTAGTCAG");
-        Sequence seq3 = new Sequence("taxon3", "CAGTCAGTCAGT");
+//        Alignment alignment = getAlignment();
+        Alignment alignment = getFilteredAlignment();
 
-        Alignment alignment = new Alignment();
-        alignment.initByName("sequence", seq1,
-                "sequence", seq2,
-                "sequence", seq3,
-                "dataType", "nucleotide");
-
-        // The start point is 6780000 from Tim's XML using seed 5010
-        TreeParser tree = new TreeParser();
+        // The start point is 6780000 having the problem from Tim's XML using seed 5010
+//        TreeParser tree = new TreeParser();
         // ((2:1.0812703780105475,1:0.08127037801054748)3:0.957396117780122,0:0.0386664957906695)4:0.0
         String treeSting = "((taxon3:1.0812703780105475,taxon2:0.08127037801054748)3:0.957396117780122,taxon1:0.0386664957906695)4:0.0";
-        tree.initByName("taxa", alignment, "newick", treeSting, "IsLabelledNewick", true);
+//        tree.initByName("taxa", alignment, "newick", treeSting, "IsLabelledNewick", true); //TODO diff tree in RAM?
+        TreeParser tree = new TreeParser(treeSting, false, false, true, 1);
 
         // subst model
         RealParameter f = new RealParameter(new Double[]{0.25002332020722356,0.249757221213698,0.24989440866005042,0.250325049919028});
@@ -107,18 +123,23 @@ public class TreeLikelihoodRLCTestDraft extends TestCase {
 
             // all nodes
             List<Node> allNodes = tree.getRoot().getAllChildNodesAndSelf();
+            System.out.println(tree.getRoot().toNewick());
             for (int n=0; n<allNodes.size(); n++) {
                 Node node = allNodes.get(n);
                 System.out.println(node.getID() + " (" + node.getNr() + ") : " + node.getHeight());
             }
 
             // next proposal
-            double scale = scaleFactor + (Randomizer.nextDouble() * ((1.0 / scaleFactor) - scaleFactor));
-            System.out.println("\nscale for next sample = " + scale);
+//            double scale = scaleFactor + (Randomizer.nextDouble() * ((1.0 / scaleFactor) - scaleFactor));
+//            System.out.println("\nscale for next sample = " + scale);
 
             // scale root height
             Node root = allNodes.get(0);
-            root.setHeight(root.getHeight() * scale);
+//            root.setHeight(root.getHeight() * scale);
+            // hard code to get random root height [2, 100],
+            // where 3.getHeight() = 1.0812703780105475 and 0..getHeight() = 2
+            double h = 2 + (100 - 2) * Randomizer.nextDouble();
+            root.setHeight(h);
             System.out.println("root height for next sample = " + root.getHeight());
 
             if (Double.isInfinite(root.getHeight()))
