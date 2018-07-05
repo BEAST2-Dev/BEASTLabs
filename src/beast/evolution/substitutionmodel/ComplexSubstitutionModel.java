@@ -41,7 +41,10 @@ import beast.evolution.tree.Node;
  */
 
 @Description("Complex-diagonalizable, irreversible substitution model")
-@Citation("Edwards, Ceiridwen J., et al. Ancient hybridization and an Irish origin for the modern polar bear matriline. Current Biology 21.15 (2011): 1251-1258.")
+@Citation(value = "Edwards, C. J., Suchard, M. A., Lemey, P., ... & Valdiosera, C. E. (2011).\n" +
+        "Ancient hybridization and an Irish origin for the modern polar bear matriline.\n" +
+        "Current Biology, 21(15), 1251-1258.",
+        year = 2011, firstAuthorSurname = "Edwards", DOI="10.1016/j.cub.2011.05.058")
 public class ComplexSubstitutionModel extends GeneralSubstitutionModel {
 	
 	@Override
