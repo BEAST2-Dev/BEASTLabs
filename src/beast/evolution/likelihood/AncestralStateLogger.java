@@ -21,12 +21,14 @@ public class AncestralStateLogger extends TreeLikelihood implements Loggable {
 	public Input<TaxonSet> taxonsetInput = new Input<>("taxonset", "set of taxa defining a clade. The MRCA node of the clade is logged", Validate.REQUIRED);
 	public Input<String> valueInput = new Input<>("value", "space delimited set of labels, one for each site in the alignment. Used as site label in the log file.");
 	public Input<Boolean> logParentInput = new Input<>("logParent", "flag to indicate the parent value should be logged", false);
+	public Input<Boolean> logMRCAInput = new Input<>("logMRCA", "flag to indicate the MRCA value should be logged", true);
 	
     // array of flags to indicate which taxa are in the set
     Set<String> isInTaxaSet = new LinkedHashSet<>();
     Node MRCA;
 	int [] parentSample;
     boolean logParent;
+    boolean logMRCA;
     
     @Override
 	public void initAndValidate() {
@@ -96,6 +98,10 @@ public class AncestralStateLogger extends TreeLikelihood implements Loggable {
         if (logParent && taxaNames.size() == set.size()) {
         	throw new RuntimeException("Cannot log parent of the root; either choose a different clade, or set logParent flag to false");
         }
+        logMRCA = logMRCAInput.get();
+        if (!logParent && ! logMRCA) {
+        	throw new IllegalArgumentException("At least one of logMRCA and logParent should be seleceted");
+        }
 	}
 	
 
@@ -133,7 +139,10 @@ public class AncestralStateLogger extends TreeLikelihood implements Loggable {
 				if (logParent) {
 					out.append(parentSample[i] + "");
 				}
-				out.append(sample[i] + "\t");
+				if (logMRCA) {
+					out.append(sample[i] + "");
+				}
+				out.append("\t");
 			}
 			
 		} catch (Exception e) {
