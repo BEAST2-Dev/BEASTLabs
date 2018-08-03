@@ -77,7 +77,7 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
         }
     }
 
-    private boolean intersecting(Bound bound1, Bound bound2) {
+    protected boolean intersecting(Bound bound1, Bound bound2) {
         return bound1.upper > bound2.lower && bound2.upper > bound1.lower;
     }
 
@@ -140,7 +140,7 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    private void swap(final List list, final int i, final int j) {
+    protected void swap(final List list, final int i, final int j) {
         final Object tmp = list.get(i);
         list.set(i, list.get(j));
         list.set(j, tmp);
@@ -160,7 +160,7 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
         }
     }
 
-    private final boolean ICC = true;
+    final boolean ICC = true;
 
     public void doTheWork() {
         // find taxon sets we are dealing with
@@ -613,7 +613,7 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
         initArrays();
     }
 
-    private int setNodesNrs(final Node node, int internalNodeCount, int[] n, Map<String,Integer> initial) {
+    protected int setNodesNrs(final Node node, int internalNodeCount, int[] n, Map<String,Integer> initial) {
         if( node.isLeaf() )  {
             if( initial != null ) {
                 node.setNr(initial.get(node.getID()));
@@ -816,7 +816,7 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
         return nodes.get(0);
     }
 
-    private boolean setHeights(final double rate, final boolean safe, final double epsi, final double clampBoundsLevel) throws
+    protected boolean setHeights(final double rate, final boolean safe, final double epsi, final double clampBoundsLevel) throws
             ConstraintViolatedException {
         //  node low >= all child nodes low. node high < parent high
         assert rate > 0;

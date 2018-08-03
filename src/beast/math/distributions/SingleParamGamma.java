@@ -41,8 +41,9 @@ public class SingleParamGamma extends ParametricDistribution {
         return m_dist;
     }
 
+    
     @Override
-    public double getMean() {
-    	return offsetInput.get() + m_dist.getAlpha() * m_dist.getBeta();
+    protected double getMeanWithoutOffset() {
+    	return m_dist.getAlpha() * m_dist.getBeta();
     }
 } // class Gamma

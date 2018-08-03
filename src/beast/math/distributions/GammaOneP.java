@@ -1,5 +1,6 @@
 package beast.math.distributions;
 
+
 import org.apache.commons.math.MathException;
 import org.apache.commons.math.distribution.ContinuousDistribution;
 import org.apache.commons.math.distribution.GammaDistributionImpl;
@@ -50,6 +51,11 @@ public class GammaOneP extends ParametricDistribution {
     public double inverseCumulativeProbability(double p) throws MathException {
     	double x = super.inverseCumulativeProbability(p);
     	return x;
+    }
+    
+    @Override
+    protected double getMeanWithoutOffset() {
+    	return 1.0;
     }
     
 } // class GammaOneP
