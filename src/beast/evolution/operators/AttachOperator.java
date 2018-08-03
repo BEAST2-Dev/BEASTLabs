@@ -45,7 +45,7 @@ public class AttachOperator extends TreeOperator {
 
     DistanceProvider.Data weights[];
 
-    private List<MRCAPrior> useOnly = null;
+    protected List<MRCAPrior> useOnly = null;
 
     @Override
     public void initAndValidate() {
@@ -77,7 +77,7 @@ public class AttachOperator extends TreeOperator {
         }
     }
 
-    private Node getNode(Tree tree, final Node[] post) {
+    protected Node getNode(Tree tree, final Node[] post) {
         if( useOnly != null ) {
             int k = Randomizer.nextInt( useOnly.size() );
             final MRCAPrior mrcaPrior = useOnly.get(k);
