@@ -4,6 +4,7 @@ package beast.app.util;
 import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -126,6 +127,21 @@ public class Application {
 							} else {
 								matchingInput.setValue(Boolean.TRUE, null);
 							}
+						} else if (matchingInput.get() != null && matchingInput.get() instanceof List) {
+							Class c = matchingInput.getType();
+							if (c == null) {
+								matchingInput.determineClass(myBeastObject);
+								c = matchingInput.getType();
+							}
+				            Constructor ctor = null;
+				            try {
+				            	ctor = c.getDeclaredConstructor(String.class);
+				            } catch (NoSuchMethodException e) {
+				            
+				            }
+				            Object o = ctor.newInstance(value);
+							((List)matchingInput.get()).add(o);
+							i++;
 						} else {
 							matchingInput.setValue(value, myBeastObject);
 							i++;
