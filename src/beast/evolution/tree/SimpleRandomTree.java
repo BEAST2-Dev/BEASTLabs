@@ -653,7 +653,7 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
         final Set<Node> candidates = new LinkedHashSet<>();
         int nr = 0;
         for (String taxon : taxa) {
-            final Node node = new Node();
+            final Node node = newNode();
             node.setNr(nr);
             node.setID(taxon);
             node.setHeight(0.0);
@@ -797,7 +797,7 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
             final Node left = nodes.remove(l);
             final Node right = nodes.get(r);
 
-            final Node newNode = new Node();
+            final Node newNode = newNode();
             newNode.setNr(nextNodeNr++);   // multiple tries may generate an excess of nodes assert(nextNodeNr <= nrOfTaxa*2-1);
             h += dt;
             newNode.setHeight(h);
