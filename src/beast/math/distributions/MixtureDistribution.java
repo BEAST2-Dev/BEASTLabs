@@ -62,10 +62,11 @@ public class MixtureDistribution extends Distribution {
 		int k = 0;
 		for (Distribution d : distrs) {
 			if (d.isDirtyCalculation()) {
-				logPs[k++] = d.calculateLogP() + logWeights[k];
+				logPs[k] = d.calculateLogP() + logWeights[k];
 			} else {
-				logPs[k++] = d.getCurrentLogP() + logWeights[k];
+				logPs[k] = d.getCurrentLogP() + logWeights[k];
 			}
+			k++;
 		}
 		logP = LogTricks.logSum(logPs);
 		return logP;
