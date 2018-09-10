@@ -168,11 +168,11 @@ public class AncestralStateLogger extends TreeLikelihood implements Loggable {
 			}
 			
 			double [] p = new double[stateCount];
-			
+			double [] freqs = substitutionModel.getFrequencies();
 			for (int i = 0; i < sample.length; i++) {
 				int offset = stateCount * dataInput.get().getPatternIndex(i);
 				for (int j = 0; j < stateCount; j++) {
-					p[j] = m_fRootPartials[offset + j];
+					p[j] = m_fRootPartials[offset + j] * freqs[j];
 				}
 				sample[i] = Randomizer.randomChoicePDF(p);
 			}
