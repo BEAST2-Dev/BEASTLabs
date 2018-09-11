@@ -76,9 +76,9 @@ public class RestrictedSubtreeSlideTest extends TestCase {
 	    
 	    RestrictedSubtreeSlide operator = new RestrictedSubtreeSlide();
 	    if (clade2 == null) {
-	    	operator.initByName("tree", tree, "clade", clade);
+	    	operator.initByName("tree", tree, "clade", clade, "weight", 1.0);
 	    } else {
-	    	operator.initByName("tree", tree, "clade", clade, "clade", clade2);
+	    	operator.initByName("tree", tree, "clade", clade, "clade", clade2, "weight", 1.0);
 	    }
 	    //operator.initByName("tree", tree);
 	    for (int i = 0; i < 100; i++) {
