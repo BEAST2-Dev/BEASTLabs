@@ -101,6 +101,47 @@ public class MultiMonophyleticConstraintInputEditor extends BEASTObjectInputEdit
 		return list;
 	}
 
+	
+	/** assumes args are Newick string, Tree partition (if any) */
+	@Override
+	public List<Distribution> createDistribution(BeautiDoc doc, List<Object> args) {
+		this.doc = doc;
+		List<Distribution> list = new ArrayList<>();
+
+		MultiMonophyleticConstraint prior = new MultiMonophyleticConstraint();
+        getDoc().scrubAll(true, false);
+
+        if (args.size() <= 1) {
+            getDoc().scrubAll(true, false);
+            State state = (State) doc.pluginmap.get("state");
+            for (StateNode node : state.stateNodeInput.get()) {
+                if (node instanceof Tree) { 
+    	            prior.treeInput.setValue(node, prior);
+    	            break;
+                }
+            }
+        } else {
+        	Object tree = doc.pluginmap.get("Tree.t:" + args.get(1));
+            prior.treeInput.setValue(tree, prior);
+        }
+
+        String newick = args.get(0).toString().trim();
+        if (newick.charAt(0) == '"' || newick.charAt(0) == '\'') {
+        	newick = newick.substring(1, newick.length() - 1);
+        }
+        prior.newickInput.setValue(newick, prior);
+        
+        String id = prior.treeInput.get().getID();
+        if (id.contains(".t:")) {
+        	id = id.substring(id.indexOf(".t:"));
+        }
+        prior.setID("MultiMonophyleticConstraint" + id);
+        prior.isBinaryInput.setValue(false, prior);
+		
+		list.add(prior);
+		return list;	
+	}
+	
 	@Override
 	public String getDescription() {
 		return "Multiple monophyletic constraint";
