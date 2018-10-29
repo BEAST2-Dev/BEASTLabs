@@ -17,7 +17,7 @@ import beast.core.parameter.RealParameter;
 public class GammaOneP extends ParametricDistribution {
     final public Input<RealParameter> shapeInput = new Input<>("shape", "shape parameter, defaults to 1");
 
-    static org.apache.commons.math.distribution.GammaDistribution m_dist = new GammaDistributionImpl(1.0, 1.0);
+    org.apache.commons.math.distribution.GammaDistribution m_dist = new GammaDistributionImpl(1.0, 1.0);
 
     @Override
     public void initAndValidate() {

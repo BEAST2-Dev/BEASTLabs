@@ -13,7 +13,7 @@ import beast.core.parameter.RealParameter;
 public class SingleParamGamma extends ParametricDistribution {
     final public Input<RealParameter> alphaInput = new Input<>("alpha", "shape parameter, defaults to 2");
 
-    static org.apache.commons.math.distribution.GammaDistribution m_dist = new GammaDistributionImpl(1, 1);
+    org.apache.commons.math.distribution.GammaDistribution m_dist = new GammaDistributionImpl(1, 1);
 
     @Override
     public void initAndValidate() {

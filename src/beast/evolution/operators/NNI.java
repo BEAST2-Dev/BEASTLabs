@@ -10,7 +10,7 @@ import beast.util.Randomizer;
 
 /**
  * Implements the Nearest Neighbor Interchange (NNI) operation. This particular
- * implementation assumes explicitely bifurcating trees. It works similar to the
+ * implementation assumes explicitly bifurcating trees. It works similar to the
  * Narrow Exchange but with manipulating the height of a node if necessary.
  * Adapted from BEAST1 dr.evomodel.operators.NNI by Sebastian Hoehna 
  */
