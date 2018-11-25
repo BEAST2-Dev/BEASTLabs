@@ -220,9 +220,8 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
 	        			plugins.get(i).initAndValidate();
 	        		}
 	                try {
-                        final double offset = distr.offsetInput.get();
-                        bounds.lower = Math.max(distr.inverseCumulativeProbability(0.0) + offset, 0.0);
-		                bounds.upper = distr.inverseCumulativeProbability(1.0) + offset;
+                        bounds.lower = Math.max(distr.inverseCumulativeProbability(0.0), 0.0);
+		                bounds.upper = distr.inverseCumulativeProbability(1.0);
                         assert bounds.lower <= bounds.upper;
 					} catch (MathException e) {
 						Log.warning.println("Could not set bounds in SimpleRandomTree::doTheWork : " + e.getMessage());
