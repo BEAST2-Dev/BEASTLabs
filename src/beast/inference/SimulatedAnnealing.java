@@ -9,6 +9,7 @@ import beast.core.Loggable;
 import beast.core.Logger;
 import beast.core.MCMC;
 import beast.core.Operator;
+import beast.core.util.Log;
 import beast.util.Randomizer;
 
 
@@ -43,7 +44,9 @@ public class SimulatedAnnealing extends MCMC implements Loggable {
 		for (Logger logger :  loggersInput.get()) {
 			nLogEvery = Math.min(logger.everyInput.get(), nLogEvery);
 		}
-			
+		
+//    	reportLogLikelihoods(posterior, "");
+
         for (int iSample = -burnIn; iSample <= chainLength; iSample++) {
             state.store(iSample);
             if (storeEvery > 0 && iSample % storeEvery == 0 && iSample > 0) {
@@ -131,6 +134,12 @@ public class SimulatedAnnealing extends MCMC implements Loggable {
             
             fTemp = fTemp0 * Math.exp(iSample * m_fDeltaLogTemp / chainLength);
         }
+        
+    	state.fromXML(sBestXML);
+    	oldLogLikelihood = robustlyCalcPosterior(posterior);
+    	state.storeToFile(chainLength);
+//    	reportLogLikelihoods(posterior, "");
+//    	Log.warning.println("logP = " + oldLogLikelihood + "\n" + sBestXML);
     }
 
 
