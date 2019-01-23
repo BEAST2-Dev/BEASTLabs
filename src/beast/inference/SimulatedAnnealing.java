@@ -66,8 +66,9 @@ public class SimulatedAnnealing extends MCMC implements Loggable {
                 newLogLikelihood = posterior.calculateLogP();
 
                 double logAlpha = newLogLikelihood - oldLogLikelihood;
+                                
                 //System.out.println(logAlpha + " " + fNewLogLikelihood + " " + fOldLogLikelihood);
-                if (logAlpha >= 0 || Randomizer.nextDouble() > Math.exp(-Math.exp(logAlpha) * fTemp)) {
+                if (logAlpha >= 0 || Randomizer.nextDouble() > Math.exp(-Math.exp(logAlpha + fLogHastingsRatio) * fTemp)) {
                 //if (logAlpha >= 0) {
                     // accept
                     oldLogLikelihood = newLogLikelihood;
