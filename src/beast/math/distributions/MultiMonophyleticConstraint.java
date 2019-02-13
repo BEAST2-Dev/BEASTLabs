@@ -181,12 +181,18 @@ public class MultiMonophyleticConstraint extends Distribution {
 
 	@Override
     public double calculateLogP() {
-        boolean mono1 = isBinaryInput.get() ? isMonoJH() : isMonoJHNonBinary();
+		boolean mono1;
+        try {
+        	mono1 = isBinaryInput.get() ? isMonoJH() : isMonoJHNonBinary();
+        } catch (ArrayIndexOutOfBoundsException e) {
+        	logP = Double.NEGATIVE_INFINITY;
+        	return logP;
+        }
         if( false ) assert mono1 == isMonoRB();   // assert is expensive. isMonoJH replaces the much slower isMonoRB
         
         //if (!mono1) {
-        	//mono1 = isMonoRB();
-        // }
+        //	mono1 = isMonoRB();
+        //}
         logP = mono1 ? 0 : Double.NEGATIVE_INFINITY;
         return logP;
     }
@@ -197,7 +203,7 @@ public class MultiMonophyleticConstraint extends Distribution {
         for (List<Integer> list : taxonIDList) {
             if( !isMonophyletic(list) ) {
             	String [] taxa = tree.getTaxaNames();
-            	System.err.print(k + " " + list.size() + ":");
+            	System.out.print(k + " " + list.size() + ":");
             	for (Integer i : list) {
             		System.err.print(taxa[i] + ",");
             	}
