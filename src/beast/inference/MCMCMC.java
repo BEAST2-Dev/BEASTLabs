@@ -15,7 +15,7 @@ import java.util.List;
 // Altekar G, Dwarkadas S, Huelsenbeck J and Ronquist F (2004). 
 // Parallel Metropolis Coupled Markov Chain Monte Carlo For Bayesian Phylogenetic Inference.
 // Bioinformatics, 20. ISSN 1367-4803, 
-// http://dx.doi.org/10.1093/bioinformatics/btg427.
+// https://doi.org/10.1093/bioinformatics/btg427.
 
 @Citation(value= "Altekar G, Dwarkadas S, Huelsenbeck J and Ronquist F (2004). \n" +
 				"  Parallel Metropolis Coupled Markov Chain Monte Carlo For Bayesian Phylogenetic Inference.\n" +

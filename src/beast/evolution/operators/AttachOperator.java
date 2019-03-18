@@ -214,7 +214,11 @@ public class AttachOperator extends TreeOperator {
             assert parent.getNr() != n.getNr();
             assert parent.getNr() != n.getParent().getNr();
 
-            reAttach(node, n);
+            try {
+            	reAttach(node, n);
+            } catch (NullPointerException e) {
+            	return Double.NEGATIVE_INFINITY; 
+            }
             return 0;
         }
 
@@ -251,7 +255,11 @@ public class AttachOperator extends TreeOperator {
         assert parent.getNr() != n.getNr();
         assert parent.getNr() != n.getParent().getNr();
 
-        reAttach(node, n);
+        try {
+        	reAttach(node, n);
+        } catch (NullPointerException e) {
+        	return Double.NEGATIVE_INFINITY; 
+        }
 
         final double pi = w2[i] - (i > 0 ? w2[i - 1] : 0);
         final double wtot = atot - pi * tot;

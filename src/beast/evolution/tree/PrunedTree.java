@@ -19,7 +19,7 @@ public class PrunedTree extends Tree {
 
     public Input<Boolean> m_fast = new Input<>("quickshortcut", "Detect pruned tree change in two stages." +
             "the first stage requires that all tree operators mark all changed clades (markclades=true in tree " +
-            "operator.", false);
+            "operator).", false);
 
     public Input<Boolean> m_assert = new Input<>("assert", "perform expensive consistency checks (but only with" +
             " -ea)", false);
@@ -569,7 +569,7 @@ public class PrunedTree extends Tree {
 
     private void insureStore() {
         if( ! storeCalledThisCycle ) {
-            super.store();
+       		super.store();
             if( trackInternalPathChanges ) {
                 System.arraycopy(nodeNumberToBase, 0, nodeNumberToBaseStore, 0, nodeNumberToBaseStore.length);
             }
