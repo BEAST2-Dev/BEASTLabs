@@ -569,7 +569,14 @@ public class PrunedTree extends Tree {
 
     private void insureStore() {
         if( ! storeCalledThisCycle ) {
-       		super.store();
+        	try {
+        		super.store();
+        	} catch (ArrayIndexOutOfBoundsException e) {
+        		// Something went wrong building the tree: one of the nodes has a number that is outside
+        		// of the range [0,...,nodeCount-1].
+        		// The invalidity of the tree should have been caught by MultiMRCAPriors.calculateLogP()
+        		// which calls this.isValidlyNumbered(), which now returns false.
+        	}
             if( trackInternalPathChanges ) {
                 System.arraycopy(nodeNumberToBase, 0, nodeNumberToBaseStore, 0, nodeNumberToBaseStore.length);
             }
@@ -662,6 +669,23 @@ public class PrunedTree extends Tree {
                     }
                 }
             }
+        }
+        return true;
+    }
+    
+    public boolean isValidlyNumbered() {
+        for (int i = 0; i < nodeCount; i++) {
+            final Node src = m_nodes[i];
+
+            if ( src.parent != null && src.parent.getNr() >= nodeCount) {
+            	return false;
+            }
+
+            for (Node srcChild: src.getChildren()) {
+               if (srcChild.getNr() >= nodeCount) {
+            	   return false;
+               }
+           }
         }
         return true;
     }

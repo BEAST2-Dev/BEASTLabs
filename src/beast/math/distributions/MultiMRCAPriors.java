@@ -5,6 +5,7 @@ import beast.core.Input;
 import beast.core.State;
 import beast.evolution.operators.MonoCladesMapping;
 import beast.evolution.tree.Node;
+import beast.evolution.tree.PrunedTree;
 
 import java.io.PrintStream;
 import java.util.*;
@@ -59,6 +60,11 @@ public class MultiMRCAPriors extends MultiMonophyleticConstraint {
 
     @Override
     public double calculateLogP() {
+    	if (tree instanceof PrunedTree && !((PrunedTree)tree).isValidlyNumbered()) {
+            logP = Double.NEGATIVE_INFINITY;
+            return logP;
+    	}
+    	
         double logp = super.calculateLogP();
         if( logp != Double.NEGATIVE_INFINITY ) {
             List<MRCAPrior> mrcaPriors = calibrationsInput.get();
