@@ -68,7 +68,7 @@ public class ConstrainedClusterTree extends Tree implements StateNodeInitialiser
     // The tree in the XML should have a taxon set, since it is not fully initialised at this stage
     public Input<List<MRCAPrior>> calibrationsInput = new Input<List<MRCAPrior>>("constraint", "specifies (monophyletic or height distribution) constraints on internal nodes", new ArrayList<MRCAPrior>());
     public final Input<MultiMonophyleticConstraint> allConstraints = new Input<>("constraints",
-            "all constraints as encoded by one unresolved tree.", Input.Validate.REQUIRED);
+            "all constraints as encoded by one unresolved tree.");
     public final Input<Double> epsilonInput = new Input<Double>("minBranchLength", "lower bound on lengths used for creating branches", 1e-10);
 
     enum Type {single, average, complete, upgma, mean, centroid, ward, adjcomplete, neighborjoining, neighborjoining2}
@@ -280,21 +280,22 @@ public class ConstrainedClusterTree extends Tree implements StateNodeInitialiser
         }
         
         final MultiMonophyleticConstraint mul = multiMonophyleticConstraint;
-        List<List<String>> allc = mul.getConstraints();
-
-        for( List<String> c : allc ) {
-            final boolean [] bTaxa = new boolean[nrOfTaxa];
-            for( String sTaxonID : c ) {
-	            final int iID = taxaNames.indexOf(sTaxonID);
-	            if (iID < 0) {
-	                throw new IllegalArgumentException("Taxon <" + sTaxonID + "> could not be found in list of taxa. Choose one of " + taxaNames.toArray(new String[0]));
-	            }
-	            bTaxa[iID] = true;
+        if (mul != null) {
+	        List<List<String>> allc = mul.getConstraints();
+	
+	        for( List<String> c : allc ) {
+	            final boolean [] bTaxa = new boolean[nrOfTaxa];
+	            for( String sTaxonID : c ) {
+		            final int iID = taxaNames.indexOf(sTaxonID);
+		            if (iID < 0) {
+		                throw new IllegalArgumentException("Taxon <" + sTaxonID + "> could not be found in list of taxa. Choose one of " + taxaNames.toArray(new String[0]));
+		            }
+		            bTaxa[iID] = true;
+		        }
+	        	constraints.add(bTaxa);
+	        	constraintsize.add(c.size());
 	        }
-        	constraints.add(bTaxa);
-        	constraintsize.add(c.size());
         }
-        
         return calibrations;
 	}
 
