@@ -88,6 +88,7 @@ import beast.core.StateNode;
 import beast.core.BEASTObject;
 import beast.evolution.alignment.Alignment;
 import beast.evolution.alignment.Sequence;
+import beast.util.BEASTClassLoader;
 import beast.util.PackageManager;
 import beast.util.XMLParser;
 import beast.util.XMLProducer;
@@ -236,7 +237,7 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
                             "select", JOptionPane.PLAIN_MESSAGE,  null, m_sPlugInNames, null);
                     if (sClassName != null) {
                     	try {
-                    		BEASTObject plugin = (beast.core.BEASTObject) Class.forName(sClassName).newInstance();
+                    		BEASTObject plugin = (beast.core.BEASTObject) BEASTClassLoader.forName(sClassName).newInstance();
                     		m_objects[iRow][iCol] = plugin;
                 			m_pluginLocation.put(plugin, iRow + iCol * MAX_ROW);
                 			m_plugins.add(plugin);
@@ -701,7 +702,7 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 			}
 			BEASTObject plugin = null;
 			if (m_objects[iRow][iCol]==null || !m_objects[iRow][iCol].getClass().getName().equals(sClass)) {
-				plugin = (BEASTObject) Class.forName(sClass).newInstance();
+				plugin = (BEASTObject) BEASTClassLoader.forName(sClass).newInstance();
 			} else {
 				plugin = (BEASTObject) m_objects[iRow][iCol];
 			}

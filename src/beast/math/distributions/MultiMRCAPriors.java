@@ -16,10 +16,10 @@ public class MultiMRCAPriors extends MultiMonophyleticConstraint {
     public Input<List<MRCAPrior>> calibrationsInput =
                 new Input<List<MRCAPrior>>("distribution", "Set of calibrated nodes", new ArrayList<MRCAPrior>());
 
-    private int[] nodeToCladeGroup = null;
-    private int prevNodeCount = -1;
-    private int[] ctops = null;
-    private boolean[] ctopParent = null;
+    protected int[] nodeToCladeGroup = null;
+    protected int prevNodeCount = -1;
+    protected int[] ctops = null;
+    protected boolean[] ctopParent = null;
 
     @Override
     public void initAndValidate() {

@@ -51,7 +51,7 @@ public class OutFileInputEditor extends InputEditor.Base {
 					m_entry.setText(file.getName());
 					m_input.setValue(new OutFile(file.getPath()), m_beastObject);
 					String path = file.getPath();
-					Beauti.g_sDir = path;
+					Beauti.setCurrentDir(path);
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();

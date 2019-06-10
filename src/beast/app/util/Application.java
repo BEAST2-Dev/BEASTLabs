@@ -12,6 +12,7 @@ import java.util.List;
 
 import org.json.JSONObject;
 
+import beast.app.beauti.Beauti;
 import beast.app.beauti.BeautiConfig;
 import beast.app.beauti.BeautiDoc;
 import beast.app.draw.BEASTObjectDialog;
@@ -20,6 +21,7 @@ import beast.core.BEASTObject;
 import beast.core.Description;
 import beast.core.Input;
 import beast.core.util.Log;
+import beast.util.BEASTClassLoader;
 
 @Description("BEAST application that handles argument parsing by introspection "
 		+ "using Inputs declared in the class.")
@@ -155,6 +157,10 @@ public class Application {
 					Log.info.println(getUsage());
 					// CLI usage only
 					System.exit(0);
+				} else if (name.equals("wd")) {
+					// set working directory
+					Beauti.g_sDir = value;
+					i++;
 				}
 				if (matchingInput == null) {
 					
@@ -195,6 +201,7 @@ public class Application {
 		try {
 			List<Input<?>> inputs = myBeastObject.listInputs();
 			buf.append("Usage: " + myBeastObject.getClass().getName() + "\n");
+			buf.append(myBeastObject.getDescription() + "\n");
 			for (Input<?> input : inputs) {
 				buf.append("-" + input.getName() + " ");
 				try {
@@ -225,7 +232,7 @@ public class Application {
 	public static void main(final String[] args) throws Exception {
 		Application main = null;
 		try {
-			BEASTObject myBeastObject = (BEASTObject) Class.forName(args[0])
+			BEASTObject myBeastObject = (BEASTObject) BEASTClassLoader.forName(args[0])
 					.newInstance();
 			main = new Application(myBeastObject);
 			String[] args2 = new String[args.length - 1];

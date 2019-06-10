@@ -28,6 +28,7 @@ import beast.core.StateNodeInitialiser;
 import beast.core.BEASTObject;
 import beast.core.Input.Validate;
 import beast.math.statistic.DiscreteStatistics;
+import beast.util.BEASTClassLoader;
 import beast.util.Randomizer;
 import beast.util.XMLProducer;
 
@@ -375,7 +376,7 @@ public class ParticleFilter extends beast.core.Runnable {
 		m_nCountDown = new CountDownLatch(m_nParticles);
 
 		for (int i = 0; i < m_nParticles; i++) {
-	    	Object o = Class.forName(m_sParticleLauncher.get()).newInstance();
+	    	Object o = BEASTClassLoader.forName(m_sParticleLauncher.get()).newInstance();
 	    	if (!(o instanceof ParticleLauncher)) {
 	    		throw new Exception(m_sParticleLauncher.get() + " is not a particle launcher.");
 	    	}
