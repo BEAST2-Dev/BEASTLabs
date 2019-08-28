@@ -213,7 +213,11 @@ public class Application {
 				} catch (Exception e) {
 					// ignore
 				}
-				buf.append("\t" + input.getTipText() + "\n");
+				buf.append("\t" + input.getTipText());
+				if (input.defaultValue != null) {
+					buf.append(" (default: " + input.defaultValue + ")");
+				}
+				buf.append("\n");
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
