@@ -220,11 +220,9 @@
 		<copy todir="${Add_on_dir}">
 			<fileset file="${distlabs}/BEASTlabs.src.jar" />
 		</copy>
-<!--
 		<copy todir="${Add_on_dir}/templates">
-			<fileset file="templates/BEASTlabs.xml" />
+			<fileset file="templates/Weibull.xml" />
 		</copy>
--->
 		<jar jarfile="${distlabs}/BEASTlabs.addon.v${version}.zip">
 			<fileset dir="${Add_on_dir}">
 				<include name="**/*" />

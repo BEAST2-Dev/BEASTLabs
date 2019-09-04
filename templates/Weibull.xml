@@ -1,0 +1,21 @@
+<beast version='2.0'
+       namespace='beast.app.beauti:beast.core:beast.evolution.branchratemodel:beast.evolution.speciation:beast.evolution.tree.coalescent:beast.core.util:beast.evolution.nuc:beast.evolution.operators:beast.evolution.sitemodel:beast.evolution.substitutionmodel:beast.evolution.likelihood:beast.evolution:beast.math.distributions'>
+
+
+    <mergewith point='parametricDistributions'>
+        <!-- Parametric distributions, all without hyperpriors -->
+
+        <!-- Weibull -->
+        <subtemplate id='Weibull' class='beast.math.distributions.WeibullDistribution' mainid='[top]'>
+            <![CDATA[
+        <distr offset="0.0" spec="beast.math.distributions.WeibullDistribution">
+            <parameter name='shape' value="1" estimate='false'/>
+            <parameter name='scale' value="1" estimate='false'/>
+        </distr>
+]]>
+        </subtemplate>
+
+    </mergewith>
+
+
+</beast>
