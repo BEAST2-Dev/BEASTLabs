@@ -15,6 +15,7 @@ import beast.evolution.datatype.DataType;
 import beast.evolution.tree.Node;
 import beast.evolution.tree.Tree;
 import beast.evolution.tree.TreeUtils;
+import beast.parsimony.ParsimonyCriterion;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -38,8 +39,8 @@ public class FitchParsimony extends BEASTObject implements ParsimonyCriterion {
 	private final int stateCount;
 	private boolean gapsAreStates;
 
-	private Map<Node, boolean[][]> stateSets = new HashMap<>();
-	private Map<Node, int[]> states = new HashMap<>();
+	private Map<Integer, boolean[][]> stateSets = new HashMap<>();
+	private Map<Integer, int[]> states = new HashMap<>();
 
 	private Tree tree = null;
 	private Alignment patterns;
@@ -48,6 +49,9 @@ public class FitchParsimony extends BEASTObject implements ParsimonyCriterion {
 	private boolean hasRecontructedStates = false;
 
 	private final double[] siteScores;
+	
+	boolean[][] union;
+	boolean[][] intersection;
 
 	public FitchParsimony(
 		@Param(name="patterns", description="auto converted jebl2 parameter") Alignment patterns,
@@ -69,8 +73,23 @@ public class FitchParsimony extends BEASTObject implements ParsimonyCriterion {
 		this.patterns = patterns;
 
 		this.siteScores = new double[patterns.getPatternCount()];
+		
+		
+		this.union = new boolean[patterns.getPatternCount()][stateCount];
+		this.intersection = new boolean[patterns.getPatternCount()][stateCount];
+		
+	}
+	
+	
+	/**
+	 * Flags so that the score will recalculated again next time getSiteScores is called
+	 */
+	public void reset() {
+		hasCalculatedSteps = false;
+		//hasRecontructedStates = false;
 	}
 
+	
 	/**
 	 * Calculates the minimum number of siteScores for the parsimony reconstruction of a
 	 * a set of character patterns on a tree. This only does the first pass of the
@@ -143,7 +162,7 @@ public class FitchParsimony extends BEASTObject implements ParsimonyCriterion {
 			hasRecontructedStates = true;
 		}
 
-		return states.get(node);
+		return states.get(node.getNr());
 	}
 
 	private void initialize() {
@@ -152,13 +171,16 @@ public class FitchParsimony extends BEASTObject implements ParsimonyCriterion {
 
 		for (Node node : tree.getNodesAsArray()) {
 			boolean[][] stateSet = new boolean[patterns.getPatternCount()][stateCount];
-			stateSets.put(node, stateSet);
+			stateSets.put(node.getNr(), stateSet);
 
 			int[] stateArray = new int[patterns.getPatternCount()];
-			states.put(node, stateArray);
+			states.put(node.getNr(), stateArray);
 		}
 	}
 
+	
+	
+	
 	/**
 	 * This is the first pass of the Fitch algorithm. This calculates the set of states
 	 * at each node and counts the total number of siteScores (the score). If that is all that
@@ -171,19 +193,14 @@ public class FitchParsimony extends BEASTObject implements ParsimonyCriterion {
 		
 		TreeUtils.preOrderTraversalList(tree, nodes);// Utils.getNodes(tree, tree.getRootNode());
 
-		// used as locals in the loop below, allocated once
-		boolean[][] union = new boolean[patterns.getPatternCount()][stateCount];
-		boolean[][] intersection = new boolean[patterns.getPatternCount()][stateCount];
-
-		// iterate in reverse - post order. State of child is guaranteed to be ready before parent
-
+		// Iterate in reverse - post order. State of child is guaranteed to be ready before parent
 		for (int k = nodes.length - 1; k >= 0; --k) {
 			final Node node = tree.getNode(nodes[k]);
-			final boolean[][] nodeStateSet = stateSets.get(node);
+			final boolean[][] nodeStateSet = stateSets.get(node.getNr());
 
 			if (node.isLeaf()) {
-				boolean[][] stateSet = stateSets.get(node);
-				int[] stateArray = states.get(node);
+				boolean[][] stateSet = stateSets.get(node.getNr());
+				int[] stateArray = states.get(node.getNr());
 
 				for (int i = 0; i < patterns.getPatternCount(); ++i) {
 					int [] pattern = patterns.getPattern(i);
@@ -208,7 +225,7 @@ public class FitchParsimony extends BEASTObject implements ParsimonyCriterion {
 			} else {
 				boolean first = true;
 				for (Node child : node.getChildren()) {
-					boolean[][] childStateSet = stateSets.get(child);
+					boolean[][] childStateSet = stateSets.get(child.getNr());
 					if (first) {
 						for (int i = 0; i < patterns.getPatternCount(); i++) {
 							copyOf(childStateSet[i], union[i]);
@@ -273,8 +290,8 @@ public class FitchParsimony extends BEASTObject implements ParsimonyCriterion {
 	private void reconstructStates(Node node, int [] parentStates) {
 
 		if (!node.isLeaf()) {
-			boolean[][] nodeStateSet = stateSets.get(node);
-			int [] nodeStates = states.get(node);
+			boolean[][] nodeStateSet = stateSets.get(node.getNr());
+			int [] nodeStates = states.get(node.getNr());
 
 			for (int i = 0; i < patterns.getPatternCount(); i++) {
 
