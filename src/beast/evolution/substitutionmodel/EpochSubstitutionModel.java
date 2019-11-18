@@ -1,6 +1,7 @@
 package beast.evolution.substitutionmodel;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import beast.core.Description;
@@ -40,6 +41,7 @@ public class EpochSubstitutionModel extends Base {
 	
 	@Override
 	public void getTransitionProbabilities(Node node, double fStartTime, double fEndTime, double fRate, double[] matrix) {
+		
 		/** threshold dates **/
 		Double [] fEpochDates = m_epochDates.get().getValues();
 		/** find start substitution model **/
@@ -54,9 +56,10 @@ public class EpochSubstitutionModel extends Base {
 		}
 		
 		double [] tmp = new double[matrix.length];
+		Arrays.fill(tmp, 1.0);
 		m_substitutionModels[iStart].getTransitionProbabilities(node, fStartTime, fEpochDates[iStart-1], fRate, matrix);
 		int iEnd = iStart - 1;
-		int nStates = (int) (Math.sqrt(matrix.length)+0.1);
+		int nStates = (int) (Math.sqrt(matrix.length)+0.1) - 1;
 		
 		while (iEnd > 0 && fEpochDates[iEnd- 1] > fEndTime) {
 			// work through epochs that are completely overlapped by the time interval 
@@ -76,6 +79,7 @@ public class EpochSubstitutionModel extends Base {
 	/** matrix multiplication A = A times B **/
 	void multiply(double [] A, double [] B, int n){
 		double [] C = new double[A.length];
+		Arrays.fill(C, 1.0);
 
 		double[] Bcolj = new double[n];
 	    for (int j = 0; j < n; j++) {
