@@ -152,11 +152,11 @@ public interface Transform {
  	   /* Utility for testing purposes
  	    * The arguments are alternating input names and values,
  	    * and values are assigned to the input with the particular name.
- 	    * For example initByName("kappa", 2.0, "lambda", true)
+ 	    * For example myInitByName("kappa", 2.0, "lambda", true)
  	    * assigns 2 to input kappa and true to input lambda.
  	    * After assigning inputs, initAndValidate() is called.
  	    */
- 	  public Object initByName(final Object... objects) {
+ 	  public Object myInitByName(final Object... objects) {
  	      if (objects.length % 2 == 1) {
  	          throw new RuntimeException("Expected even number of arguments, name-value pairs");
  	      }
@@ -181,7 +181,7 @@ public interface Transform {
  	          throw new RuntimeException("initAndValidate() failed! " + e.getMessage());
  	      }
  	      return this;
- 	  } // initByName
+ 	  } // myInitByName
  	  
         public List<Function> getF() {
 			return parameter;
@@ -410,11 +410,11 @@ public interface Transform {
 		   /* Utility for testing purposes
 		    * The arguments are alternating input names and values,
 		    * and values are assigned to the input with the particular name.
-		    * For example initByName("kappa", 2.0, "lambda", true)
+		    * For example myInitByName("kappa", 2.0, "lambda", true)
 		    * assigns 2 to input kappa and true to input lambda.
 		    * After assigning inputs, initAndValidate() is called.
 		    */
-		  public Object initByName(final Object... objects) {
+		  public Object myInitByName(final Object... objects) {
 		      if (objects.length % 2 == 1) {
 		          throw new RuntimeException("Expected even number of arguments, name-value pairs");
 		      }
@@ -439,7 +439,7 @@ public interface Transform {
 		          throw new RuntimeException("initAndValidate() failed! " + e.getMessage());
 		      }
 		      return this;
-		  } // initByName
+		  } // myInitByName
 		  
     	List<Function> parameter;
     	
@@ -605,7 +605,7 @@ public interface Transform {
     	}
     	
     	public LogTransform(Function parameter) {
-    		initByName("f", parameter);
+    		myInitByName("f", parameter);
     	}
 
     	@Override
@@ -689,7 +689,7 @@ public interface Transform {
 //        }
         public LogConstrainedSumTransform() {
     		super(new ArrayList<>());
-    		initByName("sum", 1.0);
+    		myInitByName("sum", 1.0);
         }
         
 //		public LogConstrainedSumTransform(@Param(name="f",description="parameter to be transformed") List<Function> parameter,
@@ -705,7 +705,7 @@ public interface Transform {
 
 		public LogConstrainedSumTransform(Function parameter,
         		double fixedSum) {
-			initByName("f", parameter, "sum", fixedSum);
+			myInitByName("f", parameter, "sum", fixedSum);
         }
 		
 //		public LogConstrainedSumTransform(@Param(name="f",description="parameter to be transformed") List<Function> parameter,
