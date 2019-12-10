@@ -11,7 +11,6 @@ import java.util.Vector;
 import beast.core.Description;
 import beast.core.Input;
 import beast.core.Logger;
-import beast.core.Logger.LOGMODE;
 import beast.core.MCMC;
 import beast.evolution.tree.Node;
 import beast.util.Randomizer;
