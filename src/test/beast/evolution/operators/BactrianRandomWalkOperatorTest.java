@@ -2,6 +2,7 @@ package test.beast.evolution.operators;
 
 import beast.core.*;
 import beast.core.parameter.RealParameter;
+import beast.core.util.ESS;
 import beast.evolution.operators.BactrianRandomWalkOperator;
 import beast.math.distributions.Normal;
 import beast.math.distributions.ParametricDistribution;
@@ -21,10 +22,6 @@ import java.util.List;
 
 public class BactrianRandomWalkOperatorTest extends TestCase {
 
-
-	/**
-	 * @throws Exception 
-	 */
 	@Test
 	public void testNormalDistribution() throws Exception {
 
@@ -154,7 +151,8 @@ public class BactrianRandomWalkOperatorTest extends TestCase {
 				}
 				double m = StatUtils.mean(v);
 				double s = StatUtils.variance(v);
-				System.out.println("Mean: " + m + " variance: " + s);
+				double ess = ESS.calcESS(values);
+				System.out.println("Mean: " + m + " variance: " + s + " ESS: " + ess);
 				System.out.println("-------------------------------------------------");
 				System.out.println();
 				
