@@ -37,7 +37,7 @@ name="alignment">
 <map name="OneOnX" >beast.math.distributions.OneOnX</map>
 
 
-<run id="mcmc" spec="MCMC" chainLength="10000000">
+<run id="mcmc" spec="MCMC" chainLength="1000000">
     <state id="state" spec="State" storeEvery="5000">
         <tree id="Tree.t:dna" spec="beast.evolution.tree.Tree" name="stateNode">
             <taxonset id="TaxonSet.dna" spec="TaxonSet">
@@ -94,7 +94,7 @@ name="alignment">
 
     <operator id="YuleModelTreeRootScaler.t:dna" spec="BactrianScaleOperator" rootOnly="true" scaleFactor="0.5" tree="@Tree.t:dna" weight="3.0"/>
 
-    <operator id="YuleModelUniformOperator.t:dna" spec="Uniform" tree="@Tree.t:dna" weight="30.0"/>
+    <operator id="YuleModelUniformOperator.t:dna" spec="BactrianNodeOperator" tree="@Tree.t:dna" weight="30.0"/>
 
     <operator id="YuleModelSubtreeSlide.t:dna" spec="SubtreeSlide" tree="@Tree.t:dna" weight="15.0"/>
 
@@ -115,7 +115,7 @@ name="alignment">
         <log idref="likelihood"/>
         <log idref="prior"/>
         <log idref="treeLikelihood.dna"/>
-        <log id="TreeHeight.t:dna" spec="beast.evolution.tree.TreeHeightLogger" tree="@Tree.t:dna"/>
+        <log id="TreeHeight.t:dna" spec="beast.evolution.tree.TreeStatLogger" tree="@Tree.t:dna"/>
         <log idref="YuleModel.t:dna"/>
         <log idref="birthRate.t:dna"/>
         <log idref="kappa.s:dna"/>
