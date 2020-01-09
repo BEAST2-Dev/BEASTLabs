@@ -1,44 +1,15 @@
-/*
- * Copyright (C) 2012 Tim Vaughan
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
 package test.beast.evolution.operators;
 
 import beast.core.*;
 import beast.core.parameter.RealParameter;
-import beast.evolution.alignment.Alignment;
-import beast.evolution.alignment.Sequence;
 import beast.evolution.operators.BactrianRandomWalkOperator;
-import beast.evolution.operators.RealRandomWalkOperator;
-import beast.evolution.operators.WilsonBalding;
-import beast.evolution.tree.RandomTree;
-import beast.evolution.tree.Tree;
-import beast.evolution.tree.TreeTraceAnalysis;
-import beast.evolution.tree.coalescent.Coalescent;
-import beast.evolution.tree.coalescent.ConstantPopulation;
-import beast.evolution.tree.coalescent.TreeIntervals;
 import beast.math.distributions.Normal;
 import beast.math.distributions.ParametricDistribution;
 import beast.math.distributions.Prior;
-import beast.math.util.MathUtils;
 import beast.util.Randomizer;
-import junit.framework.JUnit4TestAdapter;
 import junit.framework.TestCase;
 
 import org.apache.commons.math3.stat.StatUtils;
-import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.File;
@@ -46,8 +17,6 @@ import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Stream;
 
 
 public class BactrianRandomWalkOperatorTest extends TestCase {
@@ -130,13 +99,14 @@ public class BactrianRandomWalkOperatorTest extends TestCase {
 		public Input<Boolean> silentInput = new Input<Boolean>("silent",
 				"Don't display final report.", false);
 
-		RealParameter treeToTrack;
+		RealParameter paramToTrack;
 
 		int m_nEvery = 1;
 		int burnin;
 		boolean silent = false;
 
 		List<Double> values;
+		List<Double[]> values2;
 
 		@Override
 		public void initAndValidate() {
@@ -155,8 +125,9 @@ public class BactrianRandomWalkOperatorTest extends TestCase {
 			if (silentInput.get() != null)
 				silent = silentInput.get();
 
-			treeToTrack = (RealParameter)loggers.get(0);
+			paramToTrack = (RealParameter)loggers.get(0);
 			values = new ArrayList<>();
+			values2 = new ArrayList<>();
 		}
 
 		@Override
@@ -168,7 +139,8 @@ public class BactrianRandomWalkOperatorTest extends TestCase {
 			if ((nSample % m_nEvery > 0) || nSample<burnin)
 				return;
 
-			values.add(treeToTrack.getValue());
+			values.add(paramToTrack.getValue());
+			values2.add(paramToTrack.getValues());
 		}
 
 		@Override
@@ -188,12 +160,21 @@ public class BactrianRandomWalkOperatorTest extends TestCase {
 				
 				try {
 					PrintStream log = new PrintStream(new File("/tmp/bactrian.log"));
-					log.println("Sample\tparam");
+					log.print("Sample\t");
+					int n = values2.get(0).length;
+					for (int j = 0; j < n; j++) {
+						log.print("param" + (j+1) + "\t");
+					}
+					log.println();
 					for (int i = 0; i < v.length; i++) {
-						log.println(i + "\t" + v[i]);
+						log.print(i + "\t");
+						for (int j = 0; j < n; j++) {
+							log.print(values2.get(i)[j] + "\t");
+						}
+						log.println();
 					}
 					log.close();
-					System.out.println("trace log wretten to /tmp/bactrian.log");
+					System.out.println("trace log written to /tmp/bactrian.log");
 				} catch (FileNotFoundException e) {
 					e.printStackTrace();
 				}
@@ -207,6 +188,10 @@ public class BactrianRandomWalkOperatorTest extends TestCase {
 		 */
 		public List<Double> getAnalysis() {
 			return values;
+		}
+		
+		public List<Double[]> getAnalysis2() {
+			return values2;
 		}
 
 	}
