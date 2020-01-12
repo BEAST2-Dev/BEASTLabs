@@ -27,7 +27,7 @@ public class BactrianIntervalOperatorTest extends BactrianRandomWalkOperatorTest
 		ParametricDistribution p = new Normal();
 		p.initByName("mean", "1.5", "sigma", "0.1");
 
-		List<Double[]> values = doMCMC(param, p);
+		List<double[]> values = doMCMC(param, p);
 		
 		double[] v = new double[values.size()];
 		for (int i = 0; i < v.length; i++) {
@@ -53,7 +53,7 @@ public class BactrianIntervalOperatorTest extends BactrianRandomWalkOperatorTest
 		ParametricDistribution p = new Uniform();
 		p.initByName("lower", "1.0", "upper", "3.0");
 
-		List<Double[]> values = doMCMC(param, p);
+		List<double[]> values = doMCMC(param, p);
 		
 		double[] v = new double[values.size()];
 		for (int i = 0; i < v.length; i++) {
@@ -76,7 +76,7 @@ public class BactrianIntervalOperatorTest extends BactrianRandomWalkOperatorTest
 		ParametricDistribution p = new Uniform();
 		p.initByName("lower", "0.0", "upper", "2.0");
 
-		List<Double[]> values = doMCMC(param, p);
+		List<double[]> values = doMCMC(param, p);
 		
 		double[] v = new double[values.size()];
 		for (int i = 0; i < v.length; i++) {
@@ -97,7 +97,7 @@ public class BactrianIntervalOperatorTest extends BactrianRandomWalkOperatorTest
 		ParametricDistribution p = new Uniform();
 		p.initByName("lower", "-2.0", "upper", "0.0");
 
-		List<Double[]> values = doMCMC(param, p);
+		List<double[]> values = doMCMC(param, p);
 		
 		double[] v = new double[values.size()];
 		for (int i = 0; i < v.length; i++) {
@@ -115,7 +115,7 @@ public class BactrianIntervalOperatorTest extends BactrianRandomWalkOperatorTest
 		*/
 	}
 	
-	private List<Double[]> doMCMC(RealParameter param, ParametricDistribution p) throws Exception {
+	private List<double[]> doMCMC(RealParameter param, ParametricDistribution p) throws Exception {
 		// Fix seed: will hopefully ensure success of test unless something
 		// goes terribly wrong.
 		Randomizer.setSeed(127);
@@ -157,7 +157,7 @@ public class BactrianIntervalOperatorTest extends BactrianRandomWalkOperatorTest
 		// Run MCMC:
 		mcmc.run();
 
-		List<Double[]> values = traceReport.getAnalysis2();
+		List<double[]> values = traceReport.getAnalysis2();
 		return values;
 	}
 

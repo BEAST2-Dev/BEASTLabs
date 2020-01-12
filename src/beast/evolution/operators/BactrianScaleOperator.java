@@ -1,5 +1,7 @@
 package beast.evolution.operators;
 
+import java.text.DecimalFormat;
+
 import beast.core.Description;
 import beast.core.Input;
 import beast.core.parameter.BooleanParameter;
@@ -31,26 +33,16 @@ public class BactrianScaleOperator extends ScaleOperator {
     @Override
 	protected double getScaler() {
         double scale = 0;
-    	double scaleFactor = getCoercableParameterValue();
+    	double s = getCoercableParameterValue();//) - getCoercableParameterValue()); // 1.0/(1.0 - getCoercableParameterValue());
         if (Randomizer.nextBoolean()) {
-        	scale = scaleFactor * (m + Randomizer.nextGaussian() * Math.sqrt(1-m*m));
+        	scale = s * (m + Randomizer.nextGaussian() * Math.sqrt(1-m*m));
         } else {
-        	scale = scaleFactor * (-m + Randomizer.nextGaussian() * Math.sqrt(1-m*m));
+        	scale = s * (-m + Randomizer.nextGaussian() * Math.sqrt(1-m*m));
         }
         scale = Math.exp(scale);
 		return scale;
 	}
     
-    
-//    @Override
-//    public double proposal() {
-//    	double logHR = super.proposal();
-//    	if (Double.isInfinite(logHR)) {
-//    		return Double.NEGATIVE_INFINITY;
-//    	}
-//    	return scale;
-//    }
-
 
     @Override
     public double proposal() {
@@ -204,11 +196,35 @@ public class BactrianScaleOperator extends ScaleOperator {
     @Override
     public void optimize(double logAlpha) {
         // must be overridden by operator implementation to have an effect
-        double delta = calcDelta(logAlpha);
-        double scaleFactor = getCoercableParameterValue();
-        delta += Math.log(scaleFactor);
-        scaleFactor = Math.exp(delta);
-        setCoercableParameterValue(scaleFactor);
+    	if (optimiseInput.get()) {
+	        double delta = calcDelta(logAlpha);
+	        double scaleFactor = getCoercableParameterValue();
+	        delta += Math.log(scaleFactor);
+	        scaleFactor = Math.exp(delta);
+	        setCoercableParameterValue(scaleFactor);
+    	}
     }
+//
+//
+//    @Override
+//    public String getPerformanceSuggestion() {
+//        final double prob = m_nNrAccepted / (m_nNrAccepted + m_nNrRejected + 0.0);
+//        final double targetProb = getTargetAcceptanceProbability();
+//
+//        double ratio = prob / targetProb;
+//        if (ratio > 2.0) ratio = 0.5;
+//        if (ratio < 0.5) ratio = 2.0;
+//
+//        // new scale factor
+//        double scaleFactor = getCoercableParameterValue();
+//        final double sf = Math.pow(scaleFactor, ratio);
+//
+//        final DecimalFormat formatter = new DecimalFormat("#.###");
+//        if (prob < 0.10) {
+//            return "Try setting scaleFactor to about " + formatter.format(sf);
+//        } else if (prob > 0.40) {
+//            return "Try setting scaleFactor to about " + formatter.format(sf);
+//        } else return "";
+//    }
 
 }
