@@ -13,6 +13,10 @@ import beast.core.util.Log;
 
 @Description("Operator schedule that replaces operators with Bactrian operators")
 public class BactrianOperatorSchedule extends OperatorSchedule {
+
+	public BactrianOperatorSchedule() {
+		super();
+	}
 	
 	@Override
 	public void addOperator(Operator p) {

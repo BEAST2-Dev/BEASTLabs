@@ -47,6 +47,18 @@
 ]]>
         </subtemplate>
     </mergewith>
+    
+    <mergewith point='substModelTemplates'>
+        <subtemplate id='BactrianOperatorSchedule' class='beast.evolution.operators.BactrianOperatorSchedule' mainid='BactrianOperatorSchedule_'
+        suppressInputs="beast.evolution.operators.BactrianOperatorSchedule.operatorPattern,
+				        beast.evolution.operators.BactrianOperatorSchedule.subschedule,
+				        beast.evolution.operators.BactrianOperatorSchedule.operator">
+<![CDATA[
+        <operatorschedule id="BactrianOperatorSchedule_" spec="beast.evolution.operators.BactrianOperatorSchedule"/>
+]]>
+        </subtemplate>
+    </mergewith>
+
 </beast>
 
 
