@@ -149,7 +149,7 @@ public class BactrianRandomWalkOperatorTest extends TestCase {
 		@Override
 		public void close() {
 
-			if (true || !silent) {
+			if (!silent) {
 				System.out.println("\n----- Tree trace analysis -----------------------");
 				double[] v = new double[values.size()];
 				for (int i = 0; i < v.length; i++) {
