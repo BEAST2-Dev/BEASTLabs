@@ -47,15 +47,15 @@ public class BactrianUpDownOperatorTest extends BactrianRandomWalkOperatorTest {
 		param2.setID("param2");
 		param2.setBounds(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
 		BactrianUpDownOperator bactrianOperator = new BactrianUpDownOperator();
-		bactrianOperator.initByName("weight", "1", "up", param1, "down", param2, "scaleFactor", 0.9);
+		bactrianOperator.initByName("weight", "1", "up", param1, "down", param2, "scaleFactor", 0.025, "optimise", false);
 		
 		RPNcalculator calculator = new RPNcalculator();
 		calculator.initByName("parameter", param1, "parameter", param2, "expression", "param1 param2 -");
 
 		BactrianScaleOperator scaleOperator1 = new BactrianScaleOperator();
-		scaleOperator1.initByName("weight", "0.5", "parameter", param1, "scaleFactor", 0.9, "optimise", false);
+		scaleOperator1.initByName("weight", "0.5", "parameter", param1, "scaleFactor", 0.5, "optimise", false);
 		BactrianScaleOperator scaleOperator2 = new BactrianScaleOperator();
-		scaleOperator2.initByName("weight", "0.5", "parameter", param2, "scaleFactor", 0.9, "optimise", false);
+		scaleOperator2.initByName("weight", "0.5", "parameter", param2, "scaleFactor", 0.5, "optimise", false);
 		
 		List<Operator> operators = new ArrayList<>();
 		operators.add(bactrianOperator);

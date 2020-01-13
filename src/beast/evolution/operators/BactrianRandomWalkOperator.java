@@ -85,6 +85,11 @@ public class BactrianRandomWalkOperator extends Operator {
     }
 
     @Override
+    public double getTargetAcceptanceProbability() {
+    	return 0.3;
+    }
+
+    @Override
     public final String getPerformanceSuggestion() {
         double prob = m_nNrAccepted / (m_nNrAccepted + m_nNrRejected + 0.0);
         double targetProb = getTargetAcceptanceProbability();

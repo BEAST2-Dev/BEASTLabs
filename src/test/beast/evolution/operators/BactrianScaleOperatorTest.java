@@ -175,7 +175,7 @@ public class BactrianScaleOperatorTest extends BactrianRandomWalkOperatorTest {
 				"logEvery", "10",
 				"burnin", "2000",
 				"log", param,
-				"silent", true
+				"silent", false
 				);
 
 		// Set up MCMC:
@@ -202,8 +202,8 @@ public class BactrianScaleOperatorTest extends BactrianRandomWalkOperatorTest {
 		// Run MCMC:
 		mcmc.run();
 
-		List<Double[]> values = traceReport.getAnalysis2();
-		for (int k = 0; k < 2; k++) {
+		List<double[]> values = traceReport.getAnalysis2();
+		for (int k = 0; k < values.get(0).length; k++) {
 			double[] v = new double[values.size()];
 			for (int i = 0; i < v.length; i++) {
 				v[i] = values.get(i)[k];
@@ -211,8 +211,8 @@ public class BactrianScaleOperatorTest extends BactrianRandomWalkOperatorTest {
 			double m = StatUtils.mean(v);
 			double median = StatUtils.percentile(v, 50);
 			double s = StatUtils.variance(v, 50);
-			assertEquals(1.0, m, 5e-3);
-			assertEquals(Math.exp(-0.5), median, 5e-3);
+			assertEquals(1.0, m, 9e-3);
+			assertEquals(Math.exp(-0.5), median, 9e-3);
 			assertEquals(Math.exp(1)-1, s, 1e-1);
 			assertEquals(0.0854, StatUtils.percentile(v, 2.5), 5e-3);
 			assertEquals(0.117, StatUtils.percentile(v, 5), 5e-3);

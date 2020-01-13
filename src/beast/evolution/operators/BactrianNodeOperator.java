@@ -14,7 +14,8 @@ public class BactrianNodeOperator extends TreeOperator {
     final public Input<Double> windowSizeInput = new Input<>("m", "standard deviation for Bactrian distribution. "
     		+ "Larger values give more peaked distributions. "
     		+ "The default 0.95 is claimed to be a good choice (Yang 2014, book p.224).", 0.95);
-    public final Input<Double> scaleFactorInput = new Input<>("scaleFactor", "scaling factor: larger means more bold proposals", 1.0);
+    final public Input<Double> scaleFactorInput = new Input<>("scaleFactor", "scaling factor: larger means more bold proposals", 1.0);
+    final public Input<Boolean> optimiseInput = new Input<>("optimise", "flag to indicate that the scale factor is automatically changed in order to achieve a good acceptance rate (default true)", true);
 
     double m = 1;    
     double scaleFactor;
@@ -110,14 +111,22 @@ public class BactrianNodeOperator extends TreeOperator {
     @Override
     public void optimize(double logAlpha) {
         // must be overridden by operator implementation to have an effect
-        double delta = calcDelta(logAlpha);
-
-        delta += Math.log(scaleFactor);
-        scaleFactor = Math.exp(delta);
+    	if (optimiseInput.get()) {
+	        double delta = calcDelta(logAlpha);
+	        double scaleFactor = getCoercableParameterValue();
+	        delta += Math.log(scaleFactor);
+	        scaleFactor = Math.exp(delta);
+	        setCoercableParameterValue(scaleFactor);
+    	}
     }
-
+    
     @Override
-    public final String getPerformanceSuggestion() {
+    public double getTargetAcceptanceProbability() {
+    	return 0.3;
+    }
+    
+    @Override
+    public String getPerformanceSuggestion() {
         double prob = m_nNrAccepted / (m_nNrAccepted + m_nNrRejected + 0.0);
         double targetProb = getTargetAcceptanceProbability();
 
@@ -126,7 +135,7 @@ public class BactrianNodeOperator extends TreeOperator {
         if (ratio < 0.5) ratio = 0.5;
 
         // new scale factor
-        double newWindowSize = scaleFactor * ratio;
+        double newWindowSize = getCoercableParameterValue() * ratio;
 
         DecimalFormat formatter = new DecimalFormat("#.###");
         if (prob < 0.10 || prob > 0.40) {

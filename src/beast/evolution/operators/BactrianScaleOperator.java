@@ -26,14 +26,16 @@ public class BactrianScaleOperator extends ScaleOperator {
         if (m <=0 || m >= 1) {
         	throw new IllegalArgumentException("m should be withing the (0,1) range");
         }
-
+        if (scaleUpperLimit.get() == 1 - 1e-8) {
+        	scaleUpperLimit.setValue(10.0, this);
+        }
 		super.initAndValidate();
 	}
     
     @Override
 	protected double getScaler() {
         double scale = 0;
-    	double s = getCoercableParameterValue();//) - getCoercableParameterValue()); // 1.0/(1.0 - getCoercableParameterValue());
+    	double s = getCoercableParameterValue();
         if (Randomizer.nextBoolean()) {
         	scale = s * (m + Randomizer.nextGaussian() * Math.sqrt(1-m*m));
         } else {
@@ -204,27 +206,30 @@ public class BactrianScaleOperator extends ScaleOperator {
 	        setCoercableParameterValue(scaleFactor);
     	}
     }
-//
-//
-//    @Override
-//    public String getPerformanceSuggestion() {
-//        final double prob = m_nNrAccepted / (m_nNrAccepted + m_nNrRejected + 0.0);
-//        final double targetProb = getTargetAcceptanceProbability();
-//
-//        double ratio = prob / targetProb;
-//        if (ratio > 2.0) ratio = 0.5;
-//        if (ratio < 0.5) ratio = 2.0;
-//
-//        // new scale factor
-//        double scaleFactor = getCoercableParameterValue();
-//        final double sf = Math.pow(scaleFactor, ratio);
-//
-//        final DecimalFormat formatter = new DecimalFormat("#.###");
-//        if (prob < 0.10) {
-//            return "Try setting scaleFactor to about " + formatter.format(sf);
-//        } else if (prob > 0.40) {
-//            return "Try setting scaleFactor to about " + formatter.format(sf);
-//        } else return "";
-//    }
+    
+    @Override
+    public double getTargetAcceptanceProbability() {
+    	return 0.3;
+    }
+    
+
+
+    @Override
+    public String getPerformanceSuggestion() {
+        double prob = m_nNrAccepted / (m_nNrAccepted + m_nNrRejected + 0.0);
+        double targetProb = getTargetAcceptanceProbability();
+
+        double ratio = prob / targetProb;
+        if (ratio > 2.0) ratio = 2.0;
+        if (ratio < 0.5) ratio = 0.5;
+
+        // new scale factor
+        double newWindowSize = getCoercableParameterValue() * ratio;
+
+        DecimalFormat formatter = new DecimalFormat("#.###");
+        if (prob < 0.10 || prob > 0.40) {
+            return "Try setting scale factor to about " + formatter.format(newWindowSize);
+        } else return "";
+    }
 
 }

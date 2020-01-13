@@ -21,6 +21,7 @@ public class BactrianIntervalOperator extends Operator {
     		+ "The default 0.95 is claimed to be a good choice (Yang 2014, book p.224).", 0.95);
     final public Input<RealParameter> parameterInput = new Input<>("parameter", "the parameter to operate a random walk on.", Validate.REQUIRED);
     public final Input<Double> scaleFactorInput = new Input<>("scaleFactor", "scaling factor: larger means more bold proposals", 1.0);
+    final public Input<Boolean> optimiseInput = new Input<>("optimise", "flag to indicate that the scale factor is automatically changed in order to achieve a good acceptance rate (default true)", true);
 
     double m = 1;    
     double scaleFactor;
@@ -58,8 +59,7 @@ public class BactrianIntervalOperator extends Operator {
         	scale = scaleFactor * (m + Randomizer.nextGaussian() * Math.sqrt(1-m*m));
         } else {
         	scale = scaleFactor * (-m + Randomizer.nextGaussian() * Math.sqrt(1-m*m));
-        }
-        
+        }        
         scale = Math.exp(scale);
         
         // transform value
@@ -95,17 +95,28 @@ public class BactrianIntervalOperator extends Operator {
      *
      * @param logAlpha difference in posterior between previous state & proposed state + hasting ratio
      */
+
     @Override
     public void optimize(double logAlpha) {
         // must be overridden by operator implementation to have an effect
-        double delta = calcDelta(logAlpha);
-
-        delta += Math.log(scaleFactor);
-        scaleFactor = Math.exp(delta);
+    	if (optimiseInput.get()) {
+	        double delta = calcDelta(logAlpha);
+	        double scaleFactor = getCoercableParameterValue();
+	        delta += Math.log(scaleFactor);
+	        scaleFactor = Math.exp(delta);
+	        setCoercableParameterValue(scaleFactor);
+    	}
     }
+    
+    @Override
+    public double getTargetAcceptanceProbability() {
+    	return 0.3;
+    }
+    
+
 
     @Override
-    public final String getPerformanceSuggestion() {
+    public String getPerformanceSuggestion() {
         double prob = m_nNrAccepted / (m_nNrAccepted + m_nNrRejected + 0.0);
         double targetProb = getTargetAcceptanceProbability();
 
@@ -114,11 +125,12 @@ public class BactrianIntervalOperator extends Operator {
         if (ratio < 0.5) ratio = 0.5;
 
         // new scale factor
-        double newWindowSize = scaleFactor * ratio;
+        double newWindowSize = getCoercableParameterValue() * ratio;
 
         DecimalFormat formatter = new DecimalFormat("#.###");
         if (prob < 0.10 || prob > 0.40) {
             return "Try setting scale factor to about " + formatter.format(newWindowSize);
         } else return "";
     }
-} // class BactrianRandomWalkOperator
+    
+} // class BactrianIntervalOperator

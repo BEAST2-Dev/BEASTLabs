@@ -4,6 +4,7 @@ import beast.core.*;
 import beast.core.parameter.RealParameter;
 import beast.core.util.ESS;
 import beast.evolution.operators.BactrianRandomWalkOperator;
+import beast.evolution.operators.RealRandomWalkOperator;
 import beast.math.distributions.Normal;
 import beast.math.distributions.ParametricDistribution;
 import beast.math.distributions.Prior;
@@ -42,12 +43,17 @@ public class BactrianRandomWalkOperatorTest extends TestCase {
 		State state = new State();
 		state.initByName("stateNode", param);
 
+// ESS 
+// Bactrian		198525.37485263616
+// Gaussian     177970.32054462744	
+// non Gaussian 185569.35975056374		
+		
 		// Set up operator:
 		BactrianRandomWalkOperator bactrianOperator = new BactrianRandomWalkOperator();
 		bactrianOperator.initByName("weight", "1", "parameter", param);
 
 //		RealRandomWalkOperator bactrianOperator = new RealRandomWalkOperator();
-//		bactrianOperator.initByName("weight", "1", "parameter", param, "windowSize", 1.0, "useGaussian", true);
+//		bactrianOperator.initByName("weight", "1", "parameter", param, "windowSize", 1.0, "useGaussian", false);
 
 		// Set up logger:
 		TraceReport traceReport = new TraceReport();
@@ -96,14 +102,14 @@ public class BactrianRandomWalkOperatorTest extends TestCase {
 		public Input<Boolean> silentInput = new Input<Boolean>("silent",
 				"Don't display final report.", false);
 
-		RealParameter paramToTrack;
+		Function paramToTrack;
 
 		int m_nEvery = 1;
 		int burnin;
 		boolean silent = false;
 
 		List<Double> values;
-		List<Double[]> values2;
+		List<double[]> values2;
 
 		@Override
 		public void initAndValidate() {
@@ -122,7 +128,7 @@ public class BactrianRandomWalkOperatorTest extends TestCase {
 			if (silentInput.get() != null)
 				silent = silentInput.get();
 
-			paramToTrack = (RealParameter)loggers.get(0);
+			paramToTrack = (Function)loggers.get(0);
 			values = new ArrayList<>();
 			values2 = new ArrayList<>();
 		}
@@ -136,14 +142,14 @@ public class BactrianRandomWalkOperatorTest extends TestCase {
 			if ((nSample % m_nEvery > 0) || nSample<burnin)
 				return;
 
-			values.add(paramToTrack.getValue());
-			values2.add(paramToTrack.getValues());
+			values.add(paramToTrack.getArrayValue());
+			values2.add(paramToTrack.getDoubleValues());
 		}
 
 		@Override
 		public void close() {
 
-			if (!silent) {
+			if (true || !silent) {
 				System.out.println("\n----- Tree trace analysis -----------------------");
 				double[] v = new double[values.size()];
 				for (int i = 0; i < v.length; i++) {
@@ -188,7 +194,7 @@ public class BactrianRandomWalkOperatorTest extends TestCase {
 			return values;
 		}
 		
-		public List<Double[]> getAnalysis2() {
+		public List<double[]> getAnalysis2() {
 			return values2;
 		}
 
