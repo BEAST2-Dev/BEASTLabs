@@ -7,7 +7,6 @@ import java.text.DecimalFormat;
 import beast.core.Description;
 import beast.core.Input;
 import beast.core.Input.Validate;
-import beast.core.Operator;
 import beast.core.parameter.RealParameter;
 import beast.util.Randomizer;
 
@@ -15,24 +14,17 @@ import beast.util.Randomizer;
 @Description("A scale operator that selects a random dimension of the real parameter and scales the value a " +
         "random amount according to a Bactrian distribution such that the parameter remains in its range. "
         + "Supposed to be more efficient than UniformOperator")
-public class BactrianIntervalOperator extends Operator {
-    final public Input<Double> windowSizeInput = new Input<>("m", "standard deviation for Bactrian distribution. "
-    		+ "Larger values give more peaked distributions. "
-    		+ "The default 0.95 is claimed to be a good choice (Yang 2014, book p.224).", 0.95);
-    final public Input<RealParameter> parameterInput = new Input<>("parameter", "the parameter to operate a random walk on.", Validate.REQUIRED);
+public class BactrianIntervalOperator extends KernelOperator {
+     final public Input<RealParameter> parameterInput = new Input<>("parameter", "the parameter to operate a random walk on.", Validate.REQUIRED);
     public final Input<Double> scaleFactorInput = new Input<>("scaleFactor", "scaling factor: larger means more bold proposals", 1.0);
     final public Input<Boolean> optimiseInput = new Input<>("optimise", "flag to indicate that the scale factor is automatically changed in order to achieve a good acceptance rate (default true)", true);
 
-    double m = 1;    
     double scaleFactor;
     double lower, upper;
 
     @Override
 	public void initAndValidate() {
-        m = windowSizeInput.get();
-        if (m <=0 || m >= 1) {
-        	throw new IllegalArgumentException("m should be withing the (0,1) range");
-        }
+    	super.initAndValidate();
         scaleFactor = scaleFactorInput.get();
 
         RealParameter param = parameterInput.get();
@@ -54,7 +46,7 @@ public class BactrianIntervalOperator extends Operator {
 
         int i = Randomizer.nextInt(param.getDimension());
         double value = param.getValue(i);
-        double scale = BactrianHelper.getScaler(m, scaleFactor);
+        double scale = kernelDistribution.getScaler(value, scaleFactor);
         
         // transform value
         double y = (upper - value) / (value - lower);

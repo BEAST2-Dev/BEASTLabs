@@ -7,7 +7,6 @@ import java.util.List;
 
 import beast.core.Description;
 import beast.core.Input;
-import beast.core.Operator;
 import beast.core.StateNode;
 import beast.core.Input.Validate;
 import beast.core.parameter.Parameter;
@@ -19,7 +18,7 @@ import beast.util.Randomizer;
 @Description("Like the UpDownOperator, this element represents an operator that scales "
 		+ "two (or more) parameters in different directions, but uses a Bactrian proposal distribution for the scale value. "
         + "The up parameter is multiplied by this scale and the down parameter is divided by this scale.")
-public class BactrianUpDownOperator extends Operator {
+public class BactrianUpDownOperator extends KernelOperator {
     final public Input<Double> scaleFactorInput = new Input<>("scaleFactor",
             "magnitude factor used for scaling", Validate.REQUIRED);
     final public Input<List<StateNode>> upInput = new Input<>("up",
@@ -32,22 +31,14 @@ public class BactrianUpDownOperator extends Operator {
     final public Input<Double> scaleUpperLimit = new Input<>("upper", "Upper Limit of scale factor", 10.0);
     final public Input<Double> scaleLowerLimit = new Input<>("lower", "Lower limit of scale factor", 0.0);
 
-    final public Input<Double> windowSizeInput = new Input<>("m", "standard deviation for Bactrian distribution. "
-    		+ "Larger values give more peaked distributions. "
-    		+ "The default 0.95 is claimed to be a good choice (Yang 2014, book p.224).", 0.95);
-
     double scaleFactor;
     private double upper,lower;
 
 
-    double m = 1;
 
     @Override
     public void initAndValidate() {
-        m = windowSizeInput.get();
-        if (m <=0 || m >= 1) {
-        	throw new IllegalArgumentException("m should be withing the (0,1) range");
-        }
+    	super.initAndValidate();
         scaleFactor = scaleFactorInput.get();
         // sanity checks
         if (upInput.get().size() + downInput.get().size() == 0) {
@@ -61,7 +52,7 @@ public class BactrianUpDownOperator extends Operator {
     }
     
 	protected double getScaler() {
-		return BactrianHelper.getScaler(m, getCoercableParameterValue());
+		return kernelDistribution.getScaler(getCoercableParameterValue());
 	}
     
 

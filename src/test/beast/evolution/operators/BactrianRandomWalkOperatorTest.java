@@ -4,6 +4,7 @@ import beast.core.*;
 import beast.core.parameter.RealParameter;
 import beast.core.util.ESS;
 import beast.evolution.operators.BactrianRandomWalkOperator;
+import beast.evolution.operators.KernelDistribution;
 import beast.evolution.operators.RealRandomWalkOperator;
 import beast.math.distributions.Normal;
 import beast.math.distributions.ParametricDistribution;
@@ -44,6 +45,7 @@ public class BactrianRandomWalkOperatorTest extends TestCase {
 		state.initByName("stateNode", param);
 
 // ESS 
+// Mirror        44940.78429653105
 // Bactrian		198525.37485263616
 // Gaussian     177970.32054462744	
 // non Gaussian 185569.35975056374		
@@ -51,6 +53,11 @@ public class BactrianRandomWalkOperatorTest extends TestCase {
 		// Set up operator:
 		BactrianRandomWalkOperator bactrianOperator = new BactrianRandomWalkOperator();
 		bactrianOperator.initByName("weight", "1", "parameter", param);
+		
+		
+		KernelDistribution.MirrorDistribution kdist = new KernelDistribution.MirrorDistribution();
+		kdist.initAndValidate();
+		bactrianOperator.initByName("weight", "1", "parameter", param, "kernelDistribution", kdist, "scaleFactor", 1.0, "optimise", true);
 
 //		RealRandomWalkOperator bactrianOperator = new RealRandomWalkOperator();
 //		bactrianOperator.initByName("weight", "1", "parameter", param, "windowSize", 1.0, "useGaussian", false);
@@ -61,7 +68,7 @@ public class BactrianRandomWalkOperatorTest extends TestCase {
 				"logEvery", "10",
 				"burnin", "2000",
 				"log", param,
-				"silent", true
+				"silent", false
 				);
 
 		// Set up MCMC:

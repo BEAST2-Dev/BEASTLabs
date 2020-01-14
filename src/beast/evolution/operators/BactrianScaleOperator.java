@@ -14,42 +14,39 @@ import beast.util.Randomizer;
 @Description("Scale operator that finds scale factor according to a Bactrian distribution (Yang & Rodrigues, 2013), "
 		+ "which is a mixture of two Gaussians: p(x) = 1/2*N(x;-m,1-m^2) + 1/2*N(x;+m,1-m^2) and more efficient than RealRandomWalkOperator")
 public class BactrianScaleOperator extends ScaleOperator {
-    final public Input<Double> windowSizeInput = new Input<>("m", "standard deviation for Bactrian distribution. "
-    		+ "Larger values give more peaked distributions. "
-    		+ "The default 0.95 is claimed to be a good choice (Yang 2014, book p.224).", 0.95);
+    public final Input<KernelDistribution> kernelDistributionInput = new Input<>("kernelDistribution", "provides sample distribution for proposals", new KernelDistribution.Bactrian());
 
-    double m = 1;
+    protected KernelDistribution kernelDistribution;
 
 	@Override
 	public void initAndValidate() {
-        m = windowSizeInput.get();
-        if (m <=0 || m >= 1) {
-        	throw new IllegalArgumentException("m should be withing the (0,1) range");
-        }
+    	kernelDistribution = kernelDistributionInput.get();
         if (scaleUpperLimit.get() == 1 - 1e-8) {
         	scaleUpperLimit.setValue(10.0, this);
         }
 		super.initAndValidate();
 	}
     
-    @Override
-	protected double getScaler() {
-    	return BactrianHelper.getScaler(m, getCoercableParameterValue());
+	protected double getScaler(double value) {
+    	return kernelDistribution.getScaler(value, getCoercableParameterValue());
 	}
     
+	protected double getScaler() {
+    	return kernelDistribution.getScaler(getCoercableParameterValue());
+	}
 
     @Override
     public double proposal() {
         try {
 
-            double hastingsRatio;
-            final double scale = getScaler();
+            double hastingsRatio;            
 
             if (m_bIsTreeScaler) {
 
                 final Tree tree = treeInput.get(this);
                 if (rootOnlyInput.get()) {
-                    final Node root = tree.getRoot();
+                    final Node root = tree.getRoot();                    
+                    final double scale = getScaler(root.getHeight());
                     final double newHeight = root.getHeight() * scale;
 
                     if (newHeight < Math.max(root.getLeft().getHeight(), root.getRight().getHeight())) {
@@ -59,6 +56,7 @@ public class BactrianScaleOperator extends ScaleOperator {
                     return Math.log(scale);
                 } else {
                     // scale the beast.tree
+                    final double scale = getScaler();
                     final int internalNodes = tree.scale(scale);
                     return Math.log(scale) * internalNodes;
                 }
@@ -85,7 +83,7 @@ public class BactrianScaleOperator extends ScaleOperator {
                     final boolean impliedOne = dimCount == (dim - 1);
                     for (int i = 0; i < dim; i++) {
                         if( (impliedOne && (i == 0 || indicator[i-1])) || (!impliedOne && indicator[i]) )  {
-                            final double scaleOne = getScaler();
+                            final double scaleOne = getScaler(param.getValue(i));
                             final double newValue = scaleOne * param.getValue(i);
 
                             hastingsRatio += Math.log(scaleOne);
@@ -101,7 +99,7 @@ public class BactrianScaleOperator extends ScaleOperator {
 
                     for (int i = 0; i < dim; i++) {
 
-                        final double scaleOne = getScaler();
+                        final double scaleOne = getScaler(param.getValue(i));
                         final double newValue = scaleOne * param.getValue(i);
 
                         hastingsRatio += Math.log(scaleOne);
@@ -119,11 +117,11 @@ public class BactrianScaleOperator extends ScaleOperator {
                 // for the proof. It is supposed to be somewhere in an Alexei/Nicholes article.
 
                 // all Values assumed independent!
+            	final double scale = getScaler();
                 final int computedDoF = param.scale(scale);
                 final int usedDoF = (specifiedDoF > 0) ? specifiedDoF : computedDoF ;
                 hastingsRatio = usedDoF * Math.log(scale);
             } else {
-                hastingsRatio = Math.log(scale);
 
                 // which position to scale
                 final int index;
@@ -166,6 +164,9 @@ public class BactrianScaleOperator extends ScaleOperator {
                     // Error: parameter has value 0 and cannot be scaled
                     return Double.NEGATIVE_INFINITY;
                 }
+
+            	final double scale = getScaler(oldValue);
+                hastingsRatio = Math.log(scale);
 
                 final double newValue = scale * oldValue;
 

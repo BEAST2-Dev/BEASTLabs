@@ -6,14 +6,13 @@ import java.util.List;
 
 import beast.core.Description;
 import beast.core.Input;
-import beast.core.Operator;
 import beast.core.parameter.IntegerParameter;
 import beast.core.parameter.RealParameter;
 import beast.core.util.Log;
 import beast.util.Randomizer;
 
 @Description("Delta exchange operator that proposes through a Bactrian distribution for real valued parameters")
-public class BactrianDeltaExchangeOperator extends Operator {
+public class BactrianDeltaExchangeOperator extends KernelOperator {
 	
     //public Input<Tree> m_pTree = new Input<>("tree", "if specified, all beast.tree branch length are scaled");
 
@@ -28,14 +27,13 @@ public class BactrianDeltaExchangeOperator extends Operator {
     public final Input<Boolean> integerOperatorInput = new Input<>("integer", "if true, changes are all integers.", false);
     public final Input<IntegerParameter> parameterWeightsInput = new Input<>("weightvector", "weights on a vector parameter");
 
-    final public Input<Double> windowSizeInput = new Input<>("m", "standard deviation for Bactrian distribution. "
-    		+ "Larger values give more peaked distributions. "
-    		+ "The default 0.95 is claimed to be a good choice (Yang 2014, book p.224).", 0.95);
+    
 
     private boolean autoOptimize;
-    private double delta, m;
+    private double delta;
     private boolean isIntegerOperator;
     private CompoundParameterHelper compoundParameter = null;
+    
     // because CompoundParameter cannot derive from parameter due to framework, the code complexity is doubled
 
 	private int[] weights() {
@@ -78,10 +76,7 @@ public class BactrianDeltaExchangeOperator extends Operator {
 	}
 
     public void initAndValidate() {
-        m = windowSizeInput.get();
-        if (m <=0 || m >= 1) {
-        	throw new IllegalArgumentException("m should be withing the (0,1) range");
-        }
+    	super.initAndValidate();
 
         autoOptimize = autoOptimizeiInput.get();
         delta = deltaInput.get();
@@ -310,7 +305,7 @@ public class BactrianDeltaExchangeOperator extends Operator {
     }
 
     private double getNextDouble() {
-    	return BactrianHelper.getRandomDelta(m, delta);
+    	return kernelDistribution.getRandomDelta(delta);
 	}
 
 	@Override

@@ -7,7 +7,6 @@ import java.text.DecimalFormat;
 import beast.core.Description;
 import beast.core.Input;
 import beast.core.Input.Validate;
-import beast.core.Operator;
 import beast.core.parameter.RealParameter;
 import beast.util.Randomizer;
 
@@ -15,22 +14,16 @@ import beast.util.Randomizer;
 @Description("A random walk operator that selects a random dimension of the real parameter and perturbs the value a " +
         "random amount according to a Bactrian distribution (Yang & Rodrigues, 2013), which is a mixture of two Gaussians:"
         + "p(x) = 1/2*N(x;-m,1-m^2) + 1/2*N(x;+m,1-m^2) and more efficient than RealRandomWalkOperator")
-public class BactrianRandomWalkOperator extends Operator {
-    final public Input<Double> windowSizeInput = new Input<>("m", "standard deviation for Bactrian distribution. "
-    		+ "Larger values give more peaked distributions. "
-    		+ "The default 0.95 is claimed to be a good choice (Yang 2014, book p.224).", 0.95);
+public class BactrianRandomWalkOperator extends KernelOperator {
     final public Input<RealParameter> parameterInput = new Input<>("parameter", "the parameter to operate a random walk on.", Validate.REQUIRED);
     public final Input<Double> scaleFactorInput = new Input<>("scaleFactor", "scaling factor: larger means more bold proposals", 1.0);
+    final public Input<Boolean> optimiseInput = new Input<>("optimise", "flag to indicate that the scale factor is automatically changed in order to achieve a good acceptance rate (default true)", true);
 
-    double m = 1;    
     double scaleFactor;
 
     @Override
 	public void initAndValidate() {
-        m = windowSizeInput.get();
-        if (m <=0 || m >= 1) {
-        	throw new IllegalArgumentException("m should be withing the (0,1) range");
-        }
+    	super.initAndValidate();
         scaleFactor = scaleFactorInput.get();
     }
 
@@ -41,7 +34,7 @@ public class BactrianRandomWalkOperator extends Operator {
 
         int i = Randomizer.nextInt(param.getDimension());
         double value = param.getValue(i);
-        double newValue = value + BactrianHelper.getRandomDelta(m, scaleFactor);
+        double newValue = value + kernelDistribution.getRandomDelta(value, scaleFactor);
         
         if (newValue < param.getLower() || newValue > param.getUpper()) {
             return Double.NEGATIVE_INFINITY;
@@ -72,11 +65,13 @@ public class BactrianRandomWalkOperator extends Operator {
      */
     @Override
     public void optimize(double logAlpha) {
-        // must be overridden by operator implementation to have an effect
-        double delta = calcDelta(logAlpha);
-
-        delta += Math.log(scaleFactor);
-        scaleFactor = Math.exp(delta);
+    	if (optimiseInput.get()) {
+	        // must be overridden by operator implementation to have an effect
+	        double delta = calcDelta(logAlpha);
+	
+	        delta += Math.log(scaleFactor);
+	        scaleFactor = Math.exp(delta);
+    	}
     }
 
     @Override

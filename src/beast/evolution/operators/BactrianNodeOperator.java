@@ -11,13 +11,13 @@ import beast.util.Randomizer;
 @Description("Randomly selects true internal tree node (i.e. not the root) and move node height uniformly in interval " +
         "restricted by the nodes parent and children.")
 public class BactrianNodeOperator extends TreeOperator {
-    final public Input<Double> windowSizeInput = new Input<>("m", "standard deviation for Bactrian distribution. "
-    		+ "Larger values give more peaked distributions. "
-    		+ "The default 0.95 is claimed to be a good choice (Yang 2014, book p.224).", 0.95);
     final public Input<Double> scaleFactorInput = new Input<>("scaleFactor", "scaling factor: larger means more bold proposals", 1.0);
     final public Input<Boolean> optimiseInput = new Input<>("optimise", "flag to indicate that the scale factor is automatically changed in order to achieve a good acceptance rate (default true)", true);
+    public final Input<KernelDistribution> kernelDistributionInput = new Input<>("kernelDistribution", "provides sample distribution for proposals", new KernelDistribution.Bactrian());
 
-    double m = 1;    
+    protected KernelDistribution kernelDistribution;
+
+
     double scaleFactor;
 
 	// empty constructor to facilitate construction by XML + initAndValidate
@@ -35,10 +35,7 @@ public class BactrianNodeOperator extends TreeOperator {
 	
 	@Override
 	public void initAndValidate() {
-	    m = windowSizeInput.get();
-	    if (m <=0 || m >= 1) {
-	    	throw new IllegalArgumentException("m should be withing the (0,1) range");
-	    }
+    	kernelDistribution = kernelDistributionInput.get();
 	    scaleFactor = scaleFactorInput.get();
 	}
 
@@ -66,7 +63,7 @@ public class BactrianNodeOperator extends TreeOperator {
         double upper = node.getParent().getHeight();
         double lower = Math.max(node.getLeft().getHeight(), node.getRight().getHeight());
         
-        double scale = BactrianHelper.getScaler(m, scaleFactor);
+        double scale = kernelDistribution.getScaler(scaleFactor);
 
         // transform value
         double value = node.getHeight();

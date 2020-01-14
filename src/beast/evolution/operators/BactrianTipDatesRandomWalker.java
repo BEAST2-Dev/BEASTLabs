@@ -5,18 +5,13 @@ import beast.evolution.tree.Node;
 import beast.util.Randomizer;
 
 public class BactrianTipDatesRandomWalker extends TipDatesRandomWalker {
-    final public Input<Double> windowSizeInput = new Input<>("m", "standard deviation for Bactrian distribution. "
-    		+ "Larger values give more peaked distributions. "
-    		+ "The default 0.95 is claimed to be a good choice (Yang 2014, book p.224).", 0.95);
+    public final Input<KernelDistribution> kernelDistributionInput = new Input<>("kernelDistribution", "provides sample distribution for proposals", new KernelDistribution.Bactrian());
 
-    private double m;
+    protected KernelDistribution kernelDistribution;
 
-    @Override
-    public void initAndValidate() {
-        m = windowSizeInput.get();
-        if (m <=0 || m >= 1) {
-        	throw new IllegalArgumentException("m should be withing the (0,1) range");
-        }
+	@Override
+	public void initAndValidate() {
+    	kernelDistribution = kernelDistributionInput.get();
 
     	super.initAndValidate();
     }
@@ -27,7 +22,7 @@ public class BactrianTipDatesRandomWalker extends TipDatesRandomWalker {
         Node node = treeInput.get().getNode(taxonIndices[i]);
 
         double value = node.getHeight();
-        double newValue = value + BactrianHelper.getRandomDelta(m, windowSize);
+        double newValue = value + kernelDistribution.getRandomDelta(value, windowSize);
 
         if (newValue > node.getParent().getHeight()) { // || newValue < 0.0) {
             if (reflectValue) {
