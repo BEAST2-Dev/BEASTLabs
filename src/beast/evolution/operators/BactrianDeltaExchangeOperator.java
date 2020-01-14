@@ -310,12 +310,7 @@ public class BactrianDeltaExchangeOperator extends Operator {
     }
 
     private double getNextDouble() {
-        if (Randomizer.nextBoolean()) {
-        	return delta * (m + Randomizer.nextGaussian() * Math.sqrt(1-m*m));
-        } else {
-        	return delta * (-m + Randomizer.nextGaussian() * Math.sqrt(1-m*m));
-        }
-    	
+    	return BactrianHelper.getRandomDelta(m, delta);
 	}
 
 	@Override

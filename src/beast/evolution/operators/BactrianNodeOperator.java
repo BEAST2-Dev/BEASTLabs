@@ -66,14 +66,7 @@ public class BactrianNodeOperator extends TreeOperator {
         double upper = node.getParent().getHeight();
         double lower = Math.max(node.getLeft().getHeight(), node.getRight().getHeight());
         
-        double scale = 0;
-        if (Randomizer.nextBoolean()) {
-        	scale = scaleFactor * (m + Randomizer.nextGaussian() * Math.sqrt(1-m*m));
-        } else {
-        	scale = scaleFactor * (-m + Randomizer.nextGaussian() * Math.sqrt(1-m*m));
-        }
-        scale = Math.exp(scale);
-
+        double scale = BactrianHelper.getScaler(m, scaleFactor);
 
         // transform value
         double value = node.getHeight();

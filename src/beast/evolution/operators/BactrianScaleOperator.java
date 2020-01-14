@@ -34,15 +34,7 @@ public class BactrianScaleOperator extends ScaleOperator {
     
     @Override
 	protected double getScaler() {
-        double scale = 0;
-    	double s = getCoercableParameterValue();
-        if (Randomizer.nextBoolean()) {
-        	scale = s * (m + Randomizer.nextGaussian() * Math.sqrt(1-m*m));
-        } else {
-        	scale = s * (-m + Randomizer.nextGaussian() * Math.sqrt(1-m*m));
-        }
-        scale = Math.exp(scale);
-		return scale;
+    	return BactrianHelper.getScaler(m, getCoercableParameterValue());
 	}
     
 

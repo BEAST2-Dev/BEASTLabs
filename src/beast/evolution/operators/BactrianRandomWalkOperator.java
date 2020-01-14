@@ -41,12 +41,7 @@ public class BactrianRandomWalkOperator extends Operator {
 
         int i = Randomizer.nextInt(param.getDimension());
         double value = param.getValue(i);
-        double newValue = value;
-        if (Randomizer.nextBoolean()) {
-        	newValue += scaleFactor * (m + Randomizer.nextGaussian() * Math.sqrt(1-m*m));
-        } else {
-        	newValue += scaleFactor * (-m + Randomizer.nextGaussian() * Math.sqrt(1-m*m));
-        }
+        double newValue = value + BactrianHelper.getRandomDelta(m, scaleFactor);
         
         if (newValue < param.getLower() || newValue > param.getUpper()) {
             return Double.NEGATIVE_INFINITY;

@@ -54,13 +54,7 @@ public class BactrianIntervalOperator extends Operator {
 
         int i = Randomizer.nextInt(param.getDimension());
         double value = param.getValue(i);
-        double scale = 0;
-        if (Randomizer.nextBoolean()) {
-        	scale = scaleFactor * (m + Randomizer.nextGaussian() * Math.sqrt(1-m*m));
-        } else {
-        	scale = scaleFactor * (-m + Randomizer.nextGaussian() * Math.sqrt(1-m*m));
-        }        
-        scale = Math.exp(scale);
+        double scale = BactrianHelper.getScaler(m, scaleFactor);
         
         // transform value
         double y = (upper - value) / (value - lower);
