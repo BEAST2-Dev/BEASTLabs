@@ -12,7 +12,7 @@ import beast.util.Randomizer;
 
 
 @Description("A random walk operator that selects a random dimension of the real parameter and perturbs the value a " +
-        "random amount according to a Bactrian distribution (Yang & Rodrigues, 2013), which is a mixture of two Gaussians:"
+        "random amount according to a Bactrian distribution (Yang & Rodriguez, 2013), which is a mixture of two Gaussians:"
         + "p(x) = 1/2*N(x;-m,1-m^2) + 1/2*N(x;+m,1-m^2) and more efficient than RealRandomWalkOperator")
 public class BactrianRandomWalkOperator extends KernelOperator {
     final public Input<RealParameter> parameterInput = new Input<>("parameter", "the parameter to operate a random walk on.", Validate.REQUIRED);

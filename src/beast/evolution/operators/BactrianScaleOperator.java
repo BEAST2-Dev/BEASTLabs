@@ -11,10 +11,11 @@ import beast.evolution.tree.Node;
 import beast.evolution.tree.Tree;
 import beast.util.Randomizer;
 
-@Description("Scale operator that finds scale factor according to a Bactrian distribution (Yang & Rodrigues, 2013), "
+@Description("Scale operator that finds scale factor according to a Bactrian distribution (Yang & Rodriguez, 2013), "
 		+ "which is a mixture of two Gaussians: p(x) = 1/2*N(x;-m,1-m^2) + 1/2*N(x;+m,1-m^2) and more efficient than RealRandomWalkOperator")
 public class BactrianScaleOperator extends ScaleOperator {
-    public final Input<KernelDistribution> kernelDistributionInput = new Input<>("kernelDistribution", "provides sample distribution for proposals", new KernelDistribution.Bactrian());
+    public final Input<KernelDistribution> kernelDistributionInput = new Input<>("kernelDistribution", "provides sample distribution for proposals", 
+    		KernelDistribution.newDefaultKernelDistribution());
 
     protected KernelDistribution kernelDistribution;
 

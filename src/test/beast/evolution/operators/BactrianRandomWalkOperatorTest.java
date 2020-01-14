@@ -45,16 +45,16 @@ public class BactrianRandomWalkOperatorTest extends TestCase {
 		state.initByName("stateNode", param);
 
 // ESS 
-// Mirror        44940.78429653105
+// Mirror       191177.78664683853
 // Bactrian		198525.37485263616
 // Gaussian     177970.32054462744	
 // non Gaussian 185569.35975056374		
 		
 		// Set up operator:
+//		BactrianRandomWalkOperator bactrianOperator = new BactrianRandomWalkOperator();
+//		bactrianOperator.initByName("weight", "1", "parameter", param);
+		
 		BactrianRandomWalkOperator bactrianOperator = new BactrianRandomWalkOperator();
-		bactrianOperator.initByName("weight", "1", "parameter", param);
-		
-		
 		KernelDistribution.MirrorDistribution kdist = new KernelDistribution.MirrorDistribution();
 		kdist.initAndValidate();
 		bactrianOperator.initByName("weight", "1", "parameter", param, "kernelDistribution", kdist, "scaleFactor", 1.0, "optimise", true);

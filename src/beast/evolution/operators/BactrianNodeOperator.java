@@ -13,7 +13,8 @@ import beast.util.Randomizer;
 public class BactrianNodeOperator extends TreeOperator {
     final public Input<Double> scaleFactorInput = new Input<>("scaleFactor", "scaling factor: larger means more bold proposals", 1.0);
     final public Input<Boolean> optimiseInput = new Input<>("optimise", "flag to indicate that the scale factor is automatically changed in order to achieve a good acceptance rate (default true)", true);
-    public final Input<KernelDistribution> kernelDistributionInput = new Input<>("kernelDistribution", "provides sample distribution for proposals", new KernelDistribution.Bactrian());
+    public final Input<KernelDistribution> kernelDistributionInput = new Input<>("kernelDistribution", "provides sample distribution for proposals", 
+    		KernelDistribution.newDefaultKernelDistribution());
 
     protected KernelDistribution kernelDistribution;
 
