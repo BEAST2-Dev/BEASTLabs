@@ -75,7 +75,7 @@ public class BactrianScaleOperatorTest extends BactrianRandomWalkOperatorTest {
 
 		// Set up operator:
 		BactrianScaleOperator bactrianOperator = new BactrianScaleOperator();
-		bactrianOperator.initByName("weight", "1", "parameter", param, "scaleAllIndependently", true);
+		bactrianOperator.initByName("weight", "1", "parameter", param, "scaleFactor", 0.75, "scaleAllIndependently", true);
 
 //		ScaleOperator bactrianOperator = new ScaleOperator();
 //		bactrianOperator.initByName("weight", "1", "parameter", param, "scaleFactor", 0.75, "scaleAllIndependently", true);
@@ -175,7 +175,7 @@ public class BactrianScaleOperatorTest extends BactrianRandomWalkOperatorTest {
 				"logEvery", "10",
 				"burnin", "2000",
 				"log", param,
-				"silent", false
+				"silent", true
 				);
 
 		// Set up MCMC:

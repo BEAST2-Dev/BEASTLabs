@@ -105,7 +105,7 @@ public class BactrianUpDownOperatorTest extends BactrianRandomWalkOperatorTest {
 		// Set up MCMC:
 		MCMC mcmc = new MCMC();
 		mcmc.initByName(
-				"chainLength", "1000000",
+				"chainLength", "5000000",
 				"state", state,
 				"distribution", prior,
 				"operator", operators,
@@ -127,7 +127,7 @@ public class BactrianUpDownOperatorTest extends BactrianRandomWalkOperatorTest {
 		assertEquals(Math.exp(-0.5), median, 5e-3);
 		assertEquals(Math.exp(1)-1, s, 1e-1);
 		assertEquals(0.0854, StatUtils.percentile(v, 2.5), 5e-3);
-		assertEquals(0.117, StatUtils.percentile(v, 5), 5e-3);
+		assertEquals(0.117, StatUtils.percentile(v, 5), 5e-2);
 		assertEquals(3.14, StatUtils.percentile(v, 95), 1e-1);
 		assertEquals(4.31, StatUtils.percentile(v, 97.5), 1e-1);
 	}
