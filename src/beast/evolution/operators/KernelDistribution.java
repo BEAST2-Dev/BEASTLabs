@@ -1,19 +1,16 @@
 package beast.evolution.operators;
 
-import java.util.Arrays;
 
 import org.apache.commons.math.distribution.NormalDistributionImpl;
-import org.apache.commons.math3.distribution.NormalDistribution;
 
 import beast.core.BEASTObject;
 import beast.core.Description;
 import beast.core.Input;
-import beast.core.util.Log;
 import beast.util.Randomizer;
 
 public interface KernelDistribution {
-	public static Input<Integer> defaultInitialInput = new Input<>("defaultInitial", "Number of proposals skipped before learning about the val" , 200);
-	public static Input<Integer> defaultBurninInput = new Input<>("defaultBurnin", "Number of proposals skipped before any learned informatin is applied" , 200);
+	public static Input<Integer> defaultInitialInput = new Input<>("defaultInitial", "Number of proposals skipped before learning about the val" , 500);
+	public static Input<Integer> defaultBurninInput = new Input<>("defaultBurnin", "Number of proposals skipped before any learned informatin is applied" , 500);
 
 	/**
 	 * @param m determines shape of Bactrian distribution. m=0.95 is recommended
@@ -34,9 +31,7 @@ public interface KernelDistribution {
 	default public double getRandomDelta(double windowSize) {
 		return getRandomDelta(Double.NaN, windowSize);
 	}
-	
-	public double getLogHRContributionPerDimension();
-	
+		
 	static KernelDistribution newDefaultKernelDistribution() {
 //		Bactrian kdist = new Bactrian();
 //		return kdist;
@@ -48,12 +43,16 @@ public interface KernelDistribution {
 
 	@Description("Kernel distribution with two modes, so called Bactrian distribution")
 	public class Bactrian extends BEASTObject implements KernelDistribution {
+		public enum mode {normal, uniform, bactrian_normal, bactrian_uniform, bactrian_triangle, bactrian_airplane, bactrian_strawhat, bactrian_laplace};
+		final public Input<mode> modeInput = new Input<>("mode", "", mode.bactrian_normal, mode.values());
+		
 	    final public Input<Double> windowSizeInput = new Input<>("m", "standard deviation for Bactrian distribution. "
 	    		+ "Larger values give more peaked distributions. "
 	    		+ "The default 0.95 is claimed to be a good choice (Yang 2014, book p.224).", 0.95);
 	    
 	    double m = 0.95;
-	    double logHR = 0;
+	    
+	    public mode kernelmode;
 	    
 		@Override
 		public void initAndValidate() {
@@ -61,38 +60,74 @@ public interface KernelDistribution {
 	        if (m <=0 || m >= 1) {
 	        	throw new IllegalArgumentException("m should be withing the (0,1) range");
 	        }
+	        kernelmode = modeInput.get();
 		}
 
+		private double getRandomNumber() {
+			switch (kernelmode) {
+			case normal:
+				return Randomizer.nextGaussian();
+			case uniform:
+				return Randomizer.nextDouble() - 0.5;
+			default:
+		        if (Randomizer.nextBoolean()) {
+		        	return m + getBactrianRandomNumber();
+		        } else {
+		        	return -m + getBactrianRandomNumber();
+		        }
+			}
+		}
+		
+		private double getBactrianRandomNumber() {
+			switch (kernelmode) {
+			case bactrian_normal:
+				return Randomizer.nextGaussian() * Math.sqrt(1-m*m);
+			case bactrian_laplace:
+			{
+				double u = Randomizer.nextDouble();
+				if (u < 0.5) {
+					return m * (Math.log(2 * u) / Math.sqrt(2));
+				} else {
+					return -m * (Math.log(2 * (1-u)) / Math.sqrt(2));
+				}
+			}
+			case bactrian_triangle:
+			{
+				double u = Randomizer.nextDouble();
+				if (u < 0.5) {
+					return m * (-Math.sqrt(6) + 2 * Math.sqrt(3 * u));
+				} else {
+					return m * (Math.sqrt(6) - 2 * Math.sqrt(3 * (1-u)));
+				}
+			}
+			case bactrian_uniform:
+				return (Randomizer.nextDouble() - 0.5) * Math.sqrt(3);
+			case bactrian_airplane:
+				// TODO
+			case bactrian_strawhat:
+				// TODO
+			default:
+				return Double.NaN;
+			}
+		}
+		
 		public double getScaler(double oldValue, double scaleFactor) {
 	        double scale = 0;
-	        if (Randomizer.nextBoolean()) {
-	        	scale = scaleFactor * (m + Randomizer.nextGaussian() * Math.sqrt(1-m*m));
-	        } else {
-	        	scale = scaleFactor * (-m + Randomizer.nextGaussian() * Math.sqrt(1-m*m));
-	        }
-	        logHR = scale;
+	        scale = scaleFactor * getRandomNumber();
 	        scale = Math.exp(scale);
 			return scale;
 		}
 		
 		public double getRandomDelta(double oldValue, double windowSize) {
 	        double value;
-	        if (Randomizer.nextBoolean()) {
-	        	value = windowSize * (m + Randomizer.nextGaussian() * Math.sqrt(1-m*m));
-	        } else {
-	        	value = windowSize * (-m + Randomizer.nextGaussian() * Math.sqrt(1-m*m));
-	        }
-	        logHR = 0;
+	        value = windowSize * getRandomNumber();
 	        return value;
 		}	
 		
-		@Override
-		public double getLogHRContributionPerDimension() {
-			return logHR;
-		}
 	}
 	
-	@Description("Distribution that learns mean m and variance s from the values provided")
+	@Description("Distribution that learns mean m and variance s from the values provided."
+			+ "Uses Bactrian kernel while in the process of learning")
 	public class MirrorDistribution extends Bactrian {
 		final public Input<Integer> initialInput = new Input<>("initial", "Number of proposals before m and s are considered in proposal. "
 				+ "Must be larger than burnin, if specified. "
@@ -140,9 +175,9 @@ public interface KernelDistribution {
 			double newValue = mean + delta;
 			double mean2 = 2 * estimatedMean - newValue;
 			double scale = -logValue + newValue;
-			logHR = - logDensity(mean, scaleFactor * estimatedSD, newValue) 
-					+ logDensity(mean2, scaleFactor * estimatedSD, value)
-					+ scale;
+//			logHR = //- logDensity(mean, scaleFactor * estimatedSD, newValue) // these terms cancel each other 
+//					//+ logDensity(mean2, scaleFactor * estimatedSD, value)
+//					+ scale;
 			
 			return Math.exp(scale);
 		}
@@ -166,10 +201,10 @@ public interface KernelDistribution {
 			
 			double mean = 2 * estimatedMean - value;
 			double newValue = mean + delta;
-			double mean2 = 2 * estimatedMean - newValue;
-			//logHR = + logDensity(mean, windowSize * estimatedSD, newValue) 
+			//double mean2 = 2 * estimatedMean - newValue;
+			//logHR = + logDensity(mean, windowSize * estimatedSD, newValue) // these terms cancel each other
 			//		- logDensity(mean2, windowSize * estimatedSD, value);
-			logHR = 0;
+			//logHR = 0;
 			
 			return newValue - value;
 		} 
