@@ -42,7 +42,7 @@ public class BactrianRandomWalkOperator extends KernelOperator {
 
         param.setValue(i, newValue);
 
-        return 0;
+        return kernelDistribution.getLogHRContributionPerDimension();
     }
 
 

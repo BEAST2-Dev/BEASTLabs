@@ -109,7 +109,7 @@ public class BactrianRandomWalkOperatorTest extends TestCase {
 		RealParameter param = new RealParameter("10.0");
 		param.setBounds(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
 		ParametricDistribution p = new LogNormalDistributionModel();
-		p.initByName("M", "1.0", "S", "1.0", "meanInRealSpace", true);
+		p.initByName("M", "1.0", "S", "0.4", "meanInRealSpace", true);
 		Prior prior = new Prior();
 		prior.initByName("x", param, "distr", p);
 
@@ -119,15 +119,15 @@ public class BactrianRandomWalkOperatorTest extends TestCase {
 		state.initByName("stateNode", param);
 
 // ESS 
-// Mirror       101392.25428944119
-// Bactrian		 40484.42378045924
+// Mirror       101392.25428944119 181455.6425715119
+// Bactrian		 40484.42378045924 Mean: 0.9936652025880692 variance: 1.6192894315845616
 // Gaussian      58971.221113274	
-// non Gaussian  79520.29358602439		
+// Uniform       79520.29358602439		
 		
 		// Set up operator:
 		BactrianRandomWalkOperator bactrianOperator = new BactrianRandomWalkOperator();
- 		KernelDistribution.MirrorDistribution kdist = new KernelDistribution.MirrorDistribution();
-//		KernelDistribution.Bactrian kdist = new KernelDistribution.Bactrian();
+// 		KernelDistribution.MirrorDistribution kdist = new KernelDistribution.MirrorDistribution();
+		KernelDistribution.Bactrian kdist = new KernelDistribution.Bactrian();
 		kdist.initAndValidate();
 		bactrianOperator.initByName("weight", "1", "parameter", param, "kernelDistribution", kdist, "scaleFactor", 1.0, "optimise", true);
 

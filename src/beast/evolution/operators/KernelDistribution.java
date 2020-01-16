@@ -2,9 +2,13 @@ package beast.evolution.operators;
 
 import java.util.Arrays;
 
+import org.apache.commons.math.distribution.NormalDistributionImpl;
+import org.apache.commons.math3.distribution.NormalDistribution;
+
 import beast.core.BEASTObject;
 import beast.core.Description;
 import beast.core.Input;
+import beast.core.util.Log;
 import beast.util.Randomizer;
 
 public interface KernelDistribution {
@@ -31,6 +35,8 @@ public interface KernelDistribution {
 		return getRandomDelta(Double.NaN, windowSize);
 	}
 	
+	public double getLogHRContributionPerDimension();
+	
 	static KernelDistribution newDefaultKernelDistribution() {
 //		Bactrian kdist = new Bactrian();
 //		return kdist;
@@ -47,6 +53,7 @@ public interface KernelDistribution {
 	    		+ "The default 0.95 is claimed to be a good choice (Yang 2014, book p.224).", 0.95);
 	    
 	    double m = 0.95;
+	    double logHR = 0;
 	    
 		@Override
 		public void initAndValidate() {
@@ -63,6 +70,7 @@ public interface KernelDistribution {
 	        } else {
 	        	scale = scaleFactor * (-m + Randomizer.nextGaussian() * Math.sqrt(1-m*m));
 	        }
+	        logHR = scale;
 	        scale = Math.exp(scale);
 			return scale;
 		}
@@ -74,8 +82,14 @@ public interface KernelDistribution {
 	        } else {
 	        	value = windowSize * (-m + Randomizer.nextGaussian() * Math.sqrt(1-m*m));
 	        }
+	        logHR = 0;
 	        return value;
 		}	
+		
+		@Override
+		public double getLogHRContributionPerDimension() {
+			return logHR;
+		}
 	}
 	
 	@Description("Distribution that learns mean m and variance s from the values provided")
@@ -86,12 +100,9 @@ public interface KernelDistribution {
 		final public Input<Integer> burninInput = new Input<>("burnin", "Number of proposals that are ignored before m and s are being updated. "
 				+ "If initial is not specified, uses half the default initial value (which equals " + defaultBurninInput.get() + ")", 0);
 		
-		double mean, sigma;
 		int callcount;
 		int initial, burnin;
-		double sum, sum2, low, up;
-		double [] cache;
-		int cacheIndex;
+		double estimatedMean, estimatedSD;
 
 		@Override
 		public void initAndValidate() {
@@ -104,88 +115,71 @@ public interface KernelDistribution {
 			if (burnin <= 0) {
 				burnin = defaultBurninInput.get();
 			}
-			sum = 0; sum2 = 0;	
-			low = Double.POSITIVE_INFINITY;
-			up = Double.NEGATIVE_INFINITY;
-			
-			
-			cache = new double[200];
-			cacheIndex = 0;
+			estimatedMean = 0; estimatedSD = 0;	
 		}
 				
-//		@Override
-//		public double getScaler(double value, double scaleFactor) {
-//			callcount++;
-//			if (callcount > initial) {
-//				sum += value;
-//				sum2 += value * value;
-//				up = Math.max(up,  value);
-//				low = Math.min(low, value);
-//				cache[cacheIndex] = value;				
-//				cacheIndex++;
-//				if (cacheIndex == cache.length) {
-//					cacheIndex = 0;
-//				}
-//			}
-//			if (Double.isNaN(value) || callcount < initial + burnin) {
-//				return super.getScaler(value, scaleFactor);
-//			}
-//			
-//			double mean = sum / (callcount - initial);
-//			
-//			double [] x = new double[cache.length];
-//			System.arraycopy(cache, 0, x, 0, cache.length);
-//			Arrays.sort(x);
-//			mean = x[x.length/2];
-//			
-//			double scale;
-//	        if (value < mean) {
-//	        	scale = scaleFactor * (m + Randomizer.nextGaussian() * Math.sqrt(1-m*m));
-//	        } else {
-//	        	scale = scaleFactor * (-m + Randomizer.nextGaussian() * Math.sqrt(1-m*m));
-//	        }
-//	        scale = Math.exp(scale);
-//			return scale;
-//		}
-//		
+		@Override
+		public double getScaler(double value, double scaleFactor) {
+			callcount++;
+			double logValue = Math.log(value);
+			if (callcount > initial) {
+				double prevMean = estimatedMean;
+				double n = callcount - initial;
+				estimatedMean = logValue / n + prevMean * (n - 1.0) / n;
+				
+			    double ssq = estimatedSD * estimatedSD;
+			    estimatedSD = Math.sqrt(ssq + (((logValue - prevMean) * (logValue - estimatedMean)) - ssq) / n);
+			}
+			if (Double.isNaN(value) || callcount < initial + burnin) {
+				return super.getScaler(value, scaleFactor);
+			}
+			
+			double delta = scaleFactor * Randomizer.nextGaussian() * estimatedSD;
+			
+			double mean = 2 * estimatedMean - value;
+			double newValue = mean + delta;
+			double mean2 = 2 * estimatedMean - newValue;
+			double scale = -logValue + newValue;
+			logHR = - logDensity(mean, scaleFactor * estimatedSD, newValue) 
+					+ logDensity(mean2, scaleFactor * estimatedSD, value)
+					+ scale;
+			
+			return Math.exp(scale);
+		}
+		
 		@Override
 		public double getRandomDelta(double value, double windowSize) {
 			callcount++;
 			if (callcount > initial) {
-				if (callcount < initial + burnin)
-				sum += value;
-//				sum -= cache[cacheIndex]; // initially, cache contains zeros, till cache.length updates have been done
-
-				sum2 += value * value;
-				up = Math.max(up,  value);
-				low = Math.min(low, value);
-				cache[cacheIndex] = value;				
-				cacheIndex++;
-				if (cacheIndex == cache.length) {
-					cacheIndex = 0;
-				}
+				double prevMean = estimatedMean;
+				double n = callcount - initial;
+				estimatedMean = value / n + prevMean * (n - 1.0) / n;
+				
+			    double ssq = estimatedSD * estimatedSD;
+			    estimatedSD = Math.sqrt(ssq + ((value - prevMean) * (value - estimatedMean) - ssq) / n);
 			}
 			if (Double.isNaN(value) || callcount < initial + burnin) {
 				return super.getRandomDelta(value, windowSize);
 			}
 			
-			double mean = sum / burnin;//(callcount - initial);
-			// double stdev = Math.sqrt((sum * sum - sum2)/(callcount - initial));
-			double stdev = (up - low) / 4.0;
-
-//			up = cache[0];
-//			low = cache[0];
-//			for (double d : cache) {
-//				up = Math.max(d, up);
-//				low = Math.min(d, low);
-//			}
-//			
-//			mean = sum / cache.length;			
-			stdev = (up - low) / 4.0;
+			double delta = windowSize * Randomizer.nextGaussian() * estimatedSD;
 			
-			double delta = windowSize * Randomizer.nextGaussian() * stdev;			
-			return delta + (2 * mean - 2 * value);
+			double mean = 2 * estimatedMean - value;
+			double newValue = mean + delta;
+			double mean2 = 2 * estimatedMean - newValue;
+			//logHR = + logDensity(mean, windowSize * estimatedSD, newValue) 
+			//		- logDensity(mean2, windowSize * estimatedSD, value);
+			logHR = 0;
+			
+			return newValue - value;
 		} 
+		
+		private double logDensity(double mean, double sigma, double x) {
+			return (new NormalDistributionImpl(mean, sigma)).logDensity(x);
+//	        double a = 1.0 / (Math.sqrt(2.0 * Math.PI) * sigma);
+//	        double b = -(x - mean) * (x - mean) / (2.0 * sigma * sigma);
+//	        return Math.log(a) + b;
+		}
 
 		
 	}
