@@ -1,11 +1,9 @@
 package beast.evolution.operators;
 
-
-import org.apache.commons.math.distribution.NormalDistributionImpl;
-
 import beast.core.BEASTObject;
 import beast.core.Description;
 import beast.core.Input;
+import beast.core.util.Log;
 import beast.util.Randomizer;
 
 public interface KernelDistribution {
@@ -43,16 +41,37 @@ public interface KernelDistribution {
 
 	@Description("Kernel distribution with two modes, so called Bactrian distribution")
 	public class Bactrian extends BEASTObject implements KernelDistribution {
-		public enum mode {normal, uniform, bactrian_normal, bactrian_uniform, bactrian_triangle, bactrian_airplane, bactrian_strawhat, bactrian_laplace};
+		public enum mode {
+			uniform, 
+			normal,
+			bactrian_normal, 
+			bactrian_laplace,
+			bactrian_triangle, 
+			bactrian_uniform, 
+			bactrian_box, 
+			bactrian_airplane, 
+			bactrian_strawhat 
+			};
 		final public Input<mode> modeInput = new Input<>("mode", "", mode.bactrian_normal, mode.values());
 		
 	    final public Input<Double> windowSizeInput = new Input<>("m", "standard deviation for Bactrian distribution. "
 	    		+ "Larger values give more peaked distributions. "
 	    		+ "The default 0.95 is claimed to be a good choice (Yang 2014, book p.224).", 0.95);
 	    
-	    double m = 0.95;
+	    final public Input<Double> parameterAInput = new Input<>("a", "parameter for box, airplane and strawhat kernels, ignored otherwise", 0.0);
 	    
-	    public mode kernelmode;
+
+	    
+	    double m = 0.95;
+	    double a = 0.0;
+	    double b = 0.0;
+	    
+	    public mode kernelmode = mode.bactrian_normal;
+	    
+	    public Bactrian() {}  
+	    public Bactrian(mode mode) {
+	    	initByName("mode", mode);
+	    }
 	    
 		@Override
 		public void initAndValidate() {
@@ -60,7 +79,35 @@ public interface KernelDistribution {
 	        if (m <=0 || m >= 1) {
 	        	throw new IllegalArgumentException("m should be withing the (0,1) range");
 	        }
+	        a = parameterAInput.get();
 	        kernelmode = modeInput.get();
+	        if (kernelmode == mode.bactrian_box) {
+				b = 0.5 * (Math.sqrt(12-3 * a * a) - a);
+	        } else if (kernelmode == mode.bactrian_airplane) {
+	        	// b is root of 4b^3−12b+6a−a^3=0
+	        	// which according to https://www.wolframalpha.com/input/?i=4x%5E3%E2%88%9212x%2B6a%E2%88%92a%5E3%3D0
+	        	// is below (the other two roots are imaginary)
+	        	double a2 = a * a;
+	        	double a3 = a2 * a;
+	        	double a4 = a2 * a2;
+	        	double a6 = a4 * a2;
+	        	b = 0.5 * Math.pow(a3 + Math.sqrt(a6 - 12 * a4 + 36 * a2 - 64) - 6 * a,1.0/3.0) + 
+					2/Math.pow(a3 + Math.sqrt(a6 - 12 * a4 + 36 * a2 - 64) - 6 * a,1.0/3.0);
+	        	
+	        } else if (kernelmode == mode.bactrian_strawhat) {
+	        	// b is root of 5x^3−15x+10a−2a^3
+	        	// which according to https://www.wolframalpha.com/input/?i=5x%5E3%E2%88%9215x%2B10a%E2%88%922a%5E3
+	        	// is 
+	        	// x = (a^3 + sqrt(a^6 - 10 a^4 + 25 a^2 - 25) - 5 a)^(1/3)/5^(1/3) + 5^(1/3)/(a^3 + sqrt(a^6 - 10 a^4 + 25 a^2 - 25) - 5 a)^(1/3)
+	        	// again, the other two roots are imaginary
+	        	double a2 = a * a;
+	        	double a3 = a2 * a;
+	        	double a4 = a2 * a2;
+	        	double a6 = a4 * a2;
+	        	double c = Math.pow(5.0, 1.0/3.0);
+	        	b = Math.pow(a3 + Math.sqrt(a6 - 10 * a4 + 25 * a2 - 25) - 5 * a,1.0/3.0)/c + 
+	        			c/Math.pow(a3 + Math.sqrt(a6 - 10 * a4 + 25 * a2 - 25) - 5 * a, 1.0/3.0);
+	        }
 		}
 
 		private double getRandomNumber() {
@@ -69,7 +116,38 @@ public interface KernelDistribution {
 				return Randomizer.nextGaussian();
 			case uniform:
 				return Randomizer.nextDouble() - 0.5;
+			case bactrian_box:
+				double y = a + Randomizer.nextDouble() * (b-a);
+				if (Randomizer.nextBoolean()) {
+					return y;
+				} else {
+					return -y;
+				}
+			case bactrian_airplane:
+				double u1 = Randomizer.nextDouble();
+				if (u1 < a / (2*b - a)) {
+					return a * Math.sqrt(Randomizer.nextDouble());
+				} else {
+					if (Randomizer.nextBoolean()) {
+						return a + Randomizer.nextDouble() * (b-a);
+					} else {
+						return -a - Randomizer.nextDouble() * (b-a);
+					}
+				}
+			case bactrian_strawhat:
+				double u2 = Randomizer.nextDouble();
+				if (u2 < a / (3*b - 2*a)) {
+					return a * Math.pow(Randomizer.nextDouble(), 1.0/3.0);
+				} else {
+					if (Randomizer.nextBoolean()) {
+						return a + Randomizer.nextDouble() * (b-a);
+					} else {
+						return -a - Randomizer.nextDouble() * (b-a);
+					}
+				}
 			default:
+				// it is one of the Bactrian distributions
+				// i.e. two-modal, symmetric with mean 0
 		        if (Randomizer.nextBoolean()) {
 		        	return m + getBactrianRandomNumber();
 		        } else {
@@ -101,11 +179,7 @@ public interface KernelDistribution {
 				}
 			}
 			case bactrian_uniform:
-				return (Randomizer.nextDouble() - 0.5) * Math.sqrt(3);
-			case bactrian_airplane:
-				// TODO
-			case bactrian_strawhat:
-				// TODO
+				return m * (Randomizer.nextDouble() - 0.5) * Math.sqrt(3);
 			default:
 				return Double.NaN;
 			}
@@ -139,6 +213,11 @@ public interface KernelDistribution {
 		int initial, burnin;
 		double estimatedMean, estimatedSD;
 
+		public MirrorDistribution() {}
+		public MirrorDistribution(mode mode) {
+	    	initByName("mode", mode);
+	    }
+	    
 		@Override
 		public void initAndValidate() {
 			callcount = 0;
@@ -168,12 +247,15 @@ public interface KernelDistribution {
 			if (Double.isNaN(value) || callcount < initial + burnin) {
 				return super.getScaler(value, scaleFactor);
 			}
+			if (callcount == initial + burnin) {
+				Log.warning("kick in ");
+			}
 			
 			double delta = scaleFactor * Randomizer.nextGaussian() * estimatedSD;
 			
 			double mean = 2 * estimatedMean - value;
 			double newValue = mean + delta;
-			double mean2 = 2 * estimatedMean - newValue;
+			// double mean2 = 2 * estimatedMean - newValue;
 			double scale = -logValue + newValue;
 //			logHR = //- logDensity(mean, scaleFactor * estimatedSD, newValue) // these terms cancel each other 
 //					//+ logDensity(mean2, scaleFactor * estimatedSD, value)
@@ -208,14 +290,6 @@ public interface KernelDistribution {
 			
 			return newValue - value;
 		} 
-		
-		private double logDensity(double mean, double sigma, double x) {
-			return (new NormalDistributionImpl(mean, sigma)).logDensity(x);
-//	        double a = 1.0 / (Math.sqrt(2.0 * Math.PI) * sigma);
-//	        double b = -(x - mean) * (x - mean) / (2.0 * sigma * sigma);
-//	        return Math.log(a) + b;
-		}
-
 		
 	}
 	
