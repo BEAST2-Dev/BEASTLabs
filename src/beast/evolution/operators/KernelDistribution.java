@@ -33,7 +33,7 @@ public interface KernelDistribution {
 	static KernelDistribution newDefaultKernelDistribution() {
 //		Bactrian kdist = new Bactrian();
 //		return kdist;
-		MirrorDistribution kdist = new MirrorDistribution();
+		Mirror kdist = new Mirror();
 		kdist.initAndValidate();
 		return kdist;
 	}
@@ -72,6 +72,9 @@ public interface KernelDistribution {
 	    public Bactrian(mode mode) {
 	    	initByName("mode", mode);
 	    }
+	    public Bactrian(mode mode, double a) {
+	    	initByName("mode", mode, "a", a);
+	    }
 	    
 		@Override
 		public void initAndValidate() {
@@ -81,9 +84,12 @@ public interface KernelDistribution {
 	        }
 	        a = parameterAInput.get();
 	        kernelmode = modeInput.get();
-	        if (kernelmode == mode.bactrian_box) {
+
+	        switch (kernelmode) {
+	        case bactrian_box:
 				b = 0.5 * (Math.sqrt(12-3 * a * a) - a);
-	        } else if (kernelmode == mode.bactrian_airplane) {
+				break;
+	        case bactrian_airplane: {
 	        	// b is root of 4b^3−12b+6a−a^3=0
 	        	// which according to https://www.wolframalpha.com/input/?i=4x%5E3%E2%88%9212x%2B6a%E2%88%92a%5E3%3D0
 	        	// is below (the other two roots are imaginary)
@@ -93,8 +99,8 @@ public interface KernelDistribution {
 	        	double a6 = a4 * a2;
 	        	b = 0.5 * Math.pow(a3 + Math.sqrt(a6 - 12 * a4 + 36 * a2 - 64) - 6 * a,1.0/3.0) + 
 					2/Math.pow(a3 + Math.sqrt(a6 - 12 * a4 + 36 * a2 - 64) - 6 * a,1.0/3.0);
-	        	
-	        } else if (kernelmode == mode.bactrian_strawhat) {
+	        } break;
+	        case bactrian_strawhat: {
 	        	// b is root of 5x^3−15x+10a−2a^3
 	        	// which according to https://www.wolframalpha.com/input/?i=5x%5E3%E2%88%9215x%2B10a%E2%88%922a%5E3
 	        	// is 
@@ -107,6 +113,9 @@ public interface KernelDistribution {
 	        	double c = Math.pow(5.0, 1.0/3.0);
 	        	b = Math.pow(a3 + Math.sqrt(a6 - 10 * a4 + 25 * a2 - 25) - 5 * a,1.0/3.0)/c + 
 	        			c/Math.pow(a3 + Math.sqrt(a6 - 10 * a4 + 25 * a2 - 25) - 5 * a, 1.0/3.0);
+	        } break;
+	        default:
+	        	b = 0;
 	        }
 		}
 
@@ -202,7 +211,7 @@ public interface KernelDistribution {
 	
 	@Description("Distribution that learns mean m and variance s from the values provided."
 			+ "Uses Bactrian kernel while in the process of learning")
-	public class MirrorDistribution extends Bactrian {
+	public class Mirror extends Bactrian {
 		final public Input<Integer> initialInput = new Input<>("initial", "Number of proposals before m and s are considered in proposal. "
 				+ "Must be larger than burnin, if specified. "
 				+ "If not specified (or < 0), the operator uses " + defaultInitialInput.get(), -1); 
@@ -213,8 +222,8 @@ public interface KernelDistribution {
 		int initial, burnin;
 		double estimatedMean, estimatedSD;
 
-		public MirrorDistribution() {}
-		public MirrorDistribution(mode mode) {
+		public Mirror() {}
+		public Mirror(mode mode) {
 	    	initByName("mode", mode);
 	    }
 	    

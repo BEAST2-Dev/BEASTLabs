@@ -53,7 +53,7 @@ public class BactrianRandomWalkOperatorTest extends TestCase {
 		
 		// Set up operator:
 		BactrianRandomWalkOperator bactrianOperator = new BactrianRandomWalkOperator();
-		KernelDistribution.MirrorDistribution kdist = new KernelDistribution.MirrorDistribution();
+		KernelDistribution.Mirror kdist = new KernelDistribution.Mirror();
 //		KernelDistribution.Bactrian kdist = new KernelDistribution.Bactrian();
 		kdist.initByName("initial",500, "burnin", 500);
 		bactrianOperator.initByName("weight", "1", "parameter", param, "kernelDistribution", kdist, "scaleFactor", 1.0, "optimise", true);
