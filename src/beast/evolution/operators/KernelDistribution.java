@@ -113,6 +113,7 @@ public interface KernelDistribution {
 	        	double c = Math.pow(5.0, 1.0/3.0);
 	        	b = Math.pow(a3 + Math.sqrt(a6 - 10 * a4 + 25 * a2 - 25) - 5 * a,1.0/3.0)/c + 
 	        			c/Math.pow(a3 + Math.sqrt(a6 - 10 * a4 + 25 * a2 - 25) - 5 * a, 1.0/3.0);
+	        	b = 1-a;
 	        } break;
 	        default:
 	        	b = 0;
@@ -124,7 +125,7 @@ public interface KernelDistribution {
 			case normal:
 				return Randomizer.nextGaussian();
 			case uniform:
-				return Randomizer.nextDouble() - 0.5;
+				return Math.sqrt(12) * (Randomizer.nextDouble() - 0.5);
 			case bactrian_box:
 				double y = a + Randomizer.nextDouble() * (b-a);
 				if (Randomizer.nextBoolean()) {
@@ -132,21 +133,51 @@ public interface KernelDistribution {
 				} else {
 					return -y;
 				}
+//			case bactrian_airplane:
+//				double u1 = Randomizer.nextDouble();
+//				if (u1 < a / (2*b - a)) {
+//					return a * Math.sqrt(Randomizer.nextDouble());
+//				} else {
+//					if (Randomizer.nextBoolean()) {
+//						return a + Randomizer.nextDouble() * (b-a);
+//					} else {
+//						return -a - Randomizer.nextDouble() * (b-a);
+//					}
+//				}
+//			case bactrian_strawhat:
+//				double u2 = Randomizer.nextDouble();
+//				if (u2 < a / (3*b - 2*a)) {
+//					return a * Math.pow(Randomizer.nextDouble(), 1.0/3.0);
+//				} else {
+//					if (Randomizer.nextBoolean()) {
+//						return a + Randomizer.nextDouble() * (b-a);
+//					} else {
+//						return -a - Randomizer.nextDouble() * (b-a);
+//					}
+//				}
 			case bactrian_airplane:
 				double u1 = Randomizer.nextDouble();
-				if (u1 < a / (2*b - a)) {
-					return a * Math.sqrt(Randomizer.nextDouble());
+				if (u1 < a ) {
+					if (Randomizer.nextBoolean()) {
+						return a * Math.sqrt(Randomizer.nextDouble());
+					} else {
+						return -a * Math.sqrt(Randomizer.nextDouble());
+					}
 				} else {
 					if (Randomizer.nextBoolean()) {
-						return a + Randomizer.nextDouble() * (b-a);
+						return a + Randomizer.nextDouble() * (1-a);
 					} else {
-						return -a - Randomizer.nextDouble() * (b-a);
+						return -a - Randomizer.nextDouble() * (1-a);
 					}
 				}
 			case bactrian_strawhat:
 				double u2 = Randomizer.nextDouble();
 				if (u2 < a / (3*b - 2*a)) {
-					return a * Math.pow(Randomizer.nextDouble(), 1.0/3.0);
+					if (Randomizer.nextBoolean()) {
+						return a * Math.pow(Randomizer.nextDouble(), 1.0/3.0);
+					} else {
+						return -a * Math.pow(Randomizer.nextDouble(), 1.0/3.0);
+					}
 				} else {
 					if (Randomizer.nextBoolean()) {
 						return a + Randomizer.nextDouble() * (b-a);
@@ -171,12 +202,8 @@ public interface KernelDistribution {
 				return Randomizer.nextGaussian() * Math.sqrt(1-m*m);
 			case bactrian_laplace:
 			{
-				double u = Randomizer.nextDouble();
-				if (u < 0.5) {
-					return m * (Math.log(2 * u) / Math.sqrt(2));
-				} else {
-					return -m * (Math.log(2 * (1-u)) / Math.sqrt(2));
-				}
+				double u = Randomizer.nextDouble() - 0.5;
+				return m * Math.signum(u) * Math.log(1.0 - Math.abs(u * 2.0)) / Math.sqrt(2);
 			}
 			case bactrian_triangle:
 			{
