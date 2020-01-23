@@ -14,22 +14,45 @@ public class KernelDistiburionTest extends TestCase {
 	public void testBactrianKernelDistribution() {
 		Randomizer.setSeed(127);
 
+		// testMeanIsZeroSigmaIsOne(new KernelDistribution.Bactrian(mode.cauchy));
+		testMeanIsZeroSigmaIsOne(new KernelDistribution.Bactrian(mode.t4));
+		testMeanIsZeroSigmaIsOne(new KernelDistribution.Bactrian(mode.bactrian_t4));
+
+		testMeanIsZeroSigmaIsOne(new KernelDistribution.Bactrian(mode.bactrian_strawhat, 0.2), false);
+		testMeanIsZeroSigmaIsOne(new KernelDistribution.Bactrian(mode.bactrian_strawhat, 0.5), false);
+		testMeanIsZeroSigmaIsOne(new KernelDistribution.Bactrian(mode.bactrian_airplane, 0.2), false);
+		testMeanIsZeroSigmaIsOne(new KernelDistribution.Bactrian(mode.bactrian_airplane, 0.5), false);
+		
+		
 		testMeanIsZeroSigmaIsOne(new KernelDistribution.Bactrian(mode.normal));
 		testMeanIsZeroSigmaIsOne(new KernelDistribution.Bactrian(mode.uniform));
-		testMeanIsZeroSigmaIsOne(new KernelDistribution.Bactrian(mode.bactrian_normal));
-		testMeanIsZeroSigmaIsOne(new KernelDistribution.Bactrian(mode.bactrian_laplace));
-		testMeanIsZeroSigmaIsOne(new KernelDistribution.Bactrian(mode.bactrian_uniform));
-		testMeanIsZeroSigmaIsOne(new KernelDistribution.Bactrian(mode.bactrian_triangle));
+		testMeanIsZeroSigmaIsOne(new KernelDistribution.Bactrian(mode.laplace));
+		
+		testMeanIsZeroSigmaIsOne(new KernelDistribution.Bactrian(0.95, mode.bactrian_normal));
+		testMeanIsZeroSigmaIsOne(new KernelDistribution.Bactrian(0.90, mode.bactrian_normal));
+		testMeanIsZeroSigmaIsOne(new KernelDistribution.Bactrian(0.98, mode.bactrian_normal));
+
+		testMeanIsZeroSigmaIsOne(new KernelDistribution.Bactrian(0.98, mode.bactrian_uniform));
+		testMeanIsZeroSigmaIsOne(new KernelDistribution.Bactrian(0.90, mode.bactrian_uniform));
+		testMeanIsZeroSigmaIsOne(new KernelDistribution.Bactrian(0.95, mode.bactrian_uniform));
+		
+		testMeanIsZeroSigmaIsOne(new KernelDistribution.Bactrian(0.95, mode.bactrian_laplace));
+		testMeanIsZeroSigmaIsOne(new KernelDistribution.Bactrian(0.90, mode.bactrian_laplace));
+		testMeanIsZeroSigmaIsOne(new KernelDistribution.Bactrian(0.98, mode.bactrian_laplace));
+
+		testMeanIsZeroSigmaIsOne(new KernelDistribution.Bactrian(0.95, mode.bactrian_triangle));
+		testMeanIsZeroSigmaIsOne(new KernelDistribution.Bactrian(0.90, mode.bactrian_triangle));
+		testMeanIsZeroSigmaIsOne(new KernelDistribution.Bactrian(0.98, mode.bactrian_triangle));
+
 		testMeanIsZeroSigmaIsOne(new KernelDistribution.Bactrian(mode.bactrian_box, 0.2));
 		testMeanIsZeroSigmaIsOne(new KernelDistribution.Bactrian(mode.bactrian_box, 0.5));
-		testMeanIsZeroSigmaIsOne(new KernelDistribution.Bactrian(mode.bactrian_strawhat, 0.2));
-		testMeanIsZeroSigmaIsOne(new KernelDistribution.Bactrian(mode.bactrian_strawhat, 0.5));
-		testMeanIsZeroSigmaIsOne(new KernelDistribution.Bactrian(mode.bactrian_airplane, 0.2));
-		testMeanIsZeroSigmaIsOne(new KernelDistribution.Bactrian(mode.bactrian_airplane, 0.5));
+
 	}
 
 	private void testMeanIsZeroSigmaIsOne(KernelDistribution.Bactrian distr) {
-		Log.warning("Testing " + distr.kernelmode);
+		testMeanIsZeroSigmaIsOne(distr, true);
+	}
+	private void testMeanIsZeroSigmaIsOne(KernelDistribution.Bactrian distr, boolean hasSigma1) {
 		int N = 1000000;
 		double m = 0; 
 		double s = 0;
@@ -43,8 +66,10 @@ public class KernelDistiburionTest extends TestCase {
 		// mean
 		assertEquals(0.0, m, 1e-2);
 		// variance
-//		assertEquals(1.0, s, 1e-2);
-		Log.warning("s= " + s);
+		if (hasSigma1) {
+			assertEquals(1.0, s, 1e-2);
+		}
+		Log.warning("Testing " + distr.kernelmode + " s= " + s);
 	}
 
 	@Test

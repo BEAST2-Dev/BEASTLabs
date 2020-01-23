@@ -44,10 +44,15 @@ public interface KernelDistribution {
 		public enum mode {
 			uniform, 
 			normal,
+			laplace,
+			t4, // t-distribution with 4 degrees of freedom
+			cauchy,
 			bactrian_normal, 
 			bactrian_laplace,
 			bactrian_triangle, 
 			bactrian_uniform, 
+			bactrian_t4, 
+			bactrian_cauchy,
 			bactrian_box, 
 			bactrian_airplane, 
 			bactrian_strawhat 
@@ -74,6 +79,9 @@ public interface KernelDistribution {
 	    }
 	    public Bactrian(mode mode, double a) {
 	    	initByName("mode", mode, "a", a);
+	    }
+	    public Bactrian(double m, mode mode) {
+	    	initByName("mode", mode, "m", m);
 	    }
 	    
 		@Override
@@ -126,6 +134,15 @@ public interface KernelDistribution {
 				return Randomizer.nextGaussian();
 			case uniform:
 				return Math.sqrt(12) * (Randomizer.nextDouble() - 0.5);
+			case laplace:
+			{
+				double u = Randomizer.nextDouble() - 0.5;
+				return Math.signum(u) * Math.log(1.0 - Math.abs(u * 2.0)) / Math.sqrt(2);
+			}
+			case t4:
+				return (1.0/2.0)*(Randomizer.nextGaussian() + Randomizer.nextGaussian() + Randomizer.nextGaussian() + Randomizer.nextGaussian());
+			case cauchy:
+				return Math.tan(Math.PI * (Randomizer.nextDouble() - .5));
 			case bactrian_box:
 				double y = a + Randomizer.nextDouble() * (b-a);
 				if (Randomizer.nextBoolean()) {
@@ -189,9 +206,9 @@ public interface KernelDistribution {
 				// it is one of the Bactrian distributions
 				// i.e. two-modal, symmetric with mean 0
 		        if (Randomizer.nextBoolean()) {
-		        	return m + getBactrianRandomNumber();
+		        	return m + getBactrianRandomNumber() * Math.sqrt(1-m*m);
 		        } else {
-		        	return -m + getBactrianRandomNumber();
+		        	return -m + getBactrianRandomNumber() * Math.sqrt(1-m*m);
 		        }
 			}
 		}
@@ -199,23 +216,27 @@ public interface KernelDistribution {
 		private double getBactrianRandomNumber() {
 			switch (kernelmode) {
 			case bactrian_normal:
-				return Randomizer.nextGaussian() * Math.sqrt(1-m*m);
+				return Randomizer.nextGaussian();
 			case bactrian_laplace:
 			{
 				double u = Randomizer.nextDouble() - 0.5;
-				return m * Math.signum(u) * Math.log(1.0 - Math.abs(u * 2.0)) / Math.sqrt(2);
+				return Math.signum(u) * Math.log(1.0 - Math.abs(u * 2.0)) / Math.sqrt(2);
 			}
 			case bactrian_triangle:
 			{
 				double u = Randomizer.nextDouble();
 				if (u < 0.5) {
-					return m * (-Math.sqrt(6) + 2 * Math.sqrt(3 * u));
+					return (-Math.sqrt(6) + 2 * Math.sqrt(3 * u));
 				} else {
-					return m * (Math.sqrt(6) - 2 * Math.sqrt(3 * (1-u)));
+					return (Math.sqrt(6) - 2 * Math.sqrt(3 * (1-u)));
 				}
 			}
 			case bactrian_uniform:
-				return m * (Randomizer.nextDouble() - 0.5) * Math.sqrt(3);
+				return (Randomizer.nextDouble() - 0.5) * Math.sqrt(12);
+			case bactrian_t4:
+				return (1.0/2.0)*(Randomizer.nextGaussian() + Randomizer.nextGaussian() + Randomizer.nextGaussian() + Randomizer.nextGaussian());
+			case bactrian_cauchy:
+				return Math.tan(Math.PI * (Randomizer.nextDouble() - .5));
 			default:
 				return Double.NaN;
 			}
