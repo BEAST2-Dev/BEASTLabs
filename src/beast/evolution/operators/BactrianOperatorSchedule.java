@@ -41,6 +41,9 @@ public class BactrianOperatorSchedule extends OperatorSchedule {
 		} else if (p.getClass() == UpDownOperator.class) {
 			Operator bp = new BactrianUpDownOperator();
 			p = initialiseOperator(p, bp);
+		} else if (p.getClass() == SubtreeSlide.class) {
+			Operator bp = new BactrianSubtreeSlide();
+			p = initialiseOperator(p, bp);
 		}
 		super.addOperator(p);
 	}

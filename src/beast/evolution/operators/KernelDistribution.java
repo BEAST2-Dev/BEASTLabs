@@ -31,11 +31,11 @@ public interface KernelDistribution {
 	}
 		
 	static KernelDistribution newDefaultKernelDistribution() {
-//		Bactrian kdist = new Bactrian();
-//		return kdist;
-		Mirror kdist = new Mirror();
-		kdist.initAndValidate();
+		Bactrian kdist = new Bactrian();
 		return kdist;
+//		Mirror kdist = new Mirror();
+//		kdist.initAndValidate();
+//		return kdist;
 	}
 	
 
