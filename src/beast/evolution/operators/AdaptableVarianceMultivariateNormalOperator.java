@@ -26,9 +26,16 @@
 package beast.evolution.operators;
 
 
+import java.io.PrintWriter;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+
+import org.apache.commons.math3.distribution.MultivariateNormalDistribution;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONStringer;
 
 import beast.core.Description;
 import beast.core.Function;
@@ -64,7 +71,7 @@ public class AdaptableVarianceMultivariateNormalOperator extends Operator {
 			+ "If not specified (or < 0), the operator uses 200 * parameter dimension", -1); 
 	final public Input<Integer> burninInput = new Input<>("burnin", "Number of proposals that are ignored before covariance matrix is being updated. "
 			+ "If initial is not specified, uses half the default initial value (which equals 100 * parameter dimension)", 0); 
-	final public Input<Integer> everyInput = new Input<>("every", "update interval for covariance matrix, default 1 (that is, every step)", 1); 
+	final public Input<Integer> everyInput = new Input<>("every", "update interval for covariance matrix, default 1 (that is, every step)", 1000); 
     final public Input<Boolean> optimiseInput = new Input<>("optimise", "flag to indicate that the scale factor is automatically changed in order to achieve a good acceptance rate (default true)", true);
 
 
@@ -73,7 +80,7 @@ public class AdaptableVarianceMultivariateNormalOperator extends Operator {
 
     private double scaleFactor;
     private double beta;
-    private int iterations, updates, initial, burnin, every;
+    private int initial, burnin, every;
     private CompoundParameterHelper parameter;
     private Transform[] transformations;
     private int[] transformationSizes;
@@ -106,7 +113,6 @@ public class AdaptableVarianceMultivariateNormalOperator extends Operator {
 
     //act as if population mean is known
     private double calculateCovariance(int number, double currentMatrixEntry, double[] values, int firstIndex, int secondIndex) {
-
         // number will always be > 1 here
         /*double result = currentMatrixEntry * (number - 1);
         result += (values[firstIndex] * values[secondIndex]);
@@ -114,8 +120,7 @@ public class AdaptableVarianceMultivariateNormalOperator extends Operator {
         result /= ((double) number);*/
 
         double result = currentMatrixEntry * (number - 2);
-        result += (values[firstIndex] * values[secondIndex]);
-        result += ((number - 1) * oldMeans[firstIndex] * oldMeans[secondIndex] - number * newMeans[firstIndex] * newMeans[secondIndex]);
+        result += (values[firstIndex] - newMeans[firstIndex]) * (values[secondIndex]- newMeans[secondIndex]);
         result /= ((double)(number - 1));
 
         return result;
@@ -128,8 +133,8 @@ public class AdaptableVarianceMultivariateNormalOperator extends Operator {
 	}
 
 	public double doOperation() {
+        int iterations=m_nNrAccepted+m_nNrRejected;
 
-        iterations++;
 
         if (DEBUG) {
             System.err.println("\nAVMVN Iteration: " + iterations);
@@ -175,6 +180,7 @@ public class AdaptableVarianceMultivariateNormalOperator extends Operator {
             }
             currentIndex += transformationSizes[i];
         }
+        
 
         if (DEBUG) {
             System.err.println("Old transformed parameter values:");
@@ -194,17 +200,15 @@ public class AdaptableVarianceMultivariateNormalOperator extends Operator {
             }
 
             // TODO Beginning of adaptable covariance
-
             if (iterations > (burnin+1)) {
 
                 if (iterations % every == 0) {
 
-                    updates++;
+                    int updates=iterations-burnin;
 
                     if (DEBUG) {
                         System.err.println("updates = " + updates);
                     }
-
                     //first recalculate the means using recursion
                     for (int i = 0; i < dim; i++) {
                         newMeans[i] = ((oldMeans[i] * (updates - 1)) + transformedX[i]) / updates;
@@ -219,6 +223,7 @@ public class AdaptableVarianceMultivariateNormalOperator extends Operator {
                             }
                         }
                     }
+
 
                     if (DEBUG) {
                         System.err.println("Old means:");
@@ -436,8 +441,8 @@ public class AdaptableVarianceMultivariateNormalOperator extends Operator {
                 System.err.println("lowest number of samples: " + lowestNumberOfSamples);
             }
             //set number of iterations of AVMVN operator
-            this.iterations = lowestNumberOfSamples;
-            this.updates = lowestNumberOfSamples;
+//            this.iterations = lowestNumberOfSamples;
+//            this.updates = lowestNumberOfSamples;
             this.beta = 0.0;
             //set means based on provided samples, but take into account transformation(s)
             for (int i = 0; i < parameterSamples.size(); i++) {
@@ -494,7 +499,6 @@ public class AdaptableVarianceMultivariateNormalOperator extends Operator {
         }
         return output;
     }
-
     
     @Override
 	public void initAndValidate() {
@@ -509,8 +513,8 @@ public class AdaptableVarianceMultivariateNormalOperator extends Operator {
         this.parameter = new CompoundParameterHelper(parameterList);
         this.transformations = transformationsInput.get().toArray(new Transform[]{});
         this.beta = betaInput.get();
-        this.iterations = 0;
-        this.updates = 0;
+//        this.iterations = 0;
+//        this.updates = 0;
         //this.m_pWeight.setValue(1.0, this);
         
         dim = parameter.getDimension();
@@ -701,6 +705,12 @@ public class AdaptableVarianceMultivariateNormalOperator extends Operator {
     }
 
     @Override
+    public void setCoercableParameterValue(double scaleFactor) {
+    	this.scaleFactor = scaleFactor;
+    }
+
+    
+    @Override
     public double getCoercableParameterValue() {
     	return scaleFactor;
     }
@@ -714,14 +724,37 @@ public class AdaptableVarianceMultivariateNormalOperator extends Operator {
     		}
     	}
    }
-
     
     final static double DEFAULT_ADAPTATION_TARGET = 0.234;
     final static double MINIMUM_ACCEPTANCE_LEVEL = 0.1;
     final static double MAXIMUM_ACCEPTANCE_LEVEL = 0.4;
     final static double MINIMUM_GOOD_ACCEPTANCE_LEVEL = 0.2;
     final static double MAXIMUM_GOOD_ACCEPTANCE_LEVEL = 0.3;
-
+    
+    public final double[] getMeans() {
+    	double[] means = new double[oldMeans.length];
+    	System.arraycopy(oldMeans, 0, means, 0, oldMeans.length);
+    	return means;
+    } 
+    
+    public final void setMeans(double[] means) {
+    	System.arraycopy(means, 0, oldMeans, 0, means.length);
+    }
+    
+    
+    public final double[][] getCovariance(){
+    	double[][] covariance = new double[empirical.length][empirical[0].length];
+    	for (int i = 0; i < empirical.length;i++)
+    		System.arraycopy(empirical[i], 0, covariance[i], 0, empirical[i].length);
+    	
+    	return covariance;
+    }
+    
+    public final void setCovariance(double[][] covariance) {
+    	for (int i = 0; i < covariance.length;i++)
+    		System.arraycopy(covariance[i], 0, empirical[i], 0, covariance[i].length);
+    }
+    
     @Override
     public final double getTargetAcceptanceProbability() {
         return DEFAULT_ADAPTATION_TARGET;
@@ -753,5 +786,91 @@ public class AdaptableVarianceMultivariateNormalOperator extends Operator {
         } else return "";
     }
     
-    public int getIterations() {return iterations;}
+//    public int gete() {return iterations;}
+    
+    /**
+     * Since this operator additionally uses the covariances for proposal, they have to be stored to a file as well
+     */
+    @Override
+    public void storeToFile(final PrintWriter out) {
+    	try {
+	        JSONStringer json = new JSONStringer();
+	        json.object();
+	
+	        if (getID()==null)
+	           setID("unknown");
+	
+	        json.key("id").value(getID());
+	
+	        double p = getCoercableParameterValue();
+	        if (Double.isNaN(p)) {
+	            json.key("p").value("NaN");
+	        } else if (Double.isInfinite(p)) {
+	        	if (p > 0) {
+	        		json.key("p").value("Infinity");
+	        	} else {
+	        		json.key("p").value("-Infinity");
+	        	}
+	        } else {
+	            json.key("p").value(p);
+	        }
+	        
+	        // make the covariance matrix into an array
+	        int cov_length = empirical.length;
+	        int c = 0;
+	        double[] flat_cov = new double[(cov_length*cov_length-cov_length)/2+cov_length];
+	        for (int a = 0; a < empirical.length; a++) {
+	        	for (int b = a; b < empirical.length; b++) {
+	        		flat_cov[c] = empirical[a][b];
+	        		c++;
+	        	}
+	        }       
+	        json.key("means").value(Arrays.toString(oldMeans));
+	        json.key("covariance").value(Arrays.toString(flat_cov));	        
+	        json.key("accept").value(m_nNrAccepted);
+	        json.key("reject").value(m_nNrRejected);
+	        json.key("acceptFC").value(m_nNrAcceptedForCorrection);
+	        json.key("rejectFC").value(m_nNrRejectedForCorrection);
+	        json.key("rejectIv").value(m_nNrRejectedInvalid);
+	        json.key("rejectOp").value(m_nNrRejectedOperator);
+	        json.endObject();
+	        out.print(json.toString());
+    	} catch (JSONException e) {
+    		// failed to log operator in state file
+    		// report and continue
+    		e.printStackTrace();
+    	}
+    }
+
+    @Override
+    public void restoreFromFile(JSONObject o) {
+
+    	try {
+    		
+    		String[] means_string = ((String) o.getString("means")).replace("[", "").replace("]", "").split(", ");
+	        String[] cov_string = ((String) o.getString("covariance")).replace("[", "").replace("]", "").split(", ");
+	        
+	        
+	        oldMeans = new double[means_string.length];
+	        for (int a = 0; a < oldMeans.length; a++)
+	        	oldMeans[a] = Double.parseDouble(means_string[a]);
+	        
+	        empirical = new double[oldMeans.length][oldMeans.length];
+	        int c = 0;
+	        for (int a = 0; a < empirical.length; a++) {
+	        	for (int b = a; b < empirical.length; b++) {
+	        		empirical[a][b] = Double.parseDouble(cov_string[c]);
+	        		empirical[b][a] = Double.parseDouble(cov_string[c]);
+	        		c++;
+	        	}	        	
+	    	}    	
+	        super.restoreFromFile(o);  	
+    	} catch (JSONException e) {
+    		// failed to restore from state file
+    		// report and continue
+    		e.printStackTrace();
+    	}
+    }
+
+    
 }
