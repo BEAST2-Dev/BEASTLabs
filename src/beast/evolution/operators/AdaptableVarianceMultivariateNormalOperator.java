@@ -73,6 +73,7 @@ public class AdaptableVarianceMultivariateNormalOperator extends Operator {
 			+ "If initial is not specified, uses half the default initial value (which equals 100 * parameter dimension)", 0); 
 	final public Input<Integer> everyInput = new Input<>("every", "update interval for covariance matrix, default 1 (that is, every step)", 1); 
     final public Input<Boolean> optimiseInput = new Input<>("optimise", "flag to indicate that the scale factor is automatically changed in order to achieve a good acceptance rate (default true)", true);
+    final public Input<Boolean> storeMatricesInput = new Input<>("storeMatrices", "flag to indicate if covariance and mean should be stored to the state file (default true)", true);
 
 
     public static final boolean DEBUG = false;
@@ -815,18 +816,20 @@ public class AdaptableVarianceMultivariateNormalOperator extends Operator {
 	            json.key("p").value(p);
 	        }
 	        
-	        // make the covariance matrix into an array
-	        int cov_length = empirical.length;
-	        int c = 0;
-	        double[] flat_cov = new double[(cov_length*cov_length-cov_length)/2+cov_length];
-	        for (int a = 0; a < empirical.length; a++) {
-	        	for (int b = a; b < empirical.length; b++) {
-	        		flat_cov[c] = empirical[a][b];
-	        		c++;
-	        	}
-	        }       
-	        json.key("means").value(Arrays.toString(oldMeans));
-	        json.key("covariance").value(Arrays.toString(flat_cov));	        
+	        if (storeMatricesInput.get()) {
+	        	// make the covariance matrix into an array	        
+		        int cov_length = empirical.length;
+		        int c = 0;
+		        double[] flat_cov = new double[(cov_length*cov_length-cov_length)/2+cov_length];
+		        for (int a = 0; a < empirical.length; a++) {
+		        	for (int b = a; b < empirical.length; b++) {
+		        		flat_cov[c] = empirical[a][b];
+		        		c++;
+		        	}
+		        } 
+		        json.key("means").value(Arrays.toString(oldMeans));
+		        json.key("covariance").value(Arrays.toString(flat_cov));	        
+	        }
 	        json.key("accept").value(m_nNrAccepted);
 	        json.key("reject").value(m_nNrRejected);
 	        json.key("acceptFC").value(m_nNrAcceptedForCorrection);
@@ -846,24 +849,43 @@ public class AdaptableVarianceMultivariateNormalOperator extends Operator {
     public void restoreFromFile(JSONObject o) {
 
     	try {
-    		
-    		String[] means_string = ((String) o.getString("means")).replace("[", "").replace("]", "").split(", ");
-	        String[] cov_string = ((String) o.getString("covariance")).replace("[", "").replace("]", "").split(", ");
-	        
-	        
-	        oldMeans = new double[means_string.length];
-	        for (int a = 0; a < oldMeans.length; a++)
-	        	oldMeans[a] = Double.parseDouble(means_string[a]);
-	        
-	        empirical = new double[oldMeans.length][oldMeans.length];
-	        int c = 0;
-	        for (int a = 0; a < empirical.length; a++) {
-	        	for (int b = a; b < empirical.length; b++) {
-	        		empirical[a][b] = Double.parseDouble(cov_string[c]);
-	        		empirical[b][a] = Double.parseDouble(cov_string[c]);
-	        		c++;
-	        	}	        	
-	    	}    	
+    		if (storeMatricesInput.get()) {
+	    		String[] means_string = ((String) o.getString("means")).replace("[", "").replace("]", "").split(", ");
+		        String[] cov_string = ((String) o.getString("covariance")).replace("[", "").replace("]", "").split(", ");
+		        
+		        
+		        oldMeans = new double[means_string.length];
+		        for (int a = 0; a < oldMeans.length; a++)
+		        	oldMeans[a] = Double.parseDouble(means_string[a]);
+		        
+		        empirical = new double[oldMeans.length][oldMeans.length];
+		        int c = 0;
+		        for (int a = 0; a < empirical.length; a++) {
+		        	for (int b = a; b < empirical.length; b++) {
+		        		empirical[a][b] = Double.parseDouble(cov_string[c]);
+		        		empirical[b][a] = Double.parseDouble(cov_string[c]);
+		        		c++;
+		        	}	        	
+		    	}    	
+    		}else {
+    	        this.empirical = new double[dim][dim];
+    	        this.oldMeans = new double[dim];
+    	        this.newMeans = new double[dim];
+
+    			
+                for (int i = 0; i < dim; i++) {
+                    //oldMeans[i] = transformedX[i];
+                    //newMeans[i] = transformedX[i];
+                    oldMeans[i] = 0.0;
+                    newMeans[i] = 0.0;
+                }
+
+                for (int i = 0; i < dim; i++) {
+                    for (int j = 0; j < dim; j++) {
+                        empirical[i][j] = 0.0;
+                    }
+                }
+    		}
 	        super.restoreFromFile(o);  	
     	} catch (JSONException e) {
     		// failed to restore from state file
