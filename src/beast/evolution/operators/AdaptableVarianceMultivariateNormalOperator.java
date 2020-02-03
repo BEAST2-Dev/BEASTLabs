@@ -73,7 +73,7 @@ public class AdaptableVarianceMultivariateNormalOperator extends Operator {
 			+ "If initial is not specified, uses half the default initial value (which equals 100 * parameter dimension)", 0); 
 	final public Input<Integer> everyInput = new Input<>("every", "update interval for covariance matrix, default 1 (that is, every step)", 1); 
     final public Input<Boolean> optimiseInput = new Input<>("optimise", "flag to indicate that the scale factor is automatically changed in order to achieve a good acceptance rate (default true)", true);
-    final public Input<Boolean> storeMatricesInput = new Input<>("storeMatrices", "flag to indicate if covariance and mean should be stored to the state file (default true)", true);
+    final public Input<Boolean> storeInput = new Input<>("store", "flag to indicate if covariance and mean should be stored to the state file (default true)", true);
 
 
     public static final boolean DEBUG = false;
@@ -816,7 +816,7 @@ public class AdaptableVarianceMultivariateNormalOperator extends Operator {
 	            json.key("p").value(p);
 	        }
 	        
-	        if (storeMatricesInput.get()) {
+	        if (storeInput.get()) {
 	        	// make the covariance matrix into an array	        
 		        int cov_length = empirical.length;
 		        int c = 0;
@@ -849,7 +849,7 @@ public class AdaptableVarianceMultivariateNormalOperator extends Operator {
     public void restoreFromFile(JSONObject o) {
 
     	try {
-    		if (storeMatricesInput.get()) {
+    		if (storeInput.get()) {
 	    		String[] means_string = ((String) o.getString("means")).replace("[", "").replace("]", "").split(", ");
 		        String[] cov_string = ((String) o.getString("covariance")).replace("[", "").replace("]", "").split(", ");
 		        
