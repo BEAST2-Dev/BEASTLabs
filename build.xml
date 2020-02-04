@@ -222,6 +222,7 @@
 		</copy>
 		<copy todir="${Add_on_dir}/templates">
 			<fileset file="templates/Weibull.xml" />
+			<fileset file="templates/extras.xml" />
 		</copy>
 		<jar jarfile="${distlabs}/BEASTlabs.addon.v${version}.zip">
 			<fileset dir="${Add_on_dir}">

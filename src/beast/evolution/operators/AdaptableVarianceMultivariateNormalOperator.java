@@ -26,6 +26,7 @@
 package beast.evolution.operators;
 
 
+
 import java.io.PrintWriter;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -40,14 +41,12 @@ import org.json.JSONStringer;
 import beast.core.Description;
 import beast.core.Function;
 import beast.core.Input;
-import beast.core.Operator;
 import beast.core.StateNode;
 import beast.core.parameter.RealParameter;
 import beast.evolution.tree.Tree;
 import beast.util.Transform.*;
 import beast.util.Transform;
 import beast.math.matrixalgebra.*;
-import beast.util.Randomizer;
 
 /**
  * Adapted from BEAST 1
@@ -57,7 +56,7 @@ import beast.util.Randomizer;
 @Description("Operator that moves many parameters (possibly, after transformation to make them "
 		+ "more normally distributed). It learns the correlation structure among these parameters "
 		+ "during the MCMC run and updates parameters accordingly. doi:10.1093/bioinformatics/btx088")
-public class AdaptableVarianceMultivariateNormalOperator extends Operator {
+public class AdaptableVarianceMultivariateNormalOperator extends KernelOperator {
 	final public Input<List<Transform>> transformationsInput = new Input<>("transformations", 
 			"one or more transformed parameters to be moved.\n"
 			+ "For scale parameters use LogTransform (where e.g. scale operators were used).\n"
@@ -120,9 +119,15 @@ public class AdaptableVarianceMultivariateNormalOperator extends Operator {
         result += ((number - 1) * oldMeans[firstIndex] * oldMeans[secondIndex] - number * newMeans[firstIndex] * newMeans[secondIndex]);
         result /= ((double) number);*/
 
+    	// Welford-style update
+    	// https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Welford's_online_algorithm
         double result = currentMatrixEntry * (number - 2);
-        result += (values[firstIndex] - newMeans[firstIndex]) * (values[secondIndex]- newMeans[secondIndex]);
+        result += (values[firstIndex] * values[secondIndex]);
+        result += ((number - 1) * oldMeans[firstIndex] * oldMeans[secondIndex] - number * newMeans[firstIndex] * newMeans[secondIndex]);
         result /= ((double)(number - 1));
+        
+//      result += (values[firstIndex] - newMeans[firstIndex]) * (values[secondIndex]- newMeans[secondIndex]);
+//      result /= ((double)(number - 1));
 
         return result;
 
@@ -297,7 +302,8 @@ public class AdaptableVarianceMultivariateNormalOperator extends Operator {
         }
 
         for (int i = 0; i < dim; i++) {
-            epsilon[i] = scaleFactor * Randomizer.nextGaussian();
+            //epsilon[i] = scaleFactor * Randomizer.nextGaussian();
+            epsilon[i] = kernelDistribution.getRandomDelta(epsilon[i], scaleFactor);
         }
 
         if (iterations > initial) {
@@ -610,7 +616,9 @@ public class AdaptableVarianceMultivariateNormalOperator extends Operator {
             cholesky = (new CholeskyDecomposition(matrix)).getL();
         } catch (IllegalDimension illegalDimension) {
             throw new RuntimeException("Unable to decompose matrix in AdaptableVarianceMultivariateNormalOperator");
-        }		
+        }	
+        
+        super.initAndValidate();
 	}
     
     public class CompoundParameterHelper {
