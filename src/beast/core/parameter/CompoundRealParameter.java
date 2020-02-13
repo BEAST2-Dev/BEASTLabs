@@ -83,6 +83,17 @@ public class CompoundRealParameter extends RealParameter {
 	}
 
 	@Override
+	public void setValue(Double value) {
+		parameters[0].setValue(value);
+	}
+	
+	@Override
+	public void setValue(int i, Double value) {
+		parameters[mapIndexToParameter[i]].setValue(i - offset[i], value);
+	}
+	
+
+	@Override
 	public int getDimension() {
 		return dim;
 	}
@@ -106,6 +117,13 @@ public class CompoundRealParameter extends RealParameter {
 	public void setUpper(Double upper) {
 		for (RealParameter p : parameters) {
 			p.setUpper(upper);
+		}
+	}
+
+	@Override
+	public void setBounds(Double lower, Double upper) {
+		for (RealParameter p : parameters) {
+			p.setBounds(lower, upper);
 		}
 	}
 	
