@@ -128,10 +128,23 @@ public class CompoundRealParameter extends RealParameter {
     	return this;
     }
 
+
+    @Override
+    protected void store() { 
+    	// do nothing
+    }
+    
+    @Override
+    public void restore() { 
+    	// do nothing
+		hasStartedEditing = false;
+    }
+    
     @Override
     protected boolean requiresRecalculation() {
 		for (RealParameter p : parameters) {
 			if (p.somethingIsDirty()) {
+				hasStartedEditing = true;
 				return true;
 			}
 		}
