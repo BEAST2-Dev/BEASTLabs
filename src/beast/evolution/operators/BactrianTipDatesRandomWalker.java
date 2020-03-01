@@ -23,7 +23,7 @@ public class BactrianTipDatesRandomWalker extends TipDatesRandomWalker {
         Node node = treeInput.get().getNode(taxonIndices[i]);
 
         double value = node.getHeight();
-        double newValue = value + kernelDistribution.getRandomDelta(value, windowSize);
+        double newValue = value + kernelDistribution.getRandomDelta(i, value, windowSize);
 
         if (newValue > node.getParent().getHeight()) { // || newValue < 0.0) {
             if (reflectValue) {

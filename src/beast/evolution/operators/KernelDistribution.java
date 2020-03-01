@@ -15,9 +15,9 @@ public interface KernelDistribution {
 	 * @param scaleFactor determines range of scale values, larger is bigger random scale changes
 	 * @return random scale factor for scaling parameters
 	 */
-	public double getScaler(double value, double scaleFactor);
-	default public double getScaler(double windowSize) {
-		return getScaler(Double.NaN, windowSize);
+	public double getScaler(int dim, double value, double scaleFactor);
+	default public double getScaler(int dim, double windowSize) {
+		return getScaler(dim, Double.NaN, windowSize);
 	}
 
 	/**
@@ -25,9 +25,9 @@ public interface KernelDistribution {
 	 * @param windowSize determines range of random delta values, larger is bigger random updates
 	 * @return random delta value for random walks
 	 */
-	public double getRandomDelta(double value, double windowSize);
-	default public double getRandomDelta(double windowSize) {
-		return getRandomDelta(Double.NaN, windowSize);
+	public double getRandomDelta(int dim, double value, double windowSize);
+	default public double getRandomDelta(int dim, double windowSize) {
+		return getRandomDelta(dim, Double.NaN, windowSize);
 	}
 		
 	static KernelDistribution newDefaultKernelDistribution() {
@@ -242,14 +242,16 @@ public interface KernelDistribution {
 			}
 		}
 		
-		public double getScaler(double oldValue, double scaleFactor) {
+		@Override
+		public double getScaler(int dim, double oldValue, double scaleFactor) {
 	        double scale = 0;
 	        scale = scaleFactor * getRandomNumber();
 	        scale = Math.exp(scale);
 			return scale;
 		}
 		
-		public double getRandomDelta(double oldValue, double windowSize) {
+		@Override
+		public double getRandomDelta(int dim, double oldValue, double windowSize) {
 	        double value;
 	        value = windowSize * getRandomNumber();
 	        return value;
@@ -260,6 +262,9 @@ public interface KernelDistribution {
 	@Description("Distribution that learns mean m and variance s from the values provided."
 			+ "Uses Bactrian kernel while in the process of learning")
 	public class Mirror extends Bactrian {
+		final public Input<Boolean> onePerDimensionInput = new Input<>("onePerDimension", 
+				"whether to keep track which dimension of the parameter is affected for learning the m and s of its distribtion", false); 
+		
 		final public Input<Integer> initialInput = new Input<>("initial", "Number of proposals before m and s are considered in proposal. "
 				+ "Must be larger than burnin, if specified. "
 				+ "If not specified (or < 0), the operator uses " + defaultInitialInput.get(), -1); 
@@ -269,6 +274,10 @@ public interface KernelDistribution {
 		int callcount;
 		int initial, burnin;
 		double estimatedMean, estimatedSD;
+		boolean onePerDimension;
+		double [] estimatedMeans;
+		double [] estimatedSDs;
+		int [] callcounts;
 
 		public Mirror() {}
 		public Mirror(mode mode) {
@@ -277,6 +286,12 @@ public interface KernelDistribution {
 	    
 		@Override
 		public void initAndValidate() {
+			onePerDimension = onePerDimensionInput.get();
+			if (onePerDimension) {
+				estimatedMeans = new double[1];
+				estimatedSDs = new double[1];
+				callcounts = new int[1];
+			}
 			callcount = 0;
 			initial = initialInput.get();
 			if (initial < 0) {
@@ -290,19 +305,45 @@ public interface KernelDistribution {
 		}
 				
 		@Override
-		public double getScaler(double value, double scaleFactor) {
-			callcount++;
+		public double getScaler(int dim, double value, double scaleFactor) {
 			double logValue = Math.log(value);
-			if (callcount > initial) {
-				double prevMean = estimatedMean;
-				double n = callcount - initial;
-				estimatedMean = logValue / n + prevMean * (n - 1.0) / n;
-				
-			    double ssq = estimatedSD * estimatedSD;
-			    estimatedSD = Math.sqrt(ssq + (((logValue - prevMean) * (logValue - estimatedMean)) - ssq) / n);
+			if (onePerDimension) {
+				if (dim >= callcounts.length) {
+					int [] tmp = new int[dim+1];
+					System.arraycopy(callcounts, 0, tmp, 0, callcounts.length);
+					callcounts = tmp;
+					double [] tmp2 = new double[dim+1];
+					System.arraycopy(estimatedMeans, 0, tmp, 0, estimatedMeans.length);
+					estimatedMeans = tmp2;
+					tmp2 = new double[dim+1];
+					System.arraycopy(estimatedSDs, 0, tmp, 0, estimatedSDs.length);
+					estimatedSDs = tmp2;
+				}
+				callcounts[dim]++;
+				if (callcounts[dim] > initial) {
+					double prevMean = estimatedMeans[dim];
+					double n = callcounts[dim] - initial;
+					estimatedMeans[dim] = logValue / n + prevMean * (n - 1.0) / n;
+					
+				    double ssq = estimatedSDs[dim] * estimatedSDs[dim];
+				    estimatedSDs[dim] = Math.sqrt(ssq + (((logValue - prevMean) * (logValue - estimatedMeans[dim])) - ssq) / n);
+				    estimatedMean = estimatedMeans[dim];
+				    estimatedSD = estimatedSDs[dim];
+				    callcount = callcounts[dim];
+				}
+			} else {
+				callcount++;
+				if (callcount > initial) {
+					double prevMean = estimatedMean;
+					double n = callcount - initial;
+					estimatedMean = logValue / n + prevMean * (n - 1.0) / n;
+					
+				    double ssq = estimatedSD * estimatedSD;
+				    estimatedSD = Math.sqrt(ssq + (((logValue - prevMean) * (logValue - estimatedMean)) - ssq) / n);
+				}
 			}
 			if (Double.isNaN(value) || callcount < initial + burnin) {
-				return super.getScaler(value, scaleFactor);
+				return super.getScaler(dim, value, scaleFactor);
 			}
 			if (callcount == initial + burnin) {
 				Log.warning("kick in ");
@@ -322,18 +363,45 @@ public interface KernelDistribution {
 		}
 		
 		@Override
-		public double getRandomDelta(double value, double windowSize) {
-			callcount++;
-			if (callcount > initial) {
-				double prevMean = estimatedMean;
-				double n = callcount - initial;
-				estimatedMean = value / n + prevMean * (n - 1.0) / n;
-				
-			    double ssq = estimatedSD * estimatedSD;
-			    estimatedSD = Math.sqrt(ssq + ((value - prevMean) * (value - estimatedMean) - ssq) / n);
+		public double getRandomDelta(int dim, double value, double windowSize) {
+			if (onePerDimension) {
+				if (dim >= callcounts.length) {
+					int [] tmp = new int[dim+1];
+					System.arraycopy(callcounts, 0, tmp, 0, callcounts.length);
+					callcounts = tmp;
+					double [] tmp2 = new double[dim+1];
+					System.arraycopy(estimatedMeans, 0, tmp, 0, estimatedMeans.length);
+					estimatedMeans = tmp2;
+					tmp2 = new double[dim+1];
+					System.arraycopy(estimatedSDs, 0, tmp, 0, estimatedSDs.length);
+					estimatedSDs = tmp2;
+				}
+				callcounts[dim]++;
+				if (callcounts[dim] > initial) {
+					double prevMean = estimatedMeans[dim];
+					double n = callcounts[dim] - initial;
+					estimatedMeans[dim] = value / n + prevMean * (n - 1.0) / n;
+					
+				    double ssq = estimatedSDs[dim] * estimatedSDs[dim];
+				    estimatedSDs[dim] = Math.sqrt(ssq + ((value - prevMean) * (value - estimatedMeans[dim]) - ssq) / n);
+
+				    estimatedMeans[dim] = estimatedMeans[dim];
+				    estimatedSDs[dim] = estimatedSDs[dim];
+				    callcount = callcounts[dim];
+				}
+			} else {
+				callcount++;
+				if (callcount > initial) {
+					double prevMean = estimatedMean;
+					double n = callcount - initial;
+					estimatedMean = value / n + prevMean * (n - 1.0) / n;
+					
+				    double ssq = estimatedSD * estimatedSD;
+				    estimatedSD = Math.sqrt(ssq + ((value - prevMean) * (value - estimatedMean) - ssq) / n);
+				}
 			}
 			if (Double.isNaN(value) || callcount < initial + burnin) {
-				return super.getRandomDelta(value, windowSize);
+				return super.getRandomDelta(dim, value, windowSize);
 			}
 			
 			double delta = windowSize * Randomizer.nextGaussian() * estimatedSD;

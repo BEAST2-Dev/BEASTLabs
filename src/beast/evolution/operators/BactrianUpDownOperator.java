@@ -51,8 +51,8 @@ public class BactrianUpDownOperator extends KernelOperator {
         lower = scaleLowerLimit.get();
     }
     
-	protected double getScaler() {
-		return kernelDistribution.getScaler(getCoercableParameterValue());
+	protected double getScaler(int i) {
+		return kernelDistribution.getScaler(i, getCoercableParameterValue());
 	}
     
 
@@ -65,7 +65,7 @@ public class BactrianUpDownOperator extends KernelOperator {
     @Override
     public final double proposal() {
 
-        final double scale = getScaler();
+        final double scale = getScaler(0);
         int goingUp = 0, goingDown = 0;
 
 

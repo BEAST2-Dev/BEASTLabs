@@ -199,7 +199,7 @@ public class BactrianDeltaExchangeOperator extends KernelOperator {
                 } else {
 
                     // exchange a random delta
-                    final double d = getNextDouble();
+                    final double d = getNextDouble(0);
                     scalar1 -= d;
                     if (parameterWeights[dim1] != parameterWeights[dim2]) {
                         scalar2 += d * parameterWeights[dim1] / parameterWeights[dim2];
@@ -254,7 +254,7 @@ public class BactrianDeltaExchangeOperator extends KernelOperator {
                 } else {
 
                     // exchange a random delta
-                    final double d = getNextDouble();
+                    final double d = getNextDouble(0);
                     scalar1 -= d;
                     if (parameterWeights[dim1] != parameterWeights[dim2]) {
                         scalar2 += d * parameterWeights[dim1] / parameterWeights[dim2];
@@ -304,8 +304,8 @@ public class BactrianDeltaExchangeOperator extends KernelOperator {
         return logq;
     }
 
-    private double getNextDouble() {
-    	return kernelDistribution.getRandomDelta(delta);
+    private double getNextDouble(int i) {
+    	return kernelDistribution.getRandomDelta(i, delta);
 	}
 
 	@Override

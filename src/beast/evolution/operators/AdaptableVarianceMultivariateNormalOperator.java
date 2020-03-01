@@ -303,7 +303,7 @@ public class AdaptableVarianceMultivariateNormalOperator extends KernelOperator 
 
         for (int i = 0; i < dim; i++) {
             //epsilon[i] = scaleFactor * Randomizer.nextGaussian();
-            epsilon[i] = kernelDistribution.getRandomDelta(epsilon[i], scaleFactor);
+            epsilon[i] = kernelDistribution.getRandomDelta(i, epsilon[i], scaleFactor);
         }
 
         if (iterations > initial) {

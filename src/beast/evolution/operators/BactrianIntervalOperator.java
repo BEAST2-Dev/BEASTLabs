@@ -46,7 +46,7 @@ public class BactrianIntervalOperator extends KernelOperator {
 
         int i = Randomizer.nextInt(param.getDimension());
         double value = param.getValue(i);
-        double scale = kernelDistribution.getScaler(value, scaleFactor);
+        double scale = kernelDistribution.getScaler(i, value, scaleFactor);
         
         // transform value
         double y = (upper - value) / (value - lower);

@@ -222,7 +222,7 @@ public class BactrianSubtreeSlide extends TreeOperator {
     }
 
     private double getDelta() {
-    	return kernelDistribution.getRandomDelta(size);
+    	return kernelDistribution.getRandomDelta(0, size);
     }
 
     private int intersectingEdges(Node node, double height, List<Node> directChildren) {

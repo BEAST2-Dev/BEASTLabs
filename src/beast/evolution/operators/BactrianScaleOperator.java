@@ -28,12 +28,12 @@ public class BactrianScaleOperator extends ScaleOperator {
 		super.initAndValidate();
 	}
     
-	protected double getScaler(double value) {
-    	return kernelDistribution.getScaler(value, getCoercableParameterValue());
+	protected double getScaler(int i, double value) {
+    	return kernelDistribution.getScaler(i, value, getCoercableParameterValue());
 	}
     
-	protected double getScaler() {
-    	return kernelDistribution.getScaler(getCoercableParameterValue());
+	protected double getScaler(int i) {
+    	return kernelDistribution.getScaler(i, getCoercableParameterValue());
 	}
 
     @Override
@@ -47,7 +47,7 @@ public class BactrianScaleOperator extends ScaleOperator {
                 final Tree tree = treeInput.get(this);
                 if (rootOnlyInput.get()) {
                     final Node root = tree.getRoot();                    
-                    final double scale = getScaler(root.getHeight());
+                    final double scale = getScaler(root.getNr(), root.getHeight());
                     final double newHeight = root.getHeight() * scale;
 
                     if (newHeight < Math.max(root.getLeft().getHeight(), root.getRight().getHeight())) {
@@ -84,7 +84,7 @@ public class BactrianScaleOperator extends ScaleOperator {
                     final boolean impliedOne = dimCount == (dim - 1);
                     for (int i = 0; i < dim; i++) {
                         if( (impliedOne && (i == 0 || indicator[i-1])) || (!impliedOne && indicator[i]) )  {
-                            final double scaleOne = getScaler(param.getValue(i));
+                            final double scaleOne = getScaler(i, param.getValue(i));
                             final double newValue = scaleOne * param.getValue(i);
 
                             hastingsRatio += Math.log(scaleOne);
@@ -100,7 +100,7 @@ public class BactrianScaleOperator extends ScaleOperator {
 
                     for (int i = 0; i < dim; i++) {
 
-                        final double scaleOne = getScaler(param.getValue(i));
+                        final double scaleOne = getScaler(i, param.getValue(i));
                         final double newValue = scaleOne * param.getValue(i);
 
                         hastingsRatio += Math.log(scaleOne);
@@ -166,7 +166,7 @@ public class BactrianScaleOperator extends ScaleOperator {
                     return Double.NEGATIVE_INFINITY;
                 }
 
-            	final double scale = getScaler(oldValue);
+            	final double scale = getScaler(index, oldValue);
                 hastingsRatio = Math.log(scale);
 
                 final double newValue = scale * oldValue;

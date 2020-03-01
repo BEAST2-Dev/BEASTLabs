@@ -34,7 +34,7 @@ public class BactrianRandomWalkOperator extends KernelOperator {
 
         int i = Randomizer.nextInt(param.getDimension());
         double value = param.getValue(i);
-        double newValue = value + kernelDistribution.getRandomDelta(value, scaleFactor);
+        double newValue = value + kernelDistribution.getRandomDelta(i, value, scaleFactor);
         
         if (newValue < param.getLower() || newValue > param.getUpper()) {
             return Double.NEGATIVE_INFINITY;
