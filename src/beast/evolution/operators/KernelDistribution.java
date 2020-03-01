@@ -370,10 +370,10 @@ public interface KernelDistribution {
 					System.arraycopy(callcounts, 0, tmp, 0, callcounts.length);
 					callcounts = tmp;
 					double [] tmp2 = new double[dim+1];
-					System.arraycopy(estimatedMeans, 0, tmp, 0, estimatedMeans.length);
+					System.arraycopy(estimatedMeans, 0, tmp2, 0, estimatedMeans.length);
 					estimatedMeans = tmp2;
 					tmp2 = new double[dim+1];
-					System.arraycopy(estimatedSDs, 0, tmp, 0, estimatedSDs.length);
+					System.arraycopy(estimatedSDs, 0, tmp2, 0, estimatedSDs.length);
 					estimatedSDs = tmp2;
 				}
 				callcounts[dim]++;
