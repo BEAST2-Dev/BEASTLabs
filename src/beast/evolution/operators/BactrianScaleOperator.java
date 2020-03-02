@@ -32,9 +32,9 @@ public class BactrianScaleOperator extends ScaleOperator {
     	return kernelDistribution.getScaler(i, value, getCoercableParameterValue());
 	}
     
-	protected double getScaler(int i) {
-    	return kernelDistribution.getScaler(i, getCoercableParameterValue());
-	}
+//	protected double getScaler(int i) {
+//    	return kernelDistribution.getScaler(i, getCoercableParameterValue());
+//	}
 
     @Override
     public double proposal() {

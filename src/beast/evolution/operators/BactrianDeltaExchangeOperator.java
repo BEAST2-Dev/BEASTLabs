@@ -305,7 +305,7 @@ public class BactrianDeltaExchangeOperator extends KernelOperator {
     }
 
     private double getNextDouble(int i) {
-    	return kernelDistribution.getRandomDelta(i, delta);
+    	return kernelDistribution.getRandomDelta(i, Double.NaN, delta);
 	}
 
 	@Override

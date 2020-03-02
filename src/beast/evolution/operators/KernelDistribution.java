@@ -16,9 +16,9 @@ public interface KernelDistribution {
 	 * @return random scale factor for scaling parameters
 	 */
 	public double getScaler(int dim, double value, double scaleFactor);
-	default public double getScaler(int dim, double windowSize) {
-		return getScaler(dim, Double.NaN, windowSize);
-	}
+//	default public double getScaler(int dim, double windowSize) {
+//		return getScaler(dim, Double.NaN, windowSize);
+//	}
 
 	/**
 	 * @param m determines shape of Bactrian distribution. m=0.95 is recommended
@@ -26,9 +26,9 @@ public interface KernelDistribution {
 	 * @return random delta value for random walks
 	 */
 	public double getRandomDelta(int dim, double value, double windowSize);
-	default public double getRandomDelta(int dim, double windowSize) {
-		return getRandomDelta(dim, Double.NaN, windowSize);
-	}
+//	default public double getRandomDelta(int dim, double windowSize) {
+//		return getRandomDelta(dim, Double.NaN, windowSize);
+//	}
 		
 	static KernelDistribution newDefaultKernelDistribution() {
 		Bactrian kdist = new Bactrian();
@@ -313,10 +313,10 @@ public interface KernelDistribution {
 					System.arraycopy(callcounts, 0, tmp, 0, callcounts.length);
 					callcounts = tmp;
 					double [] tmp2 = new double[dim+1];
-					System.arraycopy(estimatedMeans, 0, tmp, 0, estimatedMeans.length);
+					System.arraycopy(estimatedMeans, 0, tmp2, 0, estimatedMeans.length);
 					estimatedMeans = tmp2;
 					tmp2 = new double[dim+1];
-					System.arraycopy(estimatedSDs, 0, tmp, 0, estimatedSDs.length);
+					System.arraycopy(estimatedSDs, 0, tmp2, 0, estimatedSDs.length);
 					estimatedSDs = tmp2;
 				}
 				callcounts[dim]++;
@@ -385,8 +385,8 @@ public interface KernelDistribution {
 				    double ssq = estimatedSDs[dim] * estimatedSDs[dim];
 				    estimatedSDs[dim] = Math.sqrt(ssq + ((value - prevMean) * (value - estimatedMeans[dim]) - ssq) / n);
 
-				    estimatedMeans[dim] = estimatedMeans[dim];
-				    estimatedSDs[dim] = estimatedSDs[dim];
+				    estimatedMean = estimatedMeans[dim];
+				    estimatedSD = estimatedSDs[dim];
 				    callcount = callcounts[dim];
 				}
 			} else {

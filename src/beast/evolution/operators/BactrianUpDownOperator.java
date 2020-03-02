@@ -52,7 +52,7 @@ public class BactrianUpDownOperator extends KernelOperator {
     }
     
 	protected double getScaler(int i) {
-		return kernelDistribution.getScaler(i, getCoercableParameterValue());
+		return kernelDistribution.getScaler(i, Double.NaN, getCoercableParameterValue());
 	}
     
 

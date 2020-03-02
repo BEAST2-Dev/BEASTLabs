@@ -64,7 +64,7 @@ public class BactrianNodeOperator extends TreeOperator {
         double upper = node.getParent().getHeight();
         double lower = Math.max(node.getLeft().getHeight(), node.getRight().getHeight());
         
-        double scale = kernelDistribution.getScaler(0, scaleFactor);
+        double scale = kernelDistribution.getScaler(0, Double.NaN, scaleFactor);
 
         // transform value
         double value = node.getHeight();
