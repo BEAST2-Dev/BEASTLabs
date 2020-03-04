@@ -16,19 +16,27 @@ public interface KernelDistribution {
 	 * @return random scale factor for scaling parameters
 	 */
 	public double getScaler(int dim, double value, double scaleFactor);
-//	default public double getScaler(int dim, double windowSize) {
-//		return getScaler(dim, Double.NaN, windowSize);
-//	}
+	default public double getScaler(int dim, double windowSize) {
+		return getScaler(dim, Double.NaN, windowSize);
+	}
 
 	/**
-	 * @param m determines shape of Bactrian distribution. m=0.95 is recommended
+	 * @param dim number of dimensions
 	 * @param windowSize determines range of random delta values, larger is bigger random updates
 	 * @return random delta value for random walks
 	 */
 	public double getRandomDelta(int dim, double value, double windowSize);
-//	default public double getRandomDelta(int dim, double windowSize) {
-//		return getRandomDelta(dim, Double.NaN, windowSize);
-//	}
+	
+	/**
+	 * Do not use this method if there is learning process eg. mirror kernel
+	 * Instead use getRandomDelta(dim, value, windowSize)
+	 * @param dim number of dimensions
+	 * @param windowSize
+	 * @return
+	 */
+	default public double getRandomDelta(int dim, double windowSize) {
+		return getRandomDelta(dim, Double.NaN, windowSize);
+	}
 		
 	static KernelDistribution newDefaultKernelDistribution() {
 		Bactrian kdist = new Bactrian();
