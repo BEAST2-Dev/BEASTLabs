@@ -130,20 +130,23 @@ public class Application {
 								matchingInput.setValue(Boolean.TRUE, null);
 							}
 						} else if (matchingInput.get() != null && matchingInput.get() instanceof List) {
-							Class c = matchingInput.getType();
-							if (c == null) {
-								matchingInput.determineClass(myBeastObject);
-								c = matchingInput.getType();
-							}
-				            Constructor ctor = null;
-				            try {
-				            	ctor = c.getDeclaredConstructor(String.class);
-				            } catch (NoSuchMethodException e) {
-				            
-				            }
-				            Object o = ctor.newInstance(value);
-							((List)matchingInput.get()).add(o);
-							i++;
+							do {
+								Class c = matchingInput.getType();
+								if (c == null) {
+									matchingInput.determineClass(myBeastObject);
+									c = matchingInput.getType();
+								}
+					            Constructor ctor = null;
+					            try {
+					            	ctor = c.getDeclaredConstructor(String.class);
+					            } catch (NoSuchMethodException e) {
+					            
+					            }
+					            value = args[i + 1];
+					            Object o = ctor.newInstance(value);
+								((List)matchingInput.get()).add(o);
+								i++;
+							} while (i + 1 < args.length && !args[i+1].startsWith("-"));
 						} else {
 							matchingInput.setValue(value, myBeastObject);
 							i++;
