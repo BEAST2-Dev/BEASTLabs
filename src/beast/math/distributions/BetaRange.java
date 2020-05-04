@@ -54,7 +54,10 @@ public class BetaRange extends Distribution  {
 			
 			// Range check
 			if (alpha <= 0 || beta <= 0) continue;
-			if (val <= lower || val >= upper) return Double.NEGATIVE_INFINITY;
+			if (val <= lower || val >= upper) {
+				logP = Double.NEGATIVE_INFINITY;
+				return logP;
+			}
 			
 			// Standardise into (0,1)
 			double tval = (val - lower) / (upper - lower);
