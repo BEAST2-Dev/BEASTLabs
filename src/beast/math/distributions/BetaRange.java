@@ -12,7 +12,7 @@ import beast.core.parameter.RealParameter;
 
 /**
  * Expansion of the Beta distribution, except it respects the upper/lower limits of the parameter
- * Can handle a different prior per parameter if the dimension of the parameter is equal to the dimension of the parameters
+ * Can handle a different prior per parameter if the dimension of 'x' is equal to the dimension of the gamma parameters
  * If alpha / beta are set to 0, then the parameter will be skipped (ie. 0 log density)
  * If the parameter exceeds lower/upper, the log density is negative infinity
  */
