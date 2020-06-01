@@ -26,6 +26,7 @@
 package beast.evolution.tree;
 
 
+
 import beast.core.*;
 import beast.core.util.Log;
 import beast.evolution.alignment.Alignment;
@@ -125,6 +126,19 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
 
     @Override
     public void initAndValidate() {
+    	// check whether a date-forward trait is involved
+    	List<TraitSet> traits = new ArrayList<>();
+    	traits.addAll(m_traitList.get());
+    	if (m_initial.get() != null) {
+    		traits.addAll(m_initial.get().m_traitList.get());
+        }
+    	for (TraitSet trait : traits) {
+			if (trait.getTraitName().equals(TraitSet.DATE_TRAIT) || trait.getTraitName().equals(TraitSet.DATE_FORWARD_TRAIT)) {
+    			timeTraitSet = trait;
+    			break;
+    		}
+    	}
+    	
         sTaxa = new LinkedHashSet<>();
         if (taxaInput.get() != null) {
             sTaxa.addAll(taxaInput.get().getTaxaNames());
@@ -220,8 +234,16 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
 	        			plugins.get(i).initAndValidate();
 	        		}
 	                try {
-                        bounds.lower = Math.max(distr.inverseCumulativeProbability(0.0), 0.0);
-		                bounds.upper = distr.inverseCumulativeProbability(1.0);
+	                	double tLow = Math.max(distr.inverseCumulativeProbability(0.0), 0.0);
+	                	double tHi = distr.inverseCumulativeProbability(1.0);
+						bounds.lower = getDate(tLow);
+		                bounds.upper = getDate(tHi);
+		                if (bounds.lower > bounds.upper && tLow < tHi) {
+		                	// can happen with date-forward trait -- bounds need to be swapped
+		                	double tmp = bounds.lower;
+		                	bounds.lower = bounds.upper;
+		                	bounds.upper = tmp;
+		                }
                         assert bounds.lower <= bounds.upper;
 					} catch (MathException e) {
 						Log.warning.println("Could not set bounds in SimpleRandomTree::doTheWork : " + e.getMessage());
@@ -610,6 +632,14 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
         setNodesNrs(root, 0, new int[1], taxonToNR);
 
         initArrays();
+    }
+
+    
+    public double getDate(final double height) {
+        if (timeTraitSet != null) {
+            return timeTraitSet.getDate(height);
+        } else
+            return height;
     }
 
     protected int setNodesNrs(final Node node, int internalNodeCount, int[] n, Map<String,Integer> initial) {
