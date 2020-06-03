@@ -1,4 +1,4 @@
-<package name='BEASTLabs' version='1.9.2'>
+<package name='BEASTLabs' version='1.9.3'>
 	<depends on='beast2' atleast='2.6.0' atmost="2.6.9"/>
     <packageapp description="BEAST model spreadsheet"
               class="beast.app.draw.SpreadSheet"
