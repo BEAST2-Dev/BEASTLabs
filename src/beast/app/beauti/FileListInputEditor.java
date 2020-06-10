@@ -51,7 +51,7 @@ public class FileListInputEditor extends ListInputEditor {
 
 	@Override
 	public Class<?> type() {
-		return File.class;
+		return List.class;
 	}
 	
     @Override
@@ -274,6 +274,9 @@ public class FileListInputEditor extends ListInputEditor {
 
         @Override
 		public int getRowCount() {
+        	if (files == null) {
+        		return 0;
+        	}
             return files.size();
         }
 
