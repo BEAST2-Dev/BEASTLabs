@@ -1,0 +1,8 @@
+# IntelliJ cruft
+/.idea
+/out
+/BEASTLabs.iml
+
+# Eclipse cruft
+/bin
+/.settings
