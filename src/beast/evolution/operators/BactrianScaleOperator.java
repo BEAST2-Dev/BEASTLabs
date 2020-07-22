@@ -6,7 +6,6 @@ import beast.core.Description;
 import beast.core.Input;
 import beast.core.parameter.BooleanParameter;
 import beast.core.parameter.RealParameter;
-import beast.evolution.operators.ScaleOperator;
 import beast.evolution.tree.Node;
 import beast.evolution.tree.Tree;
 import beast.util.Randomizer;
@@ -42,7 +41,7 @@ public class BactrianScaleOperator extends ScaleOperator {
 
             double hastingsRatio;            
 
-            if (m_bIsTreeScaler) {
+            if (isTreeScaler) {
 
                 final Tree tree = treeInput.get(this);
                 if (rootOnlyInput.get()) {
