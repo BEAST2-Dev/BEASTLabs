@@ -76,8 +76,8 @@ public class AdaptableOperatorSampler extends Operator {
     double[][] stateBefore;
     
     
-    // Sum-of-squares of each parameter across before and after each operator was accepted
-    double[][] SS;
+    // Mean sum-of-squares of each parameter across before and after each operator was accepted
+    double[][] mean_SS;
     
     
     // Cumulative mean sum (aka the mean) of each parameter -> for calculating mean
@@ -156,15 +156,15 @@ public class AdaptableOperatorSampler extends Operator {
 		if (this.numParams > 0) {
 			
 
-			// Sum-of-squares of each difference before and after each proposal
-			this.SS = new double[this.numOps][]; 
+			// Mean sum-of-squares of each difference before and after each proposal
+			this.mean_SS = new double[this.numOps][]; 
 			
 			for (int i = 0; i < this.numOps; i ++) {
 				
-				this.SS[i] = new double[this.numParams];
+				this.mean_SS[i] = new double[this.numParams];
 				
 				for (int p = 0; p < this.numParams; p ++) {
-					this.SS[i][p] = 0;
+					this.mean_SS[i][p] = 0;
 				}
 			}
 			
@@ -239,12 +239,12 @@ public class AdaptableOperatorSampler extends Operator {
 
 				// Mean -> sum -> mean
 				double sum = param_mean_sum[p]*n + val;
-				this.param_mean_sum[p] = sum / (n+1);
+				this.param_mean_sum[p] = sum / (n+1.0);
 				
 				
 				// MeanSS -> sumSS -> meanSS
 				double SSsum = param_mean_sum[p]*n + val*val;
-				this.param_mean_SS[p] = SSsum / (n+1);
+				this.param_mean_SS[p] = SSsum / (n+1.0);
 				
 
 		
@@ -374,10 +374,10 @@ public class AdaptableOperatorSampler extends Operator {
 		// Update trained terms from the accept
 		if (learningHasBegun) {
 			
-			// Update the num accepts of this operator
-			this.numAccepts[this.lastOperator] ++;	
 			
 			if (this.numParams > 0) {
+				
+				long n = this.numAccepts[this.lastOperator];
 			
 				// Get the values of each parameter after doing the proposal
 				double[][] stateAfter = this.getAllParameterValues();
@@ -387,9 +387,13 @@ public class AdaptableOperatorSampler extends Operator {
 				
 				// Update the sum of squared diffs for each parameter with respect to this operator
 				for (int p = 0; p < this.numParams; p ++) {
-					SS[this.lastOperator][p] += squaredDiffs[p];
+					double SS = this.mean_SS[this.lastOperator][p]*n + squaredDiffs[p];
+					this.mean_SS[this.lastOperator][p] = SS / (n+1.0);
 				}
 			}
+			
+			// Update the num accepts of this operator
+			this.numAccepts[this.lastOperator] ++;	
 		
 		}
 		
@@ -466,17 +470,15 @@ public class AdaptableOperatorSampler extends Operator {
     public double getZ(int opNum, int paramNum) {
     	
     	
-    	// Contribution from the operator (ie. 1/n)
-    	double opTerm = 1.0 / this.numAccepts[opNum];
     	
     	// Contribution from the parameter (ie. 1/variance)
     	double parTerm = 1.0 / this.getVar(this.param_mean_sum[paramNum], this.param_mean_SS[paramNum]);
     	
     	// Contribution from average squared-difference of applying this operator to this parameter
-    	double opParTerm = this.SS[opNum][paramNum];
+    	double opParTerm = this.mean_SS[opNum][paramNum];
     	
     	
-    	return opTerm * parTerm * opParTerm;
+    	return parTerm * opParTerm;
     	
     }
     
@@ -539,7 +541,7 @@ public class AdaptableOperatorSampler extends Operator {
 	        json.key("numProposals").value(Arrays.toString(this.numProposals));
 	        
 	        // Store SS for each operator-parameter combination
-	        json.key("SS").value(Arrays.deepToString(this.SS));
+	        json.key("mean_SS").value(Arrays.deepToString(this.mean_SS));
 	        
 	        
 	        
@@ -630,16 +632,16 @@ public class AdaptableOperatorSampler extends Operator {
 	        
 	        
 	        // Sum of squares
-	        String[] SS_string = ((String) o.getString("SS")).replace("[", "").replace("]", "").split(", ");
+	        String[] SS_string = ((String) o.getString("mean_SS")).replace("[", "").replace("]", "").split(", ");
 	        if (SS_string.length != this.numOps * this.numParams) {
-	        	throw new IllegalArgumentException("Cannot resume because there are " + SS_string.length + " elements in SS but " + (this.numOps*this.numParams) + " operator-parameter combinations");
+	        	throw new IllegalArgumentException("Cannot resume because there are " + SS_string.length + " elements in mean_SS but " + (this.numOps*this.numParams) + " operator-parameter combinations");
 	        }
-	        this.SS = new double[this.numOps][];
+	        this.mean_SS = new double[this.numOps][];
 	        for (int i = 0; i < this.numOps; i++) {
-	        	this.SS[i] = new double[this.numParams];
+	        	this.mean_SS[i] = new double[this.numParams];
 	        	for (int p = 0; p < this.numParams; p++) {
 	        		double val = Double.parseDouble(SS_string[i*this.numParams + p]);
-		        	this.SS[i][p] = val;
+		        	this.mean_SS[i][p] = val;
 		        }
 	        	 
 	        }
