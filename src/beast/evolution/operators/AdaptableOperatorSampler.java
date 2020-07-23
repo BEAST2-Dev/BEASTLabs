@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONStringer;
@@ -25,7 +26,7 @@ import beast.util.Randomizer;
  * @author Jordan Douglas
  * An operator which selects samples from a series of other operators, with respect to their ability to explore one or more real parameters 
  * Training for each operator occurs following a burnin period
- * After training, AdaptableOperatorSampler should pick the operator which is giving the best results n a particular dataset
+ * After a learnin period, AdaptableOperatorSampler should pick the operator which is giving the best results n a particular dataset
  */
 public class AdaptableOperatorSampler extends Operator {
 	
@@ -37,19 +38,21 @@ public class AdaptableOperatorSampler extends Operator {
     final public Input<List<Operator>> operatorsInput = new Input<>("operator", "list of operators to select from", new ArrayList<Operator>());
     
     final public Input<Integer> burninInput = new Input<>("burnin", "number of operator calls until the learning process begins (default: 500 x number of operators)");
-    final public Input<Integer> learninInput = new Input<>("learnin", "number of operator calls between learning begind (ie. at burnin) and before this operator starts to use what it has learned"
-    		+ " (default: 1000 x number of operators)");
+    final public Input<Integer> learninInput = new Input<>("learnin", "number of operator calls after learning begins (ie. at burnin) but before this operator starts to use what it has learned"
+    		+ " (default: 500 x number of operators)");
+    
+    
+    final public Input<Double> uniformSampleProbInput = new Input<>("uniformp", "the probability that operators are sampled uniformly at random instead of using the trained parameters (default 0.01)", 0.01);
 	
     
     final boolean DEBUG = false;
     
-    // The score added onto the weight of each operator to prevent operators having weights of 0
-    final double FUDGE_FACTOR = 0.1;
-    
+
     
     List<RealParameter> parameters;
     Tree tree;
     List<Operator> operators;
+    double uniformSampleProb;
     int burnin;
     int learnin;
     int numParams;
@@ -57,7 +60,7 @@ public class AdaptableOperatorSampler extends Operator {
     
 
     // Number of times this meta-operator has been called
-    int nProposals;
+    long nProposals;
     
     // Learning begins after burnin
     boolean learningHasBegun;
@@ -77,11 +80,11 @@ public class AdaptableOperatorSampler extends Operator {
     double[][] SS;
     
     
-    // Cumulative sum of each parameter -> for calculating mean
-    double[] param_sum = null;
+    // Cumulative mean sum (aka the mean) of each parameter -> for calculating mean
+    double[] param_mean_sum = null;
     
-    // Cumulative sum of squares of each parameter -> for calculating variance
-    double[] param_SS = null;
+    // Cumulative mean sum of squares of each parameter -> for calculating variance
+    double[] param_mean_SS = null;
     
     
     // Number of times each operator has been called
@@ -114,17 +117,20 @@ public class AdaptableOperatorSampler extends Operator {
 		
 		// Learnin
 		if (learninInput.get() == null) {
-			this.learnin = 1000 * this.numOps;
+			this.learnin = 500 * this.numOps;
 		}else {
-			this.learnin = Math.max(this.burnin, learninInput.get());
+			this.learnin = Math.max(0, learninInput.get());
 		}
 		
 		
 		
 		this.nProposals = 0;
 		this.learningHasBegun = this.burnin == 0;
-		this.teachingHasBegun = this.learnin == 0;
+		this.teachingHasBegun = this.burnin + this.learnin == 0;
 		this.lastOperator = -1;
+		this.uniformSampleProb = uniformSampleProbInput.get();
+		this.uniformSampleProb = Math.min(Math.max(this.uniformSampleProb, 0), 1);
+		
 		
 		
 		// Validate
@@ -164,11 +170,11 @@ public class AdaptableOperatorSampler extends Operator {
 			
 			
 			// Cumulative sum and SS of each parameter in each state
-			this.param_sum = new double[this.numParams];
-			this.param_SS = new double[this.numParams];
+			this.param_mean_sum = new double[this.numParams];
+			this.param_mean_SS = new double[this.numParams];
 			for (int p = 0; p < this.numParams; p ++) {
-				this.param_sum[p] = 0;
-				this.param_SS[p] = 0;
+				this.param_mean_sum[p] = 0;
+				this.param_mean_SS[p] = 0;
 			}
 			
 		}
@@ -204,7 +210,7 @@ public class AdaptableOperatorSampler extends Operator {
 			if (DEBUG) Log.warning("Burnin has been achieved. Beginning learning...");
 			this.learningHasBegun = true;
 		}
-		if (this.nProposals >= this.learnin && !this.teachingHasBegun) {
+		if (this.nProposals >= this.burnin + this.learnin && !this.teachingHasBegun) {
 			if (DEBUG) Log.warning("Learnn has been achieved. Applying the learning now...");
 			this.teachingHasBegun = true;
 		}
@@ -214,10 +220,13 @@ public class AdaptableOperatorSampler extends Operator {
 	}
 	
 	
+	
 	private void updateParamStats(double[][] thisState) {
 		
 		if (this.learningHasBegun && this.numParams > 0) {
 			
+			
+			long n = this.nProposals - this.burnin;
 
 			// Update the sum and the sum-of-squares each parameter
 			for (int p = 0; p < this.numParams; p ++) {
@@ -228,8 +237,16 @@ public class AdaptableOperatorSampler extends Operator {
 					val += thisState[p][j] / thisState[p].length;
 				}
 
-				this.param_sum[p] += val;
-				this.param_SS[p] += val*val;
+				// Mean -> sum -> mean
+				double sum = param_mean_sum[p]*n + val;
+				this.param_mean_sum[p] = sum / (n+1);
+				
+				
+				// MeanSS -> sumSS -> meanSS
+				double SSsum = param_mean_sum[p]*n + val*val;
+				this.param_mean_SS[p] = SSsum / (n+1);
+				
+
 		
 			}
 		
@@ -244,9 +261,11 @@ public class AdaptableOperatorSampler extends Operator {
 	public double[] getOperatorCumulativeProbs(){
 		
 		double[] operatorWeights = new double[this.numOps];
+		boolean sampleUniformlyAtRandom = !this.teachingHasBegun || Randomizer.nextFloat() < this.uniformSampleProb;
 		
 		
-		if (this.teachingHasBegun) {
+		
+		if (!sampleUniformlyAtRandom) {
 			
 			// If past burn-in, then sample from acceptance x squared-diff
 			for (int i = 0; i < this.numOps; i ++) {
@@ -263,7 +282,7 @@ public class AdaptableOperatorSampler extends Operator {
 					
 				}
 				
-				operatorWeights[i] = acceptanceProb * hScore + FUDGE_FACTOR;
+				operatorWeights[i] = acceptanceProb * hScore;
 				
 				
 				if (DEBUG) Log.warning("Operator " + i + " has acceptance prob of " + acceptanceProb + " and an hscore of " + hScore);
@@ -306,7 +325,7 @@ public class AdaptableOperatorSampler extends Operator {
 		
 		return operatorWeights;
 	}
-	
+		
 
 	
 	/**
@@ -426,15 +445,13 @@ public class AdaptableOperatorSampler extends Operator {
     
     
     /**
-     * Returns a variance using a cumulative sum, a cumulative sum of squared values, and the sample size n
+     * Returns a variance using a mean and a mean sum of squares
      * @param sum
      * @param SS
-     * @param n
      * @return
      */
-    public double getVar(double sum, double SS, int n) {
-    	double mean = sum/n;
-    	return SS/n - mean*mean;
+    public double getVar(double mean, double meanSS) {
+    	return meanSS - mean*mean;
     }
     
     
@@ -453,7 +470,7 @@ public class AdaptableOperatorSampler extends Operator {
     	double opTerm = 1.0 / this.numAccepts[opNum];
     	
     	// Contribution from the parameter (ie. 1/variance)
-    	double parTerm = 1.0 / this.getVar(this.param_sum[paramNum], this.param_SS[paramNum], this.nProposals);
+    	double parTerm = 1.0 / this.getVar(this.param_mean_sum[paramNum], this.param_mean_SS[paramNum]);
     	
     	// Contribution from average squared-difference of applying this operator to this parameter
     	double opParTerm = this.SS[opNum][paramNum];
@@ -495,13 +512,26 @@ public class AdaptableOperatorSampler extends Operator {
 	
 	        // id
 	        json.key("id").value(getID());
+	        
+	        
+	        
+	        // Store generic beast core properties by writing its json to a string and then parsing it back
+	        StringWriter outStr = new StringWriter();
+	        PrintWriter writer = new PrintWriter(outStr);
+	        super.storeToFile(writer);
+	        JSONObject obj = new JSONObject(outStr.toString());
+	        for (String key : obj.keySet()) {
+	        	if (key.equals("id")) continue;
+	        	json.key(key).value(obj.get(key));
+	        }
+	        
 	
 	        // N proposals
 	        json.key("nProposals").value(this.nProposals);
 	        
 	        // Store parameter sum/SS
-	        json.key("param_sum").value(Arrays.toString(this.param_sum));
-	        json.key("param_SS").value(Arrays.toString(this.param_SS));
+	        json.key("param_mean_sum").value(Arrays.toString(this.param_mean_sum));
+	        json.key("param_mean_SS").value(Arrays.toString(this.param_mean_SS));
 	        
 	        
 	        // Store accepts of each operator
@@ -513,19 +543,28 @@ public class AdaptableOperatorSampler extends Operator {
 	        
 	        
 	        
-	        
-	        // Store sub-operators
-	        // TODO: get the strings formating properly
-	        StringWriter outStr = new StringWriter();
-	        PrintWriter writer = new PrintWriter(outStr);
-	        
+
+
+	        // Store sub-operators in a list
+	        JSONArray operatorListJson = new JSONArray();
 	        for (int i = 0; i < this.numOps; i ++) {
+	        	
+	        	// Write the operator's json to a string
+	        	outStr = new StringWriter();
+		        writer = new PrintWriter(outStr);
 	        	this.operators.get(i).storeToFile(writer);
-	        	writer.println(",");
+	        	
+
+	        	
+	        	// Parse the json of the operator
+	        	obj = new JSONObject(outStr.toString());
+	        	operatorListJson.put(obj);
+
+	        	//System.out.println(outStr.toString());
+
+	        	
 	        }
-	        writer.flush();
-	        
-	        //json.key("operators").value(outStr.toString());
+	        json.key("operators").value(operatorListJson);
 	        
 	        json.endObject();
 	        out.print(json.toString());
@@ -546,33 +585,29 @@ public class AdaptableOperatorSampler extends Operator {
     public void restoreFromFile(JSONObject o) {
 
     	
-    	// Load sub-operators first
-    	// TODO load these back in
-        for (int i = 0; i < this.numOps; i ++) {
-        	//this.operators.get(i).restoreFromFile(o);
-        }
+    	super.restoreFromFile(o);
     	
     	
     	try {
     		
     		
-    		this.nProposals = Integer.parseInt(o.getString("param_sum"));
+    		this.nProposals = Long.parseLong(o.getString("nProposals"));
     		
     		
     		// Parameter sum and sum-of-squares
-    		String[] param_sum_string = ((String) o.getString("param_sum")).replace("[", "").replace("]", "").split(", ");
-	        String[] param_SS_string = ((String) o.getString("param_SS")).replace("[", "").replace("]", "").split(", ");
+    		String[] param_sum_string = ((String) o.getString("param_mean_sum")).replace("[", "").replace("]", "").split(", ");
+	        String[] param_SS_string = ((String) o.getString("param_mean_SS")).replace("[", "").replace("]", "").split(", ");
 	        if (param_sum_string.length != this.numParams) {
-	        	throw new IllegalArgumentException("Cannot resume because there are " + param_sum_string.length + " elements in param_sum but " + this.numParams + " params");
+	        	throw new IllegalArgumentException("Cannot resume because there are " + param_sum_string.length + " elements in param_mean_sum but " + this.numParams + " params");
 	        }
 	        if (param_SS_string.length != this.numParams) {
-	        	throw new IllegalArgumentException("Cannot resume because there are " + param_SS_string.length + " elements in param_SS but " + this.numParams + " params");
+	        	throw new IllegalArgumentException("Cannot resume because there are " + param_SS_string.length + " elements in param_mean_SS but " + this.numParams + " params");
 	        }
-	        this.param_sum = new double[this.numParams];
-	        this.param_SS = new double[this.numParams];
+	        this.param_mean_sum = new double[this.numParams];
+	        this.param_mean_SS = new double[this.numParams];
 	        for (int p = 0; p < this.numParams; p++) {
-	        	this.param_sum[p] = Double.parseDouble(param_sum_string[p]);
-	        	this.param_SS[p] = Double.parseDouble(param_SS_string[p]);
+	        	this.param_mean_sum[p] = Double.parseDouble(param_sum_string[p]);
+	        	this.param_mean_SS[p] = Double.parseDouble(param_SS_string[p]);
 	        }
 	        
 	        
@@ -589,27 +624,37 @@ public class AdaptableOperatorSampler extends Operator {
 	        this.numProposals = new int[this.numOps];
 	        for (int i = 0; i < this.numOps; i++) {
 	        	this.numAccepts[i] = Integer.parseInt(numAccepts_string[i]);
-	        	this.numAccepts[i] = Integer.parseInt(numProposals_string[i]);
+	        	this.numProposals[i] = Integer.parseInt(numProposals_string[i]);
 	        }
 	        
 	        
 	        
 	        // Sum of squares
 	        String[] SS_string = ((String) o.getString("SS")).replace("[", "").replace("]", "").split(", ");
-	        if (SS_string.length != this.numOps) {
-	        	throw new IllegalArgumentException("Cannot resume because there are " + SS_string.length + " elements in SS but " + this.numOps + " operators");
+	        if (SS_string.length != this.numOps * this.numParams) {
+	        	throw new IllegalArgumentException("Cannot resume because there are " + SS_string.length + " elements in SS but " + (this.numOps*this.numParams) + " operator-parameter combinations");
 	        }
 	        this.SS = new double[this.numOps][];
 	        for (int i = 0; i < this.numOps; i++) {
-	        	String[] this_SS_string = SS_string[i].replace("[", "").replace("]", "").split(", ");
-	        	if (this_SS_string.length != this.numParams) {
-	 	        	throw new IllegalArgumentException("Cannot resume because there are " + SS_string.length + " elements in SS at position " + i + " but " + this.numParams + " parameters");
-	 	        }
 	        	this.SS[i] = new double[this.numParams];
 	        	for (int p = 0; p < this.numParams; p++) {
-		        	this.SS[i][p] = Double.parseDouble(this_SS_string[p]);
+	        		double val = Double.parseDouble(SS_string[i*this.numParams + p]);
+		        	this.SS[i][p] = val;
 		        }
 	        	 
+	        }
+	        
+	        
+	        
+	    	// Load sub-operators
+	        JSONArray operatorArray = o.getJSONArray("operators");
+	        if (operatorArray.length() != this.numOps) {
+	        	throw new IllegalArgumentException("Cannot resume because there are " + operatorArray.length() + " elements in 'operators' but there should be " + this.numOps);
+		 	     
+	        }
+	        for (int i = 0; i < this.numOps; i ++) {
+	        	JSONObject jsonOp = operatorArray.getJSONObject(i);
+	        	this.operators.get(i).restoreFromFile(jsonOp);
 	        }
 	        
     		
