@@ -527,7 +527,12 @@ public class AdaptableOperatorSampler extends Operator {
     public List<StateNode> listStateNodes() {
     	List<StateNode> stateNodes = super.listStateNodes();
     	for (int i = 0; i < this.numOps; i ++) {
-    		stateNodes.addAll(this.operators.get(i).listStateNodes());
+    		
+    		// Maintain a list of unique elements
+    		for (StateNode node : this.operators.get(i).listStateNodes()) {
+    			if (!stateNodes.contains(node)) stateNodes.add(node);
+    		}
+
     	}
     	return stateNodes;
     }
@@ -538,7 +543,6 @@ public class AdaptableOperatorSampler extends Operator {
     public void storeToFile(final PrintWriter out) {
     	
 
-    	
         
     	try {
 	        JSONStringer json = new JSONStringer();
