@@ -227,7 +227,10 @@ public class AdaptableOperatorSampler extends Operator {
 	}
 	
 	
-	
+	/**
+	 * Update the mean and SS of each parameter from the current state
+	 * @param thisState
+	 */
 	private void updateParamStats(double[][] thisState) {
 		
 		if (this.learningHasBegun && this.numParams > 0) {

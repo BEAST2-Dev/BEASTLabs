@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.math.MathException;
+import org.apache.commons.math3.distribution.UniformRealDistribution;
 
 import beast.core.Distribution;
 import beast.core.Input;
@@ -22,6 +23,8 @@ import beast.util.Randomizer;
 
 /**
  * Samples a parameter from its prior distribution
+ * If no prior is specified, then assumes a uniform distribution between parameter min and max
+ * If there is no min/max then throws error
  * If there is more than one element in the parameter, then the number of elements sampled 
  * 		per iteration is sample from a Binomial(n = ndimensions, p) distribution where np is tunable
  * If a tree is also provided, then the parameter (eg. rates, population sizes) is assumed to correspond to tree
@@ -33,7 +36,7 @@ public class SampleFromPriorOperator extends Operator {
 	
 	
     final public Input<RealParameter> paramInput = new Input<>("parameter", "the parameter sample", Input.Validate.REQUIRED);
-    final public Input<ParametricDistribution> priorInput = new Input<>("prior", "the prior distribution of the parameter", Input.Validate.REQUIRED);
+    final public Input<ParametricDistribution> priorInput = new Input<>("prior", "the prior distribution of the parameter");
     final public Input<Tree> treeInput = new Input<>("tree", "the tree that the parameter belong to (if applicable)", Input.Validate.OPTIONAL);
     final public Input<Double> npInput = new Input<>("np", "tunable parameter describing the mean number of elements in the parameter vector to sample", 1.0);
     
@@ -59,6 +62,7 @@ public class SampleFromPriorOperator extends Operator {
 		this.validateNP(true);
 		
 		
+	
 		// Check that parameter dimensions match tree dimensions
 		if (tree != null) {
 			
@@ -92,6 +96,15 @@ public class SampleFromPriorOperator extends Operator {
 		}
 		
 		
+		
+		
+		// Prior
+		if (prior == null && (parameter.getLower() == Double.NEGATIVE_INFINITY || parameter.getUpper() == Double.POSITIVE_INFINITY)) {
+			throw new IllegalArgumentException("Please either provide a prior or a lower and upper limit for parameter " + parameter.getID());
+		}
+		
+		
+		
 	}
 
 	@Override
@@ -106,10 +119,18 @@ public class SampleFromPriorOperator extends Operator {
 			
 			//System.out.println("Sampling parameter " + p);
 			
+			// Prior check
+			double lower = parameter.getLower();
+			double upper = parameter.getUpper();
+			if (prior == null && (lower == Double.NEGATIVE_INFINITY || upper == Double.POSITIVE_INFINITY)) {
+				throw new IllegalArgumentException("Please either provide a prior or a lower and upper limit for parameter " + parameter.getID());
+			}
+			
+			
 			
 			// Before proposal
 			double oldX = parameter.getValue(p);
-			double oldLogP = prior.logDensity(oldX);
+			double oldLogP = prior == null ? 0 : prior.logDensity(oldX);
 			
 			
 			// After proposal
@@ -117,10 +138,10 @@ public class SampleFromPriorOperator extends Operator {
 				
 				// Sample x from the prior
 				double u = Randomizer.nextFloat();
-				double newX = prior.inverseCumulativeProbability(u);
+				double newX = prior == null ? Randomizer.nextFloat() * (upper - lower) + lower : prior.inverseCumulativeProbability(u);
 				
 				// Calculate log-density of new x
-				double newLogP = prior.logDensity(newX);
+				double newLogP = prior == null ? 0 : prior.logDensity(newX);
 				
 				// Set new value
 				parameter.setValue(p, newX);
