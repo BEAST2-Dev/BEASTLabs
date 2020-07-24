@@ -525,7 +525,7 @@ public class AdaptableOperatorSampler extends Operator {
     
     @Override
     public List<StateNode> listStateNodes() {
-    	List<StateNode> stateNodes = super.listStateNodes();
+    	List<StateNode> stateNodes = new ArrayList<StateNode>(); //super.listStateNodes();
     	for (int i = 0; i < this.numOps; i ++) {
     		
     		// Maintain a list of unique elements
