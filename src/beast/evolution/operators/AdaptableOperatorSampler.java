@@ -2,8 +2,10 @@ package beast.evolution.operators;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 import org.json.JSONArray;
@@ -37,9 +39,9 @@ public class AdaptableOperatorSampler extends Operator {
     final public Input<Tree> treeInput = new Input<>("tree", "tree containing node heights to compare before and after the proposal (optional)");
     final public Input<List<Operator>> operatorsInput = new Input<>("operator", "list of operators to select from", new ArrayList<Operator>());
     
-    final public Input<Integer> burninInput = new Input<>("burnin", "number of operator calls until the learning process begins (default: 500 x number of operators)");
+    final public Input<Integer> burninInput = new Input<>("burnin", "number of operator calls until the learning process begins (default: 1000)", 1000);
     final public Input<Integer> learninInput = new Input<>("learnin", "number of operator calls after learning begins (ie. at burnin) but before this operator starts to use what it has learned"
-    		+ " (default: 500 x number of operators)");
+    		+ " (default: 100 x number of operators)");
     
     
     final public Input<Double> uniformSampleProbInput = new Input<>("uniformp", "the probability that operators are sampled uniformly at random instead of using the trained parameters (default 0.01)", 0.01);
@@ -75,6 +77,8 @@ public class AdaptableOperatorSampler extends Operator {
     // The parameter values from before the current proposal was made
     double[][] stateBefore;
     
+    // The start time of the previously called proposal
+    long startTimeOfProposal;
     
     // Mean sum-of-squares of each parameter across before and after each operator was accepted
     double[][] mean_SS;
@@ -86,13 +90,14 @@ public class AdaptableOperatorSampler extends Operator {
     // Cumulative mean sum of squares of each parameter -> for calculating variance
     double[] param_mean_SS = null;
     
-    
     // Number of times each operator has been called
     int[] numProposals = null;
     
     // Number of times each operator has been accepted
     int[] numAccepts = null;
     
+    // Mean runtime of each operator (ms)
+    double[] operator_mean_runtimes;
 
     
 
@@ -109,15 +114,11 @@ public class AdaptableOperatorSampler extends Operator {
 		this.numParams = this.parameters.size() + (this.tree == null ? 0 : 1);
 		
 		// Burnin
-		if (burninInput.get() == null) {
-			this.burnin = 500 * this.numOps;
-		}else {
-			this.burnin = Math.max(0, burninInput.get());
-		}
+		this.burnin = Math.max(0, burninInput.get());
 		
 		// Learnin
 		if (learninInput.get() == null) {
-			this.learnin = 500 * this.numOps;
+			this.learnin = 100 * this.numOps;
 		}else {
 			this.learnin = Math.max(0, learninInput.get());
 		}
@@ -146,10 +147,12 @@ public class AdaptableOperatorSampler extends Operator {
 		// Learned num proposals and accepts of all operators
 		this.numProposals = new int[this.numOps];
 		this.numAccepts = new int[this.numOps];
+		this.operator_mean_runtimes = new double[this.numOps];
 		
 		for (int i = 0; i < this.numOps; i ++) {
 			this.numProposals[i] = 0;
 			this.numAccepts[i] = 0;
+			this.operator_mean_runtimes[i] = 0;
 		}
 
 
@@ -199,13 +202,12 @@ public class AdaptableOperatorSampler extends Operator {
 		
 
 		// Sample an operator
-		double[] operatorCumulativeProbs = this.getOperatorCumulativeProbs();
+		double[] operatorCumulativeProbs = this.getOperatorCumulativeProbs(false);
 		this.lastOperator = Randomizer.binarySearchSampling(operatorCumulativeProbs);
 		Operator operator = this.operators.get(this.lastOperator);
 		
 		// Increment the number of proposals
 		this.nProposals ++;
-		if (this.learningHasBegun) this.numProposals[this.lastOperator] ++;
 		if (this.nProposals >= this.burnin && !this.learningHasBegun) {
 			if (DEBUG) Log.warning("Burnin has been achieved. Beginning learning...");
 			this.learningHasBegun = true;
@@ -214,7 +216,12 @@ public class AdaptableOperatorSampler extends Operator {
 			if (DEBUG) Log.warning("Learnn has been achieved. Applying the learning now...");
 			this.teachingHasBegun = true;
 		}
+		if (this.learningHasBegun) this.numProposals[this.lastOperator] ++;
 
+		
+		// Write down the start time
+		this.startTimeOfProposal = System.currentTimeMillis();
+		
 		// Do the proposal. If it gets accepted then the differences between the two states will be calculated afterwards
 		return operator.proposal();
 	}
@@ -243,7 +250,7 @@ public class AdaptableOperatorSampler extends Operator {
 				
 				
 				// MeanSS -> sumSS -> meanSS
-				double SSsum = param_mean_sum[p]*n + val*val;
+				double SSsum = param_mean_SS[p]*n + val*val;
 				this.param_mean_SS[p] = SSsum / (n+1.0);
 				
 
@@ -258,10 +265,10 @@ public class AdaptableOperatorSampler extends Operator {
 	 * 
 	 * @return A list of cumulative probabilites for sampling each operator
 	 */
-	public double[] getOperatorCumulativeProbs(){
+	public double[] getOperatorCumulativeProbs(boolean forceSampling){
 		
 		double[] operatorWeights = new double[this.numOps];
-		boolean sampleUniformlyAtRandom = !this.teachingHasBegun || Randomizer.nextFloat() < this.uniformSampleProb;
+		boolean sampleUniformlyAtRandom = !forceSampling && (!this.teachingHasBegun || Randomizer.nextFloat() < this.uniformSampleProb);
 		
 		
 		
@@ -374,6 +381,7 @@ public class AdaptableOperatorSampler extends Operator {
 		// Update trained terms from the accept
 		if (learningHasBegun) {
 			
+			this.recordRuntime(this.startTimeOfProposal, System.currentTimeMillis(), this.lastOperator);
 			
 			if (this.numParams > 0) {
 				
@@ -399,9 +407,37 @@ public class AdaptableOperatorSampler extends Operator {
 		
 		this.operators.get(this.lastOperator).accept();
 		super.accept();
+		
+		
 	
 	}
 	
+	
+	@Override
+	public void reject() {
+		if (learningHasBegun) this.recordRuntime(this.startTimeOfProposal, System.currentTimeMillis(), this.lastOperator);
+		this.operators.get(this.lastOperator).reject();
+		super.reject();
+	}
+	
+	
+	/**
+	 * Updates the mean runtime of this operator
+	 * @param startTime
+	 * @param stopTime
+	 * @param operatorNum
+	 */
+	private void recordRuntime(long startTime, long stopTime, int operatorNum) {
+		
+		double time = stopTime - startTime;
+		assert time >= 0;
+		
+		int n = this.numProposals[operatorNum];
+		double sum = this.operator_mean_runtimes[operatorNum]*(n-1) + time;
+		this.operator_mean_runtimes[operatorNum] = sum / n;
+
+		
+	}
 	
 	/**
 	 * Return the sum of squares of the difference within each parameter before and after the proposal was accepted
@@ -432,11 +468,7 @@ public class AdaptableOperatorSampler extends Operator {
 		
 	}
 
-	@Override
-	public void reject() {
-		this.operators.get(this.lastOperator).reject();
-		super.reject();
-	}
+
 	
 	
     @Override
@@ -463,6 +495,7 @@ public class AdaptableOperatorSampler extends Operator {
      * Returns the normalised average squared-difference that this operator causes when applied to this parameter
      * This difference is normalised by dividing the mean squared-difference by the variance of the parameter 
      * This enables comparison between parameters which exist on different magnitudes
+     * The value is also divided by the average runtime of the operator
      * @param opNum
      * @param paramNum
      * @return
@@ -470,15 +503,16 @@ public class AdaptableOperatorSampler extends Operator {
     public double getZ(int opNum, int paramNum) {
     	
     	
+    	double runtime = this.operator_mean_runtimes[opNum];
     	
     	// Contribution from the parameter (ie. 1/variance)
-    	double parTerm = 1.0 / this.getVar(this.param_mean_sum[paramNum], this.param_mean_SS[paramNum]);
+    	double parameterVariance = this.getVar(this.param_mean_sum[paramNum], this.param_mean_SS[paramNum]);
     	
     	// Contribution from average squared-difference of applying this operator to this parameter
     	double opParTerm = this.mean_SS[opNum][paramNum];
     	
     	
-    	return parTerm * opParTerm;
+    	return opParTerm / (runtime * parameterVariance);
     	
     }
     
@@ -536,15 +570,26 @@ public class AdaptableOperatorSampler extends Operator {
 	        json.key("param_mean_SS").value(Arrays.toString(this.param_mean_SS));
 	        
 	        
-	        // Store accepts of each operator
+	        // Store accepts/rejects/runtime of each operator
 	        json.key("numAccepts").value(Arrays.toString(this.numAccepts));
 	        json.key("numProposals").value(Arrays.toString(this.numProposals));
+	        json.key("operator_mean_runtimes").value(Arrays.toString(this.operator_mean_runtimes));
+	        
 	        
 	        // Store SS for each operator-parameter combination
 	        json.key("mean_SS").value(Arrays.deepToString(this.mean_SS));
 	        
 	        
 	        
+	        
+	        // For interest of the user (although not read in again later) also print the weight of each operator
+	        double[] cumulativeProb = this.getOperatorCumulativeProbs(true);
+	        double[] weights = new double[this.numOps];
+	        for (int i = 0; i < this.numOps; i ++) {
+	        	if (i == 0) weights[i] = cumulativeProb[i];
+	        	else weights[i] = cumulativeProb[i] - cumulativeProb[i-1];
+	        }
+	        json.key("weights").value(Arrays.toString(weights));
 
 
 	        // Store sub-operators in a list
@@ -613,20 +658,26 @@ public class AdaptableOperatorSampler extends Operator {
 	        }
 	        
 	        
-	        // Operator proposals and accepts post-burnin
+	        // Operator runtime, proposals, and accepts post-burnin
 	        String[] numAccepts_string = ((String) o.getString("numAccepts")).replace("[", "").replace("]", "").split(", ");
 	        String[] numProposals_string = ((String) o.getString("numProposals")).replace("[", "").replace("]", "").split(", ");
+	        String[] operator_mean_runtimes_string = ((String) o.getString("operator_mean_runtimes")).replace("[", "").replace("]", "").split(", ");
 	        if (numAccepts_string.length != this.numOps) {
 	        	throw new IllegalArgumentException("Cannot resume because there are " + numAccepts_string.length + " elements in numAccepts but " + this.numOps + " operators");
 	        }
 	        if (numProposals_string.length != this.numOps) {
 	        	throw new IllegalArgumentException("Cannot resume because there are " + numProposals_string.length + " elements in numProposals but " + this.numOps + " operators");
 	        }
+	        if (operator_mean_runtimes_string.length != this.numOps) {
+	        	throw new IllegalArgumentException("Cannot resume because there are " + operator_mean_runtimes_string.length + " elements in operator_mean_runtimes but " + this.numOps + " operators");
+	        }
 	        this.numAccepts = new int[this.numOps];
 	        this.numProposals = new int[this.numOps];
+	        this.operator_mean_runtimes = new double[this.numOps];
 	        for (int i = 0; i < this.numOps; i++) {
 	        	this.numAccepts[i] = Integer.parseInt(numAccepts_string[i]);
 	        	this.numProposals[i] = Integer.parseInt(numProposals_string[i]);
+	        	this.operator_mean_runtimes[i] = Double.parseDouble(operator_mean_runtimes_string[i]);
 	        }
 	        
 	        
