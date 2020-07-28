@@ -18,9 +18,12 @@ public class BactrianIntervalOperator extends KernelOperator {
      final public Input<RealParameter> parameterInput = new Input<>("parameter", "the parameter to operate a random walk on.", Validate.REQUIRED);
     public final Input<Double> scaleFactorInput = new Input<>("scaleFactor", "scaling factor: larger means more bold proposals", 1.0);
     final public Input<Boolean> optimiseInput = new Input<>("optimise", "flag to indicate that the scale factor is automatically changed in order to achieve a good acceptance rate (default true)", true);
-
+    final public Input<Boolean> inclusiveInput = new Input<>("inclusive", "are the upper and lower limits inclusive i.e. should limit values be accepted (default true)", true);
+    
+    
     double scaleFactor;
     double lower, upper;
+    boolean inclusive;
 
     @Override
 	public void initAndValidate() {
@@ -30,6 +33,7 @@ public class BactrianIntervalOperator extends KernelOperator {
         RealParameter param = parameterInput.get();
         lower = (Double) param.getLower();
         upper = (Double) param.getUpper();
+        inclusive = inclusiveInput.get();
 
         if (Double.isInfinite(lower)) {
         	throw new IllegalArgumentException("Lower bound should be finite");
@@ -56,6 +60,9 @@ public class BactrianIntervalOperator extends KernelOperator {
         if (newValue < lower || newValue > upper) {
         	throw new RuntimeException("programmer error: new value proposed outside range");
         }
+        
+        // Ensure that the value is not sitting on the limit (due to numerical issues for example)
+        if (!inclusive && (newValue == lower || newValue == upper)) return Double.NEGATIVE_INFINITY;
         
         param.setValue(i, newValue);
 
