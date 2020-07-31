@@ -152,7 +152,7 @@ public class AdaptableOperatorSampler extends Operator {
 		for (int i = 0; i < this.numOps; i ++) {
 			this.numProposals[i] = 0;
 			this.numAccepts[i] = 0;
-			this.operator_mean_runtimes[i] = 0;
+			this.operator_mean_runtimes[i] = 0.001; // Initialise it at 1ns to avoid division by 0
 		}
 
 
@@ -292,6 +292,7 @@ public class AdaptableOperatorSampler extends Operator {
 					
 				}
 				
+				if (Double.isNaN(hScore) || Double.isInfinite(hScore)) hScore = 0;
 				operatorWeights[i] = acceptanceProb * hScore;
 				
 				
@@ -315,7 +316,7 @@ public class AdaptableOperatorSampler extends Operator {
 		for (int i = 0; i < this.numOps; i ++) weightSum += operatorWeights[i];
 		
 		
-		if (weightSum == 0) {
+		if (weightSum <= 0) {
 			
 			// If the weight sum is zero, then sample uniformly at random
 			for (int i = 0; i < this.numOps; i ++) operatorWeights[i] = 1.0 / this.numOps;
@@ -417,10 +418,10 @@ public class AdaptableOperatorSampler extends Operator {
 	
 	
 	@Override
-	public void reject() {
+	public void reject(int reason) {
 		if (learningHasBegun) this.recordRuntime(this.startTimeOfProposal, System.currentTimeMillis(), this.lastOperator);
-		this.operators.get(this.lastOperator).reject();
-		super.reject();
+		this.operators.get(this.lastOperator).reject(reason);
+		super.reject(reason);
 	}
 	
 	
@@ -434,6 +435,10 @@ public class AdaptableOperatorSampler extends Operator {
 		
 		double time = stopTime - startTime;
 		assert time >= 0;
+		
+		
+		// If the operator is too fast the time will be zero. In this case, take the value of 1ns
+		time = Math.max(time, 0.001);
 		
 		int n = this.numProposals[operatorNum];
 		double sum = this.operator_mean_runtimes[operatorNum]*(n-1) + time;
@@ -505,8 +510,9 @@ public class AdaptableOperatorSampler extends Operator {
      */
     public double getZ(int opNum, int paramNum) {
     	
-    	
+    	// Get runtime
     	double runtime = this.operator_mean_runtimes[opNum];
+
     	
     	// Contribution from the parameter (ie. 1/variance)
     	double parameterVariance = this.getVar(this.param_mean_sum[paramNum], this.param_mean_SS[paramNum]);
