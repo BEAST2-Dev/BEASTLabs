@@ -315,7 +315,7 @@ public class RestrictedSubtreeSlide extends SubtreeSlide {
         }
     }
 
-	List<Node> getCandidateNodes(Tree tree) {
+	protected List<Node> getCandidateNodes(Tree tree) {
         List<Node> list = new ArrayList<Node>();
         if( tree.getNodeCount() != prevNodeCount ) {
             nodeToCladeGroup = MonoCladesMapping.setupNodeGroup(tree, cladesSetInput.get());
