@@ -11,6 +11,8 @@ import beast.core.Input;
 import beast.core.Operator;
 import beast.core.StateNode;
 import beast.core.parameter.CompoundRealParameter;
+import beast.core.parameter.IntegerParameter;
+import beast.core.parameter.Parameter;
 import beast.core.parameter.RealParameter;
 import beast.core.util.Log;
 import beast.evolution.tree.Node;
@@ -35,13 +37,14 @@ import beast.util.Randomizer;
 public class SampleFromPriorOperator extends Operator {
 	
 	
-    final public Input<RealParameter> paramInput = new Input<>("parameter", "the parameter sample", Input.Validate.REQUIRED);
+    final public Input<Parameter> paramInput = new Input<>("parameter", "the parameter sample", Input.Validate.REQUIRED);
     final public Input<ParametricDistribution> priorInput = new Input<>("prior", "the prior distribution of the parameter");
     final public Input<Tree> treeInput = new Input<>("tree", "the tree that the parameter belong to (if applicable)", Input.Validate.OPTIONAL);
     final public Input<Double> npInput = new Input<>("np", "tunable parameter describing the mean number of elements in the parameter vector to sample", 1.0);
     
     
-    RealParameter parameter;
+    boolean realParam;
+    Parameter parameter;
     ParametricDistribution prior;
     double np;
 
@@ -62,6 +65,11 @@ public class SampleFromPriorOperator extends Operator {
 		this.validateNP(true);
 		
 		
+		if (! (parameter instanceof RealParameter) && !(parameter instanceof IntegerParameter)) {
+			throw new IllegalArgumentException("Parameters must be Real or Integer parameters!");
+		}
+		
+		this.realParam = this.parameter instanceof RealParameter;
 	
 		// Check that parameter dimensions match tree dimensions
 		if (tree != null) {
@@ -96,13 +104,34 @@ public class SampleFromPriorOperator extends Operator {
 		}
 		
 		
+		this.validatePrior();
 		
 		
-		// Prior
-		if (prior == null && (parameter.getLower() == Double.NEGATIVE_INFINITY || parameter.getUpper() == Double.POSITIVE_INFINITY)) {
-			throw new IllegalArgumentException("Please either provide a prior or a lower and upper limit for parameter " + parameter.getID());
+		
+		
+		
+	}
+	
+	
+	private void validatePrior() {
+		
+		// Check that there is a proper prior
+		if (prior == null) {
+			if (this.realParam) {
+				RealParameter param = (RealParameter) this.parameter;
+				if  (param.getLower() == Double.NEGATIVE_INFINITY || param.getUpper() == Double.POSITIVE_INFINITY) {
+					throw new IllegalArgumentException("Please either provide a prior or a lower and upper limit for parameter " + parameter.getID());
+				}
+			}else {
+				IntegerParameter param = (IntegerParameter) this.parameter;
+				if  (param.getLower() == Integer.MIN_VALUE || param.getUpper() == Integer.MAX_VALUE) {
+					throw new IllegalArgumentException("Please either provide a prior or a lower and upper limit for parameter " + parameter.getID());
+				}
+				
+			}
+			
+
 		}
-		
 		
 		
 	}
@@ -115,39 +144,78 @@ public class SampleFromPriorOperator extends Operator {
 		double logHR = 0;
 		List<Integer> paramsToSample = this.sampleParamsToSample();
 		
+		this.validatePrior();
+		
+		
 		for (Integer p : paramsToSample) {
 			
 			//System.out.println("Sampling parameter " + p);
-			
-			// Prior check
-			double lower = parameter.getLower();
-			double upper = parameter.getUpper();
-			if (prior == null && (lower == Double.NEGATIVE_INFINITY || upper == Double.POSITIVE_INFINITY)) {
-				throw new IllegalArgumentException("Please either provide a prior or a lower and upper limit for parameter " + parameter.getID());
-			}
-			
-			
-			
-			// Before proposal
-			double oldX = parameter.getValue(p);
-			double oldLogP = prior == null ? 0 : prior.logDensity(oldX);
-			
-			
+
+
 			// After proposal
 			try {
 				
-				// Sample x from the prior
-				double u = Randomizer.nextFloat();
-				double newX = prior == null ? Randomizer.nextFloat() * (upper - lower) + lower : prior.inverseCumulativeProbability(u);
 				
-				// Calculate log-density of new x
-				double newLogP = prior == null ? 0 : prior.logDensity(newX);
+				double oldLogP = 0;
+				double newLogP = 0;
 				
-				// Set new value
-				parameter.setValue(p, newX);
+				// Real / double
+				if (this.realParam) {
+					
+					RealParameter param = (RealParameter) parameter;
+					
+					// Before proposal
+					double oldX = param.getValue(p);
+					oldLogP = prior == null ? 0 : prior.logDensity(oldX);
+					
+					
+					// Sample x from the prior
+					double u = Randomizer.nextFloat();
+					double newX = prior == null ? Randomizer.nextFloat() * (param.getUpper() - param.getLower()) + param.getLower() : prior.inverseCumulativeProbability(u);
+					
+					// Calculate log-density of new x
+					newLogP = prior == null ? 0 : prior.logDensity(newX);
+					
+					// Set new value
+					param.setValue(p, newX);
+					
+					
+					//System.out.println("From " + oldX + " to " + newX);
+					
+					
+				}
+				
+				// Integer / int
+				else {
+					
+					
+					IntegerParameter param = (IntegerParameter) parameter;
+					
+					// Before proposal
+					int oldX = param.getValue(p);
+					oldLogP = prior == null ? 0 : prior.logDensity(oldX);
+					
+					
+					// Sample x from the prior
+					double u = Randomizer.nextFloat();
+					int newX = (int) (prior == null ? Randomizer.nextFloat() * (param.getUpper() - param.getLower()) + param.getLower() : prior.inverseCumulativeProbability(u));
+					
+					// Calculate log-density of new x
+					newLogP = prior == null ? 0 : prior.logDensity(newX);
+					
+					// Set new value
+					param.setValue(p, newX);
+					
+					
+					//System.out.println("From " + oldX + " to " + newX);
+					
+				}
+					
+
 				
 				// Hastings ratio
 				logHR += oldLogP - newLogP;
+				
 				
 			} catch (MathException e) {
 				// TODO Auto-generated catch block
@@ -299,7 +367,14 @@ public class SampleFromPriorOperator extends Operator {
     	
     	// The tree (if specified) is not operated on
     	List<StateNode> stateNodes = new ArrayList<StateNode>();
-    	stateNodes.add(this.parameter);
+    	if (this.realParam) {
+			RealParameter param = (RealParameter) parameter;
+			stateNodes.add(param);
+    	}else {
+			IntegerParameter param = (IntegerParameter) parameter;
+			stateNodes.add(param);
+    	}
+    	
     	return stateNodes;
     }
     

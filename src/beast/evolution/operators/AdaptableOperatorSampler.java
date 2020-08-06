@@ -17,6 +17,8 @@ import beast.core.Input;
 import beast.core.Operator;
 import beast.core.OperatorSchedule;
 import beast.core.StateNode;
+import beast.core.parameter.IntegerParameter;
+import beast.core.parameter.Parameter;
 import beast.core.parameter.RealParameter;
 import beast.core.util.Log;
 import beast.evolution.tree.Tree;
@@ -26,7 +28,7 @@ import beast.util.Randomizer;
 /**
  * 
  * @author Jordan Douglas
- * An operator which selects samples from a series of other operators, with respect to their ability to explore one or more real parameters 
+ * An operator which selects samples from a series of other operators, with respect to their ability to explore one or more real/int parameters 
  * Training for each operator occurs following a burnin period
  * After a learnin period, AdaptableOperatorSampler should pick the operator which is giving the best results n a particular dataset
  */
@@ -34,8 +36,8 @@ public class AdaptableOperatorSampler extends Operator {
 	
 	
 
-    final public Input<List<RealParameter>> paramInput = new Input<>("parameter", "list of parameters to compare before and after the proposal. If the tree heights"
-    		+ " are a parameter then include the tree under 'tree'", new ArrayList<RealParameter>());
+    final public Input<List<Parameter>> paramInput = new Input<>("parameter", "list of parameters to compare before and after the proposal. If the tree heights"
+    		+ " are a parameter then include the tree under 'tree'", new ArrayList<Parameter>());
     final public Input<Tree> treeInput = new Input<>("tree", "tree containing node heights to compare before and after the proposal (optional)");
     final public Input<List<Operator>> operatorsInput = new Input<>("operator", "list of operators to select from", new ArrayList<Operator>());
     
@@ -51,7 +53,7 @@ public class AdaptableOperatorSampler extends Operator {
     
 
     
-    List<RealParameter> parameters;
+    List<Parameter> parameters;
     Tree tree;
     List<Operator> operators;
     double uniformSampleProb;
@@ -123,6 +125,13 @@ public class AdaptableOperatorSampler extends Operator {
 			this.learnin = Math.max(0, learninInput.get());
 		}
 		
+		
+		// Check parameters
+		for (Parameter p : this.parameters) {
+			if (! (p instanceof RealParameter) && !(p instanceof IntegerParameter)) {
+				throw new IllegalArgumentException("Parameters must be Real or Integer parameters!");
+			}
+		}
 		
 		
 		this.nProposals = 0;
