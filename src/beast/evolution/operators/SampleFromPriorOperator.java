@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.math.MathException;
-import org.apache.commons.math3.distribution.UniformRealDistribution;
 
 import beast.core.Distribution;
 import beast.core.Input;
@@ -197,8 +196,7 @@ public class SampleFromPriorOperator extends Operator {
 					
 					
 					// Sample x from the prior
-					double u = Randomizer.nextFloat();
-					int newX = (int) (prior == null ? Randomizer.nextFloat() * (param.getUpper() - param.getLower()) + param.getLower() : prior.inverseCumulativeProbability(u));
+					int newX = (int) (prior == null ? Randomizer.nextInt(param.getUpper() - param.getLower() + 1) + param.getLower() : prior.inverseCumulativeProbability(Randomizer.nextFloat()));
 					
 					// Calculate log-density of new x
 					newLogP = prior == null ? 0 : prior.logDensity(newX);

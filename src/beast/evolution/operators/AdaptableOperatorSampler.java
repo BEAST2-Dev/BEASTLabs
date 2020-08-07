@@ -2,10 +2,8 @@ package beast.evolution.operators;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 import org.json.JSONArray;
@@ -21,6 +19,7 @@ import beast.core.parameter.IntegerParameter;
 import beast.core.parameter.Parameter;
 import beast.core.parameter.RealParameter;
 import beast.core.util.Log;
+import beast.evolution.tree.TreeMetric;
 import beast.evolution.tree.Tree;
 import beast.util.Randomizer;
 
@@ -49,6 +48,10 @@ public class AdaptableOperatorSampler extends Operator {
     final public Input<Double> uniformSampleProbInput = new Input<>("uniformp", "the probability that operators are sampled uniformly at random instead of using the trained parameters (default 0.01)", 0.01);
 	
     
+    final public Input<TreeMetric> treeMetricInput = new Input<>("metric", "A function for computing the distance between trees. If left empty, then tree distances will not be compared");
+	
+    
+    
     final boolean DEBUG = false;
     
 
@@ -61,6 +64,9 @@ public class AdaptableOperatorSampler extends Operator {
     int learnin;
     int numParams;
     int numOps;
+    
+    
+    TreeMetric treeMetric;
     
 
     // Number of times this meta-operator has been called
@@ -78,6 +84,7 @@ public class AdaptableOperatorSampler extends Operator {
     
     // The parameter values from before the current proposal was made
     double[][] stateBefore;
+    Tree treeBefore = null;
     
     // The start time of the previously called proposal
     long startTimeOfProposal;
@@ -113,6 +120,7 @@ public class AdaptableOperatorSampler extends Operator {
 		// Parameters/tree
 		this.tree = treeInput.get();
 		this.parameters = paramInput.get();
+		this.treeMetric = treeMetricInput.get();
 		this.numParams = this.parameters.size() + (this.tree == null ? 0 : 1);
 		
 		// Burnin
@@ -125,15 +133,7 @@ public class AdaptableOperatorSampler extends Operator {
 			this.learnin = Math.max(0, learninInput.get());
 		}
 		
-		
-		// Check parameters
-		for (Parameter p : this.parameters) {
-			if (! (p instanceof RealParameter) && !(p instanceof IntegerParameter)) {
-				throw new IllegalArgumentException("Parameters must be Real or Integer parameters!");
-			}
-		}
-		
-		
+
 		this.nProposals = 0;
 		this.learningHasBegun = this.burnin == 0;
 		this.teachingHasBegun = this.burnin + this.learnin == 0;
@@ -147,9 +147,28 @@ public class AdaptableOperatorSampler extends Operator {
 		if (this.numOps < 2) {
 			throw new IllegalArgumentException("Please provide at least two operators");
 		}
+		if (this.treeMetric != null && this.tree == null) {
+			
+		}
 		if (this.numParams == 0) {
 			Log.warning("Warning: at least one sampled parameter or a tree should be provided to assist in measuring the efficiency of each operator.");
 		}
+		
+		// If there is a tree metric, then ensure there is a tree and no parameters
+		if (this.treeMetric != null) {
+			if (this.tree == null) throw new IllegalArgumentException("Please provide a tree (or do not provide a tree metric)");
+			if (!this.parameters.isEmpty()) throw new IllegalArgumentException("Please provide parameters or a tree metric but not both");
+			this.numParams = 1;
+		}
+		
+		
+		// Check parameters
+		for (Parameter p : this.parameters) {
+			if (! (p instanceof RealParameter) && !(p instanceof IntegerParameter)) {
+				throw new IllegalArgumentException("Parameters must be Real or Integer parameters!");
+			}
+		}
+		
 		
 
 		
@@ -192,7 +211,6 @@ public class AdaptableOperatorSampler extends Operator {
 		}
 		
 
-		
 
 		
 	}
@@ -204,6 +222,7 @@ public class AdaptableOperatorSampler extends Operator {
 		
 		// Get the values of each parameter before doing the proposal
 		this.stateBefore = this.getAllParameterValues();
+		if (this.treeMetric != null) this.treeBefore = this.tree.copy();
 
 		
 		// Update sum and SS of each parameter before making the proposal
@@ -242,9 +261,13 @@ public class AdaptableOperatorSampler extends Operator {
 	 */
 	private void updateParamStats(double[][] thisState) {
 		
+		// If the parameter is the tree topology, then we do not compute the parameter mean/variance
+		if (this.treeMetric != null) return;
+		
+		
 		if (this.learningHasBegun && this.numParams > 0) {
 			
-			
+
 			long n = this.nProposals - this.burnin;
 
 			// Update the sum and the sum-of-squares each parameter
@@ -404,7 +427,7 @@ public class AdaptableOperatorSampler extends Operator {
 				double[][] stateAfter = this.getAllParameterValues();
 	
 				// Compute the average squared difference between the before and after states
-				double[] squaredDiffs = this.computeSS(this.stateBefore, stateAfter);
+				double[] squaredDiffs = this.computeSS(this.stateBefore, stateAfter, this.treeBefore, this.tree);
 				
 				// Update the sum of squared diffs for each parameter with respect to this operator
 				for (int p = 0; p < this.numParams; p ++) {
@@ -461,24 +484,37 @@ public class AdaptableOperatorSampler extends Operator {
 	 * @param before
 	 * @param after
 	 */
-	private double[] computeSS(double[][] before, double[][] after) {
+	private double[] computeSS(double[][] before, double[][] after, Tree beforeTree, Tree afterTree) {
+		
 		
 		double[] squaredDiff = new double[this.numParams];
 		
-		for (int p = 0; p < this.numParams; p ++) {
-			
-			double[] p_before = before[p];
-			double[] p_after = after[p];
-			
-			
-			// Average the squared difference across all dimensions of this parameter
-			double meanDelta2 = 0;
-			for (int j = 0; j < p_before.length; j ++) {
-				meanDelta2 += Math.pow(p_before[j] - p_after[j], 2);
-			}
-			
-			squaredDiff[p] = meanDelta2;
+		
+		// Measure the distance between trees
+		if (this.treeMetric != null) {
+			squaredDiff[0] = Math.pow(this.treeMetric.distance(beforeTree, afterTree), 2);
+		} 
+		
+		// Measure the distance between parameters
+		else {
+		
+		
+			for (int p = 0; p < this.numParams; p ++) {
 				
+				double[] p_before = before[p];
+				double[] p_after = after[p];
+				
+				
+				// Average the squared difference across all dimensions of this parameter
+				double meanDelta2 = 0;
+				for (int j = 0; j < p_before.length; j ++) {
+					meanDelta2 += Math.pow(p_before[j] - p_after[j], 2);
+				}
+				
+				squaredDiff[p] = meanDelta2;
+					
+			}
+		
 		}
 		
 		return squaredDiff;
@@ -522,9 +558,8 @@ public class AdaptableOperatorSampler extends Operator {
     	// Get runtime
     	double runtime = this.operator_mean_runtimes[opNum];
 
-    	
     	// Contribution from the parameter (ie. 1/variance)
-    	double parameterVariance = this.getVar(this.param_mean_sum[paramNum], this.param_mean_SS[paramNum]);
+    	double parameterVariance = this.treeMetric != null ? 1 : this.getVar(this.param_mean_sum[paramNum], this.param_mean_SS[paramNum]);
     	
     	// Contribution from average squared-difference of applying this operator to this parameter
     	double opParTerm = this.mean_SS[opNum][paramNum];
