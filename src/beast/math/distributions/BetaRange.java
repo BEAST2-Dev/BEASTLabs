@@ -31,20 +31,25 @@ public class BetaRange extends Distribution  {
 	@Override
     public void initAndValidate() {
 		
-
-       
-        
+		System.out.println("BETARANGE");
+  
     }
+	
+	
+
 	
 	@SuppressWarnings("deprecation")
 	@Override
 	public double calculateLogP() {
 		
+		System.out.println("BETARANGE");
 		
 		logP = 0;
 		
 		RealParameter param = parameterInput.get();
 		for (int i = 0; i < param.getDimension(); i ++) {
+			
+			System.out.println("BETARANGE " + i + ": " + logP);
 			
 			double val = param.getValue(i);
 			double alpha = getValOrDefault(alphaInput.get(), i, 1);

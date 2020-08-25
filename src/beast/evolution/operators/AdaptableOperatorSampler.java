@@ -15,6 +15,7 @@ import beast.core.Input;
 import beast.core.Operator;
 import beast.core.OperatorSchedule;
 import beast.core.StateNode;
+import beast.core.parameter.CompoundRealParameter;
 import beast.core.parameter.IntegerParameter;
 import beast.core.parameter.Parameter;
 import beast.core.parameter.RealParameter;
@@ -579,6 +580,8 @@ public class AdaptableOperatorSampler extends Operator {
     @Override
     public List<StateNode> listStateNodes() {
     	List<StateNode> stateNodes = new ArrayList<StateNode>(); //super.listStateNodes();
+    	
+
     	for (int i = 0; i < this.numOps; i ++) {
     		
     		// Maintain a list of unique elements
@@ -587,8 +590,34 @@ public class AdaptableOperatorSampler extends Operator {
     		}
 
     	}
+    	
+    	
+    	// Remove compound operators and add their components instead
+    	boolean hasCompoundRealParameter = true;
+	   	while (hasCompoundRealParameter) {
+	   		hasCompoundRealParameter = false;
+	       	for (int i = 0; i < stateNodes.size(); i++) {
+	       		StateNode s = stateNodes.get(i);
+	       		if (s instanceof CompoundRealParameter) {
+	       			CompoundRealParameter c = (CompoundRealParameter) s;
+	       			stateNodes.remove(i);
+	       			
+	       			for (StateNode node : c.parameterListInput.get()) {
+	        			if (!stateNodes.contains(node)) stateNodes.add(node);
+	        		}
+
+	       			//stateNodes.addAll(c.parameterListInput.get());
+	       			i--;
+	       			hasCompoundRealParameter = true;
+	       		}
+	       	}
+	   	}
+    	
+    	
     	return stateNodes;
     }
+    
+
     
     
     
