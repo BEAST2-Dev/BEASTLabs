@@ -42,7 +42,8 @@ public class TreeDistanceLogger extends CalculationNode implements Loggable, Fun
     	// Reference tree
     	if (referenceInput.get() == null) {
     		//if (alignmentInput.get() == null) throw new IllegalArgumentException("Please provide either a reference tree or an alignment");
-    		this.referenceTree = treeInput.get().copy();
+    		Node root = treeInput.get().getRoot().copy();
+    		this.referenceTree = new Tree(root);
     		//this.referenceTree.initByName("initial", this.treeInput.get(), 
     		//							"clusterType", "neighborjoining",
     		//							"taxa", alignmentInput.get());
