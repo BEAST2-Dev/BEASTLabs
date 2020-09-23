@@ -39,20 +39,21 @@ public class TreeDistanceLogger extends CalculationNode implements Loggable, Fun
     	}
     	
     	
+    	
+    	
     	// Reference tree
-    	if (referenceInput.get() == null) {
-    		//if (alignmentInput.get() == null) throw new IllegalArgumentException("Please provide either a reference tree or an alignment");
-    		Node root = treeInput.get().getRoot().copy();
-    		this.referenceTree = new Tree(root);
-    		//this.referenceTree.initByName("initial", this.treeInput.get(), 
-    		//							"clusterType", "neighborjoining",
-    		//							"taxa", alignmentInput.get());
-    	}else {
-    		this.referenceTree = referenceInput.get();
+    	this.referenceTree = referenceInput.get();
+    	if (this.referenceTree != null) {
+    		this.metric.setReference(this.referenceTree);
     	}
+		//this.referenceTree.initByName("initial", this.treeInput.get(), 
+		//							"clusterType", "neighborjoining",
+		//							"taxa", alignmentInput.get());
         
     	
     }
+    
+    
 
     @Override
     public void init(PrintStream out) {
@@ -61,6 +62,13 @@ public class TreeDistanceLogger extends CalculationNode implements Loggable, Fun
 
     @Override
     public void log(long sample, PrintStream out) {
+    	
+    	// Null reference tree? Use the tree on the first logged state
+    	if (this.referenceTree == null) {
+			this.referenceTree = new Tree(treeInput.get().getRoot().copy());
+			this.metric.setReference(this.referenceTree);
+    	}
+    	
         final Tree tree = treeInput.get();
         out.print(getDistance(tree) + "\t");
     }
@@ -71,7 +79,7 @@ public class TreeDistanceLogger extends CalculationNode implements Loggable, Fun
      * @return
      */
     public double getDistance(Tree tree) {
-    	return this.metric.distance(this.referenceTree, tree);
+    	return this.metric.distance(tree);
 	}
 
 	@Override

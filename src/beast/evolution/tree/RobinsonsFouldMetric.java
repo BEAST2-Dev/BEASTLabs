@@ -16,6 +16,8 @@ public class RobinsonsFouldMetric extends BEASTObject implements TreeMetric {
 	final public Input<TaxonSet> taxonInput = new Input<>("taxonset", "taxonset of the trees", Input.Validate.REQUIRED);
 		
 	Map<String, Integer> taxonMap = null;
+	TreeInterface referenceTree = null;
+	Set<String> referenceClades = null;
 	
 	public RobinsonsFouldMetric() {
 		
@@ -60,6 +62,16 @@ public class RobinsonsFouldMetric extends BEASTObject implements TreeMetric {
 
 		return clades1.size();
 	}
+	
+	
+	@Override
+	public double distance(TreeInterface tree) {
+		if (this.referenceClades == null) throw new IllegalArgumentException("Developer error: please provide a reference tree using 'setReference' or use 'distance(t1, t2)' instead");
+		Set<String> clades = getClades(tree);
+		clades.removeAll(this.referenceClades);
+		return clades.size();
+	}
+
 
 	private Set<String> getClades(TreeInterface tree) {
 
@@ -101,6 +113,15 @@ public class RobinsonsFouldMetric extends BEASTObject implements TreeMetric {
 			buffer.append(iter.next());
 		}
 		return buffer.toString();
+	}
+
+
+
+
+	@Override
+	public void setReference(TreeInterface ref) {
+		this.referenceTree = ref;
+		this.referenceClades = getClades(ref);
 	}
 
 
