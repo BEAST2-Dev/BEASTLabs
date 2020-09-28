@@ -43,6 +43,7 @@ import beast.core.Function;
 import beast.core.Input;
 import beast.core.StateNode;
 import beast.core.parameter.RealParameter;
+import beast.core.util.Log;
 import beast.evolution.tree.Tree;
 import beast.util.Transform.*;
 import beast.util.Transform;
@@ -74,6 +75,8 @@ public class AdaptableVarianceMultivariateNormalOperator extends KernelOperator 
     final public Input<Boolean> optimiseInput = new Input<>("optimise", "flag to indicate that the scale factor is automatically changed in order to achieve a good acceptance rate (default true)", true);
     final public Input<Boolean> storeInput = new Input<>("store", "flag to indicate if covariance and mean should be stored to the state file (default true)", true);
 
+    final public Input<Boolean> allowNonsenseInput = new Input<>("allowNonsense", "flag to indicate if transforms may accept nonsensical inputs eg. 0 parameters (default false)", false);
+
 
     public static final boolean DEBUG = false;
     public static final boolean PRINT_FULL_MATRIX = false;
@@ -86,6 +89,7 @@ public class AdaptableVarianceMultivariateNormalOperator extends KernelOperator 
     private int[] transformationSizes;
     private double[] transformationSums;
     private int dim;
+    private boolean allowNonsense;
 
     private double[] oldMeans, newMeans;
 
@@ -97,6 +101,148 @@ public class AdaptableVarianceMultivariateNormalOperator extends KernelOperator 
     private double[] epsilon;
     private double[][] proposal;
 
+    
+    
+
+    @Override
+	public void initAndValidate() {
+        // setMode(modeInput.get());
+        this.scaleFactor = scaleFactorInput.get();
+        List<Function> parameterList = new ArrayList<>();
+        this.allowNonsense = allowNonsenseInput.get();
+        List<Transform> transforms = transformationsInput.get();
+        List<Integer> toRemove = new ArrayList<>();
+        for (int i = 0; i < transforms.size(); i ++) {
+        	
+        	Transform t = transforms.get(i);
+        	
+        	// Skip nonsensical transforms
+        	if (this.allowNonsense) {
+        		if (t.getF().size() < t.getMinDimensions()) {
+        			Log.warning("Warning: removing transform " + t.getClass().toString() + " because it should have at least " + 
+        						t.getMinDimensions() + " dimensions but it has " + t.getF().size());
+        			toRemove.add(i);
+        			continue;
+        		}
+        	}
+        	
+			for (Function f : t.getF()) {
+				parameterList.add(f);
+			}
+        }
+        
+        // Remove nonsense transforms
+        for (int i = toRemove.size() - 1; i >=0; i --) {
+        	int indexToRemove = toRemove.get(i);
+        	transforms.remove(indexToRemove);
+        }
+        
+        this.parameter = new CompoundParameterHelper(parameterList);
+        this.transformations = transforms.toArray(new Transform[]{});
+        this.beta = betaInput.get();
+        
+//        this.iterations = 0;
+//        this.updates = 0;
+        //this.m_pWeight.setValue(1.0, this);
+        
+        dim = parameter.getDimension();
+        
+        matrix = new double[dim][dim];
+        for (int i = 0; i < dim; i++) {
+        	matrix[i][i] = Math.pow(coefficientInput.get(), 2) / ((double) dim);            	
+        }        
+        
+        
+        // constantFactor = Math.pow(2.38, 2) / ((double) dim); // not necessary because scaleFactor is auto-tuned
+        this.initial = initialInput.get();
+        
+        if (this.initial < 0) {
+        	// options set according to recommendations in AVMVN paper
+        	this.initial = 200 * dim;
+        	this.burnin = this.initial / 2;
+        } else {
+            this.burnin = burninInput.get();
+        }
+
+        
+        this.every = everyInput.get();
+        this.empirical = new double[dim][dim];
+        this.oldMeans = new double[dim];
+        this.newMeans = new double[dim];
+
+        this.epsilon = new double[dim];
+        this.proposal = new double[dim][dim];
+
+    	
+    	
+        if (burnin > initial || burnin < 0) {
+            throw new IllegalArgumentException("Burn-in must be smaller than the initial period.");
+        }
+
+
+        if (every <= 0) {
+            throw new IllegalArgumentException("Covariance matrix needs to be updated at least every single iteration.");
+        }
+
+        if (scaleFactor <= 0.0) {
+            throw new IllegalArgumentException("ScaleFactor must be greater than zero.");
+        }
+
+        dim = parameter.getDimension();
+        
+        int paramCount = 0;
+        for(Transform t : transformations) {
+        	if (t instanceof MultivariableTransform) {
+        		paramCount++;
+        	} else {
+        		paramCount += t.getF().size();
+        	}
+        }
+        transformationSizes = new int[paramCount];
+        transformationSums = new double[paramCount];
+        Transform [] ts = new Transform[paramCount];
+        int k = 0;
+        for (Transform t : transformations) {
+        	if (t instanceof MultivariableTransform) {
+        		for (Function p : t.getF()) {
+        			if (p instanceof RealParameter) {
+        				transformationSizes[k] += p.getDimension();
+        			} else {
+        				throw new IllegalArgumentException("Don't know how to handle MultivariableTransform of " + p.getClass().getSimpleName());
+        			}
+        		}
+        		if (t instanceof LogConstrainedSumTransform) {
+        			transformationSums[k] = ((LogConstrainedSumTransform)t).getSum();
+        		}
+        		ts[k] = t;
+        		k++;
+        	} else {
+        		for (Function p : t.getF()) {
+        			if (p instanceof RealParameter) {
+        				transformationSizes[k] = p.getDimension();
+        			} else if (p instanceof Tree) {
+        				transformationSizes[k] = 1;
+        			} else {
+        				throw new IllegalArgumentException("Don't know how to handle " + p.getClass().getSimpleName());
+        			}
+            		ts[k] = t;
+            		k++;
+        		}
+        	}
+        }
+        transformations = ts;
+        
+        
+        try {
+            cholesky = (new CholeskyDecomposition(matrix)).getL();
+        } catch (IllegalDimension illegalDimension) {
+            throw new RuntimeException("Unable to decompose matrix in AdaptableVarianceMultivariateNormalOperator");
+        }	
+        
+        super.initAndValidate();
+	}
+    
+    
 	
 	@Override
 	public List<StateNode> listStateNodes() {
@@ -506,120 +652,6 @@ public class AdaptableVarianceMultivariateNormalOperator extends KernelOperator 
         }
         return output;
     }
-    
-    @Override
-	public void initAndValidate() {
-        // setMode(modeInput.get());
-        this.scaleFactor = scaleFactorInput.get();
-        List<Function> parameterList = new ArrayList<>();
-        for (Transform t : transformationsInput.get()) {
-			for (Function f : t.getF()) {
-				parameterList.add(f);
-			}
-        }
-        this.parameter = new CompoundParameterHelper(parameterList);
-        this.transformations = transformationsInput.get().toArray(new Transform[]{});
-        this.beta = betaInput.get();
-//        this.iterations = 0;
-//        this.updates = 0;
-        //this.m_pWeight.setValue(1.0, this);
-        
-        dim = parameter.getDimension();
-        
-        matrix = new double[dim][dim];
-        for (int i = 0; i < dim; i++) {
-        	matrix[i][i] = Math.pow(coefficientInput.get(), 2) / ((double) dim);            	
-        }        
-        
-        
-        // constantFactor = Math.pow(2.38, 2) / ((double) dim); // not necessary because scaleFactor is auto-tuned
-        this.initial = initialInput.get();
-        
-        if (this.initial < 0) {
-        	// options set according to recommendations in AVMVN paper
-        	this.initial = 200 * dim;
-        	this.burnin = this.initial / 2;
-        } else {
-            this.burnin = burninInput.get();
-        }
-
-        
-        this.every = everyInput.get();
-        this.empirical = new double[dim][dim];
-        this.oldMeans = new double[dim];
-        this.newMeans = new double[dim];
-
-        this.epsilon = new double[dim];
-        this.proposal = new double[dim][dim];
-
-    	
-    	
-        if (burnin > initial || burnin < 0) {
-            throw new IllegalArgumentException("Burn-in must be smaller than the initial period.");
-        }
-
-
-        if (every <= 0) {
-            throw new IllegalArgumentException("Covariance matrix needs to be updated at least every single iteration.");
-        }
-
-        if (scaleFactor <= 0.0) {
-            throw new IllegalArgumentException("ScaleFactor must be greater than zero.");
-        }
-
-        dim = parameter.getDimension();
-        
-        int paramCount = 0;
-        for(Transform t : transformations) {
-        	if (t instanceof MultivariableTransform) {
-        		paramCount++;
-        	} else {
-        		paramCount += t.getF().size();
-        	}
-        }
-        transformationSizes = new int[paramCount];
-        transformationSums = new double[paramCount];
-        Transform [] ts = new Transform[paramCount];
-        int k = 0;
-        for (Transform t : transformations) {
-        	if (t instanceof MultivariableTransform) {
-        		for (Function p : t.getF()) {
-        			if (p instanceof RealParameter) {
-        				transformationSizes[k] += p.getDimension();
-        			} else {
-        				throw new IllegalArgumentException("Don't know how to handle MultivariableTransform of " + p.getClass().getSimpleName());
-        			}
-        		}
-        		if (t instanceof LogConstrainedSumTransform) {
-        			transformationSums[k] = ((LogConstrainedSumTransform)t).getSum();
-        		}
-        		ts[k] = t;
-        		k++;
-        	} else {
-        		for (Function p : t.getF()) {
-        			if (p instanceof RealParameter) {
-        				transformationSizes[k] = p.getDimension();
-        			} else if (p instanceof Tree) {
-        				transformationSizes[k] = 1;
-        			} else {
-        				throw new IllegalArgumentException("Don't know how to handle " + p.getClass().getSimpleName());
-        			}
-            		ts[k] = t;
-            		k++;
-        		}
-        	}
-        }
-        transformations = ts;
-        
-        
-        try {
-            cholesky = (new CholeskyDecomposition(matrix)).getL();
-        } catch (IllegalDimension illegalDimension) {
-            throw new RuntimeException("Unable to decompose matrix in AdaptableVarianceMultivariateNormalOperator");
-        }	
-        
-        super.initAndValidate();
-	}
     
     public class CompoundParameterHelper {
         protected int[] parameterIndex1; // index to select parameter

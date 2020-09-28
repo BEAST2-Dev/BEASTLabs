@@ -55,6 +55,15 @@ public interface Transform {
      * @return the transformed value
      */
     double transform(double value);
+    
+    
+    
+    /**
+     * Get the minumum number of dimensions this transform can handle
+     * @return
+     */
+    int getMinDimensions(); 
+    
 
     /**
      * overloaded transformation that takes and returns an array of doubles
@@ -675,6 +684,12 @@ public interface Transform {
         public String getTransformName() { return "log"; }
 
         public double getLogJacobian(double value) { return -Math.log(value); }
+
+		@Override
+		public int getMinDimensions() {
+			return 1;
+		}
+		
     }
 
     public class LogConstrainedSumTransform extends MultivariableTransform {
@@ -934,6 +949,11 @@ public interface Transform {
 
         }
 
+		@Override
+		public int getMinDimensions() {
+			return 2;
+		}
+
     }
 
     public class LogitTransform extends UnivariableTransform {
@@ -990,6 +1010,11 @@ public interface Transform {
         public double getLogJacobian(double value) {
             return -Math.log(1.0 - value) - Math.log(value);
         }
+
+		@Override
+		public int getMinDimensions() {
+			return 1;
+		}
 
 //        private final double range;
 //        private final double lower;
@@ -1050,6 +1075,11 @@ public interface Transform {
         public double getLogJacobian(double value) {
             return -Math.log(1 - value) - Math.log(1 + value);
         }
+
+		@Override
+		public int getMinDimensions() {
+			return 1;
+		}
     }
 
     public class NegateTransform extends UnivariableTransform {
@@ -1104,6 +1134,11 @@ public interface Transform {
         public double getLogJacobian(double value) {
             return 0.0;
         }
+
+		@Override
+		public int getMinDimensions() {
+			return 1;
+		}
     }
 
     public class PowerTransform extends UnivariableTransform{
@@ -1176,6 +1211,11 @@ public interface Transform {
         public double getLogJacobian(double value) {
             throw new RuntimeException("not implemented yet");
         }
+
+		@Override
+		public int getMinDimensions() {
+			return 1;
+		}
     }
 
     public class NoTransform extends UnivariableTransform {
@@ -1233,6 +1273,11 @@ public interface Transform {
         public double getLogJacobian(double value) {
             return 0.0;
         }
+
+		@Override
+		public int getMinDimensions() {
+			return 1;
+		}
     }
 
     public class NoTransformMultivariable extends MultivariableTransform {
@@ -1324,6 +1369,11 @@ public interface Transform {
         }
 
         public boolean isMultivariate() { return false;}
+
+		@Override
+		public int getMinDimensions() {
+			return 2;
+		}
     }
 
     public class Compose extends UnivariableTransform  {
@@ -1397,6 +1447,10 @@ public interface Transform {
 
         private final UnivariableTransform outer;
         private final UnivariableTransform inner;
+		@Override
+		public int getMinDimensions() {
+			return 1;
+		}
     }
 
     public class ComposeMultivariable extends MultivariableTransform {
@@ -1484,6 +1538,10 @@ public interface Transform {
 
         private final MultivariableTransform outer;
         private final MultivariableTransform inner;
+		@Override
+		public int getMinDimensions() {
+			return 2;
+		}
     }
 
     public class Inverse extends UnivariableTransform {
@@ -1544,6 +1602,11 @@ public interface Transform {
         }
 
         private final UnivariableTransform inner;
+
+		@Override
+		public int getMinDimensions() {
+			return 1;
+		}
     }
 
     public class InverseMultivariate extends MultivariateTransform {
@@ -1651,6 +1714,11 @@ public interface Transform {
         }
 
         private final MultivariateTransform inner;
+
+		@Override
+		public int getMinDimensions() {
+			return 2;
+		}
     }
 
         public class PositiveOrdered extends MultivariateTransform {
@@ -1743,6 +1811,10 @@ public interface Transform {
             }
             return jacobian;
         }
+		@Override
+		public int getMinDimensions() {
+			return 1;
+		}
 
 
     }
@@ -1890,6 +1962,11 @@ public interface Transform {
           }
 
         public boolean isMultivariate() { return false;}
+
+		@Override
+		public int getMinDimensions() {
+			return 1;
+		}
     }
 
     public class Collection extends MultivariableTransformWithParameter {
@@ -2105,6 +2182,11 @@ public interface Transform {
         }
 
         public boolean isMultivariate() { return false;}
+
+		@Override
+		public int getMinDimensions() {
+			return 1;
+		}
 
 //        class Segment {
 //
