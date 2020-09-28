@@ -221,11 +221,11 @@ public class BactrianSubtreeSlide extends TreeOperator {
         return logq;
     }
 
-    private double getDelta() {
+    protected double getDelta() {
     	return kernelDistribution.getRandomDelta(0, Double.NaN, size);
     }
 
-    private int intersectingEdges(Node node, double height, List<Node> directChildren) {
+    protected int intersectingEdges(Node node, double height, List<Node> directChildren) {
         final Node parent = node.getParent();
 
         if (parent.getHeight() < height) return 0;

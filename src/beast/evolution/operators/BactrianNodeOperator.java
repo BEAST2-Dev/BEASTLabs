@@ -19,7 +19,7 @@ public class BactrianNodeOperator extends TreeOperator {
     protected KernelDistribution kernelDistribution;
 
 
-    double scaleFactor;
+    protected double scaleFactor;
 
 	// empty constructor to facilitate construction by XML + initAndValidate
 	public BactrianNodeOperator() {
