@@ -106,6 +106,8 @@ public class RobinsonsFouldMetric extends BEASTObject implements TreeMetric {
 
 	private static String getCladeString(Set<Integer> tips) {
 		Iterator<Integer> iter = tips.iterator();
+		if (!iter.hasNext()) return "";
+		
 		StringBuffer buffer = new StringBuffer();
 		buffer.append(iter.next());
 		while (iter.hasNext()) {
