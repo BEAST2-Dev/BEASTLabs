@@ -118,7 +118,13 @@ public class AdaptableVarianceMultivariateNormalOperator extends KernelOperator 
         	
         	// Skip nonsensical transforms
         	if (this.allowNonsense) {
-        		if (t.getF().size() < t.getMinDimensions()) {
+        		
+        		int fDim = 0;
+        		for (Function f : t.getF()) {
+        			fDim += f.getDimension();
+        		}
+        		
+        		if (fDim < t.getMinDimensions()) {
         			Log.warning("Warning: removing transform " + t.getClass().toString() + " because it should have at least " + 
         						t.getMinDimensions() + " dimensions but it has " + t.getF().size());
         			toRemove.add(i);
