@@ -131,6 +131,12 @@ public class AdaptableVarianceMultivariateNormalOperator extends KernelOperator 
 			}
         }
         
+        
+        if (this.allowNonsense && parameterList.isEmpty()) {
+        	dim = 0;
+        	return;
+        }
+        
         // Remove nonsense transforms
         for (int i = toRemove.size() - 1; i >=0; i --) {
         	int indexToRemove = toRemove.get(i);
@@ -285,6 +291,11 @@ public class AdaptableVarianceMultivariateNormalOperator extends KernelOperator 
 	}
 
 	public double doOperation() {
+		
+		
+		if (this.allowNonsense && dim == 0) return 0;
+		
+		
         int iterations=m_nNrAccepted+m_nNrRejected;
 
 
@@ -663,6 +674,7 @@ public class AdaptableVarianceMultivariateNormalOperator extends KernelOperator 
             this.parameterList = parameterList;
 
             if (parameterList == null || parameterList.size() < 1) {
+            	if (allowNonsense) return;
                 throw new IllegalArgumentException("There is no parameter inputted into CompoundParameter !");
             }
 
