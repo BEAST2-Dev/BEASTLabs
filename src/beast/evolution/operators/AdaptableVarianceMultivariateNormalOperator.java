@@ -110,7 +110,8 @@ public class AdaptableVarianceMultivariateNormalOperator extends KernelOperator 
         this.scaleFactor = scaleFactorInput.get();
         List<Function> parameterList = new ArrayList<>();
         this.allowNonsense = allowNonsenseInput.get();
-        List<Transform> transforms = transformationsInput.get();
+        List<Transform> transforms = new ArrayList<Transform>();
+        transforms.addAll(transformationsInput.get());
         List<Integer> toRemove = new ArrayList<>();
         for (int i = 0; i < transforms.size(); i ++) {
         	
@@ -254,12 +255,21 @@ public class AdaptableVarianceMultivariateNormalOperator extends KernelOperator 
         super.initAndValidate();
 	}
     
-    
-	
+
 	@Override
 	public List<StateNode> listStateNodes() {
 		List<StateNode> nodes = new ArrayList<>();
+		if (this.allowNonsense && dim == 0) return nodes;
+		
 		for (Transform t : transformations) {
+			
+			// Include the transform?
+			if (this.allowNonsense) {
+				int fDim = 0;
+				for (Function f : t.getF()) fDim += f.getDimension();
+				if (fDim < t.getMinDimensions()) continue;
+			}
+			
 			for (Function f : t.getF()) {
 				if (f instanceof StateNode) {
 					nodes.add((StateNode) f);
