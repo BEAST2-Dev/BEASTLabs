@@ -29,10 +29,9 @@ public class TreeDistanceLogger extends CalculationNode implements Loggable, Fun
     final public Input<Integer> numBootstrapsInput = new Input<>("bootstraps", "Number of reference trees to use where each is based on a different sample of the alignment."
     		+ " Set to 0 to use full alignment without bootstrapping.", 0);
     
-   // final public Input<Alignment> alignmentInput = new Input<>("alignment", "Alignment for computing initial tree (only required if reference tree is not provided)");
+    final public Input<Double> bootstrapPSitesInput = new Input<>("psites", "Proportion of sites to sample when bootstraping. Set to 0 for random number of sites per seq", 1.0);
     
-    //new RobinsonsFouldMetric
-
+    
     List<TreeMetric> metrics;
     List<Tree> referenceTrees;
     int nbootstraps;
@@ -54,15 +53,21 @@ public class TreeDistanceLogger extends CalculationNode implements Loggable, Fun
     			Log.warning(this.getClass().getName() + ": Calculating reference tree across " + this.nbootstraps + " bootstraps");
     			ClusterTree clusterTree = (ClusterTree)refTree;
     			Alignment refAlignment = clusterTree.dataInput.get();
+    			
+    			int nsites = 0;
     			for (int i = 0; i < this.nbootstraps; i++) {
     				
     				
+        			if (bootstrapPSitesInput.get() <= 0) {
+        				nsites = Randomizer.nextInt(refAlignment.getSiteCount()) + 1;
+        			}else {
+        				nsites = (int) Math.ceil(bootstrapPSitesInput.get() * refAlignment.getSiteCount());
+        			}
 
     				
-    				
     				// Subsample alignment
-    				String[][] seqs = new String[refAlignment.getSiteCount()][];
-    				for (int site = 0; site < refAlignment.getSiteCount(); site ++) {
+    				String[][] seqs = new String[nsites][];
+    				for (int site = 0; site < nsites; site ++) {
     					seqs[site] = new String[refAlignment.getTaxonCount()];
     					
     					// Sample a site
@@ -95,7 +100,7 @@ public class TreeDistanceLogger extends CalculationNode implements Loggable, Fun
     					Sequence refSeq = refAlignment.sequenceInput.get().get(taxon);
     					String taxonName = refAlignment.getTaxaNames().get(taxon);
     					String seq = "";
-    					for (int site = 0; site < refAlignment.getSiteCount(); site ++) {
+    					for (int site = 0; site < nsites; site ++) {
     						seq += seqs[site][taxon];
     					}
     					Sequence sequence = new Sequence();
@@ -152,7 +157,29 @@ public class TreeDistanceLogger extends CalculationNode implements Loggable, Fun
     		metric.setReference(tree);
     		this.metrics.add(metric);
     	}
+    	
+    	
+    	// Remove all trees which are identical to other trees according to the metric
+    	List<Integer> toRemove = new ArrayList<>();
+    	for (int t1 = 0; t1 < this.referenceTrees.size(); t1++) {
+    		Tree tree1 = this.referenceTrees.get(t1);
+    		if (toRemove.contains((Integer)t1)) continue;
+    		for (int t2 = t1+1; t2 < this.referenceTrees.size(); t2++) {
+    			if (toRemove.contains((Integer)t2)) continue;
+    			TreeMetric metric2 = this.metrics.get(t2);
+    			//System.out.println(metric2.distance(tree1));
+    			if (metric2.distance(tree1) == 0) {
+    				toRemove.add(t2);
+    			}
+    		}
+    	}
+    	for (int i = toRemove.size()-1; i >=0; i--) {
+    		this.referenceTrees.remove((int)toRemove.get(i));
+    		this.metrics.remove((int)toRemove.get(i));
+    	}
 
+    	
+    	Log.warning("Total number of unique reference trees: " + this.metrics.size());
     	
     }
     
@@ -161,6 +188,7 @@ public class TreeDistanceLogger extends CalculationNode implements Loggable, Fun
     @Override
     public void init(PrintStream out) {
         out.print(this.getID() + ".treeDistance\t");
+        if (this.referenceTrees.size() > 1) out.print(this.getID() + ".treeDistanceVar\t");
     }
 
     @Override
@@ -179,6 +207,7 @@ public class TreeDistanceLogger extends CalculationNode implements Loggable, Fun
     	
         final Tree tree = treeInput.get();
         out.print(getDistance(tree) + "\t");
+        if (this.referenceTrees.size() > 1) out.print(getDistanceVariance(tree) + "\t");
     }
 
     /**
@@ -195,6 +224,22 @@ public class TreeDistanceLogger extends CalculationNode implements Loggable, Fun
     	}
     	return dist / this.metrics.size();
 	}
+    
+    
+    /**
+     * Returns the variance in distances between this tree and the list of reference trees
+     * @param tree
+     * @return
+     */
+    public double getDistanceVariance(Tree tree) {
+    	double mean = this.getDistance(tree);
+    	double SS = 0;
+    	for (TreeMetric metric : this.metrics) {
+    		double d = metric.distance(tree);
+    		SS += Math.pow(d - mean, 2);
+    	}
+    	return SS / this.metrics.size();
+	}
 
 	@Override
     public void close(PrintStream out) {
@@ -203,7 +248,7 @@ public class TreeDistanceLogger extends CalculationNode implements Loggable, Fun
 
     @Override
     public int getDimension() {
-        return 1;
+    	return this.referenceTrees.size() == 1 ? 1 : 2;
     }
 
     @Override
