@@ -10,7 +10,6 @@ import beast.core.CalculationNode;
 import beast.core.Description;
 import beast.core.Function;
 import beast.core.Input;
-import beast.core.Input.Validate;
 import beast.core.Loggable;
 import beast.core.util.Log;
 import beast.evolution.alignment.Alignment;
@@ -22,7 +21,7 @@ import beast.util.Randomizer;
 @Description("Logger to report statistics of a tree")
 public class TreeDistanceLogger extends CalculationNode implements Loggable, Function {
 	
-    final public Input<Tree> treeInput = new Input<>("tree", "Tree to report height for.", Validate.REQUIRED);
+    final public Input<Tree> treeInput = new Input<>("tree", "Tree to report height for.");
    // final public Input<TreeMetric> metricInput = new Input<>("metric", "Tree distance metric (default: Robinson Foulds).");
     final public Input<Tree> referenceInput = new Input<>("ref", "Reference tree to calculate distances from (default: the initial tree).");
     
@@ -35,12 +34,15 @@ public class TreeDistanceLogger extends CalculationNode implements Loggable, Fun
     List<TreeMetric> metrics;
     List<Tree> referenceTrees;
     int nbootstraps;
+    Tree tree;
     
 
     @Override
     public void initAndValidate() {
     	
-
+    	
+    	this.tree = treeInput.get();
+    	
     	this.nbootstraps = numBootstrapsInput.get();
     	
     	// Reference tree
@@ -153,40 +155,55 @@ public class TreeDistanceLogger extends CalculationNode implements Loggable, Fun
     	// Distance metric
     	this.metrics = new ArrayList<>();
     	for (Tree tree : this.referenceTrees) {
-    		TreeMetric metric = new RobinsonsFouldMetric(treeInput.get().getTaxonset());
-    		metric.setReference(tree);
+    		TreeMetric metric = new RobinsonsFouldMetric(this.tree == null ? null : this.tree.getTaxonset());
+    		if (this.tree != null) metric.setReference(tree);
     		this.metrics.add(metric);
     	}
     	
     	
     	// Remove all trees which are identical to other trees according to the metric
-    	List<Integer> toRemove = new ArrayList<>();
-    	for (int t1 = 0; t1 < this.referenceTrees.size(); t1++) {
-    		Tree tree1 = this.referenceTrees.get(t1);
-    		if (toRemove.contains((Integer)t1)) continue;
-    		for (int t2 = t1+1; t2 < this.referenceTrees.size(); t2++) {
-    			if (toRemove.contains((Integer)t2)) continue;
-    			TreeMetric metric2 = this.metrics.get(t2);
-    			//System.out.println(metric2.distance(tree1));
-    			if (metric2.distance(tree1) == 0) {
-    				toRemove.add(t2);
-    			}
-    		}
+    	if (this.tree != null) {
+	    	List<Integer> toRemove = new ArrayList<>();
+	    	for (int t1 = 0; t1 < this.referenceTrees.size(); t1++) {
+	    		Tree tree1 = this.referenceTrees.get(t1);
+	    		if (toRemove.contains((Integer)t1)) continue;
+	    		for (int t2 = t1+1; t2 < this.referenceTrees.size(); t2++) {
+	    			if (toRemove.contains((Integer)t2)) continue;
+	    			TreeMetric metric2 = this.metrics.get(t2);
+	    			//System.out.println(metric2.distance(tree1));
+	    			if (metric2.distance(tree1) == 0) {
+	    				toRemove.add(t2);
+	    			}
+	    		}
+	    	}
+	    	for (int i = toRemove.size()-1; i >=0; i--) {
+	    		this.referenceTrees.remove((int)toRemove.get(i));
+	    		this.metrics.remove((int)toRemove.get(i));
+	    	}
+	    	
+	    	
+	    	Log.warning("Total number of unique reference trees: " + this.metrics.size());
     	}
-    	for (int i = toRemove.size()-1; i >=0; i--) {
-    		this.referenceTrees.remove((int)toRemove.get(i));
-    		this.metrics.remove((int)toRemove.get(i));
-    	}
-
-    	
-    	Log.warning("Total number of unique reference trees: " + this.metrics.size());
     	
     }
     
+    public void setTree(Tree tree) {
+    	
+    	this.tree = tree;
+    	
+    	// Distance metric
+    	this.metrics = new ArrayList<>();
+    	for (Tree refTree : this.referenceTrees) {
+    		TreeMetric metric = new RobinsonsFouldMetric(this.tree == null ? null : this.tree.getTaxonset());
+    		metric.setReference(refTree);
+    		this.metrics.add(metric);
+    	}
+    }
     
 
     @Override
     public void init(PrintStream out) {
+    	if (this.tree == null) return;
         out.print(this.getID() + ".treeDistance\t");
         if (this.referenceTrees.size() > 1) out.print(this.getID() + ".treeDistanceVar\t");
     }
@@ -194,20 +211,30 @@ public class TreeDistanceLogger extends CalculationNode implements Loggable, Fun
     @Override
     public void log(long sample, PrintStream out) {
     	
+    	if (this.tree == null) return;
+    	
     	// Null reference tree? Use the tree on the first logged state
     	if (this.referenceTrees.isEmpty()) {
-			Tree referenceTree = new Tree(treeInput.get().getRoot().copy());
+			Tree referenceTree = new Tree(this.tree.getRoot().copy());
 			this.referenceTrees.add(referenceTree);
 			
-			TreeMetric metric = new RobinsonsFouldMetric(treeInput.get().getTaxonset());
+			TreeMetric metric = new RobinsonsFouldMetric(this.tree.getTaxonset());
     		metric.setReference(referenceTree);
     		this.metrics.add(metric);
     		
     	}
     	
-        final Tree tree = treeInput.get();
-        out.print(getDistance(tree) + "\t");
-        if (this.referenceTrees.size() > 1) out.print(getDistanceVariance(tree) + "\t");
+    	
+    	for (TreeMetric metric : this.metrics) {
+    		
+    		if (metric instanceof RobinsonsFouldMetric && ((RobinsonsFouldMetric)metric).getTaxonMap() == null) {
+    			
+    		}
+    	}
+    	
+        
+        out.print(getDistance(this.tree) + "\t");
+        if (this.referenceTrees.size() > 1) out.print(getDistanceVariance(this.tree) + "\t");
     }
 
     /**
@@ -248,16 +275,19 @@ public class TreeDistanceLogger extends CalculationNode implements Loggable, Fun
 
     @Override
     public int getDimension() {
+    	if (this.tree == null) return 0;
     	return this.referenceTrees.size() == 1 ? 1 : 2;
     }
 
     @Override
     public double getArrayValue() {
-        return this.getDistance(treeInput.get());
+    	if (this.tree == null) return 0;
+        return this.getDistance(this.tree);
     }
 
     @Override
     public double getArrayValue(int dim) {
+    	if (this.tree == null) return 0;
     	return this.getArrayValue();
     }
 }
