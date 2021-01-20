@@ -29,6 +29,19 @@ public class RobinsonsFouldMetric extends BEASTObject implements TreeMetric {
 	}
 	
 	
+	public RobinsonsFouldMetric(String [] taxaNames) {
+		if (taxaNames == null) return;
+		taxonMap = new HashMap<>();
+
+		// Create taxon to int mapping
+		int i = 0;
+		for (String taxon : taxaNames) {
+			taxonMap.put(taxon, i);
+			i++;
+		}
+	}
+
+
 	public void setTaxonMap(TaxonSet taxonset) {
 		
 		if (taxonset == null) return;

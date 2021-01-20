@@ -155,7 +155,7 @@ public class TreeDistanceLogger extends CalculationNode implements Loggable, Fun
     	// Distance metric
     	this.metrics = new ArrayList<>();
     	for (Tree tree : this.referenceTrees) {
-    		TreeMetric metric = new RobinsonsFouldMetric(this.tree == null ? null : this.tree.getTaxonset());
+    		TreeMetric metric = new RobinsonsFouldMetric(this.tree == null ? null : this.tree.getTaxaNames());
     		if (this.tree != null) metric.setReference(tree);
     		this.metrics.add(metric);
     	}
