@@ -162,7 +162,7 @@
 
 	
 	<!-- JUnit test -->
-	<target name="junitBEASTlabs">
+	<target name="junitBEASTlabs" depends="compile-allBEASTlabs"">
 		<mkdir dir="${report}" />
 		<junit printsummary="yes"> <!--showoutput='yes'-->
 			<classpath>
