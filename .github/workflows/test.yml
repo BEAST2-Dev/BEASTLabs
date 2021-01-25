@@ -2,7 +2,7 @@ name: BEASTLabs tests
 on: [ push, pull_request, workflow_dispatch ]
 
 jobs:
-  test-lphybeast:
+  test-BEASTLabs:
     runs-on: ubuntu-latest
 
     steps:
