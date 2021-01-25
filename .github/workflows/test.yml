@@ -28,4 +28,4 @@ jobs:
           find . -name "build.xml"
 
       - name: Run BEASTlbs Ant
-        run: ant -noinput -buildfile ./main/build.xml junitBEASTlabs
+        run: ant -noinput -buildfile ./BEASTLabs/build.xml junitBEASTlabs
