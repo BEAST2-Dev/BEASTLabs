@@ -63,7 +63,7 @@
 	</target>
 
 	<!-- compile Java source code -->
-	<target name="compile-allBEASTlabs" depends="initBEASTlabs">
+	<target name="compile-allBEASTlabs" depends="initBEASTlabs,compile-all">
 
 
 	    <!-- Capture the path as a delimited property using the refid attribute -->
