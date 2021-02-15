@@ -41,7 +41,7 @@ public class BactrianScaleOperator extends ScaleOperator {
 
             double hastingsRatio;            
 
-            if (isTreeScaler()) {
+            if (m_bIsTreeScaler()) {
 
                 final Tree tree = treeInput.get(this);
                 if (rootOnlyInput.get()) {
