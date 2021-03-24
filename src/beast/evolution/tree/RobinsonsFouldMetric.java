@@ -14,6 +14,7 @@ import beast.evolution.alignment.TaxonSet;
 public class RobinsonsFouldMetric extends BEASTObject implements TreeMetric {
 
 	final public Input<TaxonSet> taxonInput = new Input<>("taxonset", "taxonset of the trees", Input.Validate.REQUIRED);
+	final public Input<Boolean> recursiveInput = new Input<>("recursive", "whether to recurse down the taxon set and take only 'taxon' objects", false);
 		
 	Map<String, Integer> taxonMap = null;
 	TreeInterface referenceTree = null;
@@ -25,13 +26,14 @@ public class RobinsonsFouldMetric extends BEASTObject implements TreeMetric {
 	
 	
 	public RobinsonsFouldMetric(TaxonSet taxonset) {
-		this.setTaxonMap(taxonset);
+		this.taxonMap = new HashMap<>();
+		this.setTaxonMap(taxonset, 0);
 	}
 	
 	
 	public RobinsonsFouldMetric(String [] taxaNames) {
 		if (taxaNames == null) return;
-		taxonMap = new HashMap<>();
+		this.taxonMap = new HashMap<>();
 
 		// Create taxon to int mapping
 		int i = 0;
@@ -42,21 +44,25 @@ public class RobinsonsFouldMetric extends BEASTObject implements TreeMetric {
 	}
 
 
-	public void setTaxonMap(TaxonSet taxonset) {
+	private int setTaxonMap(TaxonSet taxonset, int i) {
 		
-		if (taxonset == null) return;
-		taxonMap = new HashMap<>();
+		if (taxonset == null) return i;
 
 		// Create taxon to int mapping
-		int i = 0;
 		for (String taxon : taxonset.getTaxaNames()) {
-			taxonMap.put(taxon, i);
-			i++;
+			if (recursiveInput.get() && taxonset.getTaxon(taxon) instanceof TaxonSet) {
+				i = setTaxonMap((TaxonSet)taxonset.getTaxon(taxon), i);
+			}else {
+				taxonMap.put(taxon, i);
+				i++;
+			}
 		}
+		
+		return i;
 	}
 	
 	public Map<String, Integer> getTaxonMap(){
-		return taxonMap;
+		return this.taxonMap;
 	}
 
 
@@ -64,14 +70,8 @@ public class RobinsonsFouldMetric extends BEASTObject implements TreeMetric {
 	public void initAndValidate() {
 		
 		TaxonSet taxonset = taxonInput.get();
-		taxonMap = new HashMap<>();
-
-		// Create taxon to int mapping
-		int i = 0;
-		for (String taxon : taxonset.getTaxaNames()) {
-			taxonMap.put(taxon, i);
-			i++;
-		}
+		this.taxonMap = new HashMap<>();
+		setTaxonMap(taxonset, 0);
 		
 	}
 
