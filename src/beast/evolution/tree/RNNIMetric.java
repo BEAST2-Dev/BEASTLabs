@@ -14,10 +14,12 @@ import beast.evolution.alignment.TaxonSet;
 
 @Description("Ranked Nearest Neghbour Interchange metric on trees")
 public class RNNIMetric extends BEASTObject implements TreeMetric {
-	final public Input<TaxonSet> taxonInput = new Input<>("taxonset", "taxonset of the trees", Input.Validate.REQUIRED);
+	final public Input<TaxonSet> taxonsetInput = new Input<>("taxonset", "taxonset of the trees", Input.Validate.REQUIRED);
 	final public Input<Boolean> recursiveInput = new Input<>("recursive", "whether to recurse down the taxon set and take only 'taxon' objects", false);
 
 	Map<String, Integer> taxonMap = null;
+	// maps leaf node index from tree2 to taxon index from taxonset
+	int [] reverseMap2;
 	TreeInterface referenceTree = null;
 	
 	public RNNIMetric() {
@@ -62,7 +64,7 @@ public class RNNIMetric extends BEASTObject implements TreeMetric {
 
 	@Override
 	public void initAndValidate() {	
-		TaxonSet taxonset = taxonInput.get();
+		TaxonSet taxonset = taxonsetInput.get();
 		this.taxonMap = new HashMap<>();
 		setTaxonMap(taxonset, 0);
 	}
@@ -73,6 +75,8 @@ public class RNNIMetric extends BEASTObject implements TreeMetric {
 	@Override
 	public double distance(TreeInterface tree1, TreeInterface tree2) {
 		nodeToCladeMap = new HashMap<>();
+		reverseMap2 = new int[tree2.getLeafNodeCount()];
+
 		List<Clade> clades1 = getRankedClades(tree1); 
 		List<Clade> clades2 = getRankedClades(tree2);
 		int [] rank2 = new int[clades2.size()];
@@ -99,11 +103,12 @@ public class RNNIMetric extends BEASTObject implements TreeMetric {
 		Node [] nodes = new Node[size];
 		int j = 0, k = 0;
 		BitSet bits = clade.getBits();
-		for (int i = 0; i < size; i++) {
+		while (k < size) {
 			while (!bits.get(j)) {
 				j++;
 			}
-			nodes[k++] = tree2.getNode(j);
+			nodes[k++] = tree2.getNode(reverseMap2[j]);
+			j++;
 		}
 		return getCommonAncestor(tree2, nodes);
 	}
@@ -220,6 +225,7 @@ public class RNNIMetric extends BEASTObject implements TreeMetric {
     	if (node.isLeaf()) {
 
     		int index = taxonMap.get(node.getID());
+    		reverseMap2[index] = node.getNr();
     		bits2.set(index);
 
     	} else {
