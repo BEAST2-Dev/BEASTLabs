@@ -12,16 +12,22 @@ import beast.core.Description;
 import beast.core.Input;
 import beast.evolution.alignment.TaxonSet;
 
-@Description("Ranked Nearest Neghbour Interchange metric on trees")
+@Description("Ranked Nearest Neighbour Interchange metric on trees")
 public class RNNIMetric extends BEASTObject implements TreeMetric {
 	final public Input<TaxonSet> taxonsetInput = new Input<>("taxonset", "taxonset of the trees", Input.Validate.REQUIRED);
 	final public Input<Boolean> recursiveInput = new Input<>("recursive", "whether to recurse down the taxon set and take only 'taxon' objects", false);
 
-	Map<String, Integer> taxonMap = null;
+	private Map<String, Integer> taxonMap = null;
 	// maps leaf node index from tree2 to taxon index from taxonset
-	int [] reverseMap2;
-	TreeInterface referenceTree = null;
+	private int [] reverseMap2;
 	
+	// use reference tree when requesting multiple distances to the same tree
+	private TreeInterface referenceTree = null;
+	private List<Clade> referenceTreeClades;
+
+	// used for bookkeeping when finding MRCA
+	private boolean [] nodesTraversed;
+
 	public RNNIMetric() {
 		this.taxonMap = null;
 	}
@@ -45,8 +51,7 @@ public class RNNIMetric extends BEASTObject implements TreeMetric {
 		}
 	}
 
-	private int setTaxonMap(TaxonSet taxonset, int i) {
-		
+	private int setTaxonMap(TaxonSet taxonset, int i) {	
 		if (taxonset == null) return i;
 
 		// Create taxon to int mapping
@@ -69,62 +74,168 @@ public class RNNIMetric extends BEASTObject implements TreeMetric {
 		setTaxonMap(taxonset, 0);
 	}
 
-	
-	Map<Clade, Node> nodeToCladeMap;
-	
 	@Override
 	public double distance(TreeInterface tree1, TreeInterface tree2) {
-		nodeToCladeMap = new HashMap<>();
 		reverseMap2 = new int[tree2.getLeafNodeCount()];
 
-		List<Clade> clades1 = getRankedClades(tree1); 
-		List<Clade> clades2 = getRankedClades(tree2);
-		int [] rank2 = new int[clades2.size()];
-		int n = tree2.getLeafNodeCount();
-		for (int i = 0; i < clades2.size(); i++) {
-			Node node = nodeToCladeMap.get(clades2.get(i));
-			rank2[node.getNr() - n] = i; 
+		// get clades in ranked order
+		List<Clade> clades1 = getRankedClades(tree1);
+		return distance(clades1, tree1, tree2);
+	}
+	
+	@Override
+	public double distance(TreeInterface tree) {
+		if (this.referenceTree == null) throw new IllegalArgumentException("Developer error: please provide a reference tree using 'setReference' or use 'distance(t1, t2)' instead");
+		return distance(this.referenceTreeClades, referenceTree, tree);
+	}
+
+	@Override
+	public void setReference(TreeInterface ref) {
+		this.referenceTree = ref;
+		this.referenceTreeClades = getRankedClades(referenceTree);
+	}
+
+	
+	
+	private double distance(List<Clade> cladesOther, TreeInterface treeOtherX, TreeInterface tree) {
+		// get clades in ranked order
+		Tree treeCopy = new Tree();
+		treeCopy.assignFrom((Tree) tree);
+		Map<String,Integer> map = new HashMap<>();
+		for (int i = 0; i < treeCopy.getLeafNodeCount(); i++) {
+			map.put(treeCopy.getNode(i).getID(), i);
+		}
+		List<Clade> clades = getRankedClades(treeCopy);
+		Map<Node,Clade> map2 = new HashMap<>();
+		for (Clade c : clades) {
+			map2.put(c.getNode(),c);
 		}
 		
+		// pre-calculate node rankings of other tree
+		int [] rank = new int[tree.getNodeCount()];
+		Node [] invrank = new Node[clades.size()];
+		for (int i = 0; i < clades.size(); i++) {
+			Node node = clades.get(i).getNode();
+			rank[node.getNr()] = i;
+			invrank[i] = node;
+		}
+
+		// FindPath algorithm of 
+		// Collienne, L., Gavryushkin, A. Computing nearest neighbour interchange distances between ranked phylogenetic trees. J. Math. Biol. 82, 8 (2021). 
+		// https://doi.org/10.1007/s00285-021-01567-5
+		// only calculates the distance = length of the path, not the path itself
 		double d = 0;
-		for (int i = 0; i < clades1.size()-1; i++) {
-			Node node2 = mrca(tree2, clades1.get(i));
-			int rank = rank2[node2.getNr() - n];
-			if (rank > i) {
-				d += rank - i;
-			}
+		for (int i = 0; i < cladesOther.size() - 1; i++) {
+			List<String> cluster = new ArrayList<>();
+			Node current = cladesOther.get(i).getNode();
+			getTaxa(current, cluster);
+			Node targetNode = mrca(treeCopy, cluster, map);
+			int rank0 = rank[targetNode.getNr()];
+			for (int j = rank0; j > i; j--) {
+				
+				// trickle targetnode down to rank i
+				if (invrank[j-1].getParent() == targetNode) {
+					// perform NNI
+					BitSet currentBits = cladesOther.get(i).getBits();
+					Node node = invrank[j-1];
+					Node left = node.getLeft();
+					Node right = node.getRight();
+					Node child;
+					if (left.isLeaf()) {
+						// current clade contains at least 2 taxa, so left cannot contain cluster, and therefore we want the right to remain
+						if (currentBits.get(taxonMap.get(left.getID()))) {
+							child = left;
+						} else {
+							child = right;
+						}
+					} else if (right.isLeaf()) {
+						// mirror situation of left.isLeaf
+						if (currentBits.get(taxonMap.get(right.getID()))) {
+							child = right;
+						} else {
+							child = left;
+						}
+					} else {
+						// check cluster is subset of left, if so take left, otherwise take right
+						if (currentBits.intersects(map2.get(left).getBits())) {
+							child = left;
+						} else {
+							child = right;
+						}
+					}
+					
+					Node gp = targetNode.getParent();
+					if (gp != null) {
+						gp.removeChild(targetNode);
+						gp.addChild(node);
+					}
+					node.removeChild(child);
+					node.addChild(targetNode);					
+					node.setParent(gp);
+					
+					targetNode.removeChild(node);
+					targetNode.addChild(child);
+					targetNode.setParent(node);
+					
+					// update bit sets
+					setBits(targetNode, clades, rank);
+					setBits(node, clades, rank);
+				}
+				d++;
+
+				// update rank/invrank arrays
+				Node tmp = invrank[j-1];
+				Node tmp2 = invrank[j];
+				double h1 = tmp.getHeight();
+				double h2 = tmp2.getHeight();
+				rank[tmp2.getNr()] = j-1;
+				rank[tmp.getNr()] = j;
+				invrank[j-1] = tmp2;
+				invrank[j] = tmp;
+				tmp2.setHeight(h1);
+				tmp.setHeight(h2);
+			}				
 		}
 		return d;
 	}
 	
 
-	private Node mrca(TreeInterface tree2, Clade clade) {
-		int size = clade.getSize();
-		Node [] nodes = new Node[size];
-		int j = 0, k = 0;
-		BitSet bits = clade.getBits();
-		while (k < size) {
-			while (!bits.get(j)) {
-				j++;
+	private void setBits(Node targetNode, List<Clade> clades, int[] rank) {
+		BitSet parentSet = clades.get(rank[targetNode.getNr()]).getBits();
+		parentSet.clear();
+		BitSet leftSet = clades.get(rank[targetNode.getLeft().getNr()]).getBits();
+		BitSet rightSet = clades.get(rank[targetNode.getRight().getNr()]).getBits();
+		parentSet.or(leftSet);
+		parentSet.or(rightSet);		
+	}
+
+	private void getTaxa(Node node, List<String> cluster) {
+		if (node.isLeaf()) {
+			cluster.add(node.getID());
+		} else {
+			for (Node child : node.getChildren()) {
+				getTaxa(child, cluster);
 			}
-			nodes[k++] = tree2.getNode(reverseMap2[j]);
-			j++;
 		}
-		return getCommonAncestor(tree2, nodes);
 	}
 	
-	boolean [] nodesTraversed;
-	int nseen;
+	private Node mrca(TreeInterface tree, List<String> cluster, Map<String,Integer> map) {
+		int size = cluster.size();
+		Node [] nodes = new Node[size];
+		int k = 0;
+		for (String taxon : cluster) {
+			nodes[k++] = tree.getNode(map.get(taxon));
+		}
+		return getCommonAncestor(tree, nodes);
+	}
 
     protected Node getCommonAncestor(Node n1, Node n2) {
         // assert n1.getTree() == n2.getTree();
         if( ! nodesTraversed[n1.getNr()] ) {
             nodesTraversed[n1.getNr()] = true;
-            nseen += 1;
         }
         if( ! nodesTraversed[n2.getNr()] ) {
             nodesTraversed[n2.getNr()] = true;
-            nseen += 1;
         }
         while (n1 != n2) {
 	        double h1 = n1.getHeight();
@@ -133,13 +244,11 @@ public class RNNIMetric extends BEASTObject implements TreeMetric {
 	            n1 = n1.getParent();
 	            if( ! nodesTraversed[n1.getNr()] ) {
 	                nodesTraversed[n1.getNr()] = true;
-	                nseen += 1;
 	            }
 	        } else if( h2 < h1 ) {
 	            n2 = n2.getParent();
 	            if( ! nodesTraversed[n2.getNr()] ) {
 	                nodesTraversed[n2.getNr()] = true;
-	                nseen += 1;
 	            }
 	        } else {
 	            //zero length branches hell
@@ -173,7 +282,6 @@ public class RNNIMetric extends BEASTObject implements TreeMetric {
                 }
 	            if( ! nodesTraversed[n.getNr()] ) {
 	                nodesTraversed[n.getNr()] = true;
-	                nseen += 1;
 	            } 
 	        }
         }
@@ -182,7 +290,6 @@ public class RNNIMetric extends BEASTObject implements TreeMetric {
 
     private Node getCommonAncestor(TreeInterface tree, Node [] nodes) {
         nodesTraversed = new boolean[tree.getNodeCount()];
-        nseen = 0;
         Node cur = nodes[0];
 
         for (int k = 1; k < nodes.length; ++k) {
@@ -202,20 +309,7 @@ public class RNNIMetric extends BEASTObject implements TreeMetric {
 			return 0;
 		});
 		return clades;
-	}
-
-
-	@Override
-	public double distance(TreeInterface tree) {
-		if (this.referenceTree == null) throw new IllegalArgumentException("Developer error: please provide a reference tree using 'setReference' or use 'distance(t1, t2)' instead");
-		return distance(this.referenceTree, tree);
-	}
-
-	@Override
-	public void setReference(TreeInterface ref) {
-		this.referenceTree = ref;
-	}
-	
+	}	
 	
     private void getClades(Map<String, Integer> taxonMap,
             Node node, List<Clade> clades, BitSet bits) {
@@ -233,8 +327,7 @@ public class RNNIMetric extends BEASTObject implements TreeMetric {
     		for (Node child : node.getChildren()) {
     			getClades(taxonMap, child, clades, bits2);
     		}
-    		Clade clade = new Clade(bits2, node.getHeight()); 
-    		nodeToCladeMap.put(clade, node);
+    		Clade clade = new Clade(bits2, node.getHeight(), node); 
     		clades.add(clade);
     	}
 
