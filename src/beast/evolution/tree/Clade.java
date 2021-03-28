@@ -16,6 +16,12 @@ public class Clade implements Comparable<Clade> {
     private double height;
     private List<Double> heights;
     private final int size;
+    private Node node; // node in tree associated with this clade
+
+    public Clade(final BitSet bits, final double height, Node node) {
+        this(bits, height);
+        this.node = node;
+    }
 
     public Clade(final BitSet bits, final double height) {
         this.bits = bits;
@@ -42,6 +48,10 @@ public class Clade implements Comparable<Clade> {
 
     public int getSize() {
         return size;
+    }
+    
+    public Node getNode() {
+    	return node;
     }
 
     public int compareTo(Clade clade) {
