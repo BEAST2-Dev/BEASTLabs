@@ -21,6 +21,12 @@ import beast.util.Randomizer;
 @Description("Logger to report statistics of a tree")
 public class TreeDistanceLogger extends CalculationNode implements Loggable, Function {
 	
+	
+	private enum metric {
+		RF, RNNI
+	}
+	
+	
     final public Input<Tree> treeInput = new Input<>("tree", "Tree to report height for.");
    // final public Input<TreeMetric> metricInput = new Input<>("metric", "Tree distance metric (default: Robinson Foulds).");
     final public Input<Tree> referenceInput = new Input<>("ref", "Reference tree to calculate distances from (default: the initial tree).");
@@ -29,6 +35,8 @@ public class TreeDistanceLogger extends CalculationNode implements Loggable, Fun
     		+ " Set to 0 to use full alignment without bootstrapping.", 0);
     
     final public Input<Double> bootstrapPSitesInput = new Input<>("psites", "Proportion of sites to sample when bootstraping. Set to 0 for random number of sites per seq", 1.0);
+    
+    final public Input<metric> metricInput = new Input<>("metric", "Tree distance metric", metric.RF, metric.values());
     
     
     List<TreeMetric> metrics;
@@ -152,12 +160,30 @@ public class TreeDistanceLogger extends CalculationNode implements Loggable, Fun
     	}
     	
     	
-    	// Distance metric
+    	// Distance metrics
     	this.metrics = new ArrayList<>();
-    	for (Tree tree : this.referenceTrees) {
-    		TreeMetric metric = new RobinsonsFouldMetric(this.tree == null ? null : this.tree.getTaxaNames());
-    		if (this.tree != null) metric.setReference(tree);
+    	for (Tree refTree : this.referenceTrees) {
+    		
+    		TreeMetric metric = null;
+    		switch (metricInput.get()) {
+    			
+    			// Robinson foulds
+	    		case RF:{
+	        		metric = new RobinsonsFouldMetric(this.tree == null ? null : this.tree.getTaxaNames());
+	    			break;
+	    		}
+	    		
+	    		// RNNI
+	    		case RNNI:{
+	    			metric = new RNNIMetric(this.tree == null ? null : this.tree.getTaxaNames());
+	    			break;
+	    		}
+    		}
+    		
+    		if (this.tree != null) metric.setReference(refTree);
     		this.metrics.add(metric);
+    		
+    	
     	}
     	
     	
@@ -218,18 +244,23 @@ public class TreeDistanceLogger extends CalculationNode implements Loggable, Fun
 			Tree referenceTree = new Tree(this.tree.getRoot().copy());
 			this.referenceTrees.add(referenceTree);
 			
-			TreeMetric metric = new RobinsonsFouldMetric(this.tree.getTaxonset());
+			TreeMetric metric = null;
+    		switch (metricInput.get()) {
+    			
+    			// Robinson foulds
+	    		case RF:{
+	        		metric = new RobinsonsFouldMetric(this.tree.getTaxaNames());
+	    			break;
+	    		}
+	    		
+	    		// RNNI
+	    		case RNNI:{
+	    			metric = new RNNIMetric(this.tree.getTaxaNames());
+	    			break;
+	    		}
+    		}
     		metric.setReference(referenceTree);
     		this.metrics.add(metric);
-    		
-    	}
-    	
-    	
-    	for (TreeMetric metric : this.metrics) {
-    		
-    		if (metric instanceof RobinsonsFouldMetric && ((RobinsonsFouldMetric)metric).getTaxonMap() == null) {
-    			
-    		}
     	}
     	
         

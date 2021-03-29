@@ -4,6 +4,7 @@ import java.util.*;
 
 import beast.core.BEASTObject;
 import beast.core.Input;
+import beast.core.util.Log;
 import beast.evolution.alignment.Taxon;
 import beast.evolution.alignment.TaxonSet;
 
@@ -77,13 +78,9 @@ public class RobinsonsFouldMetric extends BEASTObject implements TreeMetric {
 
 	@Override
 	public double distance(TreeInterface tree1, TreeInterface tree2) {
-
-
 		Set<String> clades1 = getClades(tree1);
 		Set<String> clades2 = getClades(tree2);
-
 		clades1.removeAll(clades2);
-
 		return clades1.size();
 	}
 	

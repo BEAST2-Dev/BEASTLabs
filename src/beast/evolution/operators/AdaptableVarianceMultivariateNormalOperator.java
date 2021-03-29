@@ -149,6 +149,7 @@ public class AdaptableVarianceMultivariateNormalOperator extends KernelOperator 
         	int indexToRemove = toRemove.get(i);
         	transforms.remove(indexToRemove);
         }
+
         
         this.parameter = new CompoundParameterHelper(parameterList);
         this.transformations = transforms.toArray(new Transform[]{});
