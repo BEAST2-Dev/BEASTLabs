@@ -1,6 +1,7 @@
 package beast.evolution.tree;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collections;
 import java.util.HashMap;
@@ -10,6 +11,7 @@ import java.util.Map;
 import beast.core.BEASTObject;
 import beast.core.Description;
 import beast.core.Input;
+import beast.core.util.Log;
 import beast.evolution.alignment.TaxonSet;
 
 @Description("Ranked Nearest Neighbour Interchange metric on trees")
@@ -78,15 +80,24 @@ public class RNNIMetric extends BEASTObject implements TreeMetric {
 	public double distance(TreeInterface tree1, TreeInterface tree2) {
 		reverseMap2 = new int[tree2.getLeafNodeCount()];
 
-		// get clades in ranked order
+		// get clades of tree1 in ranked order
 		List<Clade> clades1 = getRankedClades(tree1);
-		return distance(clades1, tree1, tree2);
+		double d1 = distance(clades1, tree1, tree2);
+		
+		reverseMap2 = new int[tree2.getLeafNodeCount()];
+
+		// get clades of tree2 in ranked order
+		List<Clade> clades2 = getRankedClades(tree2);
+		double d2 = distance(clades2, tree2, tree1);
+		return Math.min(d1, d2);
 	}
 	
 	@Override
 	public double distance(TreeInterface tree) {
 		if (this.referenceTree == null) throw new IllegalArgumentException("Developer error: please provide a reference tree using 'setReference' or use 'distance(t1, t2)' instead");
-		return distance(this.referenceTreeClades, referenceTree, tree);
+		// TODO: uncomment following line once code is robustified 
+		// return distance(this.referenceTreeClades, referenceTree, tree);
+		return distance(referenceTree, tree);
 	}
 
 	@Override
@@ -110,6 +121,13 @@ public class RNNIMetric extends BEASTObject implements TreeMetric {
 		for (Clade c : clades) {
 			map2.put(c.getNode(),c);
 		}
+		for (Node leaf : treeCopy.getExternalNodes()) {
+			BitSet bits = new BitSet();
+			bits.set(taxonMap.get(leaf.getID()));
+			map2.put(leaf, new Clade(bits, leaf.getHeight(), leaf));
+		}
+
+		
 		
 		// pre-calculate node rankings of other tree
 		int [] rank = new int[tree.getNodeCount()];
@@ -157,6 +175,7 @@ public class RNNIMetric extends BEASTObject implements TreeMetric {
 						}
 					} else {
 						// check cluster is subset of left, if so take left, otherwise take right
+//						if (currentBits.intersects(clades.get(rank[left.getNr()]).getBits())) {
 						if (currentBits.intersects(map2.get(left).getBits())) {
 							child = left;
 						} else {
@@ -178,8 +197,21 @@ public class RNNIMetric extends BEASTObject implements TreeMetric {
 					targetNode.setParent(node);
 					
 					// update bit sets
-					setBits(targetNode, clades, rank);
-					setBits(node, clades, rank);
+					setBits(targetNode, map2, rank);
+					setBits(node, map2, rank);
+					
+					if (current.getChildCount() != 2) {
+						int h = 3;
+						h++;
+					}
+					if (targetNode.getChildCount() != 2) {
+						int h = 3;
+						h++;
+					}
+					if (gp != null && gp.getChildCount() != 2) {
+						int h = 3;
+						h++;
+					}
 				}
 				d++;
 
@@ -194,17 +226,67 @@ public class RNNIMetric extends BEASTObject implements TreeMetric {
 				invrank[j] = tmp;
 				tmp2.setHeight(h1);
 				tmp.setHeight(h2);
+				
+				// System.err.println(d + ": " + invrank[clades.size()-1].toString());
 			}				
+		}
+		
+		String endTree = toSortedNewick(invrank[clades.size()-1],new int[1]);
+		String targetTree = toSortedNewick(treeOtherX.getRoot(), new int[1]);
+		if (!endTree.equals(targetTree)) {
+			System.err.println(targetTree);
+			System.err.println(endTree);
+			// return Double.NEGATIVE_INFINITY;
 		}
 		return d;
 	}
 	
 
-	private void setBits(Node targetNode, List<Clade> clades, int[] rank) {
-		BitSet parentSet = clades.get(rank[targetNode.getNr()]).getBits();
+	private String toSortedNewick(Node node, int[] maxNodeInClade) {
+        StringBuilder buf = new StringBuilder();
+
+        if (!node.isLeaf()) {
+
+            if (node.getChildCount() <= 2) {
+                // Computationally cheap method for special case of <=2 children
+
+                buf.append("(");
+                String child1 = toSortedNewick(node.getChild(0), maxNodeInClade);
+                int child1Index = maxNodeInClade[0];
+                if (node.getChildCount() > 1) {
+                    String child2 = toSortedNewick(node.getChild(1), maxNodeInClade);
+                    int child2Index = maxNodeInClade[0];
+                    if (child1Index > child2Index) {
+                        buf.append(child2);
+                        buf.append(",");
+                        buf.append(child1);
+                    } else {
+                        buf.append(child1);
+                        buf.append(",");
+                        buf.append(child2);
+                        maxNodeInClade[0] = child1Index;
+                    }
+                } else {
+                    buf.append(child1);
+                }
+                buf.append(")");
+            }
+
+        } else {
+            maxNodeInClade[0] = node.getNr();
+            buf.append(node.getID());
+        }
+
+        return buf.toString();
+	}
+
+
+	private void setBits(Node targetNode, Map<Node,Clade> map2, /*List<Clade> clades,*/ int[] rank) {
+		BitSet parentSet = map2.get(targetNode).getBits();
 		parentSet.clear();
-		BitSet leftSet = clades.get(rank[targetNode.getLeft().getNr()]).getBits();
-		BitSet rightSet = clades.get(rank[targetNode.getRight().getNr()]).getBits();
+		BitSet leftSet = map2.get(targetNode.getLeft()).getBits();
+		BitSet rightSet = map2.get(targetNode.getRight()).getBits();
+		
 		parentSet.or(leftSet);
 		parentSet.or(rightSet);		
 	}
@@ -306,6 +388,7 @@ public class RNNIMetric extends BEASTObject implements TreeMetric {
 					return 1;
 			if (c1.getHeight() < c2.getHeight())
 				return -1;
+			Log.debug.println("Tie break");
 			return 0;
 		});
 		return clades;
