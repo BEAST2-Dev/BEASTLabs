@@ -10,7 +10,6 @@ import java.util.Map;
 import beast.core.BEASTObject;
 import beast.core.Description;
 import beast.core.Input;
-import beast.core.util.Log;
 import beast.evolution.alignment.TaxonSet;
 
 @Description("Ranked Nearest Neighbour Interchange metric on trees")
@@ -22,7 +21,8 @@ public class RNNIMetric extends BEASTObject implements TreeMetric {
 	
 	// use reference tree when requesting multiple distances to the same tree
 	private TreeInterface referenceTree = null;
-
+	private Integer [] referenceClades; 
+			
 	// used for bookkeeping when finding MRCA
 	private boolean [] nodesTraversed;
 
@@ -83,9 +83,8 @@ public class RNNIMetric extends BEASTObject implements TreeMetric {
 	@Override
 	public double distance(TreeInterface tree) {
 		if (this.referenceTree == null) throw new IllegalArgumentException("Developer error: please provide a reference tree using 'setReference' or use 'distance(t1, t2)' instead");
-		// TODO: uncomment following line once code is robustified 
-		// return distance(this.referenceTreeClades, referenceTree, tree);
-		return distance(referenceTree, tree);
+		referenceClades = getRankedClades(tree.getLeafNodeCount(), tree.getInternalNodeCount(), tree.getNodesAsArray());
+		return distance(referenceClades, referenceTree, tree);
 	}
 
 	@Override
@@ -108,7 +107,6 @@ public class RNNIMetric extends BEASTObject implements TreeMetric {
 		}
 
 		Integer[] clades = getRankedClades(treeCopy.getLeafNodeCount(), treeCopy.getInternalNodeCount(), treeCopy.getNodesAsArray());
-		
 		
 		// pre-calculate node rankings of other tree
 		int [] rank = new int[tree.getNodeCount()];
@@ -156,19 +154,6 @@ public class RNNIMetric extends BEASTObject implements TreeMetric {
 					targetNode.removeChild(node);
 					targetNode.addChild(child);
 					targetNode.setParent(node);
-										
-					if (current.getChildCount() != 2) {
-						int h = 3;
-						h++;
-					}
-					if (targetNode.getChildCount() != 2) {
-						int h = 3;
-						h++;
-					}
-					if (gp != null && gp.getChildCount() != 2) {
-						int h = 3;
-						h++;
-					}
 				}
 				d++;
 
@@ -184,29 +169,29 @@ public class RNNIMetric extends BEASTObject implements TreeMetric {
 				tmp2.setHeight(h1);
 				tmp.setHeight(h2);
 
+				// for debugging:
 				// checkRank(rank, invrank);
-				
-
-				
 				// System.err.println(d + ": " + invrank[clades.size()-1].toString());
 			}				
+			// for debugging:
 //			Node targetNode2 = mrca(treeCopy, cluster, map);
 //			if (targetNode!=targetNode2) {
 //				System.err.println("clade not restored");
 //			}
 		}
 		
-		String endTree = toSortedNewick(invrank[clades.length-1],new int[1]);
-		String targetTree = toSortedNewick(treeOther.getRoot(), new int[1]);
-		if (!endTree.equals(targetTree)) {
-			System.err.println(targetTree);
-			System.err.println(endTree);
-			// return Double.NEGATIVE_INFINITY;
-		}
+		// for debugging:
+//		String endTree = toSortedNewick(invrank[clades.length-1],new int[1]);
+//		String targetTree = toSortedNewick(treeOther.getRoot(), new int[1]);
+//		if (!endTree.equals(targetTree)) {
+//			System.err.println(targetTree);
+//			System.err.println(endTree);
+//		}
 		return d;
 	}
 	
-
+	/** for debugging: some sanity checks for rank and invrank arrays **/
+	@SuppressWarnings("unused")
 	private void checkRank(int[] rank, Node[] invrank) {
 		boolean [] used = new boolean[rank.length/2];
 		for (int j = rank.length/2+1; j < rank.length; j++) {
@@ -233,11 +218,13 @@ public class RNNIMetric extends BEASTObject implements TreeMetric {
 				System.err.println("Something wrong with rank");
 			}
 		}
-		
-		
 	}
 
 
+	/** for debugging: produce newick tree with taxa sorted and without branch lengths or metadata
+	 * Note: this assumes taxa orderings in tree are the same as in the taxonset 
+	 * **/
+	@SuppressWarnings("unused")
 	private String toSortedNewick(Node node, int[] maxNodeInClade) {
         StringBuilder buf = new StringBuilder();
 
@@ -365,32 +352,10 @@ public class RNNIMetric extends BEASTObject implements TreeMetric {
         return cur;
     }
 
-	private Integer [] getRankedClades(TreeInterface tree) {
-		final Integer [] clades = new Integer[tree.getInternalNodeCount()];
-		for (int i = 0; i < clades.length; i++) {
-			clades[i] = tree.getLeafNodeCount() + i; 
-		}
-		
-		Arrays.sort(clades, new Comparator<Integer>() {
-			@Override
-			public int compare(Integer c1, Integer c2) {
-				if (tree.getNode(c1).getHeight() > tree.getNode(c2).getHeight())
-					return 1;
-				if (tree.getNode(c1).getHeight() < tree.getNode(c2).getHeight())
-					return -1;
-				Log.debug.println("Tie break");
-				return 0;
-			}
-		});
-		return clades;
-	}	
-
 	private Integer [] getRankedClades(int leafNodeCount, int internalNodeCount, Node [] nodes) {
 		final Integer [] clades = new Integer[internalNodeCount];
-		if (nodes.length == leafNodeCount + internalNodeCount) {
-			for (int i = 0; i < clades.length; i++) {
-				clades[i] = leafNodeCount + i; 
-			}
+		for (int i = 0; i < clades.length; i++) {
+			clades[i] = leafNodeCount + i; 
 		}
 		
 		Arrays.sort(clades, new Comparator<Integer>() {
@@ -400,7 +365,7 @@ public class RNNIMetric extends BEASTObject implements TreeMetric {
 					return 1;
 				if (nodes[c1].getHeight() < nodes[c2].getHeight())
 					return -1;
-				Log.debug.println("Tie break");
+				// Log.debug.println("Tie break");
 				return 0;
 			}
 		});
