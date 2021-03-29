@@ -75,7 +75,7 @@ public class RNNIMetric extends BEASTObject implements TreeMetric {
 	@Override
 	public double distance(TreeInterface tree1, TreeInterface tree2) {
 		// get clades of tree1 in ranked order
-		Integer [] clades1 = getRankedClades(tree1.getLeafNodeCount(), tree1.getInternalNodeCount(), tree1.getNodesAsArray());
+		Integer [] clades1 = getRankedClades(tree1);
 		double d1 = distance(clades1, tree1, tree2);
 		return d1;
 	}
@@ -83,7 +83,7 @@ public class RNNIMetric extends BEASTObject implements TreeMetric {
 	@Override
 	public double distance(TreeInterface tree) {
 		if (this.referenceTree == null) throw new IllegalArgumentException("Developer error: please provide a reference tree using 'setReference' or use 'distance(t1, t2)' instead");
-		referenceClades = getRankedClades(tree.getLeafNodeCount(), tree.getInternalNodeCount(), tree.getNodesAsArray());
+		referenceClades = getRankedClades(tree);
 		return distance(referenceClades, referenceTree, tree);
 	}
 
@@ -106,7 +106,7 @@ public class RNNIMetric extends BEASTObject implements TreeMetric {
 			leaf.setHeight(-1e-13);
 		}
 
-		Integer[] clades = getRankedClades(treeCopy.getLeafNodeCount(), treeCopy.getInternalNodeCount(), treeCopy.getNodesAsArray());
+		Integer[] clades = getRankedClades(treeCopy);
 		
 		// pre-calculate node rankings of other tree
 		int [] rank = new int[tree.getNodeCount()];
@@ -352,7 +352,20 @@ public class RNNIMetric extends BEASTObject implements TreeMetric {
         return cur;
     }
 
-	private Integer [] getRankedClades(int leafNodeCount, int internalNodeCount, Node [] nodes) {
+	private Integer [] getRankedClades(TreeInterface tree) {
+		final Node [] nodes = tree.getNodesAsArray();
+		if (nodes == null) {
+			if (tree instanceof Tree) {
+				((Tree)tree).initArrays();
+				// node array is not initialised
+				return getRankedClades(tree);
+			} else {
+				throw new IllegalArgumentException("Don't know how to get node array from tree");				
+			}
+		}
+		int leafNodeCount = tree.getLeafNodeCount();
+		int internalNodeCount = tree.getInternalNodeCount();
+
 		final Integer [] clades = new Integer[internalNodeCount];
 		for (int i = 0; i < clades.length; i++) {
 			clades[i] = leafNodeCount + i; 
