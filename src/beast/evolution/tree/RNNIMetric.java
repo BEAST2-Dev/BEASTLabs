@@ -354,7 +354,7 @@ public class RNNIMetric extends BEASTObject implements TreeMetric {
 
 	private Integer [] getRankedClades(TreeInterface tree) {
 		final Node [] nodes = tree.getNodesAsArray();
-		if (nodes == null) {
+		if (nodes == null || nodes[nodes.length-1] == null) {
 			if (tree instanceof Tree) {
 				((Tree)tree).initArrays();
 				// node array is not initialised
