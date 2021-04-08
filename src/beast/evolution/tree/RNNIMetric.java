@@ -26,6 +26,9 @@ public class RNNIMetric extends BEASTObject implements TreeMetric {
 	// used for bookkeeping when finding MRCA
 	private boolean [] nodesTraversed;
 
+	// number of NNIs along path of last calculated distance
+	private int nniCount = -1;
+
 	public RNNIMetric() {
 		this.taxonMap = null;
 	}
@@ -63,6 +66,13 @@ public class RNNIMetric extends BEASTObject implements TreeMetric {
 		}
 		
 		return i;
+	}
+
+	public int getNNICount() {
+		if (nniCount < 0) {
+			throw new RuntimeException("Programmer error: call distance() method before calling getNNICount()");
+		}
+		return nniCount;
 	}
 
 	@Override
@@ -121,6 +131,7 @@ public class RNNIMetric extends BEASTObject implements TreeMetric {
 		// https://doi.org/10.1007/s00285-021-01567-5
 		// only calculates the distance = length of the path, not the path itself
 		double d = 0;
+		nniCount = 0;
 		for (int i = 0; i < cladesOther.length - 1; i++) {
 			List<String> cluster = new ArrayList<>();
 			Node current = treeOther.getNode(cladesOther[i]);
@@ -154,6 +165,7 @@ public class RNNIMetric extends BEASTObject implements TreeMetric {
 					targetNode.removeChild(node);
 					targetNode.addChild(child);
 					targetNode.setParent(node);
+					nniCount++;
 				}
 				d++;
 
