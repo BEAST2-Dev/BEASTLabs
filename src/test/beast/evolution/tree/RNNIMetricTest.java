@@ -12,8 +12,10 @@ import beast.app.treeannotator.TreeAnnotator;
 import beast.app.treeannotator.TreeAnnotator.MemoryFriendlyTreeSet;
 import beast.evolution.alignment.Taxon;
 import beast.evolution.alignment.TaxonSet;
+import beast.evolution.tree.Node;
 import beast.evolution.tree.RNNIMetric;
 import beast.evolution.tree.TreeInterface;
+import beast.util.Randomizer;
 import beast.util.TreeParser;
 import junit.framework.TestCase;
 
@@ -215,14 +217,21 @@ public class RNNIMetricTest extends TestCase {
 				
 				RNNIMetric metric = new RNNIMetric();
 				metric.initByName("taxonset", taxonset);
+				randomise(tree1);
+				randomise(tree2);
 				double d = metric.distance(tree1, tree2);
+				double nni = metric.getNNICount();
 
 				metric = new RNNIMetric();
 				metric.initByName("taxonset", taxonset);
 				double d2 = metric.distance(tree2, tree1);
+				double nni2 = metric.getNNICount();
 				if (d2 != d) {
 					System.err.println(i + " " + j + " " +d + " " + d2 + " " + (d2==d));
 					nonSymmetricCount++;
+				}
+				if (nni2 != nni) {
+					System.err.println("NNI-mismatch " + i + " " + j + " " + nni + " " + nni2 + " " + (nni2==nni));
 				}
 				//System.out.print((int)d+",");
 			}
@@ -231,6 +240,24 @@ public class RNNIMetricTest extends TestCase {
 		assertEquals(0, nonSymmetricCount);
 	}
 	
+	private static void randomise(TreeInterface tree) {
+		double mean = tree.getRoot().getHeight();
+		randomise(tree.getRoot(), mean);
+	}
+
+	private static  double randomise(Node node, double mean) {
+		if (node.isLeaf()) {
+			return node.getHeight();
+		} else {
+			double left = randomise(node.getLeft(), mean);
+			double right = randomise(node.getRight(), mean);
+			double max = Math.max(left, right);
+			double newHeight = max + Randomizer.nextDouble() * mean;
+			node.setHeight(newHeight);
+			return newHeight;
+		}
+	}
+
 	@Test
 	public void testTreesAgainstMatrix() {
 		testSet("Dengue", taxaDengue, treesDengue, distancesDengue);
@@ -240,6 +267,8 @@ public class RNNIMetricTest extends TestCase {
 	}
 	
 	private void testSet(String dataSet, String taxonNames, String [] trees, double [][] distances) {
+		Randomizer.setSeed(127);
+		
 		List<Taxon> taxa = new ArrayList<>();
 		for (String str : taxonNames.split(",")) {
 			taxa.add(new Taxon(str));
@@ -256,13 +285,19 @@ public class RNNIMetricTest extends TestCase {
 				RNNIMetric metric = new RNNIMetric();
 				metric.initByName("taxonset", taxonset);
 				double d = metric.distance(tree1, tree2);
-
+				double nni = metric.getNNICount();
+				
 				metric = new RNNIMetric();
 				metric.initByName("taxonset", taxonset);
 				double d2 = metric.distance(tree2, tree1);
+				double nni2 = metric.getNNICount();
 				if (d != d2 || distances[i][j] != d) {
 					System.err.println(dataSet + " " + i + " " + j + " " + distances[i][j] + " " +d + " " + d2 + " " + (distances[i][j]- d) + " " + (d2==d));
 					nonSymmetricCount++;
+				}
+				
+				if (nni2 != nni) {
+					System.err.println("NNI-mismatch " + i + " " + j + " " + nni + " " + nni2 + " " + (nni2==nni));
 				}
 			}
 		}
@@ -270,7 +305,7 @@ public class RNNIMetricTest extends TestCase {
 	}
 
 
-	private static void test(String workingdir, String treeFile, String matrixFile) {
+	private static void test(String workingdir, String treeFile, String matrixFile, boolean randomise) {
 		System.err.println("Processing " + treeFile );
 		long start = System.currentTimeMillis();
 		try {
@@ -278,30 +313,127 @@ public class RNNIMetricTest extends TestCase {
 			treeset1.reset();
 	        BufferedReader fin = new BufferedReader(new FileReader(workingdir + "/" + matrixFile));
 
+	        int N = 100;
+	        TreeInterface [] trees = new TreeInterface[N];
+	        double [][] distances = new double[N][N];
 	        int i = 0;
-			while (treeset1.hasNext()) {
+			while (treeset1.hasNext() && i < N) {
 	            String [] str = fin.readLine().split(",");
-				TreeInterface tree1 = treeset1.next();
-				if (i==0) System.err.println(tree1.getLeafNodeCount() + " taxa");
-				MemoryFriendlyTreeSet treeset2 = new TreeAnnotator().new MemoryFriendlyTreeSet(workingdir + "/" + treeFile, 0);
-				treeset2.reset();
-				int j = 0;
-				while (treeset2.hasNext()) {
-					TreeInterface tree2 = treeset2.next();
+				trees[i] = treeset1.next();
+				for (int j = 0; j < N; j++) {
+					distances[i][j] = Double.parseDouble(str[j]);
+				}
+				i++;
+			}
+			
+			String t1 = null, t2 = null;
+			double [][] nniCounts = new double[N][N];
+
+			for (i = 0; i < N; i++) {
+				TreeInterface tree1 = trees[i];
+				for (int j = 0; j < N; j++) {
+					TreeInterface tree2 = trees[j];
 					RNNIMetric metric = new RNNIMetric();
 					metric.initByName("taxonset", tree1.getTaxonset());
+					
 					double d = metric.distance(tree1, tree2);
-					double expectedD = Double.parseDouble(str[j++]);
+					double nni = metric.getNNICount();
+
+					metric = new RNNIMetric();
+					metric.initByName("taxonset", tree2.getTaxonset());
+					metric.distance(tree2, tree1);
+					double nni2 = metric.getNNICount();
+					
+					double expectedD = distances[i][j];
 					if (Math.abs(d - expectedD) > 1e-6) {
 						System.err.println(treeFile + " " + i + " " + j + " " + expectedD + " " + d + " " + (expectedD - d));
 					}
+					if (nni2 != nni) {
+						System.err.println("NNI-mismatch " + i + " " + j + " " + nni + " " + nni2 + " " + (nni2==nni));
+					}
+
+					nniCounts[i][j] = nni;
 				}
-				i++;
 				if (i % 1 == 0) {
 					long current = System.currentTimeMillis();
-					System.err.print(((current-start)/1000) + " seconds\n");
+					System.err.print("Tree " + i + ": " + ((current-start)/1000) + " seconds\n");
 				}
 			}
+			
+			
+			if (randomise) {
+			for (i = 0; i < N; i++) {
+				TreeInterface tree1 = trees[i];
+				for (int j = 0; j < N; j++) {
+					TreeInterface tree2 = trees[j];
+					RNNIMetric metric = new RNNIMetric();
+					metric.initByName("taxonset", tree1.getTaxonset());
+					
+					t1 = tree1.getRoot().toNewick();
+					t2 = tree2.getRoot().toNewick();
+					randomise(tree1);
+					randomise(tree2);
+					metric.distance(tree1, tree2);
+					double nni = metric.getNNICount();
+
+					metric = new RNNIMetric();
+					metric.initByName("taxonset", tree2.getTaxonset());
+					metric.distance(tree2, tree1);
+					double nni2 = metric.getNNICount();
+					
+					if (nni2 != nni) {
+						System.err.println("NNI-mismatch " + i + " " + j + " " + nni + " " + nni2 + " " + (nni2==nni));
+						System.err.println(t1);
+						System.err.println(tree1.getRoot().toNewick());
+						System.err.println(t2);
+						System.err.println(tree2.getRoot().toNewick());
+					}
+
+					nniCounts[i][j] = nni;
+				}
+				if (i % 1 == 0) {
+					long current = System.currentTimeMillis();
+					System.err.print("Tree " + i + ": " + ((current-start)/1000) + " seconds\n");
+				}
+			}
+			}
+			
+			
+//	        int i = 0;
+//			while (treeset1.hasNext()) {
+//	            String [] str = fin.readLine().split(",");
+//				TreeInterface tree1 = treeset1.next();
+//				if (i==0) System.err.println(tree1.getLeafNodeCount() + " taxa");
+//				MemoryFriendlyTreeSet treeset2 = new TreeAnnotator().new MemoryFriendlyTreeSet(workingdir + "/" + treeFile, 0);
+//				treeset2.reset();
+//				int j = 0;
+//				while (treeset2.hasNext()) {
+//					TreeInterface tree2 = treeset2.next();
+//					RNNIMetric metric = new RNNIMetric();
+//					metric.initByName("taxonset", tree1.getTaxonset());
+//					double d = metric.distance(tree1, tree2);
+//					double nni = metric.getNNICount();
+//
+//					metric = new RNNIMetric();
+//					metric.initByName("taxonset", tree2.getTaxonset());
+//					metric.distance(tree2, tree1);
+//					double nni2 = metric.getNNICount();
+//					
+//					double expectedD = Double.parseDouble(str[j++]);
+//					if (Math.abs(d - expectedD) > 1e-6) {
+//						System.err.println(treeFile + " " + i + " " + j + " " + expectedD + " " + d + " " + (expectedD - d));
+//					}
+//					if (nni2 != nni) {
+//						System.err.println("NNI-mismatch " + i + " " + j + " " + nni + " " + nni2 + " " + (nni2==nni));
+//					}
+//
+//				}
+//				i++;
+//				if (i % 1 == 0) {
+//					long current = System.currentTimeMillis();
+//					System.err.print("Tree " + i + ": " + ((current-start)/1000) + " seconds\n");
+//				}
+//			}
 			fin.close();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -309,10 +441,11 @@ public class RNNIMetricTest extends TestCase {
 	}
 	
 	public static void main(String[] args) {
-		String wdir = "/Users/rbou019/Downloads/RNNI-distances"; 
-		test(wdir, "RSV2.trees","distm_centroids_RSV2.csv");
-		test(wdir, "Dengue.trees", "distm_Dengue.csv");
-		test(wdir, "bdsky_sub188_comb7-9.trees", "distm_bdsky_sub188_comb7-9.csv");
+		String wdir = "/Users/rbou019/Downloads/RNNI-distances";
+		boolean randomise = true;
+//		test(wdir, "RSV2.trees","distm_centroids_RSV2.csv", randomise);
+		test(wdir, "Dengue.trees", "distm_Dengue.csv", randomise);
+//		test(wdir, "bdsky_sub188_comb7-9.trees", "distm_bdsky_sub188_comb7-9.csv", randomise);
 	}
 	
 }
