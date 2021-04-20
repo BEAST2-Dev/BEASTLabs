@@ -8,7 +8,7 @@ import beast.util.Randomizer;
 
 public interface KernelDistribution {
 	public static Input<Integer> defaultInitialInput = new Input<>("defaultInitial", "Number of proposals skipped before learning about the val" , 500);
-	public static Input<Integer> defaultBurninInput = new Input<>("defaultBurnin", "Number of proposals skipped before any learned informatin is applied" , 500);
+	public static Input<Integer> defaultBurninInput = new Input<>("defaultBurnin", "Number of proposals skipped before any learned information is applied" , 500);
 
 	/**
 	 * @param m determines shape of Bactrian distribution. m=0.95 is recommended
@@ -65,7 +65,7 @@ public interface KernelDistribution {
 			bactrian_airplane, 
 			bactrian_strawhat 
 			};
-		final public Input<mode> modeInput = new Input<>("mode", "", mode.bactrian_normal, mode.values());
+		final public Input<mode> modeInput = new Input<>("mode", "selects the shape of the distribution", mode.bactrian_normal, mode.values());
 		
 	    final public Input<Double> windowSizeInput = new Input<>("m", "standard deviation for Bactrian distribution. "
 	    		+ "Larger values give more peaked distributions. "

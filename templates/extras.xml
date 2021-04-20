@@ -7,7 +7,7 @@
         <subtemplate id='MultiMonoConstraint' class='beast.math.distributions.MultiMonophyleticConstraint' mainid='MultiMonophyleticConstraint.$(n)'>
 <![CDATA[
             <distribution spec='beast.math.distributions.MultiMonophyleticConstraint' id="MultiMonophyleticConstraint.$(n)" 
-            	tree='@Tree.t:$(n)' newick='()' isBinary='false'/>
+            	tree='@Tree.t:$(n)' newick='()' isBinary='true'/>
 ]]>
 			<connect srcID="MultiMonophyleticConstraint.$(n)" targetID="prior" inputName="distribution" if="isInitializing"/>
         </subtemplate>
