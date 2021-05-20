@@ -56,9 +56,9 @@ public class BactrianScaleOperator extends ScaleOperator {
                     return Math.log(scale);
                 } else {
                     // scale the beast.tree
-                    final double scale = getScaler();
-                    final int internalNodes = tree.scale(scale);
-                    return Math.log(scale) * (internalNodes - 2);
+                    final double scale = getScaler(0, Double.NaN);
+                    final int scaledNodes = tree.scale(scale);
+                    return Math.log(scale) * scaledNodes;
                 }
             }
 
