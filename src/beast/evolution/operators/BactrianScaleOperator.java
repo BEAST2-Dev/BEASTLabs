@@ -41,7 +41,7 @@ public class BactrianScaleOperator extends ScaleOperator {
 
             double hastingsRatio;            
 
-            if (m_bIsTreeScaler()) {
+            if (m_bIsTreeScaler) {
 
                 final Tree tree = treeInput.get(this);
                 if (rootOnlyInput.get()) {
@@ -56,9 +56,9 @@ public class BactrianScaleOperator extends ScaleOperator {
                     return Math.log(scale);
                 } else {
                     // scale the beast.tree
-                    final double scale = getScaler();
-                    final int internalNodes = tree.scale(scale);
-                    return Math.log(scale) * internalNodes;
+                    final double scale = getScaler(0, Double.NaN);
+                    final int scaledNodes = tree.scale(scale);
+                    return Math.log(scale) * scaledNodes;
                 }
             }
 
@@ -117,7 +117,7 @@ public class BactrianScaleOperator extends ScaleOperator {
                 // for the proof. It is supposed to be somewhere in an Alexei/Nicholes article.
 
                 // all Values assumed independent!
-            	final double scale = getScaler();
+            	final double scale = getScaler(0, param.getValue(0));
                 final int computedDoF = param.scale(scale);
                 final int usedDoF = (specifiedDoF > 0) ? specifiedDoF : computedDoF ;
                 hastingsRatio = usedDoF * Math.log(scale);

@@ -8,6 +8,7 @@ import beast.core.Description;
 import beast.core.Distribution;
 import beast.core.Input;
 import beast.core.State;
+import beast.core.util.Log;
 import beast.core.Input.Validate;
 import beast.evolution.tree.Node;
 import beast.evolution.tree.Tree;
@@ -176,6 +177,7 @@ public class MultiMonophyleticConstraint extends Distribution {
 				return k;
 			}
 		}
+		Log.warning("Could not find taxon " + taxon + "\nPerhaps a typo in the taxon name?");
 		return -1;
 	}
 

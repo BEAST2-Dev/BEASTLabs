@@ -73,7 +73,8 @@ public class BactrianNodeOperator extends TreeOperator {
         double newValue = (upper + lower * y) / (y + 1.0);
         
         if (newValue < lower || newValue > upper) {
-        	throw new RuntimeException("programmer error: new value proposed outside range");
+        	return Double.NEGATIVE_INFINITY;
+        	//throw new RuntimeException("programmer error: new value proposed outside range");
         }
         
         node.setHeight(newValue);

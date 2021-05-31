@@ -149,11 +149,15 @@ public class TreeDistanceLogger extends CalculationNode implements Loggable, Fun
     				
     				// Create tree
     				Tree ref = new ClusterTree();
+    				String resume = System.getProperty("beast.resume");
+    				System.setProperty("beast.resume", "false"); // this makes sure the cluster tree does clustering
     				ref.initByName("clusterType", clusterTree.clusterTypeInput.get(), 
     								"distance", clusterTree.distanceInput.get(),
     								"clock.rate", clusterTree.clockRateInput.get(),
     								"taxa", aln);
-    				
+    				if (resume != null) {
+    					System.setProperty("beast.resume", resume);
+    				}
     				
     				// Add tree to list of trees
     				this.referenceTrees.add(ref);
@@ -164,6 +168,12 @@ public class TreeDistanceLogger extends CalculationNode implements Loggable, Fun
     		
     		// Use the reference tree
     		else {
+				String resume = System.getProperty("beast.resume");
+				System.setProperty("beast.resume", "false"); // this makes sure the cluster tree does clustering
+				refTree.initAndValidate();
+				if (resume != null) {
+					System.setProperty("beast.resume", resume);
+				}
     			this.referenceTrees.add(refTree);
     		}
     		
