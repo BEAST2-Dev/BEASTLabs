@@ -1,16 +1,21 @@
 package beast.evolution.tree;
 
 
+import java.io.File;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import beast.app.treeannotator.TreeAnnotator;
+import beast.app.treeannotator.TreeAnnotator.FastTreeSet;
 import beast.core.CalculationNode;
 import beast.core.Description;
 import beast.core.Function;
 import beast.core.Input;
 import beast.core.Loggable;
+import beast.core.Logger;
 import beast.core.util.Log;
 import beast.evolution.alignment.Alignment;
 import beast.evolution.alignment.Sequence;
@@ -30,6 +35,9 @@ public class TreeDistanceLogger extends CalculationNode implements Loggable, Fun
     final public Input<Tree> treeInput = new Input<>("tree", "Tree to report height for.");
    // final public Input<TreeMetric> metricInput = new Input<>("metric", "Tree distance metric (default: Robinson Foulds).");
     final public Input<Tree> referenceInput = new Input<>("ref", "Reference tree to calculate distances from (default: the initial tree).");
+    final public Input<Logger> treeloggerInput = new Input<>("treelogger", "The tree logger. This is only required if the distance to the initial tree is being calculated, and the user is resuming", Input.Validate.OPTIONAL);
+    
+    
     
     final public Input<Integer> numBootstrapsInput = new Input<>("bootstraps", "Number of reference trees to use where each is based on a different sample of the alignment."
     		+ " Set to 0 to use full alignment without bootstrapping.", 0);
@@ -37,6 +45,8 @@ public class TreeDistanceLogger extends CalculationNode implements Loggable, Fun
     final public Input<Double> bootstrapPSitesInput = new Input<>("psites", "Proportion of sites to sample when bootstraping. Set to 0 for random number of sites per seq", 1.0);
     
     final public Input<metric> metricInput = new Input<>("metric", "Tree distance metric", metric.RF, metric.values());
+    
+    
     
     
     List<TreeMetric> metrics;
@@ -156,6 +166,43 @@ public class TreeDistanceLogger extends CalculationNode implements Loggable, Fun
     		else {
     			this.referenceTrees.add(refTree);
     		}
+    		
+    	}
+    	
+    	
+    	else if (Logger.FILE_MODE == Logger.LogFileMode.resume){
+    		
+    		Logger logger = treeloggerInput.get();
+    		
+    		// If resuming and using initial tree, get the tree from the logger
+    		if (logger == null) {
+    			throw new IllegalArgumentException("Please provide 'treelogger' so the initial tree can be found (or disable -resume)");
+    		}
+    		if (logger.mode != Logger.LOGMODE.tree) {
+    			throw new IllegalArgumentException("Please ensure 'treelogger' is a 'tree' logger, instead of '" + logger.mode + "', so the initial tree can be found (or disable -resume)");
+    		}
+    		
+    		
+    		File logFile = new File (logger.fileNameInput.get());
+    		
+    		// Load the first tree
+			try {
+				FastTreeSet trees = new TreeAnnotator().new FastTreeSet(logFile.getAbsolutePath(), 0);
+				trees.reset();
+	            if (!trees.hasNext()) {
+	            	throw new IllegalArgumentException("Could not find any trees in " + logFile.getAbsolutePath());
+	            }
+	            Tree tree = trees.next();
+	            this.referenceTrees.add(tree);
+		            
+			} catch (IOException e) {
+				e.printStackTrace();
+				throw new IllegalArgumentException(e);
+			}
+           
+			
+			Log.warning(this.getID() + ": getting initial reference tree from " + logFile.getPath());
+    		
     		
     	}
     	
