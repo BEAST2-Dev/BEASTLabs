@@ -10,6 +10,7 @@ import java.util.Map;
 
 import beast.app.treeannotator.TreeAnnotator;
 import beast.app.treeannotator.TreeAnnotator.FastTreeSet;
+import beast.app.treeannotator.TreeAnnotator.MemoryFriendlyTreeSet;
 import beast.core.CalculationNode;
 import beast.core.Description;
 import beast.core.Function;
@@ -44,7 +45,7 @@ public class TreeDistanceLogger extends CalculationNode implements Loggable, Fun
     
     final public Input<Double> bootstrapPSitesInput = new Input<>("psites", "Proportion of sites to sample when bootstraping. Set to 0 for random number of sites per seq", 1.0);
     
-    final public Input<metric> metricInput = new Input<>("metric", "Tree distance metric", metric.RF, metric.values());
+    final public Input<metric> metricInput = new Input<>("metric", "Tree distance metric", metric.RNNI, metric.values());
     
     
     
@@ -197,7 +198,7 @@ public class TreeDistanceLogger extends CalculationNode implements Loggable, Fun
     		
     		// Load the first tree
 			try {
-				FastTreeSet trees = new TreeAnnotator().new FastTreeSet(logFile.getAbsolutePath(), 0);
+				MemoryFriendlyTreeSet trees = new TreeAnnotator().new MemoryFriendlyTreeSet(logFile.getAbsolutePath(), 0);
 				trees.reset();
 	            if (!trees.hasNext()) {
 	            	throw new IllegalArgumentException("Could not find any trees in " + logFile.getAbsolutePath());
