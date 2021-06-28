@@ -549,8 +549,8 @@ public class AdaptableVarianceMultivariateNormalOperator extends KernelOperator 
                 		logJacobian += transformations[i].getLogJacobian(x, currentIndex, currentIndex + transformationSizes[i]) - transformations[i].getLogJacobian(temp, 0, transformationSizes[i]);
                 	}
                 } else {
-                    parameter.setValue(currentIndex, transformations[i].inverse(transformedX[currentIndex]));
-                    logJacobian += transformations[i].getLogJacobian(x[currentIndex]) - transformations[i].getLogJacobian(parameter.getValue(currentIndex));
+                    int k = parameter.setValue(currentIndex, transformations[i].inverse(transformedX[currentIndex]));
+                    logJacobian += k * (transformations[i].getLogJacobian(x[currentIndex]) - transformations[i].getLogJacobian(parameter.getValue(currentIndex)));
                 }
                 if (DEBUG) {
                     System.err.println("Current logJacobian = " + logJacobian);
@@ -727,7 +727,7 @@ public class AdaptableVarianceMultivariateNormalOperator extends KernelOperator 
             return parameterIndex1.length;
         }
 
-        public void setValue(final int param, final double value) {
+        public int setValue(final int param, final double value) {
             final Function para = parameterList.get(getY(param));
             if (para instanceof RealParameter) {
             	RealParameter p = (RealParameter) para;
@@ -738,11 +738,14 @@ public class AdaptableVarianceMultivariateNormalOperator extends KernelOperator 
             	} else {
             		p.setValue(getX(param), value);
             	}
+            	return 1;
             } else if (para instanceof Tree) {
             	double old = para.getArrayValue();
             	double scale = value / old;
             	((Tree) para).scale(scale);
+            	return ((Tree) para).getInternalNodeCount();
             }
+            return 0;
         }
 
         public double getValue(final int param) {
