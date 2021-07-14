@@ -11,6 +11,9 @@ import org.apache.commons.math.MathException;
 import org.apache.commons.math.distribution.ContinuousDistribution;
 import org.apache.commons.math.distribution.Distribution;
 
+/**
+ * @author Alexei Drummond
+ */
 @Description("Weighted Dirichlet distribution.")
 public class WeightedDirichlet extends ParametricDistribution {
     final public Input<RealParameter> alphaInput = new Input<>("alpha", "coefficients of the scaled Dirichlet distribution", Validate.REQUIRED);

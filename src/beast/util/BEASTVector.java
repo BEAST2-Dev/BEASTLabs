@@ -7,6 +7,9 @@ import beast.core.Input;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * @author Alexei Drummond
+ */
 public class BEASTVector extends BEASTObject {
 
     public Input<List<BEASTInterface>> vectorInput = new Input<>("element", "a vector of beast objects.", new ArrayList<>());

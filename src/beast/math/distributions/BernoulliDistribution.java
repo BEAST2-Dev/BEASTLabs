@@ -11,6 +11,9 @@ import beast.core.parameter.RealParameter;
 import java.util.List;
 import java.util.Random;
 
+/**
+ * @author Alexei Drummond
+ */
 @Description("Bernoulli distribution, used as prior or likelihood." +
         "If the input x is a multidimensional parameter, each of the dimensions is considered as a " +
         "separate independent component.")
