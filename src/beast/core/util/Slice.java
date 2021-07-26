@@ -39,7 +39,7 @@ public class Slice extends CalculationNode implements Function, Loggable {
 
     @Override
     public double getArrayValue() {
-        return functionInput.get().getArrayValue(0);
+        return functionInput.get().getArrayValue(indexStart);
     }
 
     @Override
