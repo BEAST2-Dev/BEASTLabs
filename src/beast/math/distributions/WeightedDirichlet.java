@@ -66,42 +66,41 @@ public class WeightedDirichlet extends ParametricDistribution {
     @Override
     public double calcLogP(Function pX) {
 
-//        Double[] alpha = alphaInput.get().getValues();
-//        if (alphaInput.get().getDimension() != pX.getDimension()) {
-//            throw new IllegalArgumentException("Dimensions of alpha and x should be the same, but dim(alpha)=" + alphaInput.get().getDimension()
-//                    + " and dim(x)=" + pX.getDimension());
-//        }
-//        double[] zstar = pX.getDoubleValues();
-//
-//        double[] z = new double[zstar.length];
-//
-//        double sum = 0.0;
-//        for (int i = 0; i < zstar.length; i++) {
-//            z[i] = zstar[i];
-//            sum += z[i];
-//        }
-//        for (int i = 0; i < zstar.length; i++) {
-//            z[i] /= sum;
-//        }
-//
-//        double logP = 0;
-//        double sumAlpha = 0;
-//        for (int i = 0; i < pX.getDimension(); i++) {
-//            logP += (alpha[i] - 1) * Math.log(z[i]);
-//            logP -= org.apache.commons.math.special.Gamma.logGamma(alpha[i]);
-//            sumAlpha += alpha[i];
-//        }
-//        logP += org.apache.commons.math.special.Gamma.logGamma(sumAlpha);
-//
-//        return logP;
-
-
+        Double[] alpha = alphaInput.get().getValues();
+        if (alphaInput.get().getDimension() != pX.getDimension()) {
+            throw new IllegalArgumentException("Dimensions of alpha and x should be the same, but dim(alpha)=" + alphaInput.get().getDimension()
+                    + " and dim(x)=" + pX.getDimension());
+        }
         double[] zstar = pX.getDoubleValues();
-        for (int i =0; i < zstar.length; i++) {
-            if (zstar[i] < 0) return Double.NEGATIVE_INFINITY;
+
+        double[] z = new double[zstar.length];
+
+        double sum = 0.0;
+        for (int i = 0; i < zstar.length; i++) {
+            z[i] = zstar[i];
+            sum += z[i];
+        }
+        for (int i = 0; i < zstar.length; i++) {
+            z[i] /= sum;
         }
 
-        return 0.0;
+        double logP = 0;
+        double sumAlpha = 0;
+        for (int i = 0; i < pX.getDimension(); i++) {
+            logP += (alpha[i] - 1) * Math.log(z[i]);
+            logP -= org.apache.commons.math.special.Gamma.logGamma(alpha[i]);
+            sumAlpha += alpha[i];
+        }
+        logP += org.apache.commons.math.special.Gamma.logGamma(sumAlpha);
+
+        return logP;
+
+//        double[] zstar = pX.getDoubleValues();
+//        for (int i =0; i < zstar.length; i++) {
+//            if (zstar[i] < 0) return Double.NEGATIVE_INFINITY;
+//        }
+//
+//        return 0.0;
     }
 
     @Override
