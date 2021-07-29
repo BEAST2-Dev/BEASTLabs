@@ -3,6 +3,8 @@ package beast.evolution.branchratemodel;
 
 import beast.core.Description;
 import beast.core.Input;
+import beast.core.StateNode;
+import beast.core.parameter.RealParameter;
 import beast.evolution.tree.Node;
 import beast.evolution.tree.PrunedTree;
 import beast.evolution.tree.TreeInterface;
@@ -67,8 +69,11 @@ public class PrunedRelaxedClockModel extends BranchRateModel.Base {
     }
 
     private boolean rq() {
+        if (! (rates.meanRate instanceof RealParameter) )
+            throw new UnsupportedOperationException("meanRate has to be RealParameter !");
+
         // before tree, since tree might not be valid if only rates changed
-        if( rates.distribution.isDirtyCalculation() || rates.meanRate.somethingIsDirty() ) {
+        if( rates.distribution.isDirtyCalculation() || ((RealParameter) rates.meanRate).somethingIsDirty() ) {
             return true;
         }
 
