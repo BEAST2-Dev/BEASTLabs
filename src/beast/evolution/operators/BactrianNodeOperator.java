@@ -11,7 +11,7 @@ import beast.util.Randomizer;
 @Description("Randomly selects true internal tree node (i.e. not the root) and move node height uniformly in interval " +
         "restricted by the nodes parent and children.")
 public class BactrianNodeOperator extends TreeOperator {
-    final public Input<Double> scaleFactorInput = new Input<>("scaleFactor", "scaling factor: larger means more bold proposals", 1.0);
+    final public Input<Double> scaleFactorInput = new Input<>("scaleFactor", "scaling factor: larger means more bold proposals", 0.1);
     final public Input<Boolean> optimiseInput = new Input<>("optimise", "flag to indicate that the scale factor is automatically changed in order to achieve a good acceptance rate (default true)", true);
     public final Input<KernelDistribution> kernelDistributionInput = new Input<>("kernelDistribution", "provides sample distribution for proposals", 
     		KernelDistribution.newDefaultKernelDistribution());

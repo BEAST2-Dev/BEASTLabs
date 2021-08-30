@@ -33,6 +33,7 @@ import java.util.stream.Stream;
 
 import beast.core.BEASTInterface;
 import beast.core.BEASTObject;
+import beast.core.Description;
 import beast.core.Function;
 import beast.core.Input;
 import beast.core.parameter.RealParameter;
@@ -152,7 +153,8 @@ public interface Transform {
      * @return true if the transform is multivatiate (i.e. components not independents)
      */
     boolean isMultivariate();
-
+    
+    @Description(value="Transforms parameter of dimension 1", isInheritable = false)
     abstract class UnivariableTransform extends BEASTObject implements Transform {
     	final public Input<List<Function>> functionInput = new Input<>("f", "parameter to be transformed", new ArrayList<>());
     	
@@ -408,6 +410,7 @@ public interface Transform {
         public boolean isMultivariate() { return false;}
     }
 
+    @Description("Transforms multiple parameters or trees")
     abstract class MultivariableTransform extends BEASTObject implements Transform {
     	final public Input<List<Function>> functionInput = new Input<>("f", "parameter to be transformed", new ArrayList<>());    	
     	
@@ -525,6 +528,7 @@ public interface Transform {
         }
     }
 
+    @Description(value="Transforms multiple parameters or trees", isInheritable=false)
     abstract class MultivariableTransformWithParameter extends MultivariableTransform {
     	public MultivariableTransformWithParameter(List<Function> parameter) {
     		super(parameter);    		
@@ -532,6 +536,7 @@ public interface Transform {
         abstract public List<Function> getF();
     }
 
+    @Description(value="Transforms multiple parameters or trees", isInheritable=false)
     abstract class MultivariateTransform extends MultivariableTransform {
         // A class for a multivariate transform
 
@@ -607,6 +612,7 @@ public interface Transform {
         public boolean isMultivariate() { return true;}
     }
 
+    @Description(value="Log transform for univariables")
     public class LogTransform extends UnivariableTransform {
     	
     	public LogTransform() {    		
@@ -692,6 +698,7 @@ public interface Transform {
 		
     }
 
+    @Description(value="Transform on parameters that sum to a fixed value (e.g. nucleotide frequencies)")
     public class LogConstrainedSumTransform extends MultivariableTransform {
     	public Input<Double> sumInput = new Input<>("sum", "sum of the items", 1.0);
     	public Input<Double[]> weightsInput = new Input<>("weights", "weights of individual items");
@@ -956,6 +963,7 @@ public interface Transform {
 
     }
 
+    @Description(value="Logit transform for univariables")
     public class LogitTransform extends UnivariableTransform {
 
     	public LogitTransform() {
@@ -1020,6 +1028,7 @@ public interface Transform {
 //        private final double lower;
     }
 
+    @Description(value="Fisher Z-transform for univariables")
     public class FisherZTransform extends UnivariableTransform {
 
     	public FisherZTransform() {
@@ -1082,6 +1091,7 @@ public interface Transform {
 		}
     }
 
+    @Description(value="Negate transform for univariables")
     public class NegateTransform extends UnivariableTransform {
 
     	public NegateTransform() {
@@ -1141,6 +1151,7 @@ public interface Transform {
 		}
     }
 
+    @Description(value="Power transform for univariables")
     public class PowerTransform extends UnivariableTransform{
         private double power;
 
@@ -1218,6 +1229,7 @@ public interface Transform {
 		}
     }
 
+    @Description(value="No transform for univariables = transform that leaves the variable unchanged")
     public class NoTransform extends UnivariableTransform {
 
     	public NoTransform() {
@@ -1280,6 +1292,7 @@ public interface Transform {
 		}
     }
 
+    @Description("Transform that leaves multi parameter the same")
     public class NoTransformMultivariable extends MultivariableTransform {
 
     	public NoTransformMultivariable() {
@@ -1376,6 +1389,7 @@ public interface Transform {
 		}
     }
 
+    @Description(value="Composable transform: apply inner transforms first, then outer transform on the result")
     public class Compose extends UnivariableTransform  {
 
     	public Compose(UnivariableTransform outer, UnivariableTransform inner) {
@@ -1453,6 +1467,7 @@ public interface Transform {
 		}
     }
 
+    @Description(value="Composes transform by applying outer transform to inner transform")
     public class ComposeMultivariable extends MultivariableTransform {
 
         public ComposeMultivariable(MultivariableTransform outer, MultivariableTransform inner) {
@@ -1544,6 +1559,7 @@ public interface Transform {
 		}
     }
 
+    @Description(value="Inverse transform for univariables")
     public class Inverse extends UnivariableTransform {
 
         public Inverse(UnivariableTransform inner, List<Function> parameter) {
@@ -1609,6 +1625,7 @@ public interface Transform {
 		}
     }
 
+    @Description(value="Inverse transforms multiple parameters or trees")
     public class InverseMultivariate extends MultivariateTransform {
 
         public InverseMultivariate(MultivariateTransform inner, List<Function> parameter) {
@@ -1721,12 +1738,14 @@ public interface Transform {
 		}
     }
 
-        public class PositiveOrdered extends MultivariateTransform {
+    @Description(value="Log transform on difference between consecutive entries. Entries must be increasing in order.")
+    public class PositiveOrdered extends MultivariateTransform {
         	
-        	public PositiveOrdered(List<Function> parameter) {
-        		super(parameter); 
-			}
-        @Override
+    	public PositiveOrdered(List<Function> parameter) {
+    		super(parameter); 
+		}
+    	
+    	@Override
         // x (positive ordered) -> y (unconstrained)
         public double[] transform(double[] values, int from, int to) {
             int dim = values.length;
@@ -1820,6 +1839,7 @@ public interface Transform {
     }
 
 
+    @Description(value="Applies list of transforms to individual dimensions of a parameter")
     public class Array extends MultivariableTransformWithParameter {
 
           private final List<Transform> array;
@@ -1968,7 +1988,8 @@ public interface Transform {
 			return 1;
 		}
     }
-
+    
+    @Description(value="Applies list of parsed transforms to segments (=contiguous subsets of dimensions?) of a parameter")
     public class Collection extends MultivariableTransformWithParameter {
 
         private final List<ParsedTransform> segments;
