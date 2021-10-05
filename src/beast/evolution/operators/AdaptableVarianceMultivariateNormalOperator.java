@@ -43,6 +43,7 @@ import beast.core.Input;
 import beast.core.StateNode;
 import beast.core.parameter.RealParameter;
 import beast.core.util.Log;
+import beast.evolution.tree.Node;
 import beast.evolution.tree.Tree;
 import beast.util.Transform.*;
 import beast.util.Transform;
@@ -101,8 +102,6 @@ public class AdaptableVarianceMultivariateNormalOperator extends KernelOperator 
     private double[][] proposal;
 
     
-    
-
     @Override
 	public void initAndValidate() {
         // setMode(modeInput.get());
@@ -527,72 +526,78 @@ public class AdaptableVarianceMultivariateNormalOperator extends KernelOperator 
 
         //iterate over transformation sizes rather than number of parameters
         //as a transformation might impact multiple parameters
-        currentIndex = 0;
-        for (int i = 0; i < transformationSizes.length; i++) {
-            if (DEBUG) {
-                System.err.println("currentIndex = " + currentIndex);
-                System.err.println("transformationSizes[i] = " + transformationSizes[i]);
-            }
-            if (MULTI) {
-                if (transformationSizes[i] > 1) {
-                	if (transformationSums[i] != 0) {
-                		double[] temp = transformations[i].inverse(transformedX, currentIndex, currentIndex + transformationSizes[i] - 1, transformationSums[i]);
-                		for (int k = 0; k < temp.length; k++) {
-                			parameter.setValue(currentIndex + k, temp[k]);
-                		}
-                		logJacobian += transformations[i].getLogJacobian(x, currentIndex, currentIndex + transformationSizes[i] - 1) - transformations[i].getLogJacobian(temp, 0, transformationSizes[i] - 1);
-                	} else {
-                		double[] temp = transformations[i].inverse(transformedX, currentIndex, currentIndex + transformationSizes[i]);
-                		for (int k = 0; k < temp.length; k++) {
-                			parameter.setValue(currentIndex + k, temp[k]);
-                		}
-                		logJacobian += transformations[i].getLogJacobian(x, currentIndex, currentIndex + transformationSizes[i]) - transformations[i].getLogJacobian(temp, 0, transformationSizes[i]);
-                	}
-                } else {
-                    int k = parameter.setValue(currentIndex, transformations[i].inverse(transformedX[currentIndex]));
-                    logJacobian += k * (transformations[i].getLogJacobian(x[currentIndex]) - transformations[i].getLogJacobian(parameter.getValue(currentIndex)));
-                }
-                if (DEBUG) {
-                    System.err.println("Current logJacobian = " + logJacobian);
-                }
-            } else {
-                if (transformationSizes[i] > 1) {
-                    //TODO: figure out if this is really a problem ...
-                    throw new RuntimeException("Transformations on more than 1 parameter value should be set quietly");
-                } else {
-                    parameter.setValue(currentIndex, transformations[i].inverse(transformedX[currentIndex]));
-                    logJacobian += transformations[i].getLogJacobian(x[currentIndex]) - transformations[i].getLogJacobian(parameter.getValue(currentIndex));
-                }
-                if (DEBUG) {
-                    System.err.println("Current logJacobian = " + logJacobian);
-                }
-            }
-            currentIndex += transformationSizes[i];
-        }
+        try {
+	        currentIndex = 0;
+	        for (int i = 0; i < transformationSizes.length; i++) {
+	            if (DEBUG) {
+	                System.err.println("currentIndex = " + currentIndex);
+	                System.err.println("transformationSizes[i] = " + transformationSizes[i]);
+	            }
+	            if (MULTI) {
+	                if (transformationSizes[i] > 1) {
+	                	if (transformationSums[i] != 0) {
+	                		double[] temp = transformations[i].inverse(transformedX, currentIndex, currentIndex + transformationSizes[i] - 1, transformationSums[i]);
+	                		for (int k = 0; k < temp.length; k++) {
+	                			parameter.setValue(currentIndex + k, temp[k]);
+	                		}
+	                		logJacobian += transformations[i].getLogJacobian(x, currentIndex, currentIndex + transformationSizes[i] - 1) - transformations[i].getLogJacobian(temp, 0, transformationSizes[i] - 1);
+	                	} else {
+	                		double[] temp = transformations[i].inverse(transformedX, currentIndex, currentIndex + transformationSizes[i]);
+	                		for (int k = 0; k < temp.length; k++) {
+	                			parameter.setValue(currentIndex + k, temp[k]);
+	                		}
+	                		logJacobian += transformations[i].getLogJacobian(x, currentIndex, currentIndex + transformationSizes[i]) - transformations[i].getLogJacobian(temp, 0, transformationSizes[i]);
+	                	}
+	                } else {
+	                    int k = parameter.setValue(currentIndex, transformations[i].inverse(transformedX[currentIndex]));
+	                    logJacobian += k * (transformations[i].getLogJacobian(x[currentIndex]) - transformations[i].getLogJacobian(parameter.getValue(currentIndex)));
+	                }
+	                if (DEBUG) {
+	                    System.err.println("Current logJacobian = " + logJacobian);
+	                }
+	            } else {
+	                if (transformationSizes[i] > 1) {
+	                    //TODO: figure out if this is really a problem ...
+	                    throw new RuntimeException("Transformations on more than 1 parameter value should be set quietly");
+	                } else {
+	                    parameter.setValue(currentIndex, transformations[i].inverse(transformedX[currentIndex]));
+	                    logJacobian += transformations[i].getLogJacobian(x[currentIndex]) - transformations[i].getLogJacobian(parameter.getValue(currentIndex));
+	                }
+	                if (DEBUG) {
+	                    System.err.println("Current logJacobian = " + logJacobian);
+	                }
+	            }
+	            currentIndex += transformationSizes[i];
+	        }
+	
+	        if (DEBUG) {
+	            System.err.println("Proposed parameter values:");
+	            for (int i = 0; i < dim; i++) {
+	                System.err.println(x[i] + " -> " + parameter.getValue(i));
+	            }
+	            System.err.println("LogJacobian: " + logJacobian);
+	        }
+	
+	        if (MULTI) {
+	            //  parameter.fireParameterChangedEvent(); // Signal once.
+	        }
+	
+	        if (iterations % every == 0) {
+	            if (DEBUG) {
+	                System.err.println("  Copying means");
+	            }
+	            //copy new means to old means for next update iteration
+	            //System.arraycopy(newMeans, 0, oldMeans, 0, dim);
+	            double[] tmp = oldMeans;
+	            oldMeans = newMeans;
+	            newMeans = tmp; // faster to swap pointers
+	        }
 
-        if (DEBUG) {
-            System.err.println("Proposed parameter values:");
-            for (int i = 0; i < dim; i++) {
-                System.err.println(x[i] + " -> " + parameter.getValue(i));
-            }
-            System.err.println("LogJacobian: " + logJacobian);
-        }
-
-        if (MULTI) {
-            //  parameter.fireParameterChangedEvent(); // Signal once.
-        }
-
-        if (iterations % every == 0) {
-            if (DEBUG) {
-                System.err.println("  Copying means");
-            }
-            //copy new means to old means for next update iteration
-            //System.arraycopy(newMeans, 0, oldMeans, 0, dim);
-            double[] tmp = oldMeans;
-            oldMeans = newMeans;
-            newMeans = tmp; // faster to swap pointers
-        }
-
+	    } catch (Exception e) {
+	        // whatever went wrong, we want to abort this operation...
+	        return Double.NEGATIVE_INFINITY;
+	    }
+        
         return logJacobian;
 
     }
