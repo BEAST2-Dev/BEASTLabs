@@ -364,7 +364,7 @@ public class RNNIMetric extends BEASTObject implements TreeMetric {
         return cur;
     }
 
-	private Integer [] getRankedClades(TreeInterface tree) {
+	public static Integer [] getRankedClades(TreeInterface tree) {
 		final Node [] nodes = tree.getNodesAsArray();
 		if (nodes == null || nodes[nodes.length-1] == null) {
 			if (tree instanceof Tree) {
@@ -395,5 +395,102 @@ public class RNNIMetric extends BEASTObject implements TreeMetric {
 			}
 		});
 		return clades;
+	}
+
+
+	/** return tree at location n on path between tree1 and tree2 **/
+	public Tree pathelement(Tree treeOther, Tree tree, int n) {
+		Integer [] cladesOther = getRankedClades(treeOther);
+	
+		// get clades in ranked order
+		Tree treeCopy = new Tree();
+		treeCopy.assignFrom((Tree) tree);
+		
+		Map<String,Integer> map = new HashMap<>();
+		for (int i = 0; i < treeCopy.getLeafNodeCount(); i++) {
+			Node leaf = treeCopy.getNode(i);
+			map.put(leaf.getID(), i);
+			leaf.setHeight(-1e-13);
+		}
+
+		Integer[] clades = getRankedClades(treeCopy);
+		
+		// pre-calculate node rankings of other tree
+		int [] rank = new int[tree.getNodeCount()];
+		Node [] invrank = new Node[clades.length];
+		for (int i = 0; i < clades.length; i++) {
+			rank[clades[i]] = i;
+			invrank[i] = treeCopy.getNode(clades[i]);
+		}
+
+		// FindPath algorithm of 
+		// Collienne, L., Gavryushkin, A. Computing nearest neighbour interchange distances between ranked phylogenetic trees. J. Math. Biol. 82, 8 (2021). 
+		// https://doi.org/10.1007/s00285-021-01567-5
+		// only calculates the distance = length of the path, not the path itself
+		double d = 0;
+		nniCount = 0;
+		for (int i = 0; i < cladesOther.length - 1 && d < n; i++) {
+			List<String> cluster = new ArrayList<>();
+			Node current = treeOther.getNode(cladesOther[i]);
+			getTaxa(current, cluster);
+			Node targetNode = mrca(treeCopy, cluster, map);
+			int rank0 = rank[targetNode.getNr()];
+			for (int j = rank0; j > i; j--) {
+				
+				// trickle targetnode down to rank i
+				if (invrank[j-1].getParent() == targetNode) {
+					// perform NNI
+					Node node = invrank[j-1];
+					Node left = node.getLeft();
+					Node right = node.getRight();
+					Node child;
+					if (nodesTraversed[left.getNr()]) {
+						child = left;
+					} else {
+						child = right;
+					}
+					
+					Node gp = targetNode.getParent();
+					if (gp != null) {
+						gp.removeChild(targetNode);
+						gp.addChild(node);
+					}
+					node.removeChild(child);
+					node.addChild(targetNode);					
+					node.setParent(gp);
+					
+					targetNode.removeChild(node);
+					targetNode.addChild(child);
+					targetNode.setParent(node);
+					nniCount++;
+				}
+				d++;
+
+				// update rank/invrank arrays
+				Node tmp = invrank[j-1];
+				Node tmp2 = invrank[j];
+				double h1 = tmp.getHeight();
+				double h2 = tmp2.getHeight();
+				rank[tmp2.getNr()] = j-1;
+				rank[tmp.getNr()] = j;
+				invrank[j-1] = tmp2;
+				invrank[j] = tmp;
+				tmp2.setHeight(h1);
+				tmp.setHeight(h2);
+
+				// for debugging:
+				// checkRank(rank, invrank);
+				// System.err.println(d + ": " + invrank[clades.size()-1].toString());
+			}				
+		}
+		
+		Node root = treeCopy.getRoot();
+		while (!root.isRoot()) {
+			root = root.getParent();
+		}
+		treeCopy.setRoot(root);
+		
+		treeCopy.initArrays();
+		return treeCopy;
 	}	
 }
