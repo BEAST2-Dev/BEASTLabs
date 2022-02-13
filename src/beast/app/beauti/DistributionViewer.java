@@ -52,6 +52,8 @@ public class DistributionViewer {
             frame.setVisible(true);
         }
 
+        JPanel panel = null;
+		
 		private void refreshDistributionPanel(JFrame frame, Prior prior) {
 			// clear frame content in case it is refreshed after change of distribution  
 			JRootPane p = (JRootPane) frame.getComponent(0);
@@ -59,7 +61,11 @@ public class DistributionViewer {
 			JPanel p2 = (JPanel) p1.getComponent(0);
 			p2.removeAll();
 			
-            final JPanel panel = new JPanel();
+			if (panel != null) {
+				panel.getParent().remove(panel);
+			}
+			
+            panel = new JPanel();
             panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
 			
             // add combobox with parametric distributions
