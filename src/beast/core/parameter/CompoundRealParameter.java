@@ -60,7 +60,18 @@ public class CompoundRealParameter extends RealParameter {
 			paramIndex++;
 			o = k;
 		}
+		
+		
+		//super.initAndValidate();
+		
 	}
+	
+
+	@Override
+    public boolean isDirty(final int index) {
+        //return m_bIsDirty[index];
+        return parameters[mapIndexToParameter[index]].isDirty(index - offset[index]);
+    }
 	
 	@Override
 	public Double getValue() {
