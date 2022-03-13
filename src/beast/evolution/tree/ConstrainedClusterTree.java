@@ -25,6 +25,7 @@
 package beast.evolution.tree;
 
 
+import beast.core.BEASTInterface;
 import beast.core.Description;
 import beast.core.Input;
 import beast.core.StateNode;
@@ -383,7 +384,13 @@ public class ConstrainedClusterTree extends Tree implements StateNodeInitialiser
     			MRCAPrior calibration = nodeToBoundMap.get(node);
         		if (calibration.distInput.get() != null) {
         			ParametricDistribution distr = calibration.distInput.get();
+        			for (BEASTInterface o : distr.listActiveBEASTObjects()) {
+        				if (o instanceof RealParameter) {
+        					((RealParameter)o).initAndValidate();
+        				}
+        			}
         			distr.initAndValidate();
+        			
                     double lower = distr.inverseCumulativeProbability(0.0) + distr.offsetInput.get();
                     double upper = distr.inverseCumulativeProbability(1.0) + distr.offsetInput.get();
     					
