@@ -10,6 +10,7 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.xml.sax.SAXException;
 
+import beast.core.Description;
 import beast.core.Input;
 import beast.core.Logger;
 import beast.core.Logger.LOGMODE;
@@ -19,22 +20,22 @@ import beast.core.StateNodeInitialiser;
 import beast.core.Input.Validate;
 import beast.core.util.Log;
 
-// Extension to MCMC used by IndependentMCMC
+@Description("Extension to MCMC used by IndependentMCMC")
 public class ConvergableMCMC extends MCMC {
 	
 	
 	
 	
 	// Dummy inputs
-	public final Input<Integer> checkForConvergenceEveryInput = new Input<Integer>("checkEvery", "dummy input");
-	public final Input<Double> thresholdInput = new Input<Double>("threshold", "dummy input");
-	public final Input<Integer> convergenceLengthInput = new Input<Integer>("convergedFor", "dummy input");
-	public final Input<String> tempDirInput = new Input<>("tempDir","dummy input", "/tmp/");
-	public final Input<List<Logger>> treeStorersInput = new Input<>("treeStorer", "dummy input", new ArrayList<Logger>());
-	public final Input<Integer> burnInPercentageInput = new Input<Integer>("convergenceBurnin", "dummy input");
-	public final Input<Logger> rHatLoggerInput = new Input<>("rhatLogger", "dummy input", Input.Validate.OPTIONAL);
-	public final Input<Double> minESSInput = new Input<>("ESS", "dummy input", 200.0);
-	public final Input<Double> maxRHatInput = new Input<>("rhat", "dummy input", 1.05);
+//	public final Input<Integer> checkForConvergenceEveryInput = new Input<Integer>("checkEvery", "dummy input");
+//	public final Input<Double> thresholdInput = new Input<Double>("threshold", "dummy input");
+//	public final Input<Integer> convergenceLengthInput = new Input<Integer>("convergedFor", "dummy input");
+//	public final Input<String> tempDirInput = new Input<>("tempDir","dummy input", "/tmp/");
+//	public final Input<List<Logger>> treeStorersInput = new Input<>("treeStorer", "dummy input", new ArrayList<Logger>());
+//	public final Input<Integer> burnInPercentageInput = new Input<Integer>("convergenceBurnin", "dummy input");
+//	public final Input<Logger> rHatLoggerInput = new Input<>("rhatLogger", "dummy input", Input.Validate.OPTIONAL);
+//	public final Input<Double> minESSInput = new Input<>("ESS", "dummy input", 200.0);
+//	public final Input<Double> maxRHatInput = new Input<>("rhat", "dummy input", 1.05);
 	
 	
 	

@@ -441,6 +441,29 @@ public class RNNIMetricTest extends TestCase {
 	}
 	
 	public static void main(String[] args) {
+		
+		String [] trees = new String[]{"(((A:1,B:1):1,C:2):2,(D:3,E:3):1)",
+				"(((A:2,B:2):1,C:3):1,(D:1,E:1):3)",
+				"((((A:1,D:1):1,E:2):1,B:3):1,C:4)"};
+
+		TaxonSet taxonset = new TaxonSet();
+		taxonset.initByName("taxon", new Taxon("A"), "taxon", new Taxon("B"), "taxon", new Taxon("C"), "taxon", new Taxon("D"), "taxon", new Taxon("E"));
+
+		for (int i = 0; i < trees.length; i++) {
+			TreeParser tree1 = new TreeParser(trees[i]);
+			for (int j = 0; j < trees.length; j++) {
+				TreeParser tree2 = new TreeParser(trees[j]);
+				RNNIMetric metric = new RNNIMetric();
+				metric.initByName("taxonset", taxonset);
+				double d = metric.distance(tree1, tree2);
+				System.err.println(i+" " + j + " " + d + " " + metric.getNNICount());
+			}			
+		}
+		
+
+		
+		
+		
 		String wdir = "/Users/rbou019/Downloads/RNNI-distances";
 		boolean randomise = true;
 //		test(wdir, "RSV2.trees","distm_centroids_RSV2.csv", randomise);

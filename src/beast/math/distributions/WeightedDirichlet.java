@@ -14,7 +14,7 @@ import org.apache.commons.math.distribution.Distribution;
 /**
  * @author Alexei Drummond
  */
-@Description("Weighted Dirichlet distribution.")
+@Description("Weighted Dirichlet distribution that scales dimensions by weight")
 public class WeightedDirichlet extends ParametricDistribution {
     final public Input<RealParameter> alphaInput = new Input<>("alpha", "coefficients of the scaled Dirichlet distribution", Validate.REQUIRED);
     final public Input<IntegerParameter> weightsInput = new Input<>("weights", "weights of the scaled Dirichlet distribution", Validate.REQUIRED);

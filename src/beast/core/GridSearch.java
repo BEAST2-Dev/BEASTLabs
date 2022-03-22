@@ -11,6 +11,7 @@ import beast.evolution.tree.TreeInterface;
  * @author jdou557
  *
  */
+@Description("optimise by grid search")
 public class GridSearch extends Runnable {
 
 	

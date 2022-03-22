@@ -3,6 +3,7 @@ package beast.evolution.tree;
 import java.util.*;
 
 import beast.core.BEASTObject;
+import beast.core.Description;
 import beast.core.Input;
 import beast.core.util.Log;
 import beast.evolution.alignment.Taxon;
@@ -12,6 +13,7 @@ import beast.evolution.alignment.TaxonSet;
  * @author Andrew Rambaut
  * @version $Id$
  */
+@Description("Robinson-Fould based tree metric")
 public class RobinsonsFouldMetric extends BEASTObject implements TreeMetric {
 
 	final public Input<TaxonSet> taxonInput = new Input<>("taxonset", "taxonset of the trees", Input.Validate.REQUIRED);

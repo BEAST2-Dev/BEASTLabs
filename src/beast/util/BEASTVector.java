@@ -2,6 +2,7 @@ package beast.util;
 
 import beast.core.BEASTInterface;
 import beast.core.BEASTObject;
+import beast.core.Description;
 import beast.core.Input;
 
 import java.util.ArrayList;
@@ -10,6 +11,7 @@ import java.util.List;
 /**
  * @author Alexei Drummond
  */
+@Description("array of beast objects")
 public class BEASTVector extends BEASTObject {
 
     public Input<List<BEASTInterface>> vectorInput = new Input<>("element", "a vector of beast objects.", new ArrayList<>());

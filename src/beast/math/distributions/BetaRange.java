@@ -5,20 +5,19 @@ import java.util.Random;
 
 import org.apache.commons.math.distribution.BetaDistributionImpl;
 
+import beast.core.Description;
 import beast.core.Distribution;
 import beast.core.Input;
 import beast.core.State;
 import beast.core.parameter.RealParameter;
 
-/**
- * Expansion of the Beta distribution, except it respects the upper/lower limits of the parameter
- * Can handle a different prior per parameter if the dimension of 'x' is equal to the dimension of the gamma parameters
- * If alpha / beta are set to 0, then the parameter will be skipped (ie. 0 log density)
- * If the parameter exceeds lower/upper, the log density is negative infinity
- */
+@Description("Expansion of the Beta distribution, except it respects the upper/lower limits of the parameter " +
+ " Can handle a different prior per parameter if the dimension of 'x' is equal to the dimension of the gamma parameters " +
+ " If alpha / beta are set to 0, then the parameter will be skipped (ie. 0 log density) " +
+ " If the parameter exceeds lower/upper, the log density is negative infinity")
 public class BetaRange extends Distribution  {
 	
-	final public Input<RealParameter> parameterInput = new Input<>("x", "the parameter", Input.Validate.REQUIRED);
+	final public Input<RealParameter> parameterInput = new Input<>("x", "the parameter at which the density is calculated", Input.Validate.REQUIRED);
 	final public Input<RealParameter> alphaInput = new Input<>("alpha", "first shape parameter (default 1)");
 	final public Input<RealParameter> betaInput = new Input<>("beta", "the other shape parameter (default 1)");
     final public Input<RealParameter> lowerInput = new Input<>("lower", "lower limit of the parameter (default 0)");

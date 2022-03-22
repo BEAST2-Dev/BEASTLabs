@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 
 import beast.app.treeannotator.TreeAnnotator;
-import beast.app.treeannotator.TreeAnnotator.FastTreeSet;
 import beast.app.treeannotator.TreeAnnotator.MemoryFriendlyTreeSet;
 import beast.core.CalculationNode;
 import beast.core.Description;
@@ -34,7 +33,6 @@ public class TreeDistanceLogger extends CalculationNode implements Loggable, Fun
 	
 	
     final public Input<Tree> treeInput = new Input<>("tree", "Tree to report height for.");
-   // final public Input<TreeMetric> metricInput = new Input<>("metric", "Tree distance metric (default: Robinson Foulds).");
     final public Input<Tree> referenceInput = new Input<>("ref", "Reference tree to calculate distances from (default: the initial tree).");
     final public Input<Logger> treeloggerInput = new Input<>("treelogger", "The tree logger. This is only required if the distance to the initial tree is being calculated, and the user is resuming", Input.Validate.OPTIONAL);
     
@@ -45,7 +43,7 @@ public class TreeDistanceLogger extends CalculationNode implements Loggable, Fun
     
     final public Input<Double> bootstrapPSitesInput = new Input<>("psites", "Proportion of sites to sample when bootstraping. Set to 0 for random number of sites per seq", 1.0);
     
-    final public Input<metric> metricInput = new Input<>("metric", "Tree distance metric", metric.RNNI, metric.values());
+    final public Input<metric> metricInput = new Input<>("metric", "Tree distance metric (default RNNI)", metric.RNNI, metric.values());
     
     
     
