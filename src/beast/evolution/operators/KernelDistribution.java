@@ -1,10 +1,10 @@
 package beast.evolution.operators;
 
-import beast.core.BEASTObject;
-import beast.core.Description;
-import beast.core.Input;
-import beast.core.util.Log;
-import beast.util.Randomizer;
+import beast.base.core.BEASTObject;
+import beast.base.core.Description;
+import beast.base.core.Input;
+import beast.base.core.Log;
+import beast.base.util.Randomizer;
 
 public interface KernelDistribution {
 	public static Input<Integer> defaultInitialInput = new Input<>("defaultInitial", "Number of proposals skipped before learning about the val" , 500);

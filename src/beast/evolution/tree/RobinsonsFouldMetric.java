@@ -2,12 +2,14 @@ package beast.evolution.tree;
 
 import java.util.*;
 
-import beast.core.BEASTObject;
-import beast.core.Description;
-import beast.core.Input;
-import beast.core.util.Log;
-import beast.evolution.alignment.Taxon;
-import beast.evolution.alignment.TaxonSet;
+import beast.base.core.BEASTObject;
+import beast.base.core.Description;
+import beast.base.core.Input;
+import beast.base.core.Log;
+import beast.base.evolution.alignment.Taxon;
+import beast.base.evolution.alignment.TaxonSet;
+import beast.base.evolution.tree.Node;
+import beast.base.evolution.tree.TreeInterface;
 
 /**
  * @author Andrew Rambaut

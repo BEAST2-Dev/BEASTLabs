@@ -1,6 +1,8 @@
 package beast.evolution.tree;
 
-import beast.util.NexusParser;
+import beast.base.evolution.tree.Node;
+import beast.base.evolution.tree.Tree;
+import beast.base.parser.NexusParser;
 
 import java.io.BufferedReader;
 import java.io.File;

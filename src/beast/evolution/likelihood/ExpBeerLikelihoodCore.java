@@ -37,8 +37,9 @@ import java.util.Arrays;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import beast.app.BeastMCMC;
-import beast.evolution.sitemodel.SiteModel;
+import beast.app.beastapp.BeastMCMC;
+import beast.base.core.ProgramStatus;
+import beast.base.evolution.sitemodel.SiteModel;
 
 
 
@@ -635,7 +636,7 @@ public class ExpBeerLikelihoodCore extends ExperimentalLikelihoodCore {
 
     	// turn scaling off for now
     	//m_bUseScaling = false;
-    	int nThreads = BeastMCMC.m_nThreads;
+    	int nThreads = ProgramStatus.m_nThreads;
 		m_lock = new ReentrantLock[nThreads];
 //    	boolean bHopeForSpeed = false;
 //    	for (int i = 1; i < m_nTopOfStack; i++) {
@@ -653,7 +654,7 @@ public class ExpBeerLikelihoodCore extends ExperimentalLikelihoodCore {
     	for (int iThread = 1; iThread < nThreads; iThread++) {
     		m_lock[iThread] = new ReentrantLock();
     		CoreRunnable coreRunnable = new CoreRunnable(iThread, nThreads);
-    		BeastMCMC.g_exec.execute(coreRunnable);
+    		ProgramStatus.g_exec.execute(coreRunnable);
     	}
 
 //		for (int iJob = 0; iJob < m_nTopOfStack; iJob++) {
@@ -664,7 +665,7 @@ public class ExpBeerLikelihoodCore extends ExperimentalLikelihoodCore {
 //	    	for (int iThread = 1; iThread < nThreads; iThread++) {
 //	    		m_lock[iThread] = new ReentrantLock();
 //	    		CoreRunnable coreRunnable = new CoreRunnable(iJob, iThread, nThreads);
-//				BeastMCMC.g_exec.execute(coreRunnable);
+//				ProgramStatus.g_exec.execute(coreRunnable);
 //	    	}
 //
 //  			processNodeFromStack(iJob, 0, nThreads);

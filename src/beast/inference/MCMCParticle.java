@@ -3,11 +3,11 @@ package beast.inference;
 import java.io.File;
 import java.io.PrintStream;
 
-import beast.core.Description;
-import beast.core.Input;
-import beast.core.Logger;
-import beast.core.MCMC;
-import beast.util.Randomizer;
+import beast.base.core.Description;
+import beast.base.core.Input;
+import beast.base.inference.Logger;
+import beast.base.inference.MCMC;
+import beast.base.util.Randomizer;
 
 
 

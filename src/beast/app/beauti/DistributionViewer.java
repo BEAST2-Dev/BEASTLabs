@@ -18,14 +18,14 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.xml.sax.SAXException;
 
-import beast.app.beauti.BeautiDoc;
-import beast.app.beauti.BeautiSubTemplate;
-import beast.app.beauti.PartitionContext;
-import beast.app.draw.InputEditor;
-import beast.core.parameter.RealParameter;
-import beast.math.distributions.Prior;
-import beast.math.distributions.Uniform;
-import beast.util.XMLParserException;
+import beast.app.inputeditor.BeautiDoc;
+import beast.app.inputeditor.BeautiSubTemplate;
+import beast.base.parser.PartitionContext;
+import beast.app.inputeditor.InputEditor;
+import beast.base.inference.parameter.RealParameter;
+import beast.base.inference.distribution.Prior;
+import beast.base.inference.distribution.Uniform;
+import beast.base.parser.XMLParserException;
 
 public class DistributionViewer {
 

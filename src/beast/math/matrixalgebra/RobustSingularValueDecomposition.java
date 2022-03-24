@@ -10,8 +10,8 @@ package beast.math.matrixalgebra;
  *
  */
 
-import beast.math.util.MathUtils;
-import beast.util.Randomizer;
+import beast.base.math.MathUtils;
+import beast.base.util.Randomizer;
 import cern.colt.matrix.DoubleFactory2D;
 import cern.colt.matrix.DoubleMatrix2D;
 import cern.colt.matrix.linalg.Property;

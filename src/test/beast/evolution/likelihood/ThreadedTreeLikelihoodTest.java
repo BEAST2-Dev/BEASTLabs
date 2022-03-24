@@ -6,21 +6,22 @@ import java.util.concurrent.Executors;
 import junit.framework.TestCase;
 import org.junit.Test;
 
-import beast.app.BeastMCMC;
-import beast.evolution.alignment.Alignment;
-import beast.evolution.likelihood.ThreadedTreeLikelihood;
-import beast.evolution.sitemodel.SiteModel;
-import beast.evolution.substitutionmodel.Blosum62;
-import beast.evolution.substitutionmodel.CPREV;
-import beast.evolution.substitutionmodel.Dayhoff;
-import beast.evolution.substitutionmodel.Frequencies;
-import beast.evolution.substitutionmodel.GeneralSubstitutionModel;
-import beast.evolution.substitutionmodel.HKY;
-import beast.evolution.substitutionmodel.JTT;
-import beast.evolution.substitutionmodel.MTREV;
-import beast.evolution.substitutionmodel.SubstitutionModel;
-import beast.evolution.substitutionmodel.WAG;
-import beast.evolution.tree.Tree;
+import beast.app.beastapp.BeastMCMC;
+import beast.base.core.ProgramStatus;
+import beast.base.evolution.alignment.Alignment;
+import beast.base.evolution.likelihood.ThreadedTreeLikelihood;
+import beast.base.evolution.sitemodel.SiteModel;
+import beast.base.evolution.substitutionmodel.Blosum62;
+import beast.base.evolution.substitutionmodel.CPREV;
+import beast.base.evolution.substitutionmodel.Dayhoff;
+import beast.base.evolution.substitutionmodel.Frequencies;
+import beast.base.evolution.substitutionmodel.GeneralSubstitutionModel;
+import beast.base.evolution.substitutionmodel.HKY;
+import beast.base.evolution.substitutionmodel.JTT;
+import beast.base.evolution.substitutionmodel.MTREV;
+import beast.base.evolution.substitutionmodel.SubstitutionModel;
+import beast.base.evolution.substitutionmodel.WAG;
+import beast.base.evolution.tree.Tree;
 
 import test.beast.BEASTTestCase;
 
@@ -31,14 +32,14 @@ public class ThreadedTreeLikelihoodTest extends TestCase {
 
     public ThreadedTreeLikelihoodTest() {
 		super();
-		BeastMCMC.m_nThreads = 2;
-		BeastMCMC.g_exec = Executors.newFixedThreadPool(BeastMCMC.m_nThreads);
+		ProgramStatus.m_nThreads = 2;
+		ProgramStatus.g_exec = Executors.newFixedThreadPool(ProgramStatus.m_nThreads);
 	}
 	
     @Override
     protected void finalize() throws Throwable {
-    	BeastMCMC.g_exec.shutdown();
-    	BeastMCMC.g_exec.shutdownNow();    	
+    	ProgramStatus.g_exec.shutdown();
+    	ProgramStatus.g_exec.shutdownNow();    	
     	super.finalize();
     }
     
@@ -104,8 +105,8 @@ public class ThreadedTreeLikelihoodTest extends TestCase {
 		assertEquals(fLogP, -1992.2056440317247, BEASTTestCase.PRECISION);
 
 		// 3 threads
-		BeastMCMC.m_nThreads = 3;
-		BeastMCMC.g_exec = Executors.newFixedThreadPool(BeastMCMC.m_nThreads);
+		ProgramStatus.m_nThreads = 3;
+		ProgramStatus.g_exec = Executors.newFixedThreadPool(ProgramStatus.m_nThreads);
     
 		likelihood = newThreadedTreeLikelihood();
 		likelihood.initByName("data",data, "tree",tree, "siteModel", siteModel, "proportions", "1 2");
@@ -114,8 +115,8 @@ public class ThreadedTreeLikelihoodTest extends TestCase {
 		assertEquals(fLogP, -1992.2056440317247, BEASTTestCase.PRECISION);
 
 		// 5 threads
-		BeastMCMC.m_nThreads = 5;
-		BeastMCMC.g_exec = Executors.newFixedThreadPool(BeastMCMC.m_nThreads);
+		ProgramStatus.m_nThreads = 5;
+		ProgramStatus.g_exec = Executors.newFixedThreadPool(ProgramStatus.m_nThreads);
     
 		likelihood = newThreadedTreeLikelihood();
 		likelihood.initByName("data",data, "tree",tree, "siteModel", siteModel, "proportions", "1 2");
@@ -124,8 +125,8 @@ public class ThreadedTreeLikelihoodTest extends TestCase {
 		assertEquals(fLogP, -1992.2056440317247, BEASTTestCase.PRECISION);
 
 		// restore to 2 threads
-		BeastMCMC.m_nThreads = 2;
-		BeastMCMC.g_exec = Executors.newFixedThreadPool(BeastMCMC.m_nThreads);
+		ProgramStatus.m_nThreads = 2;
+		ProgramStatus.g_exec = Executors.newFixedThreadPool(ProgramStatus.m_nThreads);
 }
 
     @Test

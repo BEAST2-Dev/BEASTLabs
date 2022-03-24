@@ -32,7 +32,7 @@ package beast.evolution.likelihood;
 
 import java.util.Arrays;
 
-import beast.evolution.sitemodel.SiteModel;
+import beast.base.evolution.sitemodel.SiteModel;
 
 
 

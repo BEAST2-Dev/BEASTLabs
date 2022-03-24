@@ -2,14 +2,14 @@ package test.beast.evolution.operators;
 
 import org.junit.Test;
 
-import beast.core.State;
-import beast.evolution.alignment.Alignment;
-import beast.evolution.alignment.Sequence;
-import beast.evolution.alignment.Taxon;
-import beast.evolution.alignment.TaxonSet;
+import beast.base.inference.State;
+import beast.base.evolution.alignment.Alignment;
+import beast.base.evolution.alignment.Sequence;
+import beast.base.evolution.alignment.Taxon;
+import beast.base.evolution.alignment.TaxonSet;
 import beast.evolution.operators.RestrictedSubtreeSlide;
-import beast.evolution.tree.Node;
-import beast.util.TreeParser;
+import beast.base.evolution.tree.Node;
+import beast.base.evolution.tree.TreeParser;
 import junit.framework.TestCase;
 
 

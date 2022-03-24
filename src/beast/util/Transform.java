@@ -31,15 +31,15 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
-import beast.core.BEASTInterface;
-import beast.core.BEASTObject;
-import beast.core.Description;
-import beast.core.Function;
-import beast.core.Input;
-import beast.core.parameter.RealParameter;
-import beast.core.util.Log;
-import beast.math.matrixalgebra.Matrix;
-import beast.util.Randomizer;
+import beast.base.core.BEASTInterface;
+import beast.base.core.BEASTObject;
+import beast.base.core.Description;
+import beast.base.core.Function;
+import beast.base.core.Input;
+import beast.base.inference.parameter.RealParameter;
+import beast.base.core.Log;
+import beast.base.math.matrixalgebra.Matrix;
+import beast.base.util.Randomizer;
 
 /**
  * interface for the one-to-one transform of a continuous variable.

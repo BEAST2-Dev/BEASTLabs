@@ -3,14 +3,14 @@ package beast.inference;
 import java.io.IOException;
 import java.io.PrintStream;
 
-import beast.core.Description;
-import beast.core.Input;
-import beast.core.Loggable;
-import beast.core.Logger;
-import beast.core.MCMC;
-import beast.core.Operator;
-import beast.core.util.Log;
-import beast.util.Randomizer;
+import beast.base.core.Description;
+import beast.base.core.Input;
+import beast.base.core.Loggable;
+import beast.base.inference.Logger;
+import beast.base.inference.MCMC;
+import beast.base.inference.Operator;
+import beast.base.core.Log;
+import beast.base.util.Randomizer;
 
 
 

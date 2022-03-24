@@ -4,15 +4,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import beast.core.Description;
-import beast.core.Input;
-import beast.core.Input.Validate;
-import beast.core.parameter.RealParameter;
-import beast.evolution.datatype.DataType;
-import beast.evolution.substitutionmodel.EigenDecomposition;
-import beast.evolution.substitutionmodel.SubstitutionModel;
-import beast.evolution.substitutionmodel.SubstitutionModel.Base;
-import beast.evolution.tree.Node;
+import beast.base.core.Description;
+import beast.base.core.Input;
+import beast.base.core.Input.Validate;
+import beast.base.inference.parameter.RealParameter;
+import beast.base.evolution.datatype.DataType;
+import beast.base.evolution.substitutionmodel.EigenDecomposition;
+import beast.base.evolution.substitutionmodel.SubstitutionModel;
+import beast.base.evolution.substitutionmodel.SubstitutionModel.Base;
+import beast.base.evolution.tree.Node;
 
 
 

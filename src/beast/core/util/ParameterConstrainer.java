@@ -4,12 +4,12 @@ package beast.core.util;
 import java.io.PrintStream;
 import java.util.Arrays;
 
-import beast.core.CalculationNode;
-import beast.core.Description;
-import beast.core.Input;
-import beast.core.Loggable;
-import beast.core.parameter.RealParameter;
-import beast.evolution.tree.Tree;
+import beast.base.inference.CalculationNode;
+import beast.base.core.Description;
+import beast.base.core.Input;
+import beast.base.core.Loggable;
+import beast.base.inference.parameter.RealParameter;
+import beast.base.evolution.tree.Tree;
 
 
 /**

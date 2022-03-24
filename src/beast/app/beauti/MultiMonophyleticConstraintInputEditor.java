@@ -9,17 +9,18 @@ import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 
-import beast.app.draw.BEASTObjectInputEditor;
-import beast.app.draw.InputEditor;
-import beast.app.draw.SmallButton;
-import beast.app.draw.StringInputEditor;
-import beast.core.BEASTInterface;
-import beast.core.Distribution;
-import beast.core.Input;
-import beast.core.State;
-import beast.core.StateNode;
-import beast.core.util.Log;
-import beast.evolution.tree.Tree;
+import beast.app.inputeditor.BEASTObjectInputEditor;
+import beast.app.inputeditor.BeautiDoc;
+import beast.app.inputeditor.InputEditor;
+import beast.app.inputeditor.SmallButton;
+import beast.app.inputeditor.StringInputEditor;
+import beast.base.core.BEASTInterface;
+import beast.base.inference.Distribution;
+import beast.base.core.Input;
+import beast.base.inference.State;
+import beast.base.inference.StateNode;
+import beast.base.core.Log;
+import beast.base.evolution.tree.Tree;
 import beast.math.distributions.MultiMonophyleticConstraint;
 
 public class MultiMonophyleticConstraintInputEditor extends BEASTObjectInputEditor implements PriorProvider {

@@ -2,13 +2,17 @@ package test.beast.evolution.operators;
 
 
 import beast.core.*;
-import beast.core.parameter.IntegerParameter;
-import beast.core.parameter.RealParameter;
-import beast.evolution.operators.BactrianDeltaExchangeOperator;
-import beast.math.distributions.Dirichlet;
-import beast.math.distributions.ParametricDistribution;
-import beast.math.distributions.Prior;
-import beast.util.Randomizer;
+import beast.base.inference.parameter.IntegerParameter;
+import beast.base.inference.parameter.RealParameter;
+import beast.base.inference.operator.kernel.BactrianDeltaExchangeOperator;
+import beast.base.core.Function;
+import beast.base.inference.MCMC;
+import beast.base.inference.Operator;
+import beast.base.inference.State;
+import beast.base.inference.distribution.Dirichlet;
+import beast.base.inference.distribution.ParametricDistribution;
+import beast.base.inference.distribution.Prior;
+import beast.base.util.Randomizer;
 import test.beast.evolution.operator.TestOperator;
 
 import org.apache.commons.math3.stat.StatUtils;

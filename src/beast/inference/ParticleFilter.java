@@ -16,27 +16,27 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
 
-import beast.core.BEASTInterface;
-import beast.core.Description;
-import beast.core.Input;
-import beast.core.Logger;
-import beast.core.MCMC;
-import beast.core.Operator;
-import beast.core.State;
-import beast.core.StateNode;
-import beast.core.StateNodeInitialiser;
-import beast.core.BEASTObject;
-import beast.core.Input.Validate;
-import beast.math.statistic.DiscreteStatistics;
-import beast.util.BEASTClassLoader;
-import beast.util.Randomizer;
-import beast.util.XMLProducer;
+import beast.base.core.BEASTInterface;
+import beast.base.core.Description;
+import beast.base.core.Input;
+import beast.base.inference.Logger;
+import beast.base.inference.MCMC;
+import beast.base.inference.Operator;
+import beast.base.inference.State;
+import beast.base.inference.StateNode;
+import beast.base.inference.StateNodeInitialiser;
+import beast.base.core.BEASTObject;
+import beast.base.core.Input.Validate;
+import beast.pkgmgmt.BEASTClassLoader;
+import beast.base.util.DiscreteStatistics;
+import beast.base.util.Randomizer;
+import beast.base.parser.XMLProducer;
 
 
 
 
 @Description("MCMC Inference by particle filter approach. This works only when run with many threads, one per particle is optimal.")
-public class ParticleFilter extends beast.core.Runnable {
+public class ParticleFilter extends beast.base.inference.Runnable {
 
 	String DEFAULT_PARTICLE_LAUNCER = ParticleLauncher.class.getName();
 	public static String POSTERIOR_LOG_FILE = "posterior.log";

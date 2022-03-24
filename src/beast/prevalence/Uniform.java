@@ -50,10 +50,10 @@
 package beast.prevalence;
 
 
-import beast.core.Description;
-import beast.evolution.tree.Node;
-import beast.evolution.tree.Tree;
-import beast.util.Randomizer;
+import beast.base.core.Description;
+import beast.base.evolution.tree.Node;
+import beast.base.evolution.tree.Tree;
+import beast.base.util.Randomizer;
 
 
 @Description("Randomly selects true internal tree node (i.e. not the root) and move node height uniformly in interval " +
@@ -69,7 +69,7 @@ public class Uniform extends TreeOperator {
 	 * @return log of Hastings Ratio, or Double.NEGATIVE_INFINITY if proposal should not be accepted **/
     @Override
     public double proposal() {
-        Tree tree = m_tree.get(this);
+        Tree tree = m_tree.get();
 
         // randomly select internal node
         int nNodeCount = tree.getNodeCount();
@@ -81,7 +81,7 @@ public class Uniform extends TreeOperator {
         double fUpper = node.getParent().getHeight();
         double fLower = Math.max(node.getLeft().getHeight(), node.getRight().getHeight());
         final double newValue = (Randomizer.nextDouble() * (fUpper - fLower)) + fLower;
-        PrevalenceList list = m_list.get(this);
+        PrevalenceList list = m_list.get();
         try {
         	setHeight(node, newValue, list);
         } catch (Exception e) {

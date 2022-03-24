@@ -1,7 +1,7 @@
 package beast.app.beast1to2;
 
-import beast.evolution.alignment.Sequence;
-import beast.util.XMLParser;
+import beast.base.evolution.alignment.Sequence;
+import beast.base.parser.XMLParser;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;

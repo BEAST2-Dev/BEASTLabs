@@ -4,11 +4,11 @@ package beast.evolution.operators;
 
 import java.text.DecimalFormat;
 
-import beast.core.Description;
-import beast.core.Input;
-import beast.core.Input.Validate;
-import beast.core.parameter.RealParameter;
-import beast.util.Randomizer;
+import beast.base.core.Description;
+import beast.base.core.Input;
+import beast.base.core.Input.Validate;
+import beast.base.inference.parameter.RealParameter;
+import beast.base.util.Randomizer;
 
 
 @Description("A random walk operator that selects a random dimension of the real parameter and perturbs the value a " +
@@ -30,7 +30,7 @@ public class BactrianRandomWalkOperator extends KernelOperator {
     @Override
     public double proposal() {
 
-        RealParameter param = parameterInput.get(this);
+        RealParameter param = parameterInput.get();
 
         int i = Randomizer.nextInt(param.getDimension());
         double value = param.getValue(i);

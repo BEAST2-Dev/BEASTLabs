@@ -4,7 +4,7 @@ import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.util.concurrent.CountDownLatch;
 
-import beast.util.Randomizer;
+import beast.base.util.Randomizer;
 
 
 
@@ -45,7 +45,7 @@ public class ParticleLauncher extends Thread {
 //        	FileOutputStream sScriptFile = new FileOutputStream(sParticleDir + "/run.sh");
 //        	PrintStream out = new PrintStream(sScriptFile);
 //			String sCommand = "#!/bin/sh\nchdir " + sParticleDir + "\n"+
-//							"java -Dbeast.debug=false -Djava.only=true -cp " + System.getProperty("java.class.path") + " beast.app.BeastMCMC -overwrite -seed " + (m_iParticle+100)+ " " + sParticleDir + "/beast.xml >> " + sParticleDir + "/beast.log 2>&1 \n"+
+//							"java -Dbeast.debug=false -Djava.only=true -cp " + System.getProperty("java.class.path") + " beast.app.beastapp.BeastMCMC -overwrite -seed " + (m_iParticle+100)+ " " + sParticleDir + "/beast.xml >> " + sParticleDir + "/beast.log 2>&1 \n"+
 //							"exit\n";
 //            out.print(sCommand);
 //			out.close();
@@ -70,7 +70,7 @@ public class ParticleLauncher extends Thread {
 //				String sCommand = "#!/bin/sh\nchdir " + sParticleDir + "\n" +
 //				// " -Djava.only=true "
 //						"java -Dbeast.debug=false -Djava.library.path=" + System.getProperty("java.library.path") + 
-//						" -cp " + System.getProperty("java.class.path") + " beast.app.BeastMCMC -resume " +
+//						" -cp " + System.getProperty("java.class.path") + " beast.app.beastapp.BeastMCMC -resume " +
 //						"-seed " + Randomizer.nextInt()+ " " + sParticleDir + "/beast.xml >> " +
 //						sParticleDir + "/beast.log 2>&1 \n" +
 //						"exit\n";

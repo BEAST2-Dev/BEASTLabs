@@ -2,10 +2,16 @@ package beast.inference;
 
 
 import beast.core.*;
-import beast.core.util.Log;
-import beast.util.Randomizer;
-import beast.util.XMLParser;
-import beast.util.XMLProducer;
+import beast.base.core.Citation;
+import beast.base.core.Description;
+import beast.base.core.Input;
+import beast.base.core.Log;
+import beast.base.inference.MCMC;
+import beast.base.inference.State;
+import beast.base.inference.StateNode;
+import beast.base.util.Randomizer;
+import beast.base.parser.XMLParser;
+import beast.base.parser.XMLProducer;
 
 import java.io.File;
 import java.io.FileWriter;

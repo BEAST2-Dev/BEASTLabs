@@ -1,12 +1,14 @@
 package beast.evolution.operators;
 
-import beast.core.Description;
-import beast.core.Input;
-import beast.evolution.tree.Node;
-import beast.evolution.tree.Tree;
-import beast.math.distributions.MRCAPrior;
+
+import beast.base.core.Description;
+import beast.base.core.Input;
+import beast.base.evolution.tree.Node;
+import beast.base.evolution.tree.Tree;
+import beast.base.evolution.operator.TreeOperator;
+import beast.base.evolution.tree.MRCAPrior;
 import beast.math.distributions.MultiMonophyleticConstraint;
-import beast.util.Randomizer;
+import beast.base.util.Randomizer;
 
 import java.util.*;
 
@@ -112,7 +114,7 @@ public class AttachOperator extends TreeOperator {
 
     @Override
     public double proposal() {
-        final Tree tree = treeInput.get(this);
+        final Tree tree = treeInput.get();
         Node[] post = new Node[tree.getNodeCount()];
         post = tree.listNodesPostOrder(null, post);
 

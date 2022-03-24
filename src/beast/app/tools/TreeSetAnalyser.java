@@ -1,13 +1,13 @@
 package beast.app.tools;
 
-import beast.app.BEASTVersion;
-import beast.app.util.Arguments;
+import beast.pkgmgmt.BEASTVersion;
+import beast.pkgmgmt.Arguments;
 import beast.app.util.ErrorLogHandler;
 import beast.app.util.MessageLogHandler;
-import beast.app.util.Version;
-import beast.evolution.tree.TreeTraceAnalysis;
-import beast.util.NexusParser;
-import beast.util.Randomizer;
+import beast.pkgmgmt.Version;
+import beast.app.tools.TreeTraceAnalysis;
+import beast.base.parser.NexusParser;
+import beast.base.util.Randomizer;
 import jam.util.IconUtils;
 
 import javax.swing.*;

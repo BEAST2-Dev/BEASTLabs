@@ -1,10 +1,13 @@
 package beast.evolution.alignment;
 
 
-import beast.core.Description;
-import beast.core.Input;
-import beast.core.Input.Validate;
-import beast.evolution.datatype.DataType;
+import beast.base.core.Description;
+import beast.base.core.Input;
+import beast.base.core.Input.Validate;
+import beast.base.evolution.alignment.Alignment;
+import beast.base.evolution.alignment.Sequence;
+import beast.base.evolution.alignment.TaxonSet;
+import beast.base.evolution.datatype.DataType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,30 +43,30 @@ public class PrunedAlignment extends Alignment {
           // This is truly ugly: alignment object like AlignmentFromTrait don't have sequences, and construct
           // the internals directly. We follow suit here.
 
-          m_dataType = source.m_dataType;
+          m_dataType = source.getDataType();
           counts = new ArrayList<>();
           stateCounts = new ArrayList<>();
 
-          final List<String> srcTaxa = source.taxaNames;
+          final List<String> srcTaxa = source.getTaxaNames();
           final List<List<Integer>> srcCounts = source.getCounts();
           if( taxonSet != null ) {
-             for(int i = 0; i < source.taxaNames.size(); ++i) {
+             for(int i = 0; i < source.getTaxaNames().size(); ++i) {
 
                  if( taxonSet.getTaxonIndex(srcTaxa.get(i)) < 0  ) {
                     counts.add(srcCounts.get(i));
-                    stateCounts.add(source.stateCounts.get(i));
+                    stateCounts.add(source.getStateCounts().get(i));
                     taxaNames.add(srcTaxa.get(i));
                 }
              }
           } else {
-              for(int i = 0; i < source.counts.size(); ++i) {
+              for(int i = 0; i < source.getStateCounts().size(); ++i) {
                   final List<Integer> c = srcCounts.get(i);
                   for( Integer nc : c ) {
                       //assert( c.size() == 1 );
                       //final Integer nc = c.get(0);
                       if( m_dataType.getStatesForCode(nc).length != m_dataType.getStateCount() ) {
                           counts.add(c);
-                          stateCounts.add(source.stateCounts.get(i));
+                          stateCounts.add(source.getStateCounts().get(i));
                           taxaNames.add(srcTaxa.get(i));
                           break;
                       }
@@ -105,8 +108,8 @@ public class PrunedAlignment extends Alignment {
          }
       } else {
           for (Sequence seq : sourceSeqs) {
-              List<Integer> states = seq.getSequence(source.m_dataType);
-              final int sn = source.m_dataType.getStateCount();
+              List<Integer> states = seq.getSequence(source.getDataType());
+              final int sn = source.getDataType().getStateCount();
               boolean hasData = false;
               for (int i : sites) {
                   if( states.get(i) >= 0 && states.get(i) < sn ) {
@@ -123,7 +126,7 @@ public class PrunedAlignment extends Alignment {
       if( m_sites.get() != null ) {
           for(int k = 0; k < seqs.size(); ++k ) {
               Sequence seq = seqs.get(k);
-              List<Integer> states = seq.getSequence(source.m_dataType);
+              List<Integer> states = seq.getSequence(source.getDataType());
               StringBuilder s = new StringBuilder();
               for (int i : sites) {
                   s.append(states.get(i));

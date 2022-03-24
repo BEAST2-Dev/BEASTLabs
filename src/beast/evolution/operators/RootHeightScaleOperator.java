@@ -1,13 +1,13 @@
 package beast.evolution.operators;
 
-import beast.core.Description;
-import beast.core.Input;
-import beast.evolution.operators.TreeOperator;
-import beast.evolution.tree.Node;
-import beast.util.Randomizer;
+
+import beast.base.core.Description;
+import beast.base.core.Input;
+import beast.base.evolution.tree.Node;
+import beast.base.util.Randomizer;
 
 @Description("Operator for scaling only the root of a tree")
-public class RootHeightScaleOperator extends TreeOperator {
+public class RootHeightScaleOperator extends beast.base.evolution.operator.TreeOperator {
     public Input<Double> m_pScaleFactor = new Input<Double>("scaleFactor", "scaling factor: larger means more bold proposals", 1.0);
 
     double m_fScaleFactor;

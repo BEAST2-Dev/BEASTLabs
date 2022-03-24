@@ -10,10 +10,12 @@ import java.io.File;
 import javax.swing.JButton;
 
 import beast.app.util.OutFile;
-import beast.app.draw.InputEditor;
+import beast.app.inputeditor.BeautiDoc;
+import beast.app.inputeditor.InputEditor;
 import beast.app.util.Utils;
-import beast.core.BEASTInterface;
-import beast.core.Input;
+import beast.base.core.BEASTInterface;
+import beast.base.core.Input;
+import beast.base.core.ProgramStatus;
 
 public class OutFileInputEditor extends InputEditor.Base {
 	
@@ -51,7 +53,7 @@ public class OutFileInputEditor extends InputEditor.Base {
 					m_entry.setText(file.getName());
 					m_input.setValue(new OutFile(file.getPath()), m_beastObject);
 					String path = file.getPath();
-					Beauti.setCurrentDir(path);
+					ProgramStatus.setCurrentDir(path);
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();

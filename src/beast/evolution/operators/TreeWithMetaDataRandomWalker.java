@@ -1,15 +1,15 @@
 package beast.evolution.operators;
 
-import beast.core.Description;
-import beast.core.Input;
-import beast.core.Operator;
-import beast.core.Input.Validate;
-import beast.core.OperatorSchedule;
-import beast.core.parameter.IntegerParameter;
-import beast.evolution.tree.Node;
-import beast.evolution.tree.Tree;
-import beast.evolution.tree.TreeInterface;
-import beast.util.Randomizer;
+import beast.base.core.Description;
+import beast.base.core.Input;
+import beast.base.inference.Operator;
+import beast.base.core.Input.Validate;
+import beast.base.inference.OperatorSchedule;
+import beast.base.inference.parameter.IntegerParameter;
+import beast.base.evolution.tree.Node;
+import beast.base.evolution.tree.Tree;
+import beast.base.evolution.tree.TreeInterface;
+import beast.base.util.Randomizer;
 
 @Description("Operator that uses a standard TreeOperator to change the topology of the tree, "
 		+ "then changes metadata (such as rate categories for relaxed clock) associated with "

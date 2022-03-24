@@ -27,11 +27,13 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
 
-import beast.app.draw.ListInputEditor;
+import beast.app.inputeditor.BeautiDoc;
+import beast.app.inputeditor.ListInputEditor;
 import beast.app.util.FileDrop;
 import beast.app.util.Utils;
-import beast.core.BEASTInterface;
-import beast.core.Input;
+import beast.base.core.BEASTInterface;
+import beast.base.core.Input;
+import beast.base.core.ProgramStatus;
 import jam.panels.ActionPanel;
 import jam.table.TableRenderer;
 
@@ -106,19 +108,19 @@ public class FileListInputEditor extends ListInputEditor {
 		if (file.exists()) {
 			defaultFile = file;
 			if (defaultFile.getParent() == null) {
-				defaultFile = new File(Beauti.g_sDir);
+				defaultFile = new File(ProgramStatus.g_sDir);
 				if (defaultFile.isDirectory()) {
-					defaultFile = new File(Beauti.g_sDir + FileListInputEditor.SEPARATOR + file.getName());
+					defaultFile = new File(ProgramStatus.g_sDir + FileListInputEditor.SEPARATOR + file.getName());
 				} else {
-					defaultFile = new File(new File(Beauti.g_sDir).getParent() + FileListInputEditor.SEPARATOR + file.getName());
+					defaultFile = new File(new File(ProgramStatus.g_sDir).getParent() + FileListInputEditor.SEPARATOR + file.getName());
 				}
 			}
 		} else {
-			defaultFile = new File(Beauti.g_sDir);
+			defaultFile = new File(ProgramStatus.g_sDir);
 			if (defaultFile.isDirectory()) {
-				defaultFile = new File(Beauti.g_sDir + FileListInputEditor.SEPARATOR + file.getName());
+				defaultFile = new File(ProgramStatus.g_sDir + FileListInputEditor.SEPARATOR + file.getName());
 			} else {
-				defaultFile = new File(new File(Beauti.g_sDir).getParent() + FileListInputEditor.SEPARATOR + file.getName());
+				defaultFile = new File(new File(ProgramStatus.g_sDir).getParent() + FileListInputEditor.SEPARATOR + file.getName());
 			}
 		}
 		return defaultFile;
@@ -214,7 +216,7 @@ public class FileListInputEditor extends ListInputEditor {
 
             String fileName = file.getAbsolutePath();
             if (fileName.lastIndexOf(File.separator) > 0) {
-                Beauti.setCurrentDir(fileName.substring(0, fileName.lastIndexOf(File.separator)));
+                ProgramStatus.setCurrentDir(fileName.substring(0, fileName.lastIndexOf(File.separator)));
             }
         }
 
@@ -230,7 +232,7 @@ public class FileListInputEditor extends ListInputEditor {
 
         @Override
 		public void actionPerformed(ActionEvent ae) {
-            File[] files = Utils.getLoadFiles("Select file", new File(Beauti.g_sDir), "XML, trace or tree log files", "log", "trees", "xml");
+            File[] files = Utils.getLoadFiles("Select file", new File(ProgramStatus.g_sDir), "XML, trace or tree log files", "log", "trees", "xml");
             if (files != null) {
                 addFiles(files);
             }

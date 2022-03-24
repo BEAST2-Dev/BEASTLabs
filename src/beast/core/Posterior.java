@@ -3,7 +3,11 @@ package beast.core;
 import java.util.List;
 import java.util.Random;
 
-import beast.core.Input.Validate;
+import beast.base.core.Description;
+import beast.base.core.Input;
+import beast.base.core.Input.Validate;
+import beast.base.inference.Distribution;
+import beast.base.inference.State;
 
 @Description("Posterior, consisting of a prior and a likehood")
 public class Posterior extends Distribution {

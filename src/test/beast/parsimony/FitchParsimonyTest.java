@@ -4,9 +4,9 @@ import java.util.Arrays;
 
 import org.junit.Test;
 
-import beast.evolution.alignment.Alignment;
-import beast.evolution.tree.Node;
-import beast.evolution.tree.Tree;
+import beast.base.evolution.alignment.Alignment;
+import beast.base.evolution.tree.Node;
+import beast.base.evolution.tree.Tree;
 import beast.parsimony.FitchParsimony;
 import junit.framework.TestCase;
 import test.beast.BEASTTestCase;

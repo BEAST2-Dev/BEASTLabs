@@ -1,10 +1,10 @@
 package beast.evolution.speciation;
 
-import beast.core.Description;
-import beast.evolution.speciation.SpeciesTreeDistribution;
-import beast.evolution.tree.Node;
-import beast.evolution.tree.Tree;
-import beast.evolution.tree.TreeInterface;
+import beast.base.core.Description;
+import beast.base.evolution.speciation.SpeciesTreeDistribution;
+import beast.base.evolution.tree.Node;
+import beast.base.evolution.tree.Tree;
+import beast.base.evolution.tree.TreeInterface;
 
 @Description("Experimental code with unknown use. If you know, fill this in.")
 public abstract class UltrametricSpeciationModel extends SpeciesTreeDistribution {

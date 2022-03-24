@@ -5,11 +5,13 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-import beast.core.Description;
-import beast.core.Input;
-import beast.core.Operator;
-import beast.core.OperatorSchedule;
-import beast.core.util.Log;
+import beast.base.core.Description;
+import beast.base.core.Input;
+import beast.base.inference.Operator;
+import beast.base.inference.OperatorSchedule;
+import beast.base.inference.operator.*;
+import beast.base.core.Log;
+import beast.base.evolution.operator.*;
 
 @Description("Operator schedule that replaces operators with Bactrian operators")
 public class BactrianOperatorSchedule extends OperatorSchedule {
@@ -20,28 +22,29 @@ public class BactrianOperatorSchedule extends OperatorSchedule {
 	
 	@Override
 	public void addOperator(Operator p) {
-		if (p.getClass() == ScaleOperator.class) {
+		Class c = p.getClass();
+		if (c == ScaleOperator.class) {
 			Operator bp = new BactrianScaleOperator();
 			p = initialiseOperator(p, bp);
-		} else if (p.getClass() == RealRandomWalkOperator.class) {
+		} else if (c == RealRandomWalkOperator.class) {
 			Operator bp = new BactrianRandomWalkOperator();
 			p = initialiseOperator(p, bp);
-		} else if (p.getClass() == Uniform.class) {
+		} else if (c == Uniform.class) {
 			Operator bp = new BactrianNodeOperator();
 			p = initialiseOperator(p, bp);
-		} else if (p.getClass() == UniformOperator.class) {
+		} else if (c == UniformOperator.class) {
 			Operator bp = new BactrianIntervalOperator();
 			p = initialiseOperator(p, bp);
-		} else if (p.getClass() == DeltaExchangeOperator.class) {
+		} else if (c == DeltaExchangeOperator.class) {
 			Operator bp = new BactrianDeltaExchangeOperator();
 			p = initialiseOperator(p, bp);
-		} else if (p.getClass() ==  TipDatesRandomWalker.class) {
+		} else if (c ==  TipDatesRandomWalker.class) {
 			Operator bp = new BactrianTipDatesRandomWalker();
 			p = initialiseOperator(p, bp);
-		} else if (p.getClass() == UpDownOperator.class) {
+		} else if (c == UpDownOperator.class) {
 			Operator bp = new BactrianUpDownOperator();
 			p = initialiseOperator(p, bp);
-		} else if (p.getClass() == SubtreeSlide.class) {
+		} else if (c == SubtreeSlide.class) {
 			Operator bp = new BactrianSubtreeSlide();
 			p = initialiseOperator(p, bp);
 		}

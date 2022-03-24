@@ -4,17 +4,17 @@ package beast.prevalence;
 import java.util.List;
 import java.util.Random;
 
-import beast.core.Description;
-import beast.core.Distribution;
-import beast.core.Input;
-import beast.core.State;
-import beast.core.Input.Validate;
-import beast.core.parameter.IntegerParameter;
-import beast.core.parameter.RealParameter;
+import beast.base.core.Description;
+import beast.base.inference.Distribution;
+import beast.base.core.Input;
+import beast.base.inference.State;
+import beast.base.core.Input.Validate;
+import beast.base.inference.parameter.IntegerParameter;
+import beast.base.inference.parameter.RealParameter;
 import beast.prevalence.PrevalenceList.Item;
 
 
-//import beast.evolution.tree.coalescent.TreeIntervals;
+//import beast.base.evolution.tree.TreeIntervals;
 
 @Description("likelihood of the prevalence sequence based on a set of parameters")
 public class PrevalenceLikelihood extends Distribution {

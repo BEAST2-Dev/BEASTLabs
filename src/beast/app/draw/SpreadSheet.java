@@ -77,21 +77,21 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
 
-import beast.app.draw.MyAction;
-import beast.app.draw.BEASTObjectDialog;
-import beast.core.BEASTInterface;
-import beast.core.Distribution;
-import beast.core.Input;
-import beast.core.Logger;
-import beast.core.Operator;
-import beast.core.StateNode;
-import beast.core.BEASTObject;
-import beast.evolution.alignment.Alignment;
-import beast.evolution.alignment.Sequence;
-import beast.util.BEASTClassLoader;
-import beast.util.PackageManager;
-import beast.util.XMLParser;
-import beast.util.XMLProducer;
+import beast.app.inputeditor.MyAction;
+import beast.app.inputeditor.BEASTObjectDialog;
+import beast.base.core.BEASTInterface;
+import beast.base.inference.Distribution;
+import beast.base.core.Input;
+import beast.base.inference.Logger;
+import beast.base.inference.Operator;
+import beast.base.inference.StateNode;
+import beast.base.core.BEASTObject;
+import beast.base.evolution.alignment.Alignment;
+import beast.base.evolution.alignment.Sequence;
+import beast.pkgmgmt.BEASTClassLoader;
+import beast.pkgmgmt.PackageManager;
+import beast.base.parser.XMLParser;
+import beast.base.parser.XMLProducer;
 
 
 
@@ -153,7 +153,7 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 
 	/** constructor **/
 	SpreadSheet() {
-        List<String> sPlugInNames = PackageManager.find(beast.core.BEASTObject.class, PackageManager.IMPLEMENTATION_DIR);
+        List<String> sPlugInNames = PackageManager.find(beast.base.core.BEASTObject.class, PackageManager.IMPLEMENTATION_DIR);
         m_sPlugInNames = sPlugInNames.toArray(new String[0]);
         headers = new String[MAX_COL];
 		m_objects = new Object[MAX_ROW][MAX_COL];
@@ -237,7 +237,7 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
                             "select", JOptionPane.PLAIN_MESSAGE,  null, m_sPlugInNames, null);
                     if (sClassName != null) {
                     	try {
-                    		BEASTObject plugin = (beast.core.BEASTObject) BEASTClassLoader.forName(sClassName).newInstance();
+                    		BEASTObject plugin = (beast.base.core.BEASTObject) BEASTClassLoader.forName(sClassName).newInstance();
                     		m_objects[iRow][iCol] = plugin;
                 			m_pluginLocation.put(plugin, iRow + iCol * MAX_ROW);
                 			m_plugins.add(plugin);
@@ -964,7 +964,7 @@ public class SpreadSheet extends JPanel implements ClipboardOwner {
 	void exportBeast() {
 		int iRow = m_table.getSelectedRow();
 		int iCol = m_table.getSelectedColumn();
-		if (iRow < 0 || iCol < 0 || m_objects[iRow][iCol] == null || !(m_objects[iRow][iCol] instanceof beast.core.Runnable)) {
+		if (iRow < 0 || iCol < 0 || m_objects[iRow][iCol] == null || !(m_objects[iRow][iCol] instanceof beast.base.inference.Runnable)) {
 			JOptionPane.showMessageDialog(this, "Select a runnable plugin to export as Beast II xml file");
 			return;
 		}

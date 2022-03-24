@@ -5,11 +5,11 @@ import java.util.Random;
 
 import org.apache.commons.math.distribution.BetaDistributionImpl;
 
-import beast.core.Description;
-import beast.core.Distribution;
-import beast.core.Input;
-import beast.core.State;
-import beast.core.parameter.RealParameter;
+import beast.base.core.Description;
+import beast.base.inference.Distribution;
+import beast.base.core.Input;
+import beast.base.inference.State;
+import beast.base.inference.parameter.RealParameter;
 
 @Description("Expansion of the Beta distribution, except it respects the upper/lower limits of the parameter " +
  " Can handle a different prior per parameter if the dimension of 'x' is equal to the dimension of the gamma parameters " +

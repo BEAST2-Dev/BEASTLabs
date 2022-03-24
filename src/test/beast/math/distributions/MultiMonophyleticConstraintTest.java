@@ -2,9 +2,9 @@ package test.beast.math.distributions;
 
 import org.junit.Test;
 
-import beast.evolution.alignment.Alignment;
-import beast.evolution.alignment.TaxonSet;
-import beast.evolution.tree.Tree;
+import beast.base.evolution.alignment.Alignment;
+import beast.base.evolution.alignment.TaxonSet;
+import beast.base.evolution.tree.Tree;
 import beast.math.distributions.MultiMonophyleticConstraint;
 import test.beast.BEASTTestCase;
 import junit.framework.TestCase;

@@ -27,11 +27,11 @@ package beast.evolution.substitutionmodel;
 
 import java.util.Arrays;
 
-import beast.core.Description;
-import beast.core.Input;
-import beast.core.parameter.RealParameter;
-import beast.evolution.substitutionmodel.HKY;
-import beast.evolution.tree.Node;
+import beast.base.core.Description;
+import beast.base.core.Input;
+import beast.base.inference.parameter.RealParameter;
+import beast.base.evolution.substitutionmodel.HKY;
+import beast.base.evolution.tree.Node;
 
 
 

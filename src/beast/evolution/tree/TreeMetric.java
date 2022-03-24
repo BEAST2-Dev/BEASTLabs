@@ -1,5 +1,7 @@
 package beast.evolution.tree;
 
+import beast.base.evolution.tree.TreeInterface;
+
 /**
  * @author Alexei Drummond
  */

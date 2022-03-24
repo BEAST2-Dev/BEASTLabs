@@ -1,7 +1,7 @@
 package beast.util;
 
-import beast.core.Citation;
-import beast.core.Description;
+import beast.base.core.Citation;
+import beast.base.core.Description;
 import test.beast.beast2vs1.trace.LogFileTraces;
 import test.beast.beast2vs1.trace.TraceException;
 import test.beast.beast2vs1.trace.TraceStatistics;

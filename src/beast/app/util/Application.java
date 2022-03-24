@@ -12,16 +12,18 @@ import java.util.List;
 
 import org.json.JSONObject;
 
-import beast.app.beauti.Beauti;
-import beast.app.beauti.BeautiConfig;
-import beast.app.beauti.BeautiDoc;
-import beast.app.draw.BEASTObjectDialog;
-import beast.app.draw.BEASTObjectPanel;
-import beast.core.BEASTObject;
-import beast.core.Description;
-import beast.core.Input;
-import beast.core.util.Log;
-import beast.util.BEASTClassLoader;
+import beast.app.inputeditor.Beauti;
+import beast.app.inputeditor.BeautiConfig;
+import beast.app.inputeditor.BeautiDoc;
+import beast.app.inputeditor.BEASTObjectDialog;
+import beast.app.inputeditor.BEASTObjectPanel;
+import beast.base.core.BEASTObject;
+import beast.base.core.Description;
+import beast.base.core.Input;
+import beast.base.core.Log;
+import beast.base.core.ProgramStatus;
+import beast.pkgmgmt.BEASTClassLoader;
+import beast.pkgmgmt.Utils6;
 
 @Description("BEAST application that handles argument parsing by introspection "
 		+ "using Inputs declared in the class.")
@@ -33,7 +35,7 @@ public class Application {
 		this.myBeastObject = myBeastObject;
 	}
 	
-	public Application(beast.core.Runnable analyser, String title, String[] args) throws Exception {
+	public Application(beast.base.inference.Runnable analyser, String title, String[] args) throws Exception {
 		
 		analyser.setID(title);
 
@@ -162,7 +164,7 @@ public class Application {
 					System.exit(0);
 				} else if (name.equals("wd")) {
 					// set working directory
-					Beauti.g_sDir = value;
+					ProgramStatus.g_sDir = value;
 					i++;
 				}
 				if (matchingInput == null) {

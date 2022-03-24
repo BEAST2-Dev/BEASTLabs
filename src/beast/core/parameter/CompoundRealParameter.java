@@ -4,10 +4,11 @@ package beast.core.parameter;
 import java.util.ArrayList;
 import java.util.List;
 
-import beast.core.Description;
-import beast.core.Input;
-import beast.core.StateNode;
-import beast.core.Input.Validate;
+import beast.base.core.Description;
+import beast.base.core.Input;
+import beast.base.inference.StateNode;
+import beast.base.inference.parameter.RealParameter;
+import beast.base.core.Input.Validate;
 
 @Description("Parmeter consisting of 2 or more RealParameters but behaving like a single RealParameter")
 // partial implementation

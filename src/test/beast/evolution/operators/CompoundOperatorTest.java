@@ -7,15 +7,15 @@ import java.util.List;
 
 import org.junit.Test;
 
-import beast.app.beauti.BeautiDoc;
-import beast.core.Operator;
-import beast.core.OperatorSchedule;
-import beast.core.State;
-import beast.core.StateNode;
-import beast.core.parameter.RealParameter;
+import beast.app.inputeditor.BeautiDoc;
+import beast.base.inference.Operator;
+import beast.base.inference.OperatorSchedule;
+import beast.base.inference.State;
+import beast.base.inference.StateNode;
+import beast.base.inference.parameter.RealParameter;
 import beast.evolution.operators.CompoundOperator;
-import beast.evolution.operators.DeltaExchangeOperator;
-import beast.evolution.operators.ScaleOperator;
+import beast.base.inference.operator.DeltaExchangeOperator;
+import beast.base.evolution.operator.ScaleOperator;
 import junit.framework.TestCase;
 
 public class CompoundOperatorTest extends TestCase {

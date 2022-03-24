@@ -9,19 +9,19 @@
 
 package beast.parsimony;
 
-import beast.core.Param;
-import beast.evolution.alignment.Alignment;
-import beast.evolution.datatype.DataType;
-import beast.evolution.tree.Node;
-import beast.evolution.tree.Tree;
-import beast.evolution.tree.TreeUtils;
+import beast.base.core.Param;
+import beast.base.evolution.alignment.Alignment;
+import beast.base.evolution.datatype.DataType;
+import beast.base.evolution.tree.Node;
+import beast.base.evolution.tree.Tree;
+import beast.base.evolution.tree.TreeUtils;
 import beast.parsimony.ParsimonyCriterion;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import beast.core.BEASTObject;
-import beast.core.Description;
+import beast.base.core.BEASTObject;
+import beast.base.core.Description;
 
 /**
  * Class for reconstructing characters using Fitch parsimony. This is intended to be much faster

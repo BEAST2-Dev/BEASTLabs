@@ -2,17 +2,22 @@ package test.beast.evolution.operators;
 
 
 import beast.core.*;
-import beast.core.parameter.RealParameter;
-import beast.evolution.operators.BactrianScaleOperator;
-import beast.evolution.operators.BactrianUpDownOperator;
-import beast.evolution.operators.ScaleOperator;
-import beast.evolution.tree.Node;
-import beast.math.distributions.LogNormalDistributionModel;
-import beast.math.distributions.ParametricDistribution;
-import beast.math.distributions.Prior;
-import beast.math.statistic.RPNcalculator;
-import beast.util.Randomizer;
-import beast.util.TreeParser;
+import beast.base.inference.parameter.RealParameter;
+import beast.base.evolution.operator.kernel.BactrianScaleOperator;
+import beast.base.inference.operator.kernel.BactrianUpDownOperator;
+import beast.base.core.Function;
+import beast.base.evolution.operator.ScaleOperator;
+import beast.base.evolution.tree.Node;
+import beast.base.inference.MCMC;
+import beast.base.inference.Operator;
+import beast.base.inference.State;
+import beast.base.inference.StateNode;
+import beast.base.inference.distribution.LogNormalDistributionModel;
+import beast.base.inference.distribution.ParametricDistribution;
+import beast.base.inference.distribution.Prior;
+import beast.base.inference.util.RPNcalculator;
+import beast.base.util.Randomizer;
+import beast.base.evolution.tree.TreeParser;
 
 import org.apache.commons.math3.stat.StatUtils;
 import org.junit.Test;

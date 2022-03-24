@@ -28,10 +28,12 @@ package beast.evolution.substitutionmodel;
 
 import java.util.Arrays;
 
-import beast.core.Citation;
-import beast.core.Description;
-import beast.evolution.datatype.DataType;
-import beast.evolution.tree.Node;
+import beast.base.core.Citation;
+import beast.base.core.Description;
+import beast.base.evolution.datatype.DataType;
+import beast.base.evolution.substitutionmodel.EigenSystem;
+import beast.base.evolution.substitutionmodel.GeneralSubstitutionModel;
+import beast.base.evolution.tree.Node;
 
 /**
  * <b>A general irreversible class for any

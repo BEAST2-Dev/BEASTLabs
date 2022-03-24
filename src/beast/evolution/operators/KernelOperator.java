@@ -1,8 +1,8 @@
 package beast.evolution.operators;
 
-import beast.core.Description;
-import beast.core.Input;
-import beast.core.Operator;
+import beast.base.core.Description;
+import beast.base.core.Input;
+import beast.base.inference.Operator;
 
 
 @Description("Operator with a flexible kernel distribution")

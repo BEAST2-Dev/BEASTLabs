@@ -1,6 +1,6 @@
 package beast.app.beast1to2;
 
-import beast.evolution.alignment.Sequence;
+import beast.base.evolution.alignment.Sequence;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;

@@ -1,12 +1,13 @@
 package beast.evolution.branchratemodel;
 
 
-import beast.core.Description;
-import beast.core.Input;
-import beast.core.parameter.RealParameter;
-import beast.evolution.tree.Node;
+import beast.base.core.Description;
+import beast.base.core.Input;
+import beast.base.inference.parameter.RealParameter;
+import beast.base.evolution.tree.Node;
+import beast.base.evolution.branchratemodel.*;
 import beast.evolution.tree.PrunedTree;
-import beast.evolution.tree.TreeInterface;
+import beast.base.evolution.tree.TreeInterface;
 
 @Description("Tree containing a subset of nodes from another tree")
 public class PrunedRelaxedClockModel extends BranchRateModel.Base {
@@ -68,11 +69,11 @@ public class PrunedRelaxedClockModel extends BranchRateModel.Base {
     }
 
     private boolean rq() {
-        if (! (rates.meanRate instanceof RealParameter) )
+        if (! (rates.getMeanRate() instanceof RealParameter) )
             throw new UnsupportedOperationException("meanRate has to be RealParameter !");
 
         // before tree, since tree might not be valid if only rates changed
-        if( rates.distribution.isDirtyCalculation() || ((RealParameter) rates.meanRate).somethingIsDirty() ) {
+        if( rates.getDistribution().isDirtyCalculation() || ((RealParameter) rates.getMeanRate()).somethingIsDirty() ) {
             return true;
         }
 
@@ -97,10 +98,10 @@ public class PrunedRelaxedClockModel extends BranchRateModel.Base {
         }
 
         // set can change
-        final int dim = rates.categories.getDimension();                           assert dim + 1 == btree.getNodeCount();
+        final int dim = rates.getCategories().getDimension();                           assert dim + 1 == btree.getNodeCount();
         final int nRoot = btree.getRoot().getNr();
         for(int k = 0; k < dim; ++k) {
-            if( rates.categories.isDirty(k) ) {
+            if( rates.getCategories().isDirty(k) ) {
                 if( ptree.onPath(k == nRoot ? dim - 1 : k) ) {
                     return true;
                 }

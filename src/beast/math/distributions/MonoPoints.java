@@ -1,13 +1,14 @@
 package beast.math.distributions;
 
-import beast.core.BEASTObject;
-import beast.core.Description;
-import beast.core.Input;
-import beast.core.Loggable;
-import beast.evolution.alignment.TaxonSet;
+import beast.base.core.BEASTObject;
+import beast.base.core.Description;
+import beast.base.core.Input;
+import beast.base.core.Loggable;
+import beast.base.evolution.alignment.TaxonSet;
 import beast.evolution.operators.MonoCladesMapping;
-import beast.evolution.tree.Node;
-import beast.evolution.tree.TreeInterface;
+import beast.base.evolution.tree.MRCAPrior;
+import beast.base.evolution.tree.Node;
+import beast.base.evolution.tree.TreeInterface;
 
 import java.io.PrintStream;
 import java.util.*;

@@ -54,11 +54,11 @@ package beast.prevalence;
 import java.util.ArrayList;
 import java.util.List;
 
-import beast.core.Description;
-import beast.core.Input;
-import beast.evolution.tree.Node;
-import beast.evolution.tree.Tree;
-import beast.util.Randomizer;
+import beast.base.core.Description;
+import beast.base.core.Input;
+import beast.base.evolution.tree.Node;
+import beast.base.evolution.tree.Tree;
+import beast.base.util.Randomizer;
 
 
 /**
@@ -86,8 +86,8 @@ public class SubtreeSlide extends TreeOperator {
 	 * @return log of Hastings Ratio, or Double.NEGATIVE_INFINITY if proposal should not be accepted **/
     @Override
     public double proposal() {
-        Tree tree = m_tree.get(this);//(Tree) state.getStateNode(m_tree);
-        PrevalenceList list = m_list.get(this);
+        Tree tree = m_tree.get();//(Tree) state.getStateNode(m_tree);
+        PrevalenceList list = m_list.get();
 
         //calculateHeightsFromLengths(beast.tree);
 

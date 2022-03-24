@@ -8,15 +8,15 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.xml.sax.SAXException;
 
-import beast.core.Description;
-import beast.core.Distribution;
-import beast.core.Logger;
-import beast.core.MCMC;
-import beast.core.Operator;
-import beast.core.StateNodeInitialiser;
-import beast.core.util.Evaluator;
-import beast.core.util.Log;
-import beast.util.Randomizer;
+import beast.base.core.Description;
+import beast.base.inference.Distribution;
+import beast.base.inference.Evaluator;
+import beast.base.inference.Logger;
+import beast.base.inference.MCMC;
+import beast.base.inference.Operator;
+import beast.base.inference.StateNodeInitialiser;
+import beast.base.core.Log;
+import beast.base.util.Randomizer;
 
 @Description("Base class for doing Metropolis coupled MCMC. Each instance represenst a chain at a different temperature.")
 public class HeatedMCMC extends MCMC {

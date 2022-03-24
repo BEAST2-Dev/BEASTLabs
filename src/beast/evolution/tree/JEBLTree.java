@@ -10,6 +10,8 @@ package beast.evolution.tree;
 
 import java.util.Set;
 
+import beast.base.evolution.tree.Node;
+
 /**
  * A rooted or unrooted tree. This interface is the common base class for all trees,
  * and contains only operations for unrooted trees. The subinterface RootedTree
@@ -43,14 +45,14 @@ public interface JEBLTree {
      * nodes of this tree. The size of this set should be the
      * same as the size of the external nodes set.
      */
-    Set<beast.evolution.taxonomy.Taxon> getTaxa();
+    Set<beast.base.evolution.alignment.Taxon> getTaxa();
 
     /**
      * @param node the node whose associated taxon is being requested.
      * @return the taxon object associated with the given node, or null
      * if the node is an internal node.
      */
-    beast.evolution.taxonomy.Taxon getTaxon(Node node);
+    beast.base.evolution.alignment.Taxon getTaxon(Node node);
 
     /**
      * @param node the node
@@ -63,7 +65,7 @@ public interface JEBLTree {
      * @return the external node associated with the given taxon, or null
      * if the taxon is not a member of the taxa set associated with this tree.
      */
-    Node getNode(beast.evolution.taxonomy.Taxon taxon);
+    Node getNode(beast.base.evolution.alignment.Taxon taxon);
 
-    void renameTaxa(beast.evolution.taxonomy.Taxon from, beast.evolution.taxonomy.Taxon to);
+    void renameTaxa(beast.base.evolution.alignment.Taxon from, beast.base.evolution.alignment.Taxon to);
 }

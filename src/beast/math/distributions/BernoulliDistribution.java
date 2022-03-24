@@ -1,12 +1,12 @@
 package beast.math.distributions;
 
-import beast.core.Description;
-import beast.core.Distribution;
-import beast.core.Input;
-import beast.core.State;
-import beast.core.parameter.BooleanParameter;
-import beast.core.parameter.IntegerParameter;
-import beast.core.parameter.RealParameter;
+import beast.base.core.Description;
+import beast.base.inference.Distribution;
+import beast.base.core.Input;
+import beast.base.inference.State;
+import beast.base.inference.parameter.BooleanParameter;
+import beast.base.inference.parameter.IntegerParameter;
+import beast.base.inference.parameter.RealParameter;
 
 import java.util.List;
 import java.util.Random;

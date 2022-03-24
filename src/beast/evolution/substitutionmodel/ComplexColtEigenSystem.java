@@ -29,7 +29,9 @@ package beast.evolution.substitutionmodel;
 import cern.colt.matrix.DoubleMatrix2D;
 
 import java.util.Arrays;
-import beast.math.matrixalgebra.RobustEigenDecomposition;
+
+import beast.base.evolution.substitutionmodel.EigenDecomposition;
+import beast.base.math.matrixalgebra.RobustEigenDecomposition;
 
 /**
  * @author Marc Suchard

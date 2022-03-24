@@ -25,7 +25,17 @@
 package beast.core;
 
 
-import beast.util.Randomizer;
+import beast.base.core.BEASTInterface;
+import beast.base.core.BEASTObject;
+import beast.base.core.Citation;
+import beast.base.core.Description;
+import beast.base.core.Input;
+import beast.base.inference.Distribution;
+import beast.base.inference.Logger;
+import beast.base.inference.Operator;
+import beast.base.inference.State;
+import beast.base.inference.StateNode;
+import beast.base.util.Randomizer;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -36,7 +46,7 @@ import java.util.List;
         "to calculate, how long to run the chain and all other properties, " +
         "which operators to apply on the state space and where to log results.")
 @Citation("A prototype for BEAST 2.0: The computational science of evolutionary software. Bouckaert, Drummond, Rambaut, Alekseyenko, Suchard & the BEAST Core Development Team. 2010")
-public class MCMC2 extends Runnable {
+public class MCMC2 extends beast.base.inference.Runnable {
 
     public Input<Integer> m_oBurnIn =
             new Input<Integer>("preBurnin", "Number of burn in samples taken before entering the main loop", 0);

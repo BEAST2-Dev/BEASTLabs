@@ -6,6 +6,9 @@ import java.io.*;
 //import java.nio.file.Paths;
 import java.util.*;
 
+import beast.base.parser.NexusParser;
+import beast.base.parser.XMLProducer;
+
 /**
  * Given nex file(s) to replace sequence in the xml, but tip names have to be same.
  * use java 1.7 File.copy

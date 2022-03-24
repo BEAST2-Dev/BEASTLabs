@@ -5,8 +5,12 @@ import java.util.Arrays;
 import java.util.List;
 
 import beast.core.*;
-import beast.core.Input.Validate;
-import beast.core.util.Log;
+import beast.base.core.Description;
+import beast.base.core.Function;
+import beast.base.core.Input;
+import beast.base.core.Input.Validate;
+import beast.base.core.Log;
+import beast.base.inference.parameter.RealParameter;
 
 @Description("Constant value that acts as immutable RealParameter where values are normalised")
 public class NormalisedRealParameter extends RealParameter {

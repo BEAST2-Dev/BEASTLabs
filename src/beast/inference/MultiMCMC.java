@@ -8,16 +8,16 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Vector;
 
-import beast.core.Description;
-import beast.core.Input;
-import beast.core.Logger;
-import beast.core.MCMC;
-import beast.evolution.tree.Node;
-import beast.util.Randomizer;
-import beast.util.TreeParser;
-import beast.util.XMLParser;
-import beast.util.XMLParserException;
-import beast.util.XMLProducer;
+import beast.base.core.Description;
+import beast.base.core.Input;
+import beast.base.inference.Logger;
+import beast.base.inference.MCMC;
+import beast.base.evolution.tree.Node;
+import beast.base.util.Randomizer;
+import beast.base.evolution.tree.TreeParser;
+import beast.base.parser.XMLParser;
+import beast.base.parser.XMLParserException;
+import beast.base.parser.XMLProducer;
 
 
 

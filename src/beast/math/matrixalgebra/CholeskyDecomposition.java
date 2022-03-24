@@ -1,6 +1,6 @@
 package beast.math.matrixalgebra;
 
-import beast.core.Description;
+import beast.base.core.Description;
 
 /**
  * Created by IntelliJ IDEA.

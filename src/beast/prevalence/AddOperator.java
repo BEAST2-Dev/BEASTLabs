@@ -1,11 +1,11 @@
 package beast.prevalence;
 
-import beast.core.Description;
-import beast.core.Input;
-import beast.core.Operator;
-import beast.core.Input.Validate;
+import beast.base.core.Description;
+import beast.base.core.Input;
+import beast.base.inference.Operator;
+import beast.base.core.Input.Validate;
 import beast.prevalence.PrevalenceList.Action;
-import beast.util.Randomizer;
+import beast.base.util.Randomizer;
 
 @Description("Randomly adds Infection or recovery to prevalence list")
 public class AddOperator extends Operator {
@@ -17,7 +17,7 @@ public class AddOperator extends Operator {
 
 	@Override
 	public double proposal() {
-		PrevalenceList list = m_list.get(this);
+		PrevalenceList list = m_list.get();
 		Double fTime = Randomizer.nextDouble() * list.startTime();
 		Action action = Action.INFECTED;
 		if (Randomizer.nextDouble() > 0.5) {

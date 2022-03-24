@@ -1,7 +1,7 @@
 package test.beast.math.distributions;
 
-import beast.core.parameter.IntegerParameter;
-import beast.core.parameter.RealParameter;
+import beast.base.inference.parameter.IntegerParameter;
+import beast.base.inference.parameter.RealParameter;
 import beast.math.distributions.WeightedDirichlet;
 import junit.framework.TestCase;
 import org.junit.Before;

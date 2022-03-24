@@ -10,17 +10,18 @@ import java.util.Map;
 
 import beast.app.treeannotator.TreeAnnotator;
 import beast.app.treeannotator.TreeAnnotator.MemoryFriendlyTreeSet;
-import beast.core.CalculationNode;
-import beast.core.Description;
-import beast.core.Function;
-import beast.core.Input;
-import beast.core.Loggable;
-import beast.core.Logger;
-import beast.core.util.Log;
-import beast.evolution.alignment.Alignment;
-import beast.evolution.alignment.Sequence;
-import beast.util.ClusterTree;
-import beast.util.Randomizer;
+import beast.base.inference.CalculationNode;
+import beast.base.core.Description;
+import beast.base.core.Function;
+import beast.base.core.Input;
+import beast.base.core.Loggable;
+import beast.base.inference.Logger;
+import beast.base.core.Log;
+import beast.base.evolution.alignment.Alignment;
+import beast.base.evolution.alignment.Sequence;
+import beast.base.evolution.tree.ClusterTree;
+import beast.base.evolution.tree.Tree;
+import beast.base.util.Randomizer;
 
 
 @Description("Logger to report statistics of a tree")

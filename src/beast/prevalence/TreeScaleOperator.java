@@ -24,10 +24,10 @@
 */
 package beast.prevalence;
 
-import beast.core.Description;
-import beast.core.Input;
-import beast.evolution.tree.Tree;
-import beast.util.Randomizer;
+import beast.base.core.Description;
+import beast.base.core.Input;
+import beast.base.evolution.tree.Tree;
+import beast.base.util.Randomizer;
 
 @Description("Scales a complete beast.tree.")
 public class TreeScaleOperator extends TreeOperator {
@@ -59,11 +59,11 @@ public class TreeScaleOperator extends TreeOperator {
 	        double d = Randomizer.nextDouble();
 	        double scale = (m_fScaleFactor + (d * ((1.0 / m_fScaleFactor) - m_fScaleFactor)));
 	        
-	    	Tree tree = m_tree.get(this); 
+	    	Tree tree = m_tree.get(); 
 	        // scale the beast.tree
 	    	int nInternalNodes = tree.scale(scale);
 
-	    	PrevalenceList list = m_list.get(this);
+	    	PrevalenceList list = m_list.get();
 	    	// scale only internal nodes in the list
 	    	// nNodesScaled is the number of nodes that have been scaled
 	    	int nNodesScaled = list.scale(scale);

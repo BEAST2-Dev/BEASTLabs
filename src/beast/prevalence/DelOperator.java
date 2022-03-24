@@ -1,10 +1,10 @@
 package beast.prevalence;
 
-import beast.core.Description;
-import beast.core.Input;
-import beast.core.Operator;
-import beast.core.Input.Validate;
-import beast.util.Randomizer;
+import beast.base.core.Description;
+import beast.base.core.Input;
+import beast.base.inference.Operator;
+import beast.base.core.Input.Validate;
+import beast.base.util.Randomizer;
 
 @Description("Randomly removes Infection or recovery to prevalence list")
 public class DelOperator extends Operator {
@@ -20,7 +20,7 @@ public class DelOperator extends Operator {
 		if (!m_list.get().hasDeletables()) {
 			return Double.NEGATIVE_INFINITY;
 		}
-		PrevalenceList list = m_list.get(this);
+		PrevalenceList list = m_list.get();
 		// choose unlinked node at random, but not the last one
 		int iTime = Randomizer.nextInt(list.getSize() - 1);
 		while (list.isLinked(iTime)) {

@@ -10,13 +10,13 @@ import org.junit.Test;
 
 import beast.app.treeannotator.TreeAnnotator;
 import beast.app.treeannotator.TreeAnnotator.MemoryFriendlyTreeSet;
-import beast.evolution.alignment.Taxon;
-import beast.evolution.alignment.TaxonSet;
-import beast.evolution.tree.Node;
+import beast.base.evolution.alignment.Taxon;
+import beast.base.evolution.alignment.TaxonSet;
+import beast.base.evolution.tree.Node;
 import beast.evolution.tree.RNNIMetric;
-import beast.evolution.tree.TreeInterface;
-import beast.util.Randomizer;
-import beast.util.TreeParser;
+import beast.base.evolution.tree.TreeInterface;
+import beast.base.util.Randomizer;
+import beast.base.evolution.tree.TreeParser;
 import junit.framework.TestCase;
 
 public class RNNIMetricTest extends TestCase {

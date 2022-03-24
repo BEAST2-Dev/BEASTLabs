@@ -28,13 +28,21 @@ package beast.evolution.tree;
 
 
 import beast.core.*;
-import beast.core.util.Log;
-import beast.evolution.alignment.Alignment;
-import beast.evolution.alignment.TaxonSet;
+import beast.base.core.BEASTInterface;
+import beast.base.core.Description;
+import beast.base.core.Input;
+import beast.base.core.Log;
+import beast.base.evolution.alignment.Alignment;
+import beast.base.evolution.alignment.TaxonSet;
 import beast.evolution.operators.DistanceProvider;
-import beast.math.distributions.MRCAPrior;
-import beast.math.distributions.ParametricDistribution;
-import beast.util.Randomizer;
+import beast.base.evolution.tree.MRCAPrior;
+import beast.base.evolution.tree.Node;
+import beast.base.evolution.tree.TraitSet;
+import beast.base.evolution.tree.Tree;
+import beast.base.inference.StateNode;
+import beast.base.inference.StateNodeInitialiser;
+import beast.base.inference.distribution.ParametricDistribution;
+import beast.base.util.Randomizer;
 
 import java.util.*;
 
@@ -662,7 +670,7 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
 
 
 	//@Override
-    public void getInitialisedStateNodes(final List<StateNode> stateNodes) {
+    public void getInitialisedStateNodes(List<StateNode> stateNodes) {
         stateNodes.add(m_initial.get());
     }
 

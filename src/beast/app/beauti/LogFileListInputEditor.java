@@ -1,5 +1,6 @@
 package beast.app.beauti;
 
+import beast.app.inputeditor.BeautiDoc;
 import beast.app.util.TreeFile;
 
 public class LogFileListInputEditor extends FileListInputEditor {

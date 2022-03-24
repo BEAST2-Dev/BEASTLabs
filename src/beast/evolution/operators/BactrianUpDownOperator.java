@@ -5,14 +5,14 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-import beast.core.Description;
-import beast.core.Input;
-import beast.core.StateNode;
-import beast.core.Input.Validate;
-import beast.core.parameter.Parameter;
-import beast.core.parameter.RealParameter;
-import beast.core.util.Log;
-import beast.util.Randomizer;
+import beast.base.core.Description;
+import beast.base.core.Input;
+import beast.base.inference.StateNode;
+import beast.base.core.Input.Validate;
+import beast.base.inference.parameter.Parameter;
+import beast.base.inference.parameter.RealParameter;
+import beast.base.core.Log;
+import beast.base.util.Randomizer;
 
 
 @Description("Like the UpDownOperator, this element represents an operator that scales "

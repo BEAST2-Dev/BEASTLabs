@@ -7,10 +7,12 @@ import java.io.File;
 
 import javax.swing.JButton;
 
-import beast.app.draw.InputEditor;
+import beast.app.inputeditor.BeautiDoc;
+import beast.app.inputeditor.InputEditor;
 import beast.app.util.Utils;
-import beast.core.BEASTInterface;
-import beast.core.Input;
+import beast.base.core.BEASTInterface;
+import beast.base.core.Input;
+import beast.base.core.ProgramStatus;
 
 
 /** for opening files for reading
@@ -55,7 +57,7 @@ public class FileInputEditor extends InputEditor.Base {
 						m_entry.setText(file.getName());
 						m_input.setValue(newFile(file), m_beastObject);
 						String path = file.getPath();
-						Beauti.setCurrentDir(path);
+						ProgramStatus.setCurrentDir(path);
 					}
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
@@ -97,19 +99,19 @@ public class FileInputEditor extends InputEditor.Base {
 		if (file.exists()) {
 			defaultFile = file;
 			if (defaultFile.getParent() == null) {
-				defaultFile = new File(Beauti.g_sDir);
+				defaultFile = new File(ProgramStatus.g_sDir);
 				if (defaultFile.isDirectory()) {
-					defaultFile = new File(Beauti.g_sDir + FileInputEditor.SEPARATOR + file.getName());
+					defaultFile = new File(ProgramStatus.g_sDir + FileInputEditor.SEPARATOR + file.getName());
 				} else {
-					defaultFile = new File(new File(Beauti.g_sDir).getParent() + FileInputEditor.SEPARATOR + file.getName());
+					defaultFile = new File(new File(ProgramStatus.g_sDir).getParent() + FileInputEditor.SEPARATOR + file.getName());
 				}
 			}
 		} else {
-			defaultFile = new File(Beauti.g_sDir);
+			defaultFile = new File(ProgramStatus.g_sDir);
 			if (defaultFile.isDirectory()) {
-				defaultFile = new File(Beauti.g_sDir + FileInputEditor.SEPARATOR + file.getName());
+				defaultFile = new File(ProgramStatus.g_sDir + FileInputEditor.SEPARATOR + file.getName());
 			} else {
-				defaultFile = new File(new File(Beauti.g_sDir).getParent() + FileInputEditor.SEPARATOR + file.getName());
+				defaultFile = new File(new File(ProgramStatus.g_sDir).getParent() + FileInputEditor.SEPARATOR + file.getName());
 			}
 		}
 		return defaultFile;

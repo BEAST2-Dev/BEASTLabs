@@ -4,7 +4,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import beast.core.util.CompoundDistribution;
+import beast.base.core.BEASTInterface;
+import beast.base.core.Description;
+import beast.base.inference.CompoundDistribution;
+import beast.base.inference.Distribution;
+import beast.base.inference.StateNode;
 
 @Description("Represents a list of prior distribution over a StateNode, " +
 		"each potentially conditioned on one or more other StateNodes. " +

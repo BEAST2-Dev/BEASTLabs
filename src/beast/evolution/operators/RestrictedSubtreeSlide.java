@@ -4,14 +4,15 @@ package beast.evolution.operators;
 import java.lang.reflect.Array;
 import java.util.*;
 
-import beast.app.util.Arguments;
-import beast.core.Description;
-import beast.core.Input;
-import beast.evolution.alignment.TaxonSet;
-import beast.evolution.tree.Node;
-import beast.evolution.tree.Tree;
+import beast.pkgmgmt.Arguments;
+import beast.base.core.Description;
+import beast.base.core.Input;
+import beast.base.evolution.alignment.TaxonSet;
+import beast.base.evolution.operator.SubtreeSlide;
+import beast.base.evolution.tree.Node;
+import beast.base.evolution.tree.Tree;
 import beast.math.distributions.MultiMonophyleticConstraint;
-import beast.util.Randomizer;
+import beast.base.util.Randomizer;
 
 @Description("Subtree-slide operator that only considers part of the tree defined by "
 		+ "the predecessors of a set of clades.")
@@ -131,7 +132,7 @@ public class RestrictedSubtreeSlide extends SubtreeSlide {
 
 	@Override
 	public double proposal() {
-        final Tree tree = treeInput.get(this);
+        final Tree tree = treeInput.get();
         // 0. determine set of candidate nodes
         List<Node> candidates = getCandidateNodes(tree);
         if (candidates.size() <= 1) {

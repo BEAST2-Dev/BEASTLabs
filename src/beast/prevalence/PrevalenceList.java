@@ -9,8 +9,8 @@ import java.util.Set;
 
 import org.w3c.dom.Node;
 
-import beast.core.Description;
-import beast.core.StateNode;
+import beast.base.core.Description;
+import beast.base.inference.StateNode;
 
 
 

@@ -33,8 +33,10 @@ import cern.colt.matrix.linalg.Property;
 
 import java.util.Arrays;
 
-import beast.math.matrixalgebra.RobustEigenDecomposition;
-import beast.math.matrixalgebra.RobustSingularValueDecomposition;
+import beast.base.evolution.substitutionmodel.EigenDecomposition;
+import beast.base.evolution.substitutionmodel.EigenSystem;
+import beast.base.math.matrixalgebra.RobustEigenDecomposition;
+import beast.base.math.matrixalgebra.RobustSingularValueDecomposition;
 
 /**
  * @author Marc Suchard

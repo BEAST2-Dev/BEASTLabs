@@ -2,10 +2,10 @@ package beast.util;
 
 import java.io.PrintStream;
 
-import beast.core.BEASTObject;
-import beast.core.Description;
-import beast.core.Input;
-import beast.core.Loggable;
+import beast.base.core.BEASTObject;
+import beast.base.core.Description;
+import beast.base.core.Input;
+import beast.base.core.Loggable;
 
 @Description("Logger for reporting elapsed time since start of run")
 public class TimeLogger extends BEASTObject implements Loggable {

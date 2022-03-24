@@ -1,16 +1,22 @@
 package test.beast.evolution.operators;
 
 import beast.core.*;
-import beast.core.parameter.RealParameter;
-import beast.core.util.ESS;
-import beast.evolution.operators.BactrianRandomWalkOperator;
-import beast.evolution.operators.KernelDistribution;
-import beast.evolution.operators.RealRandomWalkOperator;
-import beast.math.distributions.LogNormalDistributionModel;
-import beast.math.distributions.Normal;
-import beast.math.distributions.ParametricDistribution;
-import beast.math.distributions.Prior;
-import beast.util.Randomizer;
+import beast.base.inference.parameter.RealParameter;
+import beast.base.inference.util.ESS;
+import beast.base.inference.operator.kernel.BactrianRandomWalkOperator;
+import beast.base.inference.operator.kernel.KernelDistribution;
+import beast.base.inference.operator.RealRandomWalkOperator;
+import beast.base.core.BEASTObject;
+import beast.base.core.Function;
+import beast.base.core.Input;
+import beast.base.inference.Logger;
+import beast.base.inference.MCMC;
+import beast.base.inference.State;
+import beast.base.inference.distribution.LogNormalDistributionModel;
+import beast.base.inference.distribution.Normal;
+import beast.base.inference.distribution.ParametricDistribution;
+import beast.base.inference.distribution.Prior;
+import beast.base.util.Randomizer;
 import junit.framework.TestCase;
 
 import org.apache.commons.math3.stat.StatUtils;

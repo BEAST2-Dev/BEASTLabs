@@ -1,6 +1,6 @@
 package beast.evolution.likelihood;
 
-import beast.evolution.sitemodel.SiteModel;
+import beast.base.evolution.sitemodel.SiteModel;
 
 
 /** standard likelihood core, uses no caching **/

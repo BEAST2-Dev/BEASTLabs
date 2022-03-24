@@ -1,9 +1,9 @@
 package beast.util;
 
-import beast.core.BEASTInterface;
-import beast.core.BEASTObject;
-import beast.core.Description;
-import beast.core.Input;
+import beast.base.core.BEASTInterface;
+import beast.base.core.BEASTObject;
+import beast.base.core.Description;
+import beast.base.core.Input;
 
 import java.util.ArrayList;
 import java.util.List;

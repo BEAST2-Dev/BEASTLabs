@@ -1,9 +1,9 @@
 package beast.evolution.operators;
 
 
-import beast.evolution.tree.Node;
-import beast.evolution.tree.Tree;
-import beast.evolution.tree.TreeInterface;
+import beast.base.evolution.tree.Node;
+import beast.base.evolution.tree.Tree;
+import beast.base.evolution.tree.TreeInterface;
 import beast.math.distributions.MultiMonophyleticConstraint;
 
 import java.util.HashSet;

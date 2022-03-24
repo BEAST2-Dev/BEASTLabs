@@ -10,15 +10,15 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.xml.sax.SAXException;
 
-import beast.core.Description;
-import beast.core.Input;
-import beast.core.Logger;
-import beast.core.Logger.LOGMODE;
-import beast.core.MCMC;
-import beast.core.Operator;
-import beast.core.StateNodeInitialiser;
-import beast.core.Input.Validate;
-import beast.core.util.Log;
+import beast.base.core.Description;
+import beast.base.core.Input;
+import beast.base.inference.Logger;
+import beast.base.inference.Logger.LOGMODE;
+import beast.base.inference.MCMC;
+import beast.base.inference.Operator;
+import beast.base.inference.StateNodeInitialiser;
+import beast.base.core.Input.Validate;
+import beast.base.core.Log;
 
 @Description("Extension to MCMC used by IndependentMCMC")
 public class ConvergableMCMC extends MCMC {

@@ -1,9 +1,12 @@
 package beast.evolution.tree;
 
-import beast.core.Description;
-import beast.core.Input;
-import beast.evolution.alignment.Alignment;
-import beast.evolution.alignment.TaxonSet;
+import beast.base.core.Description;
+import beast.base.core.Input;
+import beast.base.evolution.alignment.Alignment;
+import beast.base.evolution.alignment.TaxonSet;
+import beast.base.evolution.tree.Node;
+import beast.base.evolution.tree.Tree;
+import beast.base.evolution.tree.TreeInterface;
 
 import java.util.*;
 
@@ -200,7 +203,7 @@ public class PrunedTree extends Tree {
             if( n.isDirty() != Tree.IS_CLEAN ) {
                 return true;
             }
-            n = n.parent;
+            n = n.getParent();
             while (n != null) {
                 final int k = n.getNr();
                 if( !seen[k] ) {
@@ -211,7 +214,7 @@ public class PrunedTree extends Tree {
                     }
                     break;
                 }
-                n = n.parent;
+                n = n.getParent();
             }
         }
         return false;
@@ -222,7 +225,7 @@ public class PrunedTree extends Tree {
             final int nr = leafsToBaseLeafs[i];
             Node n = tree.getNode(nr);
             baseNodesOnPrunedPath[n.getNr()] = true;
-            n = n.parent;
+            n = n.getParent();
             while (n != null) {
                 final int k = n.getNr();
                 baseNodesOnPrunedPath[k] = true;
@@ -236,7 +239,7 @@ public class PrunedTree extends Tree {
                     }
                     break;
                 }
-                n = n.parent;
+                n = n.getParent();
             }
         }
         {
@@ -244,13 +247,13 @@ public class PrunedTree extends Tree {
             int nr0 = leafsToBaseLeafs[0];
             Node n = tree.getNode(nr0);
             baseNodesOnPrunedPath[n.getNr()] = true;
-            n = n.parent;
+            n = n.getParent();
             while (n != null) {
                 baseNodesOnPrunedPath[n.getNr()] = true;
                 if( n == last ) {
                     break;
                 }
-                n = n.parent;
+                n = n.getParent();
             }
         }
     }
@@ -273,11 +276,11 @@ public class PrunedTree extends Tree {
             dirty = (n.isDirty() != Tree.IS_CLEAN);
 
             //baseNodesOnPrunedPath[n.getNr()] = true;
-            n = n.parent;
+            n = n.getParent();
             while (n != null) {
                 final int k = n.getNr();                                           assert !seen[k];
                 seen[k] = true;
-                n = n.parent;
+                n = n.getParent();
             }
         }
         if( dirty ) {
@@ -296,7 +299,7 @@ public class PrunedTree extends Tree {
                 fillRestOfBaseNodesOnPath(i, h, last, tree);
                 return true;
             }
-            n = n.parent;
+            n = n.getParent();
             while (n != null) {
                 final int k = n.getNr();
                 if( n.isDirty() != Tree.IS_CLEAN ) {
@@ -314,7 +317,7 @@ public class PrunedTree extends Tree {
                     }
                     break;
                 }
-                n = n.parent;
+                n = n.getParent();
             }
         }
         {
@@ -322,7 +325,7 @@ public class PrunedTree extends Tree {
             int nr0 = leafsToBaseLeafs[0];
             Node n = tree.getNode(nr0);
             baseNodesOnPrunedPath[nr0] = true;
-            n = n.parent;
+            n = n.getParent();
             while (n != null) {
                 //final int k = n.getNr();
                 baseNodesOnPrunedPath[n.getNr()] = true;
@@ -330,7 +333,7 @@ public class PrunedTree extends Tree {
                 if( n == last ) {
                     break;
                 }
-                n = n.parent;
+                n = n.getParent();
             }
         }
         return dirty;
@@ -410,7 +413,7 @@ public class PrunedTree extends Tree {
         Node[] post = tree.listNodesPostOrder(null, sourceNodesPreOrder);
 
         // counts (i.e. tree taxa) are assumed not to change
-        Node[] map = new Node [tree.nodeCount]; //getNodeCount()];
+        Node[] map = new Node [tree.getNodeCount()]; //getNodeCount()];
         int[] mapped = new int [nodeCount]; // getNodeCount()];
         int nm = 0;
 
@@ -467,14 +470,14 @@ public class PrunedTree extends Tree {
                         final int other = (pLeft.getChild(0) == mLeft) ? 1 : 0;
                         Node o = pLeft.getChild(other);
                         pLeft.setChild(other, mRight);
-                        mRight.parent = pLeft;
+                        mRight.setParent(pLeft);
 
                         pLeft.makeDirty(Tree.IS_FILTHY);
                         mRight.makeDirty(Tree.IS_FILTHY);
 
                         final int rSelf = (pRight.getChild(0) == mRight) ? 0 : 1;
                         pRight.setChild(rSelf, o);
-                        o.parent = pRight;
+                        o.setParent(pRight);
 
                         pRight.makeDirty(Tree.IS_FILTHY);
                         o.makeDirty(Tree.IS_FILTHY);
@@ -677,7 +680,7 @@ public class PrunedTree extends Tree {
         for (int i = 0; i < nodeCount; i++) {
             final Node src = m_nodes[i];
 
-            if ( src.parent != null && src.parent.getNr() >= nodeCount) {
+            if ( src.getParent() != null && src.getParent().getNr() >= nodeCount) {
             	return false;
             }
 

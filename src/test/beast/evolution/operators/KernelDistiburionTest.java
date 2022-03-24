@@ -2,10 +2,10 @@ package test.beast.evolution.operators;
 
 import org.junit.Test;
 
-import beast.core.util.Log;
-import beast.evolution.operators.KernelDistribution;
-import beast.evolution.operators.KernelDistribution.Bactrian.mode;
-import beast.util.Randomizer;
+import beast.base.core.Log;
+import beast.base.inference.operator.kernel.KernelDistribution;
+import beast.base.inference.operator.kernel.KernelDistribution.Bactrian.mode;
+import beast.base.util.Randomizer;
 import junit.framework.TestCase;
 
 public class KernelDistiburionTest extends TestCase {

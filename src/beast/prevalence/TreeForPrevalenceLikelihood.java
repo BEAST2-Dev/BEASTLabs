@@ -3,13 +3,13 @@ package beast.prevalence;
 import java.util.List;
 import java.util.Random;
 
-import beast.core.Description;
-import beast.core.Distribution;
-import beast.core.Input;
-import beast.core.State;
-import beast.core.Input.Validate;
-import beast.evolution.tree.Node;
-import beast.evolution.tree.Tree;
+import beast.base.core.Description;
+import beast.base.inference.Distribution;
+import beast.base.core.Input;
+import beast.base.inference.State;
+import beast.base.core.Input.Validate;
+import beast.base.evolution.tree.Node;
+import beast.base.evolution.tree.Tree;
 import beast.prevalence.PrevalenceList.Action;
 import beast.prevalence.PrevalenceList.Item;
 

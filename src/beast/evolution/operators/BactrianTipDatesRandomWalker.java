@@ -1,9 +1,10 @@
 package beast.evolution.operators;
 
-import beast.core.Description;
-import beast.core.Input;
-import beast.evolution.tree.Node;
-import beast.util.Randomizer;
+import beast.base.core.Description;
+import beast.base.core.Input;
+import beast.base.evolution.operator.TipDatesRandomWalker;
+import beast.base.evolution.tree.Node;
+import beast.base.util.Randomizer;
 
 @Description("Randomly moves tip dates on a tree by randomly selecting one from (a subset of) taxa using a Bactrian proposal")
 public class BactrianTipDatesRandomWalker extends TipDatesRandomWalker {

@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
 
+import beast.base.evolution.tree.Node;
+
 /**
  * Convert from BEAST 1
  *

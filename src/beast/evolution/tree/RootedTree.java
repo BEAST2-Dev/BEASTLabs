@@ -10,6 +10,8 @@ package beast.evolution.tree;
 
 import java.util.List;
 
+import beast.base.evolution.tree.Node;
+
 /**
  * A tree with a root (node with maximum height). This interface
  * provides the concept of a direction of time that flows from the

@@ -1,20 +1,18 @@
 package beast.evolution.tree;
 
 
-import beast.app.beauti.Beauti;
-import beast.core.BEASTInterface;
-import beast.core.BEASTObject;
-import beast.core.Description;
-import beast.core.Input;
-import beast.evolution.alignment.Taxon;
-import beast.evolution.alignment.TaxonSet;
-import beast.math.distributions.MRCAPrior;
+import beast.base.core.BEASTInterface;
+import beast.base.core.Description;
+import beast.base.core.Input;
+import beast.base.evolution.alignment.Taxon;
+import beast.base.evolution.alignment.TaxonSet;
+import beast.base.evolution.tree.MRCAPrior;
+import beast.base.evolution.tree.Node;
+import beast.base.evolution.tree.Tree;
 import beast.math.distributions.MultiMonophyleticConstraint;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @Description("Random tree with constraints specified by one tree, just like multiple monophyly.")
 public class SimpleConstrainedRandomTree extends SimpleRandomTree  {
@@ -24,7 +22,7 @@ public class SimpleConstrainedRandomTree extends SimpleRandomTree  {
 
     @Override
     public void initAndValidate() {
-    	if (Beauti.isInBeauti()) {
+    	if (beast.app.beauti.Beauti.isInBeauti()) {
     		return;
     	}
         List<MRCAPrior> cons = getCons();

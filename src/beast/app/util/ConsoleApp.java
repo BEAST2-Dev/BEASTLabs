@@ -6,8 +6,8 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
 
-import beast.app.BEASTVersion2;
-import beast.core.util.Log;
+import beast.pkgmgmt.BEASTVersion;
+import beast.base.core.Log;
 
 import java.awt.*;
 import java.io.ByteArrayOutputStream;
@@ -19,7 +19,7 @@ public class ConsoleApp extends JFrame {
 
 	private static final long serialVersionUID = 1L;
 	private JTextPane textPane;
-	static String title = "BEAST " + new BEASTVersion2().getVersionString();
+	static String title = "BEAST " + new BEASTVersion().getVersionString();
 
 	public ConsoleApp() {
 		super();

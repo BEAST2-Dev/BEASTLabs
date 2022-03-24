@@ -25,21 +25,21 @@
 package beast.evolution.tree;
 
 
-import beast.core.BEASTInterface;
-import beast.core.Description;
-import beast.core.Input;
-import beast.core.StateNode;
-import beast.core.StateNodeInitialiser;
-import beast.core.parameter.RealParameter;
-import beast.core.util.Log;
-import beast.evolution.alignment.Alignment;
-import beast.evolution.alignment.distance.Distance;
-import beast.evolution.alignment.distance.JukesCantorDistance;
-import beast.evolution.tree.Node;
-import beast.evolution.tree.Tree;
-import beast.math.distributions.MRCAPrior;
+import beast.base.core.BEASTInterface;
+import beast.base.core.Description;
+import beast.base.core.Input;
+import beast.base.inference.StateNode;
+import beast.base.inference.StateNodeInitialiser;
+import beast.base.inference.parameter.RealParameter;
+import beast.base.core.Log;
+import beast.base.evolution.alignment.Alignment;
+import beast.base.evolution.distance.Distance;
+import beast.base.evolution.distance.JukesCantorDistance;
+import beast.base.evolution.tree.Node;
+import beast.base.evolution.tree.Tree;
+import beast.base.evolution.tree.MRCAPrior;
 import beast.math.distributions.MultiMonophyleticConstraint;
-import beast.math.distributions.ParametricDistribution;
+import beast.base.inference.distribution.ParametricDistribution;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;

@@ -1,10 +1,12 @@
 package beast.math.distributions;
 
-import beast.core.Description;
-import beast.core.Input;
-import beast.core.State;
+import beast.base.core.Description;
+import beast.base.core.Input;
+import beast.base.inference.State;
+import beast.base.inference.distribution.ParametricDistribution;
 import beast.evolution.operators.MonoCladesMapping;
-import beast.evolution.tree.Node;
+import beast.base.evolution.tree.MRCAPrior;
+import beast.base.evolution.tree.Node;
 import beast.evolution.tree.PrunedTree;
 
 import java.io.PrintStream;
@@ -140,7 +142,7 @@ public class MultiMRCAPriors extends MultiMonophyleticConstraint {
         final List<MRCAPrior> mrcaPriors = calibrationsInput.get();
         for( MRCAPrior prior : mrcaPriors ) {
             out.append("mrca(" + prior.getID()+")\t");
-            if( ! (prior.dist instanceof beast.math.distributions.Uniform) )  {
+            if( ! (prior.dist instanceof beast.base.inference.distribution.Uniform) )  {
                 out.append("logP(mrca(" + prior.getID()+"))\t");
             }
         }
@@ -152,7 +154,7 @@ public class MultiMRCAPriors extends MultiMonophyleticConstraint {
         for( MRCAPrior prior : mrcaPriors ) {
             prior.calculateLogP();
             out.append(prior.MRCATime+"\t");
-            if( ! (prior.dist instanceof beast.math.distributions.Uniform) )  {
+            if( ! (prior.dist instanceof beast.base.inference.distribution.Uniform) )  {
                out.append(prior.getCurrentLogP()+"\t");
             }
         }

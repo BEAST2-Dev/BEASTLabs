@@ -16,14 +16,14 @@ import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
 import javax.swing.tree.*;
 
-import beast.app.beauti.BeautiDoc;
-import beast.app.draw.ListInputEditor;
-import beast.core.BEASTInterface;
-import beast.core.Input;
-import beast.core.BEASTObject;
-import beast.evolution.alignment.Alignment;
-import beast.evolution.alignment.Taxon;
-import beast.evolution.alignment.TaxonSet;
+import beast.app.inputeditor.BeautiDoc;
+import beast.app.inputeditor.ListInputEditor;
+import beast.base.core.BEASTInterface;
+import beast.base.core.Input;
+import beast.base.core.BEASTObject;
+import beast.base.evolution.alignment.Alignment;
+import beast.base.evolution.alignment.Taxon;
+import beast.base.evolution.alignment.TaxonSet;
 
 
 

@@ -4,7 +4,13 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
-import beast.evolution.tree.TreeInterface;
+import beast.base.core.Description;
+import beast.base.core.Input;
+import beast.base.evolution.tree.TreeInterface;
+import beast.base.inference.Distribution;
+import beast.base.inference.Logger;
+import beast.base.inference.State;
+import beast.base.inference.StateNode;
 
 /**
  * 
@@ -12,7 +18,7 @@ import beast.evolution.tree.TreeInterface;
  *
  */
 @Description("optimise by grid search")
-public class GridSearch extends Runnable {
+public class GridSearch extends beast.base.inference.Runnable {
 
 	
 	 

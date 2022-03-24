@@ -1,11 +1,13 @@
 package beast.evolution.tree;
 
 
-import beast.core.Description;
-import beast.core.Input;
-import beast.evolution.alignment.Taxon;
-import beast.evolution.alignment.TaxonSet;
-import beast.math.distributions.MRCAPrior;
+import beast.base.core.Description;
+import beast.base.core.Input;
+import beast.base.evolution.alignment.Taxon;
+import beast.base.evolution.alignment.TaxonSet;
+import beast.base.evolution.tree.MRCAPrior;
+import beast.base.evolution.tree.Tree;
+import beast.base.evolution.tree.coalescent.RandomTree;
 import beast.math.distributions.MultiMonophyleticConstraint;
 
 import java.util.ArrayList;
@@ -13,7 +15,7 @@ import java.util.List;
 import java.util.Set;
 
 @Description("Random tree with constraints specified by one tree, just like multiple monophyly.")
-public class ConstrainedRandomTree extends RandomTree  {
+public class ConstrainedRandomTree extends RandomTree {
     // The tree in the XML should have a taxon set, since it is not fully initialized at this stage
     public final Input<MultiMonophyleticConstraint> allConstraints = new Input<>("constraints",
                 "all constraints as encoded by one unresolved tree.", Input.Validate.REQUIRED);

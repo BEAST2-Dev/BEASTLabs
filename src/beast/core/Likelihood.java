@@ -4,10 +4,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import beast.core.Description;
+import beast.base.core.BEASTInterface;
+import beast.base.core.Description;
 import beast.core.DataNode;
-import beast.core.Distribution;
-import beast.core.util.CompoundDistribution;
+import beast.base.inference.Distribution;
+import beast.base.inference.CompoundDistribution;
 
 
 

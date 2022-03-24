@@ -15,10 +15,10 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 
-import beast.core.Description;
-import beast.core.Input;
-import beast.math.statistic.DiscreteStatistics;
-import beast.util.Randomizer;
+import beast.base.core.Description;
+import beast.base.core.Input;
+import beast.base.util.DiscreteStatistics;
+import beast.base.util.Randomizer;
 
 
 

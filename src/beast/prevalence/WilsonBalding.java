@@ -49,10 +49,10 @@
 
 package beast.prevalence;
 
-import beast.core.Description;
-import beast.evolution.tree.Node;
-import beast.evolution.tree.Tree;
-import beast.util.Randomizer;
+import beast.base.core.Description;
+import beast.base.evolution.tree.Node;
+import beast.base.evolution.tree.Tree;
+import beast.base.util.Randomizer;
 
 /**
  * WILSON, I. J. and D. J. BALDING, 1998  Genealogical inference from microsatellite data.
@@ -76,7 +76,7 @@ public class WilsonBalding extends TreeOperator {
 	 * @return log of Hastings Ratio, or Double.NEGATIVE_INFINITY if proposal should not be accepted **/
     @Override
     public double proposal() {
-        Tree tree = m_tree.get(this);
+        Tree tree = m_tree.get();
 
         double oldMinAge, newMinAge, newRange, oldRange, newAge, fHastingsRatio;
 
@@ -153,7 +153,7 @@ public class WilsonBalding extends TreeOperator {
             replace(jP, j, iP);
         }
 
-        PrevalenceList list = m_list.get(this);
+        PrevalenceList list = m_list.get();
         try {
         	setHeight(iP, newAge, list);
         } catch (Exception e) {

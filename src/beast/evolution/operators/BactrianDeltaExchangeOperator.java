@@ -1,15 +1,17 @@
 package beast.evolution.operators;
 
+
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-import beast.core.Description;
-import beast.core.Input;
-import beast.core.parameter.IntegerParameter;
-import beast.core.parameter.RealParameter;
-import beast.core.util.Log;
-import beast.util.Randomizer;
+import beast.base.core.Description;
+import beast.base.core.Input;
+import beast.base.inference.operator.CompoundParameterHelper;
+import beast.base.inference.parameter.IntegerParameter;
+import beast.base.inference.parameter.RealParameter;
+import beast.base.core.Log;
+import beast.base.util.Randomizer;
 
 @Description("Delta exchange operator that proposes through a Bactrian distribution for real valued parameters")
 public class BactrianDeltaExchangeOperator extends KernelOperator {

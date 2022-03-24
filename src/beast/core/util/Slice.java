@@ -1,5 +1,11 @@
 package beast.core.util;
 
+import beast.base.core.BEASTObject;
+import beast.base.core.Description;
+import beast.base.core.Function;
+import beast.base.core.Input;
+import beast.base.core.Loggable;
+import beast.base.inference.CalculationNode;
 import beast.core.*;
 
 import java.io.PrintStream;

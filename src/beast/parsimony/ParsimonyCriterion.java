@@ -8,8 +8,8 @@
  */
 package beast.parsimony;
 
-import beast.evolution.tree.Node;
-import beast.evolution.tree.Tree;
+import beast.base.evolution.tree.Node;
+import beast.base.evolution.tree.Tree;
 
 /**
  * @author rambaut

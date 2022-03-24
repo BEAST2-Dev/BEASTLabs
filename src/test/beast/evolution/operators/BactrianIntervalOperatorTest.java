@@ -5,16 +5,16 @@ import java.util.List;
 import org.apache.commons.math3.stat.StatUtils;
 import org.junit.Test;
 
-import beast.core.MCMC;
-import beast.core.State;
-import beast.core.parameter.RealParameter;
-import beast.evolution.operators.BactrianIntervalOperator;
-import beast.evolution.operators.UniformOperator;
-import beast.math.distributions.Normal;
-import beast.math.distributions.ParametricDistribution;
-import beast.math.distributions.Prior;
-import beast.math.distributions.Uniform;
-import beast.util.Randomizer;
+import beast.base.inference.MCMC;
+import beast.base.inference.State;
+import beast.base.inference.parameter.RealParameter;
+import beast.base.inference.operator.kernel.BactrianIntervalOperator;
+import beast.base.inference.operator.UniformOperator;
+import beast.base.inference.distribution.Normal;
+import beast.base.inference.distribution.ParametricDistribution;
+import beast.base.inference.distribution.Prior;
+import beast.base.inference.distribution.Uniform;
+import beast.base.util.Randomizer;
 
 public class BactrianIntervalOperatorTest extends BactrianRandomWalkOperatorTest {
 

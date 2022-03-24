@@ -1,13 +1,13 @@
 package beast.math.distributions;
 
-import org.apache.commons.math.distribution.Distribution;
+import beast.base.inference.Distribution;
 import org.apache.commons.math.distribution.WeibullDistributionImpl;
 import org.apache.commons.math.special.Gamma;
 
-import beast.core.Description;
-import beast.core.Input;
-import beast.core.parameter.RealParameter;
-import beast.math.distributions.ParametricDistribution;
+import beast.base.core.Description;
+import beast.base.core.Input;
+import beast.base.inference.parameter.RealParameter;
+import beast.base.inference.distribution.ParametricDistribution;
 
 @Description("Weibull distribution. for x>0  f(x;shape,scale) = scale/shape(x/shape)^{scale-1}e^{-(x/shape)^scale}")
 public class WeibullDistribution extends ParametricDistribution {
@@ -47,7 +47,7 @@ public class WeibullDistribution extends ParametricDistribution {
     }
 
 	@Override
-	public Distribution getDistribution() {
+	public org.apache.commons.math.distribution.Distribution getDistribution() {
 		return dist;
 	}
 

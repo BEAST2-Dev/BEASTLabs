@@ -5,9 +5,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import beast.core.*;
-import beast.core.Input.Validate;
-import beast.core.util.Log;
-import beast.util.Randomizer;
+import beast.base.core.Description;
+import beast.base.core.Input;
+import beast.base.core.Input.Validate;
+import beast.base.core.Log;
+import beast.base.inference.Operator;
+import beast.base.inference.OperatorSchedule;
+import beast.base.inference.StateNode;
+import beast.base.util.Randomizer;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;

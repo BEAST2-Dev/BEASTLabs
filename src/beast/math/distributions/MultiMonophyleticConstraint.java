@@ -4,14 +4,14 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import beast.core.Description;
-import beast.core.Distribution;
-import beast.core.Input;
-import beast.core.State;
-import beast.core.util.Log;
-import beast.core.Input.Validate;
-import beast.evolution.tree.Node;
-import beast.evolution.tree.Tree;
+import beast.base.core.Description;
+import beast.base.inference.Distribution;
+import beast.base.core.Input;
+import beast.base.inference.State;
+import beast.base.core.Log;
+import beast.base.core.Input.Validate;
+import beast.base.evolution.tree.Node;
+import beast.base.evolution.tree.Tree;
 
 @Description("Prior over set of taxa, useful for defining multiple monophyletic constraints using a newick format")
 public class MultiMonophyleticConstraint extends Distribution {

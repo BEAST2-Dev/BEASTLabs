@@ -4,9 +4,10 @@ package beast.app.beauti;
 
 import java.io.File;
 
+import beast.app.inputeditor.BeautiDoc;
 import beast.app.util.XMLFile;
-import beast.core.BEASTInterface;
-import beast.core.Input;
+import beast.base.core.BEASTInterface;
+import beast.base.core.Input;
 
 public class XMLFileInputEditor extends FileInputEditor {
 	

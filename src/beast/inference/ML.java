@@ -2,10 +2,10 @@ package beast.inference;
 
 import java.io.IOException;
 
-import beast.core.Description;
-import beast.core.MCMC;
-import beast.core.Operator;
-import beast.util.Randomizer;
+import beast.base.core.Description;
+import beast.base.inference.MCMC;
+import beast.base.inference.Operator;
+import beast.base.util.Randomizer;
 
 @Description("Maximum likelihood throught simple random hill climbing")
 public class ML extends MCMC {

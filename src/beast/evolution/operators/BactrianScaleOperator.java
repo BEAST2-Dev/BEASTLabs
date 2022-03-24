@@ -2,13 +2,14 @@ package beast.evolution.operators;
 
 import java.text.DecimalFormat;
 
-import beast.core.Description;
-import beast.core.Input;
-import beast.core.parameter.BooleanParameter;
-import beast.core.parameter.RealParameter;
-import beast.evolution.tree.Node;
-import beast.evolution.tree.Tree;
-import beast.util.Randomizer;
+import beast.base.core.Description;
+import beast.base.core.Input;
+import beast.base.inference.parameter.BooleanParameter;
+import beast.base.inference.parameter.RealParameter;
+import beast.base.evolution.operator.ScaleOperator;
+import beast.base.evolution.tree.Node;
+import beast.base.evolution.tree.Tree;
+import beast.base.util.Randomizer;
 
 @Description("Scale operator that finds scale factor according to a Bactrian distribution (Yang & Rodriguez, 2013), "
 		+ "which is a mixture of two Gaussians: p(x) = 1/2*N(x;-m,1-m^2) + 1/2*N(x;+m,1-m^2) and more efficient than RealRandomWalkOperator")
@@ -41,9 +42,9 @@ public class BactrianScaleOperator extends ScaleOperator {
 
             double hastingsRatio;            
 
-            if (m_bIsTreeScaler) {
+            if (isTreeScaler()) {
 
-                final Tree tree = treeInput.get(this);
+                final Tree tree = treeInput.get();
                 if (rootOnlyInput.get()) {
                     final Node root = tree.getRoot();                    
                     final double scale = getScaler(root.getNr(), root.getHeight());
@@ -67,7 +68,7 @@ public class BactrianScaleOperator extends ScaleOperator {
             final int specifiedDoF = degreesOfFreedomInput.get();
             final boolean scaleAllIndependently = scaleAllIndependentlyInput.get();
 
-            final RealParameter param = parameterInput.get(this);
+            final RealParameter param = parameterInput.get();
 
             assert param.getLower() != null && param.getUpper() != null;
 

@@ -4,7 +4,7 @@ package test.beast.core;
 import org.junit.Test;
 
 import beast.core.FilteredValuable;
-import beast.core.parameter.RealParameter;
+import beast.base.inference.parameter.RealParameter;
 
 
 

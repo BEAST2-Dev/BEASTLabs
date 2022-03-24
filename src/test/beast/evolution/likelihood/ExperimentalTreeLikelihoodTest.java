@@ -8,15 +8,15 @@ import java.util.List;
 import junit.framework.TestCase;
 import org.junit.Test;
 
-import beast.evolution.alignment.Alignment;
-import beast.evolution.alignment.Sequence;
+import beast.base.evolution.alignment.Alignment;
+import beast.base.evolution.alignment.Sequence;
 import beast.evolution.likelihood.ExperimentalTreeLikelihood;
-import beast.evolution.sitemodel.SiteModel;
-import beast.evolution.substitutionmodel.Frequencies;
-import beast.evolution.substitutionmodel.GeneralSubstitutionModel;
-import beast.evolution.substitutionmodel.HKY;
-import beast.evolution.tree.Tree;
-import beast.util.TreeParser;
+import beast.base.evolution.sitemodel.SiteModel;
+import beast.base.evolution.substitutionmodel.Frequencies;
+import beast.base.evolution.substitutionmodel.GeneralSubstitutionModel;
+import beast.base.evolution.substitutionmodel.HKY;
+import beast.base.evolution.tree.Tree;
+import beast.base.evolution.tree.TreeParser;
 
 
 

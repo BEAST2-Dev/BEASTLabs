@@ -2,12 +2,12 @@ package beast.core;
 
 import java.io.PrintStream;
 
-import beast.core.CalculationNode;
-import beast.core.Description;
-import beast.core.Function;
-import beast.core.Input;
-import beast.core.Loggable;
-import beast.core.Input.Validate;
+import beast.base.inference.CalculationNode;
+import beast.base.core.Description;
+import beast.base.core.Function;
+import beast.base.core.Input;
+import beast.base.core.Loggable;
+import beast.base.core.Input.Validate;
 
 
 

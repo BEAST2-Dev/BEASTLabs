@@ -3,13 +3,20 @@ package beast.util;
 
 
 
-import beast.core.*;
-import beast.core.Input.Validate;
-import beast.core.parameter.RealParameter;
-import beast.core.util.Log;
-import beast.evolution.tree.Node;
-import beast.evolution.tree.Tree;
-import jdk.nashorn.api.scripting.ScriptObjectMirror;
+import beast.base.core.BEASTObject;
+import beast.base.core.Description;
+import beast.base.core.Function;
+import beast.base.core.Input;
+import beast.base.core.Input.Validate;
+import beast.base.inference.CalculationNode;
+import beast.base.inference.parameter.RealParameter;
+import beast.base.parser.JSONProducer;
+import beast.base.core.Log;
+import beast.base.core.Loggable;
+import beast.base.evolution.tree.Node;
+import beast.base.evolution.tree.Tree;
+//import jdk.nashorn.api.scripting.ScriptObjectMirror;
+import org.openjdk.nashorn.api.scripting.ScriptObjectMirror;
 
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
@@ -21,11 +28,11 @@ import java.util.Arrays;
 import java.util.List;
 
 @Description("Base class for Script-BEAST interoperation")
-public class Script extends CalculationNode implements Loggable, beast.core.Function {
+public class Script extends CalculationNode implements Loggable, beast.base.core.Function {
     public Input<String> scriptInput = new Input<String>("value", "Script script needed for the calculations. " +
     		"It assumes there is a function f defined, which returns a single number or array of numbers.");
     public Input<String> expressionInput = new Input<String>("expression", "expression representing the calculations", Validate.XOR, scriptInput);
-    public Input<List<beast.core.Function>> functionInput = new Input<List<beast.core.Function>>("x", "Parameters needed for the calculations", new ArrayList<beast.core.Function>());
+    public Input<List<beast.base.core.Function>> functionInput = new Input<List<beast.base.core.Function>>("x", "Parameters needed for the calculations", new ArrayList<beast.base.core.Function>());
     public Input<String> argNames = new Input<>("argnames", "names of arguments used in expression (space delimited)," +
             " order as given by XML");
 
@@ -104,10 +111,10 @@ public class Script extends CalculationNode implements Loggable, beast.core.Func
         //Bindings bind = engine.getBindings(ScriptContext.ENGINE_SCOPE);
         Object [] args = new Object[functionInput.get().size()];
         int k = 0;
-        for (beast.core.Function f : functionInput.get()) {
+        for (beast.base.core.Function f : functionInput.get()) {
             //String name = var.nameInput.get();
             Object _value = null;
-            //beast.core.Function f = var.functionInput.get();
+            //beast.base.core.Function f = var.functionInput.get();
             if (f instanceof Tree) {
                 Tree tree = (Tree) f;
                 JSONProducer p = new JSONProducer();
@@ -150,7 +157,7 @@ public class Script extends CalculationNode implements Loggable, beast.core.Func
 //        for (Var var : functionInput.get()) {
 //            buf.append(var.nameInput.get());
 //            buf.append("=");
-//            beast.core.Function f = var.functionInput.get();
+//            beast.base.core.Function f = var.functionInput.get();
 //            if (f instanceof Tree) {
 //                Tree tree = (Tree) f;
 //                JSONProducer p = new JSONProducer();
