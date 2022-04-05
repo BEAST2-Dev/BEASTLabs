@@ -2222,6 +2222,7 @@ public interface Transform {
 //        }
     }
 
+    @Description("Helper class for Transform$Collection")
     public class ParsedTransform {
         public Transform transform;
         public int start; // zero-indexed
