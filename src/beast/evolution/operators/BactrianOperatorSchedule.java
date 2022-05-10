@@ -9,6 +9,7 @@ import beast.core.Description;
 import beast.core.Input;
 import beast.core.Operator;
 import beast.core.OperatorSchedule;
+import beast.core.parameter.RealParameter;
 import beast.core.util.Log;
 
 @Description("Operator schedule that replaces operators with Bactrian operators")
@@ -29,7 +30,7 @@ public class BactrianOperatorSchedule extends OperatorSchedule {
 		} else if (p.getClass() == Uniform.class) {
 			Operator bp = new BactrianNodeOperator();
 			p = initialiseOperator(p, bp);
-		} else if (p.getClass() == UniformOperator.class) {
+		} else if (p.getClass() == UniformOperator.class && p.getInput("parameter").get() instanceof RealParameter) {
 			Operator bp = new BactrianIntervalOperator();
 			p = initialiseOperator(p, bp);
 		} else if (p.getClass() == DeltaExchangeOperator.class) {
