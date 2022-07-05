@@ -10,13 +10,13 @@ import org.junit.Test;
 
 import beast.base.evolution.alignment.Alignment;
 import beast.base.evolution.alignment.Sequence;
-import beast.evolution.likelihood.ExperimentalTreeLikelihood;
 import beast.base.evolution.sitemodel.SiteModel;
 import beast.base.evolution.substitutionmodel.Frequencies;
 import beast.base.evolution.substitutionmodel.GeneralSubstitutionModel;
 import beast.base.evolution.substitutionmodel.HKY;
 import beast.base.evolution.tree.Tree;
 import beast.base.evolution.tree.TreeParser;
+import beastlabs.evolution.likelihood.ExperimentalTreeLikelihood;
 
 
 

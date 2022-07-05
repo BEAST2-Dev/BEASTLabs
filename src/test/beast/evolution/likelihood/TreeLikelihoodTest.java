@@ -10,13 +10,13 @@ import org.junit.Test;
 import beast.base.evolution.alignment.Alignment;
 import beast.base.evolution.alignment.AscertainedAlignment;
 import beast.base.evolution.alignment.Sequence;
-import beast.evolution.likelihood.ExperimentalTreeLikelihood;
 import beast.base.evolution.sitemodel.SiteModel;
 import beast.base.evolution.substitutionmodel.Frequencies;
 import beast.base.evolution.substitutionmodel.GeneralSubstitutionModel;
 import beast.base.evolution.substitutionmodel.HKY;
 import beast.base.evolution.tree.Tree;
 import beast.base.evolution.tree.TreeParser;
+import beastlabs.evolution.likelihood.ExperimentalTreeLikelihood;
 
 /** This test mimics the testLikelihood.xml file from Beast 1, which compares Beast 1 results to PAUP results. 
  * So, it these tests succeed, then Beast II calculates the same for these simple models as Beast 1 and PAUP.

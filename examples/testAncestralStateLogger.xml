@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?><beast beautitemplate='BinaryCTMC' beautistatus='' namespace="beast.core:beast.evolution.alignment:beast.evolution.tree.coalescent:beast.core.util:beast.evolution.nuc:beast.evolution.operators:beast.evolution.sitemodel:beast.evolution.substitutionmodel:beast.evolution.likelihood" version="2.0">
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><beast beautitemplate='BinaryCTMC' beautistatus='' namespace="beast.pkgmgmt:beast.base.core:beast.base.inference:beast.base.evolution.alignment:beast.base.evolution.tree.coalescent:beast.pkgmgmt:beast.base.core:beast.base.inference.util:beast.evolution.nuc:beast.base.evolution.operator:beast.base.inference.operator:beast.base.evolution.sitemodel:beast.base.evolution.substitutionmodel:beast.base.evolution.likelihood" version="2.0">
 
 
     <data
@@ -39,15 +39,15 @@ name="alignment">
 
 
     
-<map name="subtemplate" >beast.app.beauti.BeautiSubTemplate</map>
-<map name="prior" >beast.math.distributions.Prior</map>
-<map name="connect" >beast.app.beauti.BeautiConnector</map>
+<map name="subtemplate" >beast.app.inputeditor.BeautiSubTemplate</map>
+<map name="prior" >beast.base.inference.distribution.Prior</map>
+<map name="connect" >beast.app.inputeditor.BeautiConnector</map>
 
 
 <run id="mcmc" spec="MCMC" chainLength="10000000">
     <state id="state" storeEvery="5000">
         <tree id="Tree.t:ringe" name="stateNode">
-            <trait id="dateTrait.t:ringe" spec="beast.evolution.tree.TraitSet" traitname="date">
+            <trait id="dateTrait.t:ringe" spec="beast.base.evolution.tree.TraitSet" traitname="date">
                 oldnorse=775,
 avestan=2500,
 gothic=1650,
@@ -85,36 +85,36 @@ oscan=2200                <taxa id="TaxonSet.ringe" spec="TaxonSet">
         <stateNode id="bGroupSizes.t:ringe" spec="parameter.IntegerParameter" dimension="5">1</stateNode>
     </state>
 
-    <init id="RandomTree.t:ringe" spec="beast.evolution.tree.RandomTree" estimate="false" initial="@Tree.t:ringe" taxa="@ringe">
+    <init id="RandomTree.t:ringe" spec="beast.base.evolution.tree.coalescent.RandomTree" estimate="false" initial="@Tree.t:ringe" taxa="@ringe">
         <populationModel id="ConstantPopulation0.t:ringe" spec="ConstantPopulation">
             <parameter id="randomPopSize.t:ringe" name="popSize">1.0</parameter>
         </populationModel>
     </init>
 
-    <distribution id="posterior" spec="util.CompoundDistribution">
-        <distribution id="prior" spec="util.CompoundDistribution">
+    <distribution id="posterior" spec="beast.base.inference.CompoundDistribution">
+        <distribution id="prior" spec="beast.base.inference.CompoundDistribution">
             <distribution id="BayesianSkyline.t:ringe" spec="BayesianSkyline" groupSizes="@bGroupSizes.t:ringe" popSizes="@bPopSizes.t:ringe">
-                <treeIntervals id="BSPTreeIntervals.t:ringe" spec="TreeIntervals" tree="@Tree.t:ringe"/>
+                <treeIntervals id="BSPTreeIntervals.t:ringe" spec="beast.base.evolution.tree.TreeIntervals" tree="@Tree.t:ringe"/>
             </distribution>
-            <distribution id="MarkovChainedPopSizes.t:ringe" spec="beast.math.distributions.MarkovChainDistribution" jeffreys="true" parameter="@bPopSizes.t:ringe"/>
+            <distribution id="MarkovChainedPopSizes.t:ringe" spec="beast.base.inference.distribution.MarkovChainDistribution" jeffreys="true" parameter="@bPopSizes.t:ringe"/>
             <prior id="MeanRatePrior.c:ringe" name="distribution" x="@ucldMean.c:ringe">
-                <distr id="Uniform.0" spec="beast.math.distributions.Uniform" upper="Infinity"/>
+                <distr id="Uniform.0" spec="beast.base.inference.distribution.Uniform" upper="Infinity"/>
             </prior>
             <prior id="ucldStdevPrior.c:ringe" name="distribution" x="@ucldStdev.c:ringe">
-                <distr id="Gamma.0" spec="beast.math.distributions.Gamma">
+                <distr id="Gamma.0" spec="beast.base.inference.distribution.Gamma">
                     <parameter id="RealParameter.0" estimate="false" name="alpha">0.5396</parameter>
                     <parameter id="RealParameter.01" estimate="false" name="beta">0.3819</parameter>
                 </distr>
             </prior>
         </distribution>
-        <distribution id="likelihood" spec="util.CompoundDistribution">
+        <distribution id="likelihood" spec="beast.base.inference.CompoundDistribution">
             <distribution id="treeLikelihood.ringe" spec="TreeLikelihood" tree="@Tree.t:ringe">
                 <data
 id="bin.ringe"
 spec="FilteredAlignment"
 data="@ringe"
 filter="::">
-                    <userDataType id="Binary.0" spec="beast.evolution.datatype.Binary"/>
+                    <userDataType id="Binary.0" spec="beast.base.evolution.datatype.Binary"/>
                 </data>
                 <siteModel id="SiteModel.s:ringe" spec="SiteModel" gammaCategoryCount="1">
                     <parameter id="mutationRate.s:ringe" estimate="false" name="mutationRate">1.0</parameter>
@@ -125,8 +125,8 @@ filter="::">
                         <frequencies id="estimatedFreqs.s:ringe" spec="Frequencies" frequencies="@freqParameter.s:ringe"/>
                     </substModel>
                 </siteModel>
-                <branchRateModel id="RelaxedClock.c:ringe" spec="beast.evolution.branchratemodel.UCRelaxedClockModel" clock.rate="@ucldMean.c:ringe" rateCategories="@rateCategories.c:ringe" tree="@Tree.t:ringe">
-                    <distr id="LogNormalDistributionModel.c:ringe" spec="beast.math.distributions.LogNormalDistributionModel" S="@ucldStdev.c:ringe" meanInRealSpace="true">
+                <branchRateModel id="RelaxedClock.c:ringe" spec="beast.base.evolution.branchratemodel.UCRelaxedClockModel" clock.rate="@ucldMean.c:ringe" rateCategories="@rateCategories.c:ringe" tree="@Tree.t:ringe">
+                    <distr id="LogNormalDistributionModel.c:ringe" spec="beast.base.inference.distribution.LogNormalDistributionModel" S="@ucldStdev.c:ringe" meanInRealSpace="true">
                         <parameter id="RealParameter.02" estimate="false" lower="0.0" name="M" upper="1.0">1.0</parameter>
                     </distr>
                 </branchRateModel>
@@ -194,18 +194,18 @@ filter="::">
         <log idref="likelihood"/>
         <log idref="prior"/>
         <log idref="treeLikelihood.ringe"/>
-        <log id="TreeHeight.t:ringe" spec="beast.evolution.tree.TreeHeightLogger" tree="@Tree.t:ringe"/>
+        <log id="TreeHeight.t:ringe" spec="beast.base.evolution.tree.TreeHeightLogger" tree="@Tree.t:ringe"/>
         <log idref="freqParameter.s:ringe"/>
         <log idref="ucldMean.c:ringe"/>
         <log idref="ucldStdev.c:ringe"/>
-        <log id="rate.c:ringe" spec="beast.evolution.branchratemodel.RateStatistic" branchratemodel="@RelaxedClock.c:ringe" tree="@Tree.t:ringe"/>
+        <log id="rate.c:ringe" spec="beast.base.evolution.RateStatistic" branchratemodel="@RelaxedClock.c:ringe" tree="@Tree.t:ringe"/>
         <log idref="BayesianSkyline.t:ringe"/>
         <log idref="bPopSizes.t:ringe"/>
         <log idref="bGroupSizes.t:ringe"/>
     </logger>
 
     <logger id="ancestral state" fileName="ringe_proto_germanic.log" logEvery="1000">
-        <log id="AncestralStateLogger" spec="AncestralStateLogger" data="@bin.ringe" branchRateModel="@RelaxedClock.c:ringe" tree="@Tree.t:ringe" siteModel="@SiteModel.s:ringe">
+        <log id="AncestralStateLogger" spec="beastlabs.evolution.likelihood.AncestralStateLogger" data="@bin.ringe" branchRateModel="@RelaxedClock.c:ringe" tree="@Tree.t:ringe" siteModel="@SiteModel.s:ringe">
             <taxonset spec='TaxonSet' id="ProtoGermanic">
                 <taxon id="oldnorse" spec="Taxon"/>
                 <taxon id="gothic" spec="Taxon"/>
@@ -217,7 +217,7 @@ filter="::">
     </logger>
 
     <logger id="ancestral state2" fileName="ringe_latin.log" logEvery="1000">
-        <log id="AncestralStateLogger2" spec="AncestralStateLogger" logParent="true" data="@bin.ringe" branchRateModel="@RelaxedClock.c:ringe" tree="@Tree.t:ringe" siteModel="@SiteModel.s:ringe">
+        <log id="AncestralStateLogger2" spec="beastlabs.evolution.likelihood.AncestralStateLogger" logParent="true" data="@bin.ringe" branchRateModel="@RelaxedClock.c:ringe" tree="@Tree.t:ringe" siteModel="@SiteModel.s:ringe">
 	    <taxonset id="Latin.clade" spec="TaxonSet">
 		<taxon id="latin" spec="Taxon"/>
 	    </taxonset>
@@ -233,7 +233,7 @@ filter="::">
     </logger>
 
     <logger id="treelog.t:ringe" fileName="ringe.trees" logEvery="1000" mode="tree">
-        <log id="TreeWithMetaDataLogger.t:ringe" spec="beast.evolution.tree.TreeWithMetaDataLogger" branchratemodel="@RelaxedClock.c:ringe" tree="@Tree.t:ringe"/>
+        <log id="TreeWithMetaDataLogger.t:ringe" spec="beast.base.evolution.TreeWithMetaDataLogger" branchratemodel="@RelaxedClock.c:ringe" tree="@Tree.t:ringe"/>
     </logger>
 
 </run>

@@ -1,14 +1,14 @@
 <beast version='2.0'
-       namespace='beast.app.beauti:beast.core:beast.evolution.branchratemodel:beast.evolution.speciation:beast.evolution.tree.coalescent:beast.core.util:beast.evolution.nuc:beast.evolution.operators:beast.evolution.sitemodel:beast.evolution.substitutionmodel:beast.evolution.likelihood:beast.evolution:beast.math.distributions'>
+       namespace='beast.app.beauti:beast.pkgmgmt:beast.base.core:beast.base.inference:beast.base.evolution.branchratemodel:beast.base.evolution.speciation:beast.base.evolution.tree.coalescent:beast.base.util:beast.base.math:beast.evolution.nuc:beast.base.evolution.operator:beast.base.inference.operator:beast.base.evolution.sitemodel:beast.base.evolution.substitutionmodel:beast.base.evolution.likelihood:beast.evolution:beast.base.inference.distribution'>
 
 
     <mergewith point='parametricDistributions'>
         <!-- Parametric distributions, all without hyperpriors -->
 
         <!-- Weibull -->
-        <subtemplate id='Weibull' class='beast.math.distributions.WeibullDistribution' mainid='[top]'>
+        <subtemplate id='Weibull' class='beastlabs.math.distribution.WeibullDistribution' mainid='[top]'>
             <![CDATA[
-        <distr offset="0.0" spec="beast.math.distributions.WeibullDistribution">
+        <distr offset="0.0" spec="beastlabs.math.distribution.WeibullDistribution">
             <parameter name='shape' value="1" estimate='false'/>
             <parameter name='scale' value="1" estimate='false'/>
         </distr>

@@ -5,7 +5,7 @@ import org.junit.Test;
 import beast.base.evolution.alignment.Alignment;
 import beast.base.evolution.alignment.TaxonSet;
 import beast.base.evolution.tree.Tree;
-import beast.math.distributions.MultiMonophyleticConstraint;
+import beastlabs.math.distributions.MultiMonophyleticConstraint;
 import test.beast.BEASTTestCase;
 import junit.framework.TestCase;
 

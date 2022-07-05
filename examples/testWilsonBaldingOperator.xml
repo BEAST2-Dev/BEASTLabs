@@ -1,4 +1,4 @@
-<beast version='2.0' namespace='beast.core:beast.core.parameter:beast.evolution.tree:beast.evolution.alignment:beast.evolution.tree.coalescent:beast.evolution.operators'>
+<beast version='2.0' namespace='beast.pkgmgmt:beast.base.core:beast.base.inference:beast.pkgmgmt:beast.base.core:beast.base.inference.parameter:beast.base.evolution.tree:beast.base.evolution.alignment:beast.base.evolution.tree.coalescent:beast.base.evolution.operator:beast.base.inference.operator'>
 
        <!-- Uses TreeReport to display tree topology distribution generated
 	    by WilsonBalding under the coalescent. -->
@@ -25,7 +25,7 @@
 		</state>
 
 		<distribution spec='Coalescent' id='coalescent'>
-			<treeIntervals spec='TreeIntervals' id='TreeIntervals'>
+			<treeIntervals spec='TreeIntervals' id='beast.base.evolution.tree.TreeIntervals'>
 				<tree idref='tree'/>
 			</treeIntervals>
 			<populationModel idref='constantPop'/>
@@ -35,7 +35,7 @@
 			<tree idref='tree'/>
 		</operator>
 
-		<logger spec='TreeReport' logEvery='100' burninPercentage='10.0'>
+		<logger spec='test.beast.evolution.operator.TreeReport' logEvery='100' burninPercentage='10.0'>
 			<log idref='tree'/>
 		</logger>
 	    </run>

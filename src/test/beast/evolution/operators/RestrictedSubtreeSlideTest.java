@@ -3,11 +3,11 @@ package test.beast.evolution.operators;
 import org.junit.Test;
 
 import beast.base.inference.State;
+import beastlabs.evolution.operators.RestrictedSubtreeSlide;
 import beast.base.evolution.alignment.Alignment;
 import beast.base.evolution.alignment.Sequence;
 import beast.base.evolution.alignment.Taxon;
 import beast.base.evolution.alignment.TaxonSet;
-import beast.evolution.operators.RestrictedSubtreeSlide;
 import beast.base.evolution.tree.Node;
 import beast.base.evolution.tree.TreeParser;
 import junit.framework.TestCase;

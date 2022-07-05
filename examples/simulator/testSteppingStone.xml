@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?><beast namespace="beast.core:beast.evolution.tree.coalescent:beast.core.util:beast.evolution.nuc:beast.evolution.operators:beast.evolution.sitemodel:beast.evolution.substitutionmodel:beast.evolution.likelihood" version="2.0">
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><beast namespace="beast.pkgmgmt:beast.base.core:beast.base.inference:beast.base.evolution.tree.coalescent:beast.pkgmgmt:beast.base.core:beast.base.inference.util:beast.evolution.nuc:beast.base.evolution.operator:beast.base.inference.operator:beast.base.evolution.sitemodel:beast.base.evolution.substitutionmodel:beast.base.evolution.likelihood" version="2.0">
 
 
     
@@ -37,15 +37,15 @@
 <!-- DO NOT EDIT the following machine generated text, they are used in Beauti 
 
 <input id='BeautiConfig0' 
-    spec='beast.app.beauti.BeautiConfig' 
+    spec='beast.app.inputeditor.BeautiConfig' 
     inlinePlugins='beast.app.simulator.SteppingStone,beast.app.simulator.SteppingStone.island,beast.app.simulator.Island.neighbor' 
     suppressPlugins = 'beast.app.simulator.SteppingStone.island,beast.app.simulator.Neighbor.island,beast.app.simulator.Neighbor.rate'
     inputLabelMap='beast.app.simulator.Island.neighbor=Neighbors,beast.app.simulator.Island.posx=X-position,beast.app.simulator.Island.posy=Y-position'
     disableMenus='Mode'
     isExpert='true'
     >
-    <input id='BeautiPanelConfig1' labelWidth='90' spec='beast.app.beauti.BeautiPanelConfig' name='panel' panelname='Islands' tiptext='List of islands' path='island' hasPartitions='false' addButtons='true' isVisible='true' icon='8.png' forceExpansion='TRUE'/>
-    <input id='BeautiPanelConfig0' labelWidth='200' spec='beast.app.beauti.BeautiPanelConfig' name='panel' panelname='Stepping Stone' tiptext='Stepping Stone simulator configuration' path='' hasPartitions='false' addButtons='true' isVisible='true' icon='9.png' forceExpansion='TRUE'/>
+    <input id='BeautiPanelConfig1' labelWidth='90' spec='beast.app.inputeditor.BeautiPanelConfig' name='panel' panelname='Islands' tiptext='List of islands' path='island' hasPartitions='false' addButtons='true' isVisible='true' icon='8.png' forceExpansion='TRUE'/>
+    <input id='BeautiPanelConfig0' labelWidth='200' spec='beast.app.inputeditor.BeautiPanelConfig' name='panel' panelname='Stepping Stone' tiptext='Stepping Stone simulator configuration' path='' hasPartitions='false' addButtons='true' isVisible='true' icon='9.png' forceExpansion='TRUE'/>
 </input>
 
 

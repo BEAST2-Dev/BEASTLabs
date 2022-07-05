@@ -7,7 +7,7 @@ import org.junit.Test;
 import beast.base.evolution.alignment.Alignment;
 import beast.base.evolution.tree.Node;
 import beast.base.evolution.tree.Tree;
-import beast.parsimony.FitchParsimony;
+import beastlabs.parsimony.FitchParsimony;
 import junit.framework.TestCase;
 import test.beast.BEASTTestCase;
 

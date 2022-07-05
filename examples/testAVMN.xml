@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?><beast beautitemplate='Standard' beautistatus='' namespace="beast.core:beast.evolution.alignment:beast.evolution.tree.coalescent:beast.core.util:beast.evolution.nuc:beast.evolution.operators:beast.evolution.sitemodel:beast.evolution.substitutionmodel:beast.evolution.likelihood" required="" version="2.6">
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><beast beautitemplate='Standard' beautistatus='' namespace="beast.pkgmgmt:beast.base.core:beast.base.inference:beast.base.evolution.alignment:beast.base.evolution.tree.coalescent:beast.pkgmgmt:beast.base.core:beast.base.inference.util:beast.evolution.nuc:beast.base.evolution.operator:beast.base.inference.operator:beast.base.evolution.sitemodel:beast.base.evolution.substitutionmodel:beast.base.evolution.likelihood" required="" version="2.6">
     <data
 id="Flu"
 spec="Alignment"
@@ -29,22 +29,22 @@ name="alignment">
     
 
 
-    <map name="Uniform" >beast.math.distributions.Uniform</map>
-    <map name="Exponential" >beast.math.distributions.Exponential</map>
-    <map name="LogNormal" >beast.math.distributions.LogNormalDistributionModel</map>
-    <map name="Normal" >beast.math.distributions.Normal</map>
+    <map name="Uniform" >beast.base.inference.distribution.Uniform</map>
+    <map name="Exponential" >beast.base.inference.distribution.Exponential</map>
+    <map name="LogNormal" >beast.base.inference.distribution.LogNormalDistributionModel</map>
+    <map name="Normal" >beast.base.inference.distribution.Normal</map>
     <map name="Beta" >beast.math.distributions.Beta</map>
-    <map name="Gamma" >beast.math.distributions.Gamma</map>
-    <map name="LaplaceDistribution" >beast.math.distributions.LaplaceDistribution</map>
-    <map name="prior" >beast.math.distributions.Prior</map>
-    <map name="InverseGamma" >beast.math.distributions.InverseGamma</map>
-    <map name="OneOnX" >beast.math.distributions.OneOnX</map>
+    <map name="Gamma" >beast.base.inference.distribution.Gamma</map>
+    <map name="LaplaceDistribution" >beast.base.inference.distribution.LaplaceDistribution</map>
+    <map name="prior" >beast.base.inference.distribution.Prior</map>
+    <map name="InverseGamma" >beast.base.inference.distribution.InverseGamma</map>
+    <map name="OneOnX" >beast.base.inference.distribution.OneOnX</map>
     
     
     <run id="mcmc" spec="MCMC" chainLength="10000000">
         <state id="state" spec="State" storeEvery="5000">
-            <tree id="Tree.t:Flu" spec="beast.evolution.tree.Tree" name="stateNode">
-                <trait id="dateTrait.t:Flu" spec="beast.evolution.tree.TraitSet" traitname="date" value="TREESPARROW_HENAN_1_2004=2004,HUMAN_VIETNAM_CL105_2005=2005,TREESPARROW_HENAN_4_2004=2004,CHICKEN_HEBEI_326_2005=2005,CHICKEN_HONGKONG_915_1997=1997,VIETNAM_3062_2004=2004,GOOSE_HONGKONG_W355_1997=1997,DUCK_HONGKONG_Y283_1997=1997,DUCK_VIETNAM_376_2005=2005,MALLARD_VIETNAM_16_2003=2003,CHICKEN_THAILAND_KANCHANABURI_CK_160_2005=2005,DUCK_GUANGZHOU_20_2005=2005,CK_HK_WF157_2003=2003,SWINE_ANHUI_2004=2004,DUCK_VIETNAM_272_2005=2005,HONGKONG_1997_1998=1998,GOOSE_SHANTOU_2216_2005=2005,TREESPARROW_HENAN_3_2004=2004,PEREGRINEFALCON_HK_D0028_2004=2004,TREESPARROW_HENAN_2_2004=2004,HONGKONG_538_1997=1997">
+            <tree id="Tree.t:Flu" spec="beast.base.evolution.tree.Tree" name="stateNode">
+                <trait id="dateTrait.t:Flu" spec="beast.base.evolution.tree.TraitSet" traitname="date" value="TREESPARROW_HENAN_1_2004=2004,HUMAN_VIETNAM_CL105_2005=2005,TREESPARROW_HENAN_4_2004=2004,CHICKEN_HEBEI_326_2005=2005,CHICKEN_HONGKONG_915_1997=1997,VIETNAM_3062_2004=2004,GOOSE_HONGKONG_W355_1997=1997,DUCK_HONGKONG_Y283_1997=1997,DUCK_VIETNAM_376_2005=2005,MALLARD_VIETNAM_16_2003=2003,CHICKEN_THAILAND_KANCHANABURI_CK_160_2005=2005,DUCK_GUANGZHOU_20_2005=2005,CK_HK_WF157_2003=2003,SWINE_ANHUI_2004=2004,DUCK_VIETNAM_272_2005=2005,HONGKONG_1997_1998=1998,GOOSE_SHANTOU_2216_2005=2005,TREESPARROW_HENAN_3_2004=2004,PEREGRINEFALCON_HK_D0028_2004=2004,TREESPARROW_HENAN_2_2004=2004,HONGKONG_538_1997=1997">
                     <taxa id="TaxonSet.Flu" spec="TaxonSet">
                         <alignment idref="Flu"/>
                     </taxa>
@@ -58,17 +58,17 @@ name="alignment">
             <parameter id="freqParameter.s:Flu" spec="parameter.RealParameter" dimension="4" lower="0.0" name="stateNode" upper="1.0">0.25</parameter>
         </state>
         
-        <init id="RandomTree.t:Flu" spec="beast.evolution.tree.RandomTree" estimate="false" initial="@Tree.t:Flu" taxa="@Flu">
+        <init id="RandomTree.t:Flu" spec="beast.base.evolution.tree.coalescent.RandomTree" estimate="false" initial="@Tree.t:Flu" taxa="@Flu">
             <populationModel id="ConstantPopulation0.t:Flu" spec="ConstantPopulation">
                 <parameter id="randomPopSize.t:Flu" spec="parameter.RealParameter" name="popSize">1.0</parameter>
             </populationModel>
         </init>
         
-        <distribution id="posterior" spec="util.CompoundDistribution">
-            <distribution id="prior" spec="util.CompoundDistribution">
+        <distribution id="posterior" spec="beast.base.inference.CompoundDistribution">
+            <distribution id="prior" spec="beast.base.inference.CompoundDistribution">
                 <distribution id="CoalescentExponential.t:Flu" spec="Coalescent">
                     <populationModel id="ExponentialGrowth.t:Flu" spec="ExponentialGrowth" growthRate="@growthRate.t:Flu" popSize="@ePopSize.t:Flu"/>
-                    <treeIntervals id="TreeIntervals.t:Flu" spec="TreeIntervals" tree="@Tree.t:Flu"/>
+                    <treeIntervals id="TreeIntervals.t:Flu" spec="beast.base.evolution.tree.TreeIntervals" tree="@Tree.t:Flu"/>
                 </distribution>
                 <prior id="ClockPrior.c:Flu" name="distribution" x="@clockRate.c:Flu">
                     <Uniform id="Uniform.0" name="distr" upper="Infinity"/>
@@ -92,7 +92,7 @@ name="alignment">
                     </LogNormal>
                 </prior>
             </distribution>
-            <distribution id="likelihood" spec="util.CompoundDistribution" useThreads="true">
+            <distribution id="likelihood" spec="beast.base.inference.CompoundDistribution" useThreads="true">
                 <distribution id="treeLikelihood.Flu" spec="ThreadedTreeLikelihood" data="@Flu" tree="@Tree.t:Flu">
                     <siteModel id="SiteModel.s:Flu" spec="SiteModel">
                         <parameter id="mutationRate.s:Flu" spec="parameter.RealParameter" estimate="false" name="mutationRate">1.0</parameter>
@@ -102,13 +102,13 @@ name="alignment">
                             <frequencies id="estimatedFreqs.s:Flu" spec="Frequencies" frequencies="@freqParameter.s:Flu"/>
                         </substModel>
                     </siteModel>
-                    <branchRateModel id="StrictClock.c:Flu" spec="beast.evolution.branchratemodel.StrictClockModel" clock.rate="@clockRate.c:Flu"/>
+                    <branchRateModel id="StrictClock.c:Flu" spec="beast.base.evolution.branchratemodel.StrictClockModel" clock.rate="@clockRate.c:Flu"/>
                 </distribution>
             </distribution>
         </distribution>
         
         
-        <operator id="AdaptableVarianceMultivariateNormalOperator2" spec="beast.evolution.operators.AdaptableVarianceMultivariateNormalOperator" 
+        <operator id="AdaptableVarianceMultivariateNormalOperator2" spec="beast.base.evolution.operator.kernel.AdaptableVarianceMultivariateNormalOperator" 
      		weight="2"
     		coefficient="1.0"
     		scaleFactor="1"
@@ -116,16 +116,16 @@ name="alignment">
     		initial="800"
     		burnin="400"
     		every="1">
-    	    <transformations spec="beast.util.Transform$LogConstrainedSumTransform" sum="1.0">
+    	    <transformations spec="beast.base.inference.operator.kernel.Transform$LogConstrainedSumTransform" sum="1.0">
     	    	<f idref="freqParameter.s:Flu"/>
     	    </transformations>
-    	    <transformations spec="beast.util.Transform$LogTransform">
+    	    <transformations spec="beast.base.inference.operator.kernel.Transform$LogTransform">
 		        <f idref="kappa.s:Flu"/>
 	            <f idref="clockRate.c:Flu"/>
     	        <f idref="Tree.t:Flu"/>
     	        <f idref="ePopSize.t:Flu"/>
 		    </transformations>
-    	    <transformations spec="beast.util.Transform$NoTransform">
+    	    <transformations spec="beast.base.inference.operator.kernel.Transform$NoTransform">
 		    	<f idref="growthRate.t:Flu"/>
 		    </transformations>
 	    </operator>
@@ -157,7 +157,7 @@ name="alignment">
             <log idref="likelihood"/>
             <log idref="prior"/>
             <log idref="treeLikelihood.Flu"/>
-            <log id="TreeHeight.t:Flu" spec="beast.evolution.tree.TreeHeightLogger" tree="@Tree.t:Flu"/>
+            <log id="TreeHeight.t:Flu" spec="beast.base.evolution.tree.TreeHeightLogger" tree="@Tree.t:Flu"/>
             <log idref="clockRate.c:Flu"/>
             <log idref="kappa.s:Flu"/>
             <log idref="CoalescentExponential.t:Flu"/>
@@ -173,7 +173,7 @@ name="alignment">
         </logger>
         
         <logger id="treelog.t:Flu" spec="Logger" fileName="$(filebase).trees" logEvery="10000" mode="tree">
-            <log id="TreeWithMetaDataLogger.t:Flu" spec="beast.evolution.tree.TreeWithMetaDataLogger" tree="@Tree.t:Flu"/>
+            <log id="TreeWithMetaDataLogger.t:Flu" spec="beast.base.evolution.TreeWithMetaDataLogger" tree="@Tree.t:Flu"/>
         </logger>
         <operatorschedule id="OperatorSchedule" spec="OperatorSchedule"/>
     </run>

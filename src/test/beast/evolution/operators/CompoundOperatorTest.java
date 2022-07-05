@@ -13,7 +13,7 @@ import beast.base.inference.OperatorSchedule;
 import beast.base.inference.State;
 import beast.base.inference.StateNode;
 import beast.base.inference.parameter.RealParameter;
-import beast.evolution.operators.CompoundOperator;
+import beastlabs.evolution.operators.CompoundOperator;
 import beast.base.inference.operator.DeltaExchangeOperator;
 import beast.base.evolution.operator.ScaleOperator;
 import junit.framework.TestCase;

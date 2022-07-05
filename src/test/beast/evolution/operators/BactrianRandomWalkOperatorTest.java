@@ -1,6 +1,5 @@
 package test.beast.evolution.operators;
 
-import beast.core.*;
 import beast.base.inference.parameter.RealParameter;
 import beast.base.inference.util.ESS;
 import beast.base.inference.operator.kernel.BactrianRandomWalkOperator;
@@ -17,6 +16,7 @@ import beast.base.inference.distribution.Normal;
 import beast.base.inference.distribution.ParametricDistribution;
 import beast.base.inference.distribution.Prior;
 import beast.base.util.Randomizer;
+import beastlabs.core.*;
 import junit.framework.TestCase;
 
 import org.apache.commons.math3.stat.StatUtils;

@@ -3,11 +3,8 @@ package test.beast.core;
 
 import org.junit.Test;
 
-import beast.core.FilteredValuable;
 import beast.base.inference.parameter.RealParameter;
-
-
-
+import beastlabs.core.FilteredValuable;
 import junit.framework.TestCase;
 
 public class FilteredValuableTest  extends TestCase {

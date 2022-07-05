@@ -1,5 +1,5 @@
 <beast version='2.0'
-       namespace='beast.core:beast.evolution.tree.coalescent:beast.core.util:beast.evolution.nuc:beast.evolution.operators:beast.evolution.sitemodel:beast.evolution.substitutionmodel:beast.evolution.likelihood'>
+       namespace='beast.pkgmgmt:beast.base.core:beast.base.inference:beast.base.evolution.tree.coalescent:beast.pkgmgmt:beast.base.core:beast.base.inference.util:beast.evolution.nuc:beast.base.evolution.operator:beast.base.inference.operator:beast.base.evolution.sitemodel:beast.base.evolution.substitutionmodel:beast.base.evolution.likelihood'>
 
 
     <!-- The sequence alignment                                                  -->
@@ -47,14 +47,14 @@
 
     <parameter id="hky.kappa" value="1.0" lower="0.0"/>
 
-    <tree spec='beast.util.ClusterTree' id='tree' clusterType='upgma'>
+    <tree spec='beast.base.evolution.tree.ClusterTree' id='tree' clusterType='upgma'>
         <taxa idref='alignment'/>
-		<taxonset spec='beast.evolution.alignment.TaxonSet' alignment='@alignment'/>
+		<taxonset spec='beast.base.evolution.alignment.TaxonSet' alignment='@alignment'/>
     </tree>
 
 
 
-    <run spec="beast.inference.MultiMCMC" id="mcmc" chainLength="1000000">
+    <run spec="beastlabs.inference.MultiMCMC" id="mcmc" chainLength="1000000">
         <state storeEvery='100000'>
             <stateNode idref="hky.kappa"/>
             <stateNode idref="tree"/>
@@ -88,7 +88,7 @@
  	        <model idref='likelihood'/>
             <log idref="likelihood"/>
             <log idref="hky.kappa"/>
-            <log spec='beast.evolution.tree.TreeHeightLogger'>
+            <log spec='beast.base.evolution.tree.TreeHeightLogger'>
                 <tree idref='tree'/>
             </log>
         </logger>
@@ -99,7 +99,7 @@
  	        <model idref='likelihood'/>
             <log idref="likelihood"/>
             <log idref="hky.kappa"/>
-            <log spec='beast.evolution.tree.TreeHeightLogger'>
+            <log spec='beast.base.evolution.tree.TreeHeightLogger'>
                 <tree idref='tree'/>
             </log>
         </logger>

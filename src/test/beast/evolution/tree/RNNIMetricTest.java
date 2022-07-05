@@ -13,9 +13,9 @@ import beast.app.treeannotator.TreeAnnotator.MemoryFriendlyTreeSet;
 import beast.base.evolution.alignment.Taxon;
 import beast.base.evolution.alignment.TaxonSet;
 import beast.base.evolution.tree.Node;
-import beast.evolution.tree.RNNIMetric;
 import beast.base.evolution.tree.TreeInterface;
 import beast.base.util.Randomizer;
+import beastlabs.evolution.tree.RNNIMetric;
 import beast.base.evolution.tree.TreeParser;
 import junit.framework.TestCase;
 

@@ -1,5 +1,5 @@
 <beast version='2.0'
-       namespace='beast.core:beast.evolution.tree.coalescent:beast.core.util:beast.evolution.nuc:beast.evolution.operators:beast.evolution.sitemodel:beast.evolution.substitutionmodel:beast.evolution.likelihood'>
+       namespace='beast.pkgmgmt:beast.base.core:beast.base.inference:beast.base.evolution.tree.coalescent:beast.pkgmgmt:beast.base.core:beast.base.inference.util:beast.evolution.nuc:beast.base.evolution.operator:beast.base.inference.operator:beast.base.evolution.sitemodel:beast.base.evolution.substitutionmodel:beast.base.evolution.likelihood'>
 
     <!-- same as testMCMC.xml in BEAST 1                                         -->
     <!-- The sequence alignment                                                  -->
@@ -47,7 +47,7 @@
 
     <parameter id="hky.kappa" value="1.0" lower="0.0"/>
 
-    <tree spec='beast.util.ClusterTree' id='tree' clusterType='upgma'>
+    <tree spec='beast.base.evolution.tree.ClusterTree' id='tree' clusterType='upgma'>
         <taxa idref='alignment'/>
     </tree>
 
@@ -68,7 +68,7 @@
         <operator id='wide' spec='Exchange' isNarrow='false' weight="1" tree="@tree"/>
         <operator id='WilsonBalding' spec='WilsonBalding' weight="1" tree="@tree"/>
 
-		<operator spec='CombinedOperator' weight='1'>
+		<operator spec='beastlabs.evolution.operators.CombinedOperator' weight='1'>
 			<operator1 idref='kappaScaler'/>
 			<operator2 idref='treeScaler'/>
 			<operator2 idref='narrow'/>
@@ -79,7 +79,7 @@
 	        <model idref='likelihood'/>
             <log idref="likelihood"/>
             <log idref='hky.kappa'/>
-            <log spec='beast.evolution.tree.TreeHeightLogger' tree='@tree'/>
+            <log spec='beast.base.evolution.tree.TreeHeightLogger' tree='@tree'/>
         </logger>
         <logger logEvery="10000" fileName="test.$(seed).trees">
             <log idref="tree"/>
@@ -88,7 +88,7 @@
 	        <model idref='likelihood'/>
             <log idref="likelihood"/>
             <log idref='hky.kappa'/>
-			<log spec='beast.util.Script' x='@hky.kappa' id='inverse.kappa'>
+			<log spec='beastlabs.util.Script' x='@hky.kappa' id='inverse.kappa'>
 				function f(x) {return 1/x;}
 			</log>
 		</logger>		

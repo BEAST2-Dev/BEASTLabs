@@ -1,5 +1,5 @@
 <beast version='2.0'
-       namespace='beast.core:beast.evolution.tree.coalescent:beast.core.util:beast.evolution.nuc:beast.evolution.operators:beast.evolution.sitemodel:beast.evolution.substitutionmodel:beast.evolution.likelihood'>
+       namespace='beast.pkgmgmt:beast.base.core:beast.base.inference:beast.base.evolution.tree.coalescent:beast.pkgmgmt:beast.base.core:beast.base.inference.util:beast.evolution.nuc:beast.base.evolution.operator:beast.base.inference.operator:beast.base.evolution.sitemodel:beast.base.evolution.substitutionmodel:beast.base.evolution.likelihood'>
 
     <!-- same as testMCMC.xml in BEAST 1                                         -->
     <!-- The sequence alignment                                                  -->
@@ -47,12 +47,12 @@
 
     <parameter id="hky.kappa" value="1.0" lower="0.0"/>
 
-    <tree spec='beast.util.ClusterTree' id='tree' clusterType='upgma'>
+    <tree spec='beast.base.evolution.tree.ClusterTree' id='tree' clusterType='upgma'>
         <taxa idref='alignment'/>
     </tree>
 
 
-    <run spec="beast.inference.SimulatedAnnealing" id="mcmc" chainLength="1000000" startTemp='0.001' endTemp='0.0001'>
+    <run spec="beastlabs.inference.SimulatedAnnealing" id="mcmc" chainLength="1000000" startTemp='0.001' endTemp='0.0001'>
         <state>
             <stateNode idref="hky.kappa"/>
             <stateNode idref="tree"/>
@@ -72,13 +72,13 @@
 	        <model idref='likelihood'/>
             <log idref="likelihood"/>
             <log idref='hky.kappa'/>
-            <log spec='beast.evolution.tree.TreeHeightLogger' tree='@tree'/>
+            <log spec='beast.base.evolution.tree.TreeStatLogger' tree='@tree'/>
         </logger>
         <logger logEvery="100000" fileName="test.$(seed).trees">
             <log idref="tree"/>
         </logger>
         <logger logEvery="100000">
-			<log idref='mcmc'/>
+			<!--<log idref='mcmc'/>-->
             <log idref="likelihood"/>
             <log idref='hky.kappa'/>
         </logger>

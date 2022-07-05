@@ -1,5 +1,5 @@
 <beast version='2.0'
-       namespace='beast.prevalence:beast.core:beast.core.parameter:beast.evolution.tree.coalescent:beast.core.util:beast.evolution.nuc:beast.evolution.sitemodel:beast.evolution.substitutionmodel:beast.evolution.likelihood'>
+       namespace='beastlabs.prevalence:beast.pkgmgmt:beast.base.core:beast.base.inference:beast.pkgmgmt:beast.base.core:beast.base.inference.parameter:beast.base.evolution.tree.coalescent:beast.pkgmgmt:beast.base.core:beast.base.inference.util:beast.evolution.nuc:beast.base.evolution.sitemodel:beast.base.evolution.substitutionmodel:beast.base.evolution.likelihood'>
 
 
     <!-- The sequence alignment                                                  -->
@@ -41,7 +41,7 @@
 
     <parameter id="hky.kappa" value="1.0" lower="0.0"/>
 
-    <tree spec='beast.util.ClusterTree' id='tree' clusterType='upgma'>
+    <tree spec='beast.base.evolution.tree.ClusterTree' id='tree' clusterType='upgma'>
         <taxa idref='alignment'/>
     </tree>
 
@@ -61,7 +61,7 @@
         <distribution spec='CompoundDistribution' id='posterior'>
             <distribution spec='CompoundDistribution' id='prior'>
                 <!--distribution spec='PrevalenceLikelihood' id='prevlikelihood' beta='@beta' gamma='@gamma' popSize='@popSize' list='@list'/-->
-                <distribution spec='TreeForPrevalenceLikelihood' id='treeprior' tree='@tree' list='@list'/>
+                <distribution spec='beastlabs.prevalence.TreeForPrevalenceLikelihood' id='treeprior' tree='@tree' list='@list'/>
             </distribution>
             <distribution id='likelihood' idref="treeLikelihood"/>
         </distribution>
@@ -70,14 +70,14 @@
         <operator id='delOperator' spec='DelOperator' weight='1' list='@list'/>
         <operator id='moveOperator' spec='MoveOperator' weight='1' list='@list'/>
 
-        <operator id='betaScaler' spec='beast.evolution.operators.ScaleOperator' scaleFactor="0.5" weight="1" parameter="@beta"/>
-        <operator id='gammaScaler' spec='beast.evolution.operators.ScaleOperator' scaleFactor="0.5" weight="1" parameter="@gamma"/>
-        <!--operator id='popSizeScaler' spec='beast.evolution.operators.ScaleOperator' scaleFactor="0.5" weight="1" parameter="@popSize"/-->
+        <operator id='betaScaler' spec='beast.base.evolution.operator.ScaleOperator' scaleFactor="0.5" weight="1" parameter="@beta"/>
+        <operator id='gammaScaler' spec='beast.base.evolution.operator.ScaleOperator' scaleFactor="0.5" weight="1" parameter="@gamma"/>
+        <!--operator id='popSizeScaler' spec='beast.base.evolution.operator.ScaleOperator' scaleFactor="0.5" weight="1" parameter="@popSize"/-->
 
-        <operator id='kappaScaler' spec='beast.evolution.operators.ScaleOperator' scaleFactor="0.5" weight="1" parameter="@hky.kappa"/>
+        <operator id='kappaScaler' spec='beast.base.evolution.operator.ScaleOperator' scaleFactor="0.5" weight="1" parameter="@hky.kappa"/>
 
-        <operator id='narrow' spec='beast.evolution.operators.Exchange' isNarrow='true' weight="1" tree="@tree"/>
-        <operator id='wide' spec='beast.evolution.operators.Exchange' isNarrow='false' weight="1" tree="@tree"/>
+        <operator id='narrow' spec='beast.base.evolution.operator.Exchange' isNarrow='true' weight="1" tree="@tree"/>
+        <operator id='wide' spec='beast.base.evolution.operator.Exchange' isNarrow='false' weight="1" tree="@tree"/>
         <operator id='treeScaler' spec='TreeScaleOperator' scaleFactor="0.5" weight="1" tree="@tree" list='@list'/>
         <operator spec='Uniform' weight="10" tree="@tree" list='@list'/>
         <operator spec='SubtreeSlide' weight="5" gaussian="true" size="1.0" tree="@tree" list='@list'/>
@@ -92,7 +92,7 @@
             <log idref='beta'/>
             <log idref='gamma'/>
             <log idref='popSize'/>
-            <log spec='beast.evolution.tree.TreeHeightLogger' tree='@tree'/>
+            <log spec='beast.base.evolution.tree.TreeHeightLogger' tree='@tree'/>
         </logger>
         <logger logEvery="10000" fileName="test.$(seed).trees">
             <log idref="tree"/>

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?><beast beautitemplate='Standard' beautistatus='' namespace="beast.core:beast.evolution.alignment:beast.evolution.tree.coalescent:beast.core.util:beast.evolution.nuc:beast.evolution.operators:beast.evolution.sitemodel:beast.evolution.substitutionmodel:beast.evolution.likelihood" version="2.0">
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><beast beautitemplate='Standard' beautistatus='' namespace="beast.pkgmgmt:beast.base.core:beast.base.inference:beast.base.evolution.alignment:beast.base.evolution.tree.coalescent:beast.pkgmgmt:beast.base.core:beast.base.inference.util:beast.evolution.nuc:beast.base.evolution.operator:beast.base.inference.operator:beast.base.evolution.sitemodel:beast.base.evolution.substitutionmodel:beast.base.evolution.likelihood" version="2.0">
 
 
     <data
@@ -43,19 +43,19 @@ name="alignment">
 
 
     
-<map name="Uniform" >beast.math.distributions.Uniform</map>
-<map name="Exponential" >beast.math.distributions.Exponential</map>
-<map name="LogNormal" >beast.math.distributions.LogNormalDistributionModel</map>
-<map name="Normal" >beast.math.distributions.Normal</map>
+<map name="Uniform" >beast.base.inference.distribution.Uniform</map>
+<map name="Exponential" >beast.base.inference.distribution.Exponential</map>
+<map name="LogNormal" >beast.base.inference.distribution.LogNormalDistributionModel</map>
+<map name="Normal" >beast.base.inference.distribution.Normal</map>
 <map name="Beta" >beast.math.distributions.Beta</map>
-<map name="Gamma" >beast.math.distributions.Gamma</map>
-<map name="LaplaceDistribution" >beast.math.distributions.LaplaceDistribution</map>
-<map name="prior" >beast.math.distributions.Prior</map>
-<map name="InverseGamma" >beast.math.distributions.InverseGamma</map>
-<map name="OneOnX" >beast.math.distributions.OneOnX</map>
+<map name="Gamma" >beast.base.inference.distribution.Gamma</map>
+<map name="LaplaceDistribution" >beast.base.inference.distribution.LaplaceDistribution</map>
+<map name="prior" >beast.base.inference.distribution.Prior</map>
+<map name="InverseGamma" >beast.base.inference.distribution.InverseGamma</map>
+<map name="OneOnX" >beast.base.inference.distribution.OneOnX</map>
 
 
-<run id="mcmc" spec="beast.inference.MCMCMC" chainLength="10000000" chains="2" >
+<run id="mcmc" spec="beastlabs.inference.MCMCMC" chainLength="10000000" chains="2" >
     <state id="state" storeEvery="5000">
         <tree id="Tree.t:anolis" name="stateNode">
             <taxonset id="TaxonSet.anolis" spec="TaxonSet">
@@ -76,18 +76,18 @@ name="alignment">
         <parameter id="rateGT.s:anolis" lower="0.0" name="stateNode">1.0</parameter>
     </state>
 
-    <init id="RandomTree.t:anolis" spec="beast.evolution.tree.RandomTree" estimate="false" initial="@Tree.t:anolis" taxa="@anolis">
+    <init id="RandomTree.t:anolis" spec="beast.base.evolution.tree.coalescent.RandomTree" estimate="false" initial="@Tree.t:anolis" taxa="@anolis">
         <populationModel id="ConstantPopulation0.t:anolis" spec="ConstantPopulation">
             <parameter id="randomPopSize.t:anolis" name="popSize">1.0</parameter>
         </populationModel>
     </init>
 
-    <distribution id="posterior" spec="util.CompoundDistribution">
-        <distribution id="prior" spec="util.CompoundDistribution">
+    <distribution id="posterior" spec="beast.base.inference.CompoundDistribution">
+        <distribution id="prior" spec="beast.base.inference.CompoundDistribution">
             <distribution id="BayesianSkyline.t:anolis" spec="BayesianSkyline" groupSizes="@bGroupSizes.t:anolis" popSizes="@bPopSizes.t:anolis">
-                <treeIntervals id="BSPTreeIntervals.t:anolis" spec="TreeIntervals" tree="@Tree.t:anolis"/>
+                <treeIntervals id="BSPTreeIntervals.t:anolis" spec="beast.base.evolution.tree.TreeIntervals" tree="@Tree.t:anolis"/>
             </distribution>
-            <distribution id="MarkovChainedPopSizes.t:anolis" spec="beast.math.distributions.MarkovChainDistribution" jeffreys="true" parameter="@bPopSizes.t:anolis"/>
+            <distribution id="MarkovChainedPopSizes.t:anolis" spec="beast.base.inference.distribution.MarkovChainDistribution" jeffreys="true" parameter="@bPopSizes.t:anolis"/>
             <prior id="GammaShapePrior.s:anolis" name="distribution" x="@gammaShape.s:anolis">
                 <Exponential id="Exponential.0" name="distr">
                     <parameter id="RealParameter.0" lower="0.0" name="mean" upper="0.0">1.0</parameter>
@@ -133,7 +133,7 @@ name="alignment">
                 </Gamma>
             </prior>
         </distribution>
-        <distribution id="likelihood" spec="util.CompoundDistribution">
+        <distribution id="likelihood" spec="beast.base.inference.CompoundDistribution">
             <distribution id="treeLikelihood.anolis" spec="TreeLikelihood" data="@anolis" tree="@Tree.t:anolis">
                 <siteModel id="SiteModel.s:anolis" spec="SiteModel" gammaCategoryCount="4" proportionInvariant="@proportionInvariant.s:anolis" shape="@gammaShape.s:anolis">
                     <parameter id="mutationRate.s:anolis" estimate="false" name="mutationRate">1.0</parameter>
@@ -142,7 +142,7 @@ name="alignment">
                         <frequencies id="estimatedFreqs.s:anolis" spec="Frequencies" frequencies="@freqParameter.s:anolis"/>
                     </substModel>
                 </siteModel>
-                <branchRateModel id="RelaxedClock.c:anolis" spec="beast.evolution.branchratemodel.UCRelaxedClockModel" rateCategories="@rateCategories.c:anolis" tree="@Tree.t:anolis">
+                <branchRateModel id="RelaxedClock.c:anolis" spec="beast.base.evolution.branchratemodel.UCRelaxedClockModel" rateCategories="@rateCategories.c:anolis" tree="@Tree.t:anolis">
                     <LogNormal id="LogNormalDistributionModel.c:anolis" S="@ucldStdev.c:anolis" meanInRealSpace="true" name="distr">
                         <parameter id="RealParameter.013" estimate="false" lower="0.0" name="M" upper="1.0">1.0</parameter>
                     </LogNormal>
@@ -203,9 +203,9 @@ name="alignment">
         <log idref="likelihood"/>
         <log idref="prior"/>
         <log idref="treeLikelihood.anolis"/>
-        <log id="TreeHeight.t:anolis" spec="beast.evolution.tree.TreeHeightLogger" tree="@Tree.t:anolis"/>
+        <log id="TreeHeight.t:anolis" spec="beast.base.evolution.tree.TreeHeightLogger" tree="@Tree.t:anolis"/>
         <log idref="ucldStdev.c:anolis"/>
-        <log id="rate.c:anolis" spec="beast.evolution.branchratemodel.RateStatistic" branchratemodel="@RelaxedClock.c:anolis" tree="@Tree.t:anolis"/>
+        <log id="rate.c:anolis" spec="beast.base.evolution.RateStatistic" branchratemodel="@RelaxedClock.c:anolis" tree="@Tree.t:anolis"/>
         <!--log idref="BayesianSkyline.t:anolis"/-->
         <log idref="bPopSizes.t:anolis"/>
         <log idref="bGroupSizes.t:anolis"/>
@@ -227,7 +227,7 @@ name="alignment">
     </logger>
 
     <logger id="treelog.t:anolis" fileName="GTR4GI.UCLD.BDSKY.trees" logEvery="5000" mode="tree">
-        <log id="TreeWithMetaDataLogger.t:anolis" spec="beast.evolution.tree.TreeWithMetaDataLogger" branchratemodel="@RelaxedClock.c:anolis" tree="@Tree.t:anolis"/>
+        <log id="TreeWithMetaDataLogger.t:anolis" spec="beast.base.evolution.TreeWithMetaDataLogger" branchratemodel="@RelaxedClock.c:anolis" tree="@Tree.t:anolis"/>
     </logger>
 
 </run>

@@ -5,9 +5,8 @@ import org.junit.Test;
 import beast.base.evolution.alignment.Alignment;
 import beast.base.evolution.alignment.Taxon;
 import beast.base.evolution.alignment.TaxonSet;
-import beast.evolution.tree.MonophyleticConstraint;
 import beast.base.evolution.tree.TreeParser;
-
+import beastlabs.evolution.tree.MonophyleticConstraint;
 import test.beast.evolution.likelihood.ExperimentalTreeLikelihoodTest;
 
 
