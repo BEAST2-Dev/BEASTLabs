@@ -1,8 +1,8 @@
 package beastlabs.inference;
 
 
-import beast.app.treeannotator.TreeAnnotator;
-import beast.app.treeannotator.TreeAnnotator.MemoryFriendlyTreeSet;
+import beastfx.app.treeannotator.TreeAnnotator;
+import beastfx.app.treeannotator.TreeAnnotator.MemoryFriendlyTreeSet;
 import beast.base.core.Description;
 import beast.base.core.Input;
 import beast.base.core.Input.Validate;

@@ -37,9 +37,7 @@ import java.util.Arrays;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import beast.app.beastapp.BeastMCMC;
 import beast.base.core.ProgramStatus;
-import beast.base.evolution.sitemodel.SiteModel;
 
 
 

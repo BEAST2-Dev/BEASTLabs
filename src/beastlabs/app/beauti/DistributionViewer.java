@@ -18,10 +18,10 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.xml.sax.SAXException;
 
-import beast.app.inputeditor.BeautiDoc;
-import beast.app.inputeditor.BeautiSubTemplate;
+import beastfx.app.inputeditor.BeautiDoc;
+import beastfx.app.inputeditor.BeautiSubTemplate;
 import beast.base.parser.PartitionContext;
-import beast.app.inputeditor.InputEditor;
+import beastfx.app.inputeditor.InputEditor;
 import beast.base.inference.parameter.RealParameter;
 import beast.base.inference.distribution.Prior;
 import beast.base.inference.distribution.Uniform;

@@ -6,9 +6,11 @@ import java.io.PrintStream;
 import beast.base.core.Description;
 import beast.base.core.Input;
 import beast.base.core.Loggable;
+import beast.base.evolution.tree.TreeInterface;
 import beast.base.inference.Logger;
 import beast.base.inference.MCMC;
 import beast.base.inference.Operator;
+import beast.base.inference.StateNode;
 import beast.base.core.Log;
 import beast.base.util.Randomizer;
 
@@ -141,6 +143,13 @@ public class SimulatedAnnealing extends MCMC implements Loggable {
     	state.storeToFile(chainLength);
 //    	reportLogLikelihoods(posterior, "");
 //    	Log.warning.println("logP = " + oldLogLikelihood + "\n" + sBestXML);
+		for (StateNode sn : state.stateNodeInput.get()) {
+			if (sn instanceof TreeInterface) {
+				Log.info(sn.getID() + ": " + ((TreeInterface) sn).getRoot().toNewick());
+			} else {
+				Log.info(sn.getID() + ": " + sn.toString());
+			}
+		}
     }
 
 

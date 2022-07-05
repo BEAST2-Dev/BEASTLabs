@@ -22,7 +22,7 @@ public class SimpleConstrainedRandomTree extends SimpleRandomTree  {
 
     @Override
     public void initAndValidate() {
-    	if (beast.app.beauti.Beauti.isInBeauti()) {
+    	if (beastfx.app.beauti.Beauti.isInBeauti()) {
     		return;
     	}
         List<MRCAPrior> cons = getCons();

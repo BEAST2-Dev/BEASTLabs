@@ -7,7 +7,7 @@ import java.util.List;
 
 import org.junit.Test;
 
-import beast.app.inputeditor.BeautiDoc;
+import beastfx.app.inputeditor.BeautiDoc;
 import beast.base.inference.Operator;
 import beast.base.inference.OperatorSchedule;
 import beast.base.inference.State;

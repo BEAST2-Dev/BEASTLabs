@@ -91,7 +91,7 @@
 		<mkdir dir="${buildlabs}" />
 
 		<!-- Compile the java code from ${srclabs} into ${buildlabs} /bin -->
-		<javac srcdir="${srclabs}" destdir="${buildlabs}" classpathref="classpath" 
+		<javac target="1.8" srcdir="${srclabs}" destdir="${buildlabs}" classpathref="classpath" 
 		       fork="true"
 		       memoryinitialsize="256m"
 		       memorymaximumsize="1024m"

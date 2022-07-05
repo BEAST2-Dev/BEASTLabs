@@ -8,8 +8,8 @@ import java.util.List;
 
 import org.junit.Test;
 
-import beast.app.treeannotator.TreeAnnotator;
-import beast.app.treeannotator.TreeAnnotator.MemoryFriendlyTreeSet;
+import beastfx.app.treeannotator.TreeAnnotator;
+import beastfx.app.treeannotator.TreeAnnotator.MemoryFriendlyTreeSet;
 import beast.base.evolution.alignment.Taxon;
 import beast.base.evolution.alignment.TaxonSet;
 import beast.base.evolution.tree.Node;

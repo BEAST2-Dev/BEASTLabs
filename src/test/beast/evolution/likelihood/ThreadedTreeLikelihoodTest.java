@@ -6,7 +6,6 @@ import java.util.concurrent.Executors;
 import junit.framework.TestCase;
 import org.junit.Test;
 
-import beast.app.beastapp.BeastMCMC;
 import beast.base.core.ProgramStatus;
 import beast.base.evolution.alignment.Alignment;
 import beast.base.evolution.likelihood.ThreadedTreeLikelihood;
