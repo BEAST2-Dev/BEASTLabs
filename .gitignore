@@ -6,3 +6,4 @@
 # Eclipse cruft
 /bin
 /.settings
+/build/

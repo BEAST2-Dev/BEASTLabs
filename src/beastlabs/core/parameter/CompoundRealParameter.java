@@ -131,6 +131,31 @@ public class CompoundRealParameter extends RealParameter {
 			p.setUpper(upper);
 		}
 	}
+	
+	
+	@Override
+	public Double getLower() {
+		
+		// Lower is maximum of all lowers
+		Double lower = Double.NEGATIVE_INFINITY;
+		for (RealParameter p : parameters) {
+			lower = Math.max(lower, p.getLower());
+		}
+		return lower;
+	}
+	
+	
+	@Override
+	public Double getUpper() {
+		
+		// Upper is minimum of all uppers
+		Double upper = Double.POSITIVE_INFINITY;
+		for (RealParameter p : parameters) {
+			upper = Math.min(upper, p.getUpper());
+		}
+		return upper;
+	}
+	
 
 	@Override
 	public void setBounds(Double lower, Double upper) {

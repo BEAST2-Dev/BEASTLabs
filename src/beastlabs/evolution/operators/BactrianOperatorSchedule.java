@@ -10,6 +10,7 @@ import beast.base.core.Input;
 import beast.base.inference.Operator;
 import beast.base.inference.OperatorSchedule;
 import beast.base.inference.operator.*;
+import beast.base.inference.parameter.RealParameter;
 import beast.base.core.Log;
 import beast.base.evolution.operator.*;
 
@@ -32,7 +33,7 @@ public class BactrianOperatorSchedule extends OperatorSchedule {
 		} else if (c == Uniform.class) {
 			Operator bp = new BactrianNodeOperator();
 			p = initialiseOperator(p, bp);
-		} else if (c == UniformOperator.class) {
+		} else if (p.getClass() == UniformOperator.class && p.getInput("parameter").get() instanceof RealParameter) {
 			Operator bp = new BactrianIntervalOperator();
 			p = initialiseOperator(p, bp);
 		} else if (c == DeltaExchangeOperator.class) {
