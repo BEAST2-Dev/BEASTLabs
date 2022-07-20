@@ -6,9 +6,9 @@
         <!-- Parametric distributions, all without hyperpriors -->
 
         <!-- Weibull -->
-        <subtemplate id='Weibull' class='beastlabs.math.distribution.WeibullDistribution' mainid='[top]'>
+        <subtemplate id='Weibull' class='beastlabs.math.distributions.WeibullDistribution' mainid='[top]'>
             <![CDATA[
-        <distr offset="0.0" spec="beastlabs.math.distribution.WeibullDistribution">
+        <distr offset="0.0" spec="beastlabs.math.distributions.WeibullDistribution">
             <parameter name='shape' value="1" estimate='false'/>
             <parameter name='scale' value="1" estimate='false'/>
         </distr>

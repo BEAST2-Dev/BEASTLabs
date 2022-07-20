@@ -72,9 +72,9 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
     // total nr of taxa
     int nrOfTaxa;
 
-    class Bound {
-        Double upper = Double.POSITIVE_INFINITY;
-        Double lower = 0.0 ; // Double.NEGATIVE_INFINITY;
+    public class Bound {
+    	public Double upper = Double.POSITIVE_INFINITY;
+        public Double lower = 0.0 ; // Double.NEGATIVE_INFINITY;
 
         public String toString() {
             return "[" + lower + "," + upper + "]";
@@ -92,32 +92,32 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
 
     // Location of last monophyletic clade in the lists below, which are grouped together at the start.
     // (i.e. the first isMonophyletic of the TaxonSets are monophyletic, while the remainder are not).
-    int lastMonophyletic;
+    protected int lastMonophyletic;
 
     // taxonSets,distributions, m_bounds and taxonSetIDs are indexed together (four values associated with this clade, a set of taxa.
 
     // taxon sets of clades that has a constraint of calibrations. Monophyletic constraints may be nested, and are sorted by the code to be at a
     // higher index, i.e iterating from zero up does post-order (descendants before parent).
-    List<Set<String>> taxonSets;
+    protected List<Set<String>> taxonSets;
 
     // list of parametric distribution constraining the MRCA of taxon sets, null if not present
-    List<ParametricDistribution> distributions;
+    protected List<ParametricDistribution> distributions;
 
     // hard bound for the set, if any
-    List<Bound> m_bounds;
+    protected List<Bound> m_bounds;
 
     // The prior element involved, if any
-    List<String> taxonSetIDs;
+    protected List<String> taxonSetIDs;
 
-    List<Integer>[] children;
+    protected List<Integer>[] children;
 
-    Set<String> sTaxa;
+    protected Set<String> sTaxa;
 
-    Bound[] boundPerNode;
-    ParametricDistribution[] distPerNode;
+    protected Bound[] boundPerNode;
+    protected ParametricDistribution[] distPerNode;
 
     // number of the next internal node, used when creating new internal nodes
-    int nextNodeNr;
+    protected int nextNodeNr;
 
     private DistanceProvider distances;
 
@@ -182,7 +182,7 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
         }
     }
 
-    final boolean ICC = true;
+    protected final boolean ICC = true;
 
     public void doTheWork() {
         // find taxon sets we are dealing with

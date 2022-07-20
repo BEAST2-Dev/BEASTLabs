@@ -1,5 +1,6 @@
 <package name='BEASTLabs' version='2.0.0'>
-	<depends on='BEAST.app' atleast='2.7.0'/>
+	<depends on='BEAST.base' atleast='2.7.0'/>
+	<depends on='BEAST.app' atleast='0.0.1'/>
     <packageapp description="BEAST model spreadsheet"
               class="beastlabs.app.draw.SpreadSheet"
               args=""
@@ -11,7 +12,7 @@
               icon=""
             />
             
-	<service type="beast.app.inputeditor.InputEditor">
+	<service type="beastfx.app.inputeditor.InputEditor">
         <provider classname="beastlabs.app.draw.TaxonSetInputEditor"/>
         <provider classname="beastlabs.app.beauti.FileInputEditor"/>
         <provider classname="beastlabs.app.beauti.MultiMonophyleticConstraintInputEditor"/>
@@ -27,7 +28,7 @@
         <provider classname="beastlabs.app.beauti.TreeFileInputEditor"/>
 	</service>
 
-	<service type="beast.app.beauti.PriorProvider">
+	<service type="beastfx.app.beauti.PriorProvider">
         <provider classname="beastlabs.app.beauti.MultiMonophyleticConstraintInputEditor"/>
     </service>
                         
