@@ -13,19 +13,7 @@
             />
             
 	<service type="beastfx.app.inputeditor.InputEditor">
-        <provider classname="beastlabs.app.draw.TaxonSetInputEditor"/>
-        <provider classname="beastlabs.app.beauti.FileInputEditor"/>
         <provider classname="beastlabs.app.beauti.MultiMonophyleticConstraintInputEditor"/>
-        <provider classname="beastlabs.app.beauti.OutFileListInputEditor"/>
-        <provider classname="beastlabs.app.beauti.XMLFileInputEditor"/>
-        <provider classname="beastlabs.app.beauti.LogFileListInputEditor"/>
-        <provider classname="beastlabs.app.beauti.LogFileInputEditor"/>
-        <provider classname="beastlabs.app.beauti.TreeFileListInputEditor"/>
-        <provider classname="beastlabs.app.beauti.OutFileInputEditor"/>
-        <provider classname="beastlabs.app.beauti.FileListInputEditor"/>
-        <provider classname="beastlabs.app.beauti.FileInputEditor$1"/>
-        <provider classname="beastlabs.app.beauti.XMLFileListInputEditor"/>
-        <provider classname="beastlabs.app.beauti.TreeFileInputEditor"/>
 	</service>
 
 	<service type="beastfx.app.beauti.PriorProvider">

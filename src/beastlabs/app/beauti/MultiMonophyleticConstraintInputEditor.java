@@ -77,7 +77,9 @@ public class MultiMonophyleticConstraintInputEditor extends BEASTObjectInputEdit
                 for (int j = 0; j < treeIDs.length; j++) {
                     treeIDs[j] = trees.get(j).getID();
                 }
-                tree = (Tree) Alert.showInputDialog(null, "Select a tree", "MRCA selector", Alert.QUESTION_MESSAGE, null, treeIDs, trees.get(0));
+                tree = (Tree) Alert.showInputDialog(null, "Select a tree", "MRCA selector", Alert.QUESTION_MESSAGE, null, trees.toArray(), trees.get(0));
+            } else if (trees.size() == 1) {
+            	tree = trees.get(0);
             }
             if (tree == null) {
             	return list;
