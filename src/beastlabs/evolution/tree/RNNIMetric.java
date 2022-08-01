@@ -14,6 +14,7 @@ import beast.base.evolution.alignment.TaxonSet;
 import beast.base.evolution.tree.Node;
 import beast.base.evolution.tree.Tree;
 import beast.base.evolution.tree.TreeInterface;
+import beast.base.evolution.tree.TreeMetric;
 
 @Description("Ranked Nearest Neighbour Interchange metric on trees")
 public class RNNIMetric extends BEASTObject implements TreeMetric {

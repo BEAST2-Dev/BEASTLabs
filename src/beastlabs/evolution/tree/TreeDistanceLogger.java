@@ -21,6 +21,7 @@ import beast.base.evolution.alignment.Alignment;
 import beast.base.evolution.alignment.Sequence;
 import beast.base.evolution.tree.ClusterTree;
 import beast.base.evolution.tree.Tree;
+import beast.base.evolution.tree.TreeMetric;
 import beast.base.util.Randomizer;
 
 

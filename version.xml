@@ -1,11 +1,6 @@
 <package name='BEASTLabs' version='2.0.0'>
 	<depends on='BEAST.base' atleast='2.7.0'/>
 	<depends on='BEAST.app' atleast='0.0.1'/>
-    <packageapp description="BEAST model spreadsheet"
-              class="beastlabs.app.draw.SpreadSheet"
-              args=""
-              icon=""
-            />
     <packageapp description="View parametric distributions"
               class="beastlabs.app.beauti.DistributionViewer"
               args=""

@@ -10,6 +10,7 @@ import beast.base.evolution.alignment.Taxon;
 import beast.base.evolution.alignment.TaxonSet;
 import beast.base.evolution.tree.Node;
 import beast.base.evolution.tree.TreeInterface;
+import beast.base.evolution.tree.TreeMetric;
 
 /**
  * @author Andrew Rambaut
