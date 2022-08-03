@@ -296,6 +296,7 @@ public class MultiMonophyleticConstraint extends Distribution {
 
                 if( l != r ) {
                     // A node with mixed taxa (from two mono clades or one clade and free taxa)
+                	System.out.println(n.toNewick());
                     return false;
                 }
 
@@ -346,6 +347,7 @@ public class MultiMonophyleticConstraint extends Distribution {
 		
 		                if( l != r ) {
 		                    // A node with mixed taxa (from two mono clades or one clade and free taxa)
+		                	System.out.println(n.toNewick());
 		                    return false;
 		                }
 		
