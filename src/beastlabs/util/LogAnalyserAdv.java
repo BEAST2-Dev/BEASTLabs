@@ -31,7 +31,7 @@ public class LogAnalyserAdv {
     /**
      * @param file the name of the log file to analyze
      * @param traceNames only print the given trace, if traceName == null, print all traces
-     * @return TraceStatistics     an array og analyses of the statistics in a log file
+     * @return TraceStatistics     an array of analyses of the statistics in a log file
      * @throws java.io.IOException if general error reading file
      * @throws test.beast.beast2vs1.trace.TraceException      if trace file in wrong format or corrupted
      */
