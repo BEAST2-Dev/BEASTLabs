@@ -23,6 +23,7 @@ public class MultiMonophyleticConstraint extends Distribution {
 	    		+ "Make sure the starting tree is compatible with these constraints.", Validate.REQUIRED);
     
     public final Input<Boolean> isBinaryInput = new Input<>("isBinary", "flag to indicate tree is a binary tree instead of a polytopy (faster)", true);
+    public final Input<Boolean> robustInput = new Input<>("robust", "flag to indicate a more robust algorithm should be used (slower)", false);
 
     
     /** Constraints are encoded as a list of taxon numbers for each constraint
@@ -39,9 +40,14 @@ public class MultiMonophyleticConstraint extends Distribution {
     int[] cladeSize;
     // cladeParent[i] is the clade assignment of the embedding monophyletic clade (-1 for none)
     int[] cladeParent;
+    
+    // when false, use faster code
+    // if it fail, switch to robust calculation
+    boolean useRobust = false;
 
     @Override
     public void initAndValidate() {
+    	useRobust = robustInput.get();
         taxonIDList = new ArrayList<List<Integer>>();
         tree = treeInput.get();
 
@@ -183,14 +189,18 @@ public class MultiMonophyleticConstraint extends Distribution {
 
 	@Override
     public double calculateLogP() {
-		boolean mono1;
-        try {
-        	mono1 = isBinaryInput.get() ? isMonoJH() : isMonoJHNonBinary();
-        } catch (ArrayIndexOutOfBoundsException e) {
-        	logP = Double.NEGATIVE_INFINITY;
-        	return logP;
+		boolean mono1 = false;
+		if (!useRobust) {
+			try {
+				mono1 = isBinaryInput.get() ? isMonoJH() : isMonoJHNonBinary();
+			} catch (ArrayIndexOutOfBoundsException e) {
+				logP = Double.NEGATIVE_INFINITY;
+				return logP;
+			}
+		}
+        if (useRobust) { 
+        	mono1 = isMonoRB();   // assert is expensive. isMonoJH replaces the much slower isMonoRB
         }
-        if( false ) assert mono1 == isMonoRB();   // assert is expensive. isMonoJH replaces the much slower isMonoRB
         
         //if (!mono1) {
         //	mono1 = isMonoRB();
@@ -296,7 +306,8 @@ public class MultiMonophyleticConstraint extends Distribution {
 
                 if( l != r ) {
                     // A node with mixed taxa (from two mono clades or one clade and free taxa)
-                	System.out.println(n.toNewick());
+                	useRobust = true;
+                	// System.out.println(n.toNewick());
                     return false;
                 }
 
@@ -347,7 +358,8 @@ public class MultiMonophyleticConstraint extends Distribution {
 		
 		                if( l != r ) {
 		                    // A node with mixed taxa (from two mono clades or one clade and free taxa)
-		                	System.out.println(n.toNewick());
+		                	useRobust = true;
+		                	// System.out.println(n.toNewick());
 		                    return false;
 		                }
 		
