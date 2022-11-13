@@ -2,9 +2,7 @@ package beastlabs.util;
 
 import beast.base.core.Citation;
 import beast.base.core.Description;
-import test.beast.beast2vs1.trace.LogFileTraces;
-import test.beast.beast2vs1.trace.TraceException;
-import test.beast.beast2vs1.trace.TraceStatistics;
+import beastfx.app.tools.LogAnalyser;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -12,6 +10,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.List;
 
 @Description("Advanced Log Analyser: auto optimizing burnin to analyse batch proceeded logs. " +
         "It is modified from Log Analyser in BEAST 1 created by Alexei Drummond.\n" +
@@ -29,16 +29,13 @@ import java.nio.file.Paths;
 public class LogAnalyserAdv {
 
     /**
+     * Modified after migrating BEAST 2.7.x
      * @param file the name of the log file to analyze
      * @param traceNames only print the given trace, if traceName == null, print all traces
      * @return TraceStatistics     an array of analyses of the statistics in a log file
      * @throws java.io.IOException if general error reading file
-     * @throws test.beast.beast2vs1.trace.TraceException      if trace file in wrong format or corrupted
      */
-    public static LogFileTraces analyzeLogFileAutoBurnin(File file, String[] traceNames) throws java.io.IOException, TraceException {
-
-        LogFileTraces traces = new LogFileTraces(file.getName(), file);
-        traces.loadTraces();
+    public static LogAnalyser analyzeLogFileAutoBurnin(File file, String[] traceNames) throws java.io.IOException {
 
         final int percLower = 5; // included
         final int percUpper = 80; // included
@@ -48,27 +45,25 @@ public class LogAnalyserAdv {
         double[][] essMatrix = new double[traceNames.length][(percUpper-percLower)/percIncremental+1];
         int[] percentages = new int[essMatrix[0].length];
         int p = 0;
+        LogAnalyser traces;
         for (int percentage = percLower; percentage <= percUpper; percentage+=percIncremental) {
-            long burnin = (traces.getMaxState() / 100) * percentage; // state of burnin
-            traces.setBurnIn(burnin);
-
+            traces = new LogAnalyser(file.getName(), percentage);
+            List<String> allTraceNames = traces.getLabels();
             for (int n = 0; n < traceNames.length; n++) {
-                int traceIndex = traces.getTraceIndex(traceNames[n]);
-                TraceStatistics distribution = traces.analyseTrace(traceIndex);
-                essMatrix[n][p] = distribution.getESS();
+                if (!allTraceNames.contains(traceNames[n]))
+                    throw new IllegalArgumentException("Cannot find the trace name " + traceNames[n] +
+                            " from all names : " + allTraceNames);
+                essMatrix[n][p] = traces.getESS(traceNames[n]);
             }
             percentages[p] = percentage;
             p++;
         }
 
-        long selectedBurnin = getBestBurninPercentage(essMatrix, percentages);
-        long burnin = (traces.getMaxState() / 100) * selectedBurnin; // best burnin detemined by max of sum of ess
-        traces.setBurnIn(burnin);
-        for (int i = 0; i < traces.getTraceCount(); i++) {
-            TraceStatistics distribution = traces.analyseTrace(i);
-        }
+        int bestBurninPercentage = getBestBurninPercentage(essMatrix, percentages);
+        System.out.println("Choose the best burn-in percentage " + bestBurninPercentage +
+                ", according to ESSs of " + Arrays.toString(traceNames));
 
-        return traces;
+        return new LogAnalyser(file.getName(), bestBurninPercentage);
     }
 
     // choose best burnin: max of sum of ratio of ess and max ess
@@ -116,54 +111,21 @@ public class LogAnalyserAdv {
      * @param traces   LogFileTraces instance
      * @param traceNames only print the given trace,
      * @return an array og analyses of the statistics in a log file.
-     * @throws java.io.IOException if general error reading file
-     * @throws test.beast.beast2vs1.trace.TraceException      if trace file in wrong format or corrupted
      */
-    public static void shortReport(LogFileTraces traces, String[] traceNames) throws java.io.IOException, TraceException {
-        System.out.print(traces.getName() + "\t" + traces.getMaxState() + "\t" + traces.getBurnIn());
-
-        for (String traceName : traceNames) {
-//            if (traceName != null && traceName.equalsIgnoreCase(traces.getTraceName(i))) {
-            int traceIndex = traces.getTraceIndex(traceName);
-            TraceStatistics distribution = traces.analyseTrace(traceIndex);
-
-//            System.out.print("\t" + traceName);
-
-            System.out.print("\t" + distribution.getMean());
-//            System.out.print("\t" + distribution.getStdev());
-
-//            System.out.print("\t" + distribution.getHpdLower());
-//            System.out.print("\t" + distribution.getHpdUpper());
-
-//                System.out.print("\t" + formatter.format(distribution.getStdErrorOfMean()));
-//                System.out.print("\t" + formatter.format(distribution.getMinimum()));
-//                System.out.print("\t" + formatter.format(distribution.getMaximum()));
-//                System.out.print("\t" + formatter.format(distribution.getMedian()));
-//                System.out.print("\t" + formatter.format(distribution.getGeometricMean()));
-//                System.out.print("\t" + formatter.format(distribution.getVariance()));
-//                System.out.print("\t" + formatter.format(distribution.getCpdLower()));
-//                System.out.print("\t" + formatter.format(distribution.getCpdUpper()));
-            System.out.print("\t" + distribution.getAutoCorrelationTime());
-//                System.out.print("\t" + formatter.format(distribution.getStdevAutoCorrelationTime()));
-
-            double ess = distribution.getESS();
-            System.out.print("\t" + distribution.getESS());
-//            if (ess < 100) System.out.print("\t" + "*");
-//            System.out.println();
-        }
-        System.out.println();
+    public static void shortReport(LogAnalyser traces, String[] traceNames) {
+        traces.print(System.out, traceNames);
     }
 
     public static void shortReportHeader(String[] traceNames) {
         System.out.print("file.name\tchain.length\tburnin");
-        for (String traceName : traceNames) {
-            System.out.print("\tmean." + traceName + "\tact." + traceName + "\tess." + traceName);
-        }
+//        for (String traceName : traceNames) {
+//            System.out.print("\tmean." + traceName + "\tact." + traceName + "\tess." + traceName);
+//        }
         System.out.println();
     }
 
     //Main method
-    public static void main(final String[] args) throws IOException, TraceException {
+    public static void main(final String[] args) throws IOException {
         Path workPath = Paths.get(System.getProperty("user.home") + "/Projects/BEAST2/PerfAccuStarBEAST/sp5-2/");
         System.out.println("\nWorking path = " + workPath);
 
@@ -233,7 +195,7 @@ public class LogAnalyserAdv {
                         String fileName = file.getName();
                         if (fileName.endsWith(".log")) {
 //                            System.out.println("\nReading beast log " + fileName + " ...");
-                            LogFileTraces traces = analyzeLogFileAutoBurnin(file, traceNames);
+                            LogAnalyser traces = analyzeLogFileAutoBurnin(file, traceNames);
                             shortReport(traces, traceNames);
                         }
                     }
