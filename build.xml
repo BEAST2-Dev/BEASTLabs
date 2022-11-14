@@ -91,11 +91,11 @@
 
 		<mkdir dir="${buildlabs}" />
 
+        <!-- add this if Zulu JDK not installed executable="../../Downloads/zulu17.36.13-ca-fx-jdk17.0.4-macosx_x64/zulu-17.jdk/Contents/Home/bin/javac" -->
 		<!-- Compile the java code from ${srclabs} into ${buildlabs} /bin -->
 		<javac srcdir="${srclabs}" destdir="${buildlabs}" classpathref="classpath"
 			   target="${targetVersion}" source="${sourceVersion}"
-			   executable="../../Downloads/zulu17.36.13-ca-fx-jdk17.0.4-macosx_x64/zulu-17.jdk/Contents/Home/bin/javac"
-			   fork="true"
+			   fork="true" includeantruntime="false"
 		       memoryinitialsize="256m"
 		       memorymaximumsize="1024m">
 			<include name="beastlabs/**/**" />
