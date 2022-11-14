@@ -44,8 +44,8 @@ jobs:
       - name: Run BEASTlbs Ant
         run: ant -noinput -buildfile ./BEASTLabs/build.xml junitBEASTlabs
 
-      - name: Publish unit test results
-        uses: EnricoMi/publish-unit-test-result-action@v2
-        if: always()
-        with:
-          junit_files: BEASTLabs/build/junitreport/**/*.xml
+#      - name: Publish unit test results
+#        uses: EnricoMi/publish-unit-test-result-action@v2
+#        if: always()
+#        with:
+#          junit_files: BEASTLabs/build/junitreport/**/*.xml
