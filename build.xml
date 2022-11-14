@@ -14,10 +14,14 @@
 	<property name="release_dir" value="release" />
 	<property name="distlabs" location="${buildlabs}/dist" />
 	<property name="beast2path" location="../beast2" />
-	<property name="apppath" location="../BeastFX" />
-	<property name="srcBeast2" location="${beast2path}/beast.app/test" />
+	<property name="BeastFXpath" location="../BeastFX" />
+	<property name="srcBeast2" location="${beast2path}/test" />
 	<property name="beast2classpath" location="${beast2path}/build" />
 	<property name="Add_on_dir" value="${release_dir}/add-on" />
+
+	<!-- BEAST 2 currently uses Java 17 -->
+	<property name="sourceVersion" value="17"/>
+	<property name="targetVersion" value="17"/>
 
 
 	<property name="version" value="1.9.7" />
@@ -30,16 +34,11 @@
 
 	<path id="classpath">
         <pathelement path="${buildlabs}"/>
-		<fileset dir="${liblabs}" includes="junit-4.8.2.jar"/>
 		<fileset dir="${liblabs}" includes="nashorn-core-15.3.jar"/>
-		<fileset dir="${beast2path}/lib" includes="jam.jar"/>
-		<fileset dir="${beast2path}/lib" includes="beagle.jar"/>
-		<fileset dir="${beast2path}/lib" includes="fest.jar"/>
-		<fileset dir="${beast2path}/lib" includes="colt.jar"/>
-		<fileset dir="${beast2path}/lib" includes="antlr-runtime-4.10.jar"/>
-		<fileset dir="${beast2path}/lib" includes="commons-math3-3.6.1.jar"/>
+		<fileset dir="${beast2path}/lib/junit" includes="junit-*.jar"/>
+		<fileset dir="${beast2path}/lib" includes="*.jar"/>
         <pathelement path="${beast2classpath}"/>
-        <pathelement path="${apppath}/build"/>
+        <pathelement path="${BeastFXpath}/build"/>
 	</path>
 
 	<!-- start -->
@@ -93,12 +92,12 @@
 		<mkdir dir="${buildlabs}" />
 
 		<!-- Compile the java code from ${srclabs} into ${buildlabs} /bin -->
-		<javac srcdir="${srclabs}" destdir="${buildlabs}" classpathref="classpath" 
-		       fork="true"
+		<javac srcdir="${srclabs}" destdir="${buildlabs}" classpathref="classpath"
+			   target="${targetVersion}" source="${sourceVersion}"
+			   executable="../../Downloads/zulu17.36.13-ca-fx-jdk17.0.4-macosx_x64/zulu-17.jdk/Contents/Home/bin/javac"
+			   fork="true"
 		       memoryinitialsize="256m"
-		       memorymaximumsize="1024m"
-			   source="1.8"
-		       target="1.8">
+		       memorymaximumsize="1024m">
 			<include name="beastlabs/**/**" />
 			<!-- compile JUnit test classes -->
 			<include name="test/beast/**" />
@@ -112,7 +111,7 @@
 		<mkdir dir="${distlabs}" />
 
 		<!-- Put everything in ${buildlabs} into the beast.jar file -->
-		<jar jarfile="${distlabs}/BEASTLabs.jar">
+		<jar jarfile="${distlabs}/BEASTLabs.all.v${BEASTLabsVersion}.jar">
 			<manifest>
 				<attribute name="Built-By" value="${user.name}" />
 				<attribute name="Main-Class" value="${main_class_BEAST}" />
@@ -153,7 +152,7 @@
 			<zipgroupfileset dir="${beast2path}/lib" includes="jam.jar" />
 			<!--zipgroupfileset dir="${lib}" includes="commons-math-II.0.jar" /-->
 		</jar>
-		<jar jarfile="${distlabs}/BEASTlabs.src.jar">
+		<jar jarfile="${distlabs}/BEASTlabs.v${BEASTLabsVersion}.src.jar">
 			<fileset dir="${srclabs}">
 				<include name="beastlabs/**/*.java" />
 				<include name="test/**/*.java" />
@@ -161,7 +160,7 @@
 				<include name="beastlabs/**/*.xsl" />
 			</fileset>
         </jar>
-		<jar jarfile="${distlabs}/BEASTlabs.addon.jar">
+		<jar jarfile="${distlabs}/BEASTlabs.v${BEASTLabsVersion}.jar">
 			<manifest>
 				<attribute name="Built-By" value="${user.name}" />
 			</manifest>
@@ -177,7 +176,7 @@
 
 	<!-- run beast.jar -->
 	<target name="run_BEASTlabs">
-		<java jar="${distlabs}/BEASTLabs.jar" fork="true" />
+		<java jar="${distlabs}/BEASTLabs.all.v${BEASTLabsVersion}.jar" fork="true" />
 	</target>
 
 	
@@ -187,7 +186,7 @@
 		<junit printsummary="yes"> <!--showoutput='yes'-->
 			<classpath>
 				<path refid="classpath" />
-				<path location="${buildlabs}" />
+<!--				<path location="${buildlabs}" />-->
 			</classpath>
 
 			<formatter type="xml" />
@@ -235,16 +234,16 @@
 		</copy>
 
 		<copy todir="${Add_on_dir}/lib">
-			<fileset  file="${distlabs}/BEASTlabs.addon.jar" />
+			<fileset  file="${distlabs}/BEASTlabs.v${BEASTLabsVersion}.jar" />
 		</copy>
 		<copy todir="${Add_on_dir}">
-			<fileset file="${distlabs}/BEASTlabs.src.jar" />
+			<fileset file="${distlabs}/BEASTlabs.v${BEASTLabsVersion}.src.jar" />
 		</copy>
 		<copy todir="${Add_on_dir}/fxtemplates">
 			<fileset file="fxtemplates/Weibull.xml" />
 			<fileset file="fxtemplates/extras.xml" />
 		</copy>
-		<jar jarfile="${distlabs}/BEASTlabs.addon.v${BEASTLabsVersion}.zip">
+		<jar jarfile="${distlabs}/BEASTlabs.v${BEASTLabsVersion}.zip">
 			<fileset dir="${Add_on_dir}">
 				<include name="**/*" />
 			</fileset>
