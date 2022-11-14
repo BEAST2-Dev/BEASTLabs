@@ -23,21 +23,23 @@ jobs:
         with:
           repository: CompEvol/beast2
           path: beast2
-      - name: Build beast2
-        run: ant -noinput -buildfile ./beast2/build.xml compile-all
 
       - name: Checkout BeastFX
         uses: actions/checkout@v3
         with:
           repository: CompEvol/BeastFX
           path: BeastFX
-      - name: Build beast2
-        run: ant -noinput -buildfile ./BeastFX/build.xml compile-allBeastFX
 
       - name: Find build.xml
         run: |
           pwd
           find . -name "build.xml"
+
+      - name: Build beast2
+        run: ant -noinput -buildfile ./beast2/build.xml compile-all
+
+      - name: Build BeastFX
+        run: ant -noinput -buildfile ./BeastFX/build.xml compile-allBeastFX
 
       - name: Run BEASTlbs Ant
         run: ant -noinput -buildfile ./BEASTLabs/build.xml junitBEASTlabs
