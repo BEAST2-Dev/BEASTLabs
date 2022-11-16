@@ -300,6 +300,7 @@ public class RNNIMetric extends BEASTObject implements TreeMetric {
 	}
 
     protected Node getCommonAncestor(Node n1, Node n2) {
+    	
         // assert n1.getTree() == n2.getTree();
         if( ! nodesTraversed[n1.getNr()] ) {
             nodesTraversed[n1.getNr()] = true;
@@ -312,11 +313,21 @@ public class RNNIMetric extends BEASTObject implements TreeMetric {
 	        double h2 = n2.getHeight();
 	        if ( h1 < h2 ) {
 	            n1 = n1.getParent();
+	            if (n1 == null) {
+	            	// there is a negative branch length somewhere
+	            	// set n1 to root
+	            	return n2.getTree().getRoot();
+	            }
 	            if( ! nodesTraversed[n1.getNr()] ) {
 	                nodesTraversed[n1.getNr()] = true;
 	            }
 	        } else if( h2 < h1 ) {
 	            n2 = n2.getParent();
+	            if (n2 == null) {
+	            	// there is a negative branch length somewhere
+	            	// set n2 to root
+	            	return n1.getTree().getRoot();
+	            }
 	            if( ! nodesTraversed[n2.getNr()] ) {
 	                nodesTraversed[n2.getNr()] = true;
 	            }
@@ -350,6 +361,12 @@ public class RNNIMetric extends BEASTObject implements TreeMetric {
                 } else {
                     n = n2 = n.getParent();
                 }
+	            if (n == null) {
+	            	// there is a negative branch length somewhere
+	            	// return root
+	            	return n1 != null ? n1.getTree().getRoot() : n2.getTree().getRoot();
+	            }
+
 	            if( ! nodesTraversed[n.getNr()] ) {
 	                nodesTraversed[n.getNr()] = true;
 	            } 
