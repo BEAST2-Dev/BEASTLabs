@@ -112,12 +112,14 @@ public class RNNIMetric extends BEASTObject implements TreeMetric {
 		// get clades in ranked order
 		Tree treeCopy = new Tree();
 		treeCopy.assignFrom((Tree) tree);
-		
+				
 		Map<String,Integer> map = new HashMap<>();
+		// put leaf nodes at zero height
 		for (int i = 0; i < treeCopy.getLeafNodeCount(); i++) {
 			Node leaf = treeCopy.getNode(i);
 			map.put(leaf.getID(), i);
 			leaf.setHeight(-1e-13);
+			leaf.setHeight(0.0);
 		}
 
 		Integer[] clades = getRankedClades(treeCopy);
@@ -129,7 +131,7 @@ public class RNNIMetric extends BEASTObject implements TreeMetric {
 			rank[clades[i]] = i;
 			invrank[i] = treeCopy.getNode(clades[i]);
 		}
-
+		
 		// FindPath algorithm of 
 		// Collienne, L., Gavryushkin, A. Computing nearest neighbour interchange distances between ranked phylogenetic trees. J. Math. Biol. 82, 8 (2021). 
 		// https://doi.org/10.1007/s00285-021-01567-5
@@ -182,8 +184,8 @@ public class RNNIMetric extends BEASTObject implements TreeMetric {
 				rank[tmp.getNr()] = j;
 				invrank[j-1] = tmp2;
 				invrank[j] = tmp;
-				tmp2.setHeight(h1);
-				tmp.setHeight(h2);
+				tmp2.setHeight(minHeight(h1, tmp2.getParent()));
+				tmp.setHeight(minHeight(h2, tmp.getParent()));
 
 				// for debugging:
 				// checkRank(rank, invrank);
@@ -206,6 +208,31 @@ public class RNNIMetric extends BEASTObject implements TreeMetric {
 		return d;
 	}
 	
+	// Make sure the height never exceeds the height of the parent.
+	// This can happen due to numerical issues when there are many
+	// very short branches.
+	private double minHeight(double h, Node parent) {
+		if (parent == null) {
+			return h;
+		} 
+		final double h2 = parent.getHeight();
+		if (h2 >= h) {
+			return h;
+		}
+		// we are here if parent height < node height
+		// so there is a negative branch length
+		if ((h - h2)/h2 < 1e-8) {
+			// if the difference is not very large
+			// assume it is due to numerical instability 
+			return h2;
+		}
+		
+		// negative branch length cannot be attributed to numerics
+		// so through an exception
+		throw new IllegalArgumentException("negative branch length found in tree");
+	}
+
+
 	/** for debugging: some sanity checks for rank and invrank arrays **/
 	@SuppressWarnings("unused")
 	private void checkRank(int[] rank, Node[] invrank) {
