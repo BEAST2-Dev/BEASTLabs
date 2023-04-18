@@ -28,6 +28,9 @@ public class SimulatedAnnealing extends MCMC implements Loggable {
 	public void initAndValidate() {
 		super.initAndValidate();
 		m_fDeltaLogTemp = Math.log(endTemp.get()) - Math.log(startTemp.get());
+        posterior = posteriorInput.get();
+        chainLength = chainLengthInput.get();
+        loggers = loggersInput.get();
 	}
 	
 	
@@ -145,9 +148,9 @@ public class SimulatedAnnealing extends MCMC implements Loggable {
 //    	Log.warning.println("logP = " + oldLogLikelihood + "\n" + sBestXML);
 		for (StateNode sn : state.stateNodeInput.get()) {
 			if (sn instanceof TreeInterface) {
-				Log.info(sn.getID() + ": " + ((TreeInterface) sn).getRoot().toNewick());
+				Log.debug(sn.getID() + ": " + ((TreeInterface) sn).getRoot().toNewick());
 			} else {
-				Log.info(sn.getID() + ": " + sn.toString());
+				Log.debug(sn.getID() + ": " + sn.toString());
 			}
 		}
     }
