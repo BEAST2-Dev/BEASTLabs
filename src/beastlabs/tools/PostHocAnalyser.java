@@ -1,6 +1,7 @@
 package beastlabs.tools;
 
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,12 +22,22 @@ public class PostHocAnalyser extends MCMC {
 	@Override
 	public void initAndValidate() {
 		super.initAndValidate();
+		
+		posterior = posteriorInput.get();
 	}
 
 		
 	@Override
-	public void run() {
-		TraceStateNodeSource trace = null;
+	public void run() throws IOException {
+        loggers = loggersInput.get();
+        for (final Logger log : loggers) {
+        	if (log.everyInput.get()> 1) {
+        		Log.warning("WARNING: logEvery on logger " + log.getID() + " is larger than 1, so not all trace entries will be logged");
+        	}
+            log.init();
+        }
+
+        TraceStateNodeSource trace = null;
 		for (StateNodeSource entry : stateNodeSourceInput.get()) {
 			if (entry instanceof TraceStateNodeSource) {
 				trace = (TraceStateNodeSource) entry;
@@ -38,13 +49,15 @@ public class PostHocAnalyser extends MCMC {
 		}
 		
 		int n = trace.tracelog.getTraces()[0].length;
+		long delta = (long)(trace.tracelog.getTraces()[0][1] - trace.tracelog.getTraces()[0][0]);
+		
 		
 		for (int i = 0; i < n; i++) {
 			for (StateNodeSource entry : stateNodeSourceInput.get()) {
 				entry.initStateNodes(i);
 			}
 			
-			double logP = posterior.calculateLogP();
+			double logP = state.robustlyCalcPosterior(posterior);
 
 			// sanity check
 			if (Math.abs(logP - trace.tracelog.getTrace("posterior")[i]) > 1e-4) {
@@ -52,10 +65,13 @@ public class PostHocAnalyser extends MCMC {
 			}
 			
 			for (Logger logger : loggers) {
-				logger.log(i);
+				logger.log((long) i * delta);
 			}
 		}
 		
+		for (final Logger log : loggers) {
+			log.close();
+		}
 	}
 
 

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import beast.base.core.BEASTObject;
+import beast.base.core.Description;
 import beast.base.core.Input;
 import beast.base.inference.State;
 import beast.base.inference.StateNode;
@@ -14,6 +15,7 @@ import beastfx.app.tools.LogAnalyser;
 import beastfx.app.util.LogFile;
 
 
+@Description("Source of state node parameter values for post hoc analysis")
 public class TraceStateNodeSource extends BEASTObject implements StateNodeSource {
 	final public Input<LogFile> traceInput = new Input<>("trace", "Trace logs containing parameter settings. "
 			+ "First trace log should contain posterior.", new LogFile("[[none]]"));
@@ -30,7 +32,7 @@ public class TraceStateNodeSource extends BEASTObject implements StateNodeSource
 	@Override
 	public void initAndValidate() {
 		try {
-			tracelog = new LogAnalyser(traceInput.get().getPath());
+			tracelog = new LogAnalyser(traceInput.get().getPath(), 0, true, false);
 		} catch (IOException e) {
 			throw new IllegalArgumentException(e.getMessage());
 		}
@@ -85,7 +87,8 @@ public class TraceStateNodeSource extends BEASTObject implements StateNodeSource
 				StateNode sn = sns.get(snNr);
 				if (sn instanceof Parameter) {
 					Parameter p = (Parameter) sn;
-					p.setValue(dim, tracelog.getTrace(label)[i]);
+					Double value = tracelog.getTrace(label)[i];
+					p.setValue(dim, value);
 				} else {
 					throw new IllegalArgumentException("don't know how to initialise non-parameter statenode " + sn.getID());
 				}

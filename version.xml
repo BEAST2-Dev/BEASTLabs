@@ -116,6 +116,9 @@
         <provider classname="beastlabs.util.BEASTVector"/>
         <provider classname="beastlabs.util.Script"/>
         <provider classname="beastlabs.util.TimeLogger"/>
+        <provider classname="beastlabs.tools.PostHocAnalyser"/>
+        <provider classname="beastlabs.tools.TraceStateNodeSource"/>
+        <provider classname="beastlabs.tools.TreeStateNodeSource"/>
     </service>
 
 

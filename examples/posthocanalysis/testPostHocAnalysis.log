@@ -1,0 +1,59 @@
+#
+#model:
+#
+#<?xml version="1.0" encoding="UTF-8" standalone="no"?><input id="posterior" spec="beast.base.inference.CompoundDistribution">
+#    <distribution id="prior" spec="beast.base.inference.CompoundDistribution">
+#        <distribution id="YuleModel.t:dna" spec="beast.base.evolution.speciation.YuleModel">
+#            <parameter id="birthRate.t:dna" lower="0.0" name="birthDiffRate" spec="beast.base.inference.parameter.RealParameter">1.0</parameter>
+#            <tree id="Tree.t:dna" spec="beast.base.evolution.tree.Tree">
+#                <taxonset id="TaxonSet.dna" spec="beast.base.evolution.alignment.TaxonSet">
+#                </taxonset>
+#            </tree>
+#        </distribution>
+#        <prior id="YuleBirthRatePrior.t:dna" name="distribution" x="@birthRate.t:dna">
+#            <Uniform id="Uniform.1" name="distr" upper="Infinity"/>
+#        </prior>
+#        <prior id="FrequenciesPrior.s:dna" name="distribution">
+#            <parameter dimension="4" id="freqParameter.s:dna" lower="0.0" name="x" spec="beast.base.inference.parameter.RealParameter" upper="1.0">0.25</parameter>
+#            <distr id="Dirichlet.0" spec="beast.base.inference.distribution.Dirichlet">
+#                <parameter dimension="4" estimate="false" id="RealParameter.3" name="alpha" spec="beast.base.inference.parameter.RealParameter">4.0 4.0 4.0 4.0</parameter>
+#            </distr>
+#        </prior>
+#        <prior id="KappaPrior.s:dna" name="distribution">
+#            <parameter id="kappa.s:dna" lower="0.0" name="x" spec="beast.base.inference.parameter.RealParameter">2.0</parameter>
+#            <LogNormal id="LogNormalDistributionModel.0" name="distr">
+#                <parameter estimate="false" id="RealParameter.1" name="M" spec="beast.base.inference.parameter.RealParameter">1.0</parameter>
+#                <parameter estimate="false" id="RealParameter.2" name="S" spec="beast.base.inference.parameter.RealParameter">1.25</parameter>
+#            </LogNormal>
+#        </prior>
+#    </distribution>
+#    <distribution id="likelihood" spec="beast.base.inference.CompoundDistribution" useThreads="true">
+#        <distribution data="@dna" id="treeLikelihood.dna" spec="beast.base.evolution.likelihood.ThreadedTreeLikelihood" tree="@Tree.t:dna">
+#            <siteModel id="SiteModel.s:dna" spec="beast.base.evolution.sitemodel.SiteModel">
+#                <parameter estimate="false" id="mutationRate.s:dna" lower="0.0" name="mutationRate" spec="beast.base.inference.parameter.RealParameter">1.0</parameter>
+#                <parameter estimate="false" id="gammaShape.s:dna" lower="0.1" name="shape" spec="beast.base.inference.parameter.RealParameter">1.0</parameter>
+#                <parameter estimate="false" id="proportionInvariant.s:dna" lower="0.0" name="proportionInvariant" spec="beast.base.inference.parameter.RealParameter" upper="1.0">0.0</parameter>
+#                <substModel id="hky.s:dna" kappa="@kappa.s:dna" spec="beast.base.evolution.substitutionmodel.HKY">
+#                    <frequencies frequencies="@freqParameter.s:dna" id="estimatedFreqs.s:dna" spec="beast.base.evolution.substitutionmodel.Frequencies"/>
+#                </substModel>
+#            </siteModel>
+#            <branchRateModel id="StrictClock.c:dna" spec="beast.base.evolution.branchratemodel.StrictClockModel">
+#                <parameter estimate="false" id="clockRate.c:dna" lower="0.0" name="clock.rate" spec="beast.base.inference.parameter.RealParameter">1.0</parameter>
+#            </branchRateModel>
+#        </distribution>
+#    </distribution>
+#    <distribution id="fossilCalibrations" spec="beast.base.inference.CompoundDistribution"/>
+#</input>
+#
+Sample	posterior	likelihood	prior	treeLikelihood	Tree.height	Tree.treeLength	YuleModel	birthRate	kappa	freqParameter.1	freqParameter.2	freqParameter.3	freqParameter.4
+0	-7078.303048647919	-7074.939932406025	-3.3631162418940974	-7074.939932406025	2.0268501351378134	5.950654576931362	-5.594457381409796	1.9508570854721188	2.0	0.25	0.25	0.25	0.25
+100000	-5084.232683008769	-5091.202164361688	6.969481352919923	-5091.202164361688	0.2498310540524289	1.7470473504362949	5.02666032744127	7.5084198596	2.539076798063384	0.2725348717723629	0.2724270672060836	0.20490156613459143	0.25013649488696205
+200000	-5056.257512979744	-5063.189359613766	6.931846634021946	-5063.189359613766	0.24700928700067404	1.6561468980623089	5.581389440956438	7.775580684996254	2.5753150438689993	0.28035013524637387	0.28906898979658047	0.12792790042493826	0.3026529745321075
+300000	-5051.712322632851	-5058.968982395007	7.2566597621552145	-5058.968982395007	0.26564844097113727	1.7297390927412177	5.843059305590806	5.166259069127232	2.4979965397928066	0.28773071286953633	0.28804760040617466	0.13025133869447844	0.2939703480298107
+400000	-5059.86687009985	-5066.159766155217	6.292896055367457	-5066.159766155217	0.2604345720909398	1.6904463943715475	5.012506059921903	3.159281867305655	2.3502060235281252	0.2781050121363103	0.30678312081353953	0.11720778657375423	0.2979040804763959
+500000	-5052.483060645312	-5059.869046005873	7.385985360560462	-5059.869046005873	0.2523197414682515	1.7137803702742005	5.859448785721435	5.919997221424275	2.225401474274649	0.2946557536690123	0.2898856960311982	0.1309155524811124	0.2845429978186771
+600000	-5057.753865195475	-5064.374109522826	6.620244327351802	-5064.374109522826	0.2672992627136393	1.806127955133274	5.4451332838040605	5.21200941966205	2.828568772219936	0.2833006959180678	0.28020625221361667	0.12248325504917207	0.3140097968191434
+700000	-5052.581067036369	-5059.935377325931	7.354310289561582	-5059.935377325931	0.25494902303838496	1.711415391088245	5.824661157014702	4.464040817003514	2.3019133627605153	0.2857386694838131	0.30172716680468786	0.13393144994144596	0.2786027137700531
+800000	-5056.184484773595	-5062.728768820264	6.5442840466690395	-5062.728768820264	0.2530553908981864	1.679409347586007	5.1724479734698585	3.270938634914328	2.5441038027024994	0.30090784666723613	0.26533514293892485	0.12964110587259564	0.3041159045212434
+900000	-5059.8892017083945	-5064.502222807706	4.6130210993110525	-5064.502222807706	0.24873993037509748	1.672297273428906	3.2675138729699764	10.903910152190786	2.741334636653413	0.26875080594756623	0.28805665466978664	0.13326711495838323	0.3099254244242639
+1000000	-5057.658315680889	-5060.860164376698	3.2018486958082875	-5060.860164376698	0.26895523250839737	1.7628395043534504	1.9521385384951024	11.249200461401443	2.5884671465665847	0.300769117921119	0.2888055916784842	0.12079940068965078	0.28962588971074604
