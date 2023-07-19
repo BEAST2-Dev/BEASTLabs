@@ -21,7 +21,11 @@ public class TraceStateNodeSource extends BEASTObject implements StateNodeSource
 			+ "First trace log should contain posterior.", new LogFile("[[none]]"));
 	final public Input<String> srcIdInput = new Input<>("value", "comma delimited string of map enties. "
 			+ "Each entry maps a trace label to a state node entry. Use square brackets to indicate the dimension. "
-			+ "For example kappa.s:dna=kappa, freq.s:dna[0]=freq.A, freq.s:dna[1]=freq.C");
+			+ "For example kappa.s:dna=kappa, freq.s:dna[0]=freq.A, freq.s:dna[1]=freq.C "
+			+ "If no index is given in brackets, the first match in the trace will be assigned to index 0 and all "
+			+ "consecutive matches to consecutive indices, e.g. "
+			+ "freq.s:dna[]=freq.1 is equivalent to "
+			+ "freq.s:dna[0]=freq.1,freq.s:dna[1]=freq.2,freq.s:dna[2]=freq.3,freq.s:dna[3]=freq.4");
     final public Input<State> stateInput = new Input<>("state", "elements of the state space");
 	
 	LogAnalyser tracelog;
@@ -56,24 +60,51 @@ public class TraceStateNodeSource extends BEASTObject implements StateNodeSource
 			}
 			String to = str.substring(0, k).trim();
 			String from = str.substring(k+1).trim();
-			int dimension = 0;
-			if (to.contains("[")) {
-				int j = to.indexOf('[');
-				String dim = to.substring(j+1, to.indexOf(']'));
-				dimension = Integer.valueOf(dim);
-				to = to.substring(0, j);
-			}
-			
 			if (!labels.contains(from)) {
 				throw new IllegalArgumentException("Could not find label " + from + " in trace " + traceInput.get().getName());
 			}
+			if (to.contains("[]")) {
+				to = to.substring(0, to.indexOf('['));
+				if (!mapStateNodeIDtoStateNodeNr.keySet().contains(to)) {
+					throw new IllegalArgumentException("Could not find statenode with id " + to);
+				}
+				int stateNodeNr = mapStateNodeIDtoStateNodeNr.get(to);
+				
+				int dimension = 0;
+				do {
+					mapTraceLabelToStateNodeID.put(from, stateNodeNr);
+					mapTraceLabelToStateNodeDimension.put(from, dimension);
+					dimension++;
+					int i = labels.indexOf(from);
+					if (i < labels.size()-1) {
+						String next = labels.get(i+1);
+						int x = next.lastIndexOf('.');
+						int y = from.lastIndexOf('.');
+						if (x == y && next.substring(0,x).equals(from.substring(0,x))) {
+							from = next;
+						}
+					} else {
+						from = "last label reached";
+					}
+					
+				} while (labels.contains(from));
+			} else {
+				int dimension = 0;
+				if (to.contains("[")) {
+					int j = to.indexOf('[');
+					String dim = to.substring(j+1, to.indexOf(']'));
+					dimension = Integer.valueOf(dim);
+					to = to.substring(0, j);
+				}
 			
-			if (!mapStateNodeIDtoStateNodeNr.keySet().contains(to)) {
-				throw new IllegalArgumentException("Could not find statenode with id " + to);
+				
+				if (!mapStateNodeIDtoStateNodeNr.keySet().contains(to)) {
+					throw new IllegalArgumentException("Could not find statenode with id " + to);
+				}
+				int stateNodeNr = mapStateNodeIDtoStateNodeNr.get(to);
+				mapTraceLabelToStateNodeID.put(from, stateNodeNr);
+				mapTraceLabelToStateNodeDimension.put(from, dimension);
 			}
-			int stateNodeNr = mapStateNodeIDtoStateNodeNr.get(to);
-			mapTraceLabelToStateNodeID.put(from, stateNodeNr);
-			mapTraceLabelToStateNodeDimension.put(from, dimension);
 		}
 	}	
 	
