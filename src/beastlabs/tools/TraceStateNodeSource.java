@@ -8,6 +8,7 @@ import java.util.Map;
 import beast.base.core.BEASTObject;
 import beast.base.core.Description;
 import beast.base.core.Input;
+import beast.base.core.Log;
 import beast.base.inference.State;
 import beast.base.inference.StateNode;
 import beast.base.inference.parameter.Parameter;
@@ -35,6 +36,7 @@ public class TraceStateNodeSource extends BEASTObject implements StateNodeSource
 	
 	@Override
 	public void initAndValidate() {
+		Log.warning("Initialising " + getID());
 		try {
 			tracelog = new LogAnalyser(traceInput.get().getPath(), 0, true, false);
 		} catch (IOException e) {
@@ -76,15 +78,23 @@ public class TraceStateNodeSource extends BEASTObject implements StateNodeSource
 					mapTraceLabelToStateNodeDimension.put(from, dimension);
 					dimension++;
 					int i = labels.indexOf(from);
-					if (i < labels.size()-1) {
+					if (i >= 0 && i < labels.size()-1) {
 						String next = labels.get(i+1);
 						int x = next.lastIndexOf('.');
 						int y = from.lastIndexOf('.');
 						if (x == y && next.substring(0,x).equals(from.substring(0,x))) {
 							from = next;
+						} else {
+							from = "last label reached";
 						}
 					} else {
 						from = "last label reached";
+					}
+					if (from.equals("last label reached")) {
+						StateNode stateNode = stateInput.get().stateNodeInput.get().get(stateNodeNr);
+						if (dimension < stateNode.getDimension()) {
+							throw new IllegalArgumentException("Could not find all dimensions of " + stateNode.getID() + " in trace file: " + dimension + "!=" + stateNode.getDimension());
+						}
 					}
 					
 				} while (labels.contains(from));
@@ -106,6 +116,7 @@ public class TraceStateNodeSource extends BEASTObject implements StateNodeSource
 				mapTraceLabelToStateNodeDimension.put(from, dimension);
 			}
 		}
+		Log.warning("Done initialising " + getID());
 	}	
 	
 	@Override
@@ -120,6 +131,7 @@ public class TraceStateNodeSource extends BEASTObject implements StateNodeSource
 					Parameter p = (Parameter) sn;
 					Double value = tracelog.getTrace(label)[i];
 					p.setValue(dim, value);
+					Log.warning(p.getID() + "["+dim+"] = " + value);
 				} else {
 					throw new IllegalArgumentException("don't know how to initialise non-parameter statenode " + sn.getID());
 				}

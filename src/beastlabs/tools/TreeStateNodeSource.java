@@ -7,6 +7,7 @@ import java.util.List;
 import beast.base.core.BEASTObject;
 import beast.base.core.Description;
 import beast.base.core.Input;
+import beast.base.core.Log;
 import beast.base.evolution.tree.Node;
 import beast.base.evolution.tree.Tree;
 import beast.base.inference.State;
@@ -88,13 +89,13 @@ public class TreeStateNodeSource extends BEASTObject implements StateNodeSource 
 				}
 				metaDataLabels.add(strs2[1].trim());	
 			}
-				
 		}
+
+		Log.info(getID() + " initialised");
 	}
 
 	@Override
 	public void initStateNodes(int i) {
-		
 		Tree newtree = null;
 		try {
 			newtree = treefile.next();
@@ -110,7 +111,7 @@ public class TreeStateNodeSource extends BEASTObject implements StateNodeSource 
 			
 		}
 
-		for (int k = 0; k < 10; k++) {
+		for (int k = 0; k < taxa.length; k++) {
 			newtree.getNode(k).setNr(taxonmapping[k]);
 		}
 		

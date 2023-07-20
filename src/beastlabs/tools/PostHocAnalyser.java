@@ -61,7 +61,8 @@ public class PostHocAnalyser extends MCMC {
 
 			// sanity check
 			if (Math.abs(logP - trace.tracelog.getTrace("posterior")[i]) > 1e-4) {
-				Log.warning("Substantial difference between calculated logP " + logP + "and logged logP: " + trace.tracelog.getTrace("posterior")[i]);
+				Log.warning("Substantial difference between calculated logP " + logP + " and logged logP: " + trace.tracelog.getTrace("posterior")[i]);
+				reportLogLikelihoods(posterior, "");
 			}
 			
 			for (Logger logger : loggers) {
