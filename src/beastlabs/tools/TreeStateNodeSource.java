@@ -104,11 +104,13 @@ public class TreeStateNodeSource extends BEASTObject implements StateNodeSource 
 		}
 
 		if (taxonmapping == null) {
-			taxonmapping = new int[taxa.length];
+			taxonmapping = new int[taxa.length*2-1];
 			for (int k = 0; k < taxa.length; k++) {
 				taxonmapping[k] = indexOf(newtree.getNode(k).getID(), taxa);
 			}
-			
+			for (int k = taxa.length; k < taxonmapping.length; k++) {
+				taxonmapping[k] = k;
+			}			
 		}
 
 		for (int k = 0; k < taxa.length; k++) {
@@ -122,9 +124,10 @@ public class TreeStateNodeSource extends BEASTObject implements StateNodeSource 
 			for (int j = 0; j < nodes.length; j++) {
 				for (int k = 0; k < metaDataLabels.size(); k++) {
 					Parameter sn = (Parameter) metaDataStateNodes.get(k);
-					if (j < sn.getDimension()) {
+					int index = nodes[j].getNr();
+					if (index < sn.getDimension()) {
 						Object o = nodes[j].getMetaData(metaDataLabels.get(k));
-						sn.setValue(j, o);
+						sn.setValue(index, o);
 					}
 				}
 			}

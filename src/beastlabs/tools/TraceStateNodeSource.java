@@ -131,7 +131,7 @@ public class TraceStateNodeSource extends BEASTObject implements StateNodeSource
 					Parameter p = (Parameter) sn;
 					Double value = tracelog.getTrace(label)[i];
 					p.setValue(dim, value);
-					Log.warning(p.getID() + "["+dim+"] = " + value);
+					// Log.warning(p.getID() + "["+dim+"] = " + value);
 				} else {
 					throw new IllegalArgumentException("don't know how to initialise non-parameter statenode " + sn.getID());
 				}
