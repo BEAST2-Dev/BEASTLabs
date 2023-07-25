@@ -11,7 +11,10 @@ import beast.base.core.Input;
 import beast.base.core.Log;
 import beast.base.inference.State;
 import beast.base.inference.StateNode;
+import beast.base.inference.parameter.BooleanParameter;
+import beast.base.inference.parameter.IntegerParameter;
 import beast.base.inference.parameter.Parameter;
+import beast.base.inference.parameter.RealParameter;
 import beastfx.app.tools.LogAnalyser;
 import beastfx.app.util.LogFile;
 
@@ -129,14 +132,22 @@ public class TraceStateNodeSource extends BEASTObject implements StateNodeSource
 				StateNode sn = sns.get(snNr);
 				if (sn instanceof Parameter) {
 					Parameter p = (Parameter) sn;
-					Double value = tracelog.getTrace(label)[i];
-					p.setValue(dim, value);
+					if (dim < p.getDimension()) {
+						Double value = tracelog.getTrace(label)[i];
+						if (p instanceof RealParameter) {
+							p.setValue(dim, value);
+						} else if (p instanceof BooleanParameter) {
+							p.setValue(dim, (value != 0.0));
+						} else if (p instanceof IntegerParameter) {
+							p.setValue(dim, value.intValue());
+						}
+					}
 					// Log.warning(p.getID() + "["+dim+"] = " + value);
 				} else {
 					throw new IllegalArgumentException("don't know how to initialise non-parameter statenode " + sn.getID());
 				}
 			}
-		}		
+		}
 	}
 	
 }

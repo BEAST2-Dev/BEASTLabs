@@ -22,23 +22,31 @@ public class SimulatedAnnealing extends MCMC implements Loggable {
 	public Input<Double> endTemp = new Input<Double>("endTemp","end temperature. Together with startTemp this " +
 			"determines the temperature trajectory (default 1e-4)", 1e-4);
 	
-	double m_fDeltaLogTemp;
+	protected double m_fDeltaLogTemp;
 	
 	@Override
 	public void initAndValidate() {
 		super.initAndValidate();
 		m_fDeltaLogTemp = Math.log(endTemp.get()) - Math.log(startTemp.get());
         posterior = posteriorInput.get();
+        if (posterior == null) {
+        	Log.warning("POSTERIOR=NULL");
+        }
         chainLength = chainLengthInput.get();
         loggers = loggersInput.get();
 	}
 	
 	
-	double fTemp;
+	protected double fTemp;
 	
 	@Override
     /** main MCMC loop **/ 
     protected void doLoop() throws IOException {
+        if (posterior == null) {
+        	Log.warning("POSTERIOR=NULL");
+            posterior = posteriorInput.get();
+        	Log.warning(posterior + "");
+        }
         String sBestXML = state.toXML(0);
         double fBestLogLikelihood = oldLogLikelihood;
 		double fTemp0 = startTemp.get();
