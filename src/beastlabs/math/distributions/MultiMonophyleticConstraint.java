@@ -215,11 +215,11 @@ public class MultiMonophyleticConstraint extends Distribution {
         for (List<Integer> list : taxonIDList) {
             if( !isMonophyletic(list) ) {
             	String [] taxa = tree.getTaxaNames();
-            	System.out.print(k + " " + list.size() + ":");
-            	for (Integer i : list) {
-            		System.err.print(taxa[i] + ",");
-            	}
-            	System.err.println();
+            	//System.out.print(k + " " + list.size() + ":");
+            	//for (Integer i : list) {
+            	//	System.err.print(taxa[i] + ",");
+            	//}
+            	//System.err.println();
             	isMonophyletic(list);
                 return false;
             }
