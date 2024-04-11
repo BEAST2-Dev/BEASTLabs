@@ -42,6 +42,7 @@ public class SimulatedAnnealing extends MCMC implements Loggable {
 	@Override
     /** main MCMC loop **/ 
     protected void doLoop() throws IOException {
+		debugFlag = Boolean.valueOf(System.getProperty("beast.debug")); 
         if (posterior == null) {
         	Log.warning("POSTERIOR=NULL");
             posterior = posteriorInput.get();
