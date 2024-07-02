@@ -133,7 +133,7 @@ public class SimulatedAnnealing extends MCMC implements Loggable {
             	// check that the posterior is correctly calculated at every third
             	// sample, as long as we are in debug mode
                 double fLogLikelihood = robustlyCalcPosterior(posterior); 
-                if (Math.abs(fLogLikelihood - oldLogLikelihood) > 1e-6) {
+                if (Double.isInfinite(fLogLikelihood) || Math.abs(fLogLikelihood - oldLogLikelihood) > 1e-6) {
                 	reportLogLikelihoods(posterior, "");
                     throw new RuntimeException("At sample "+ iSample + "\nLikelihood incorrectly calculated: " + oldLogLikelihood + " != " + fLogLikelihood
                     		+ " Operator: " + operator.getClass().getName());

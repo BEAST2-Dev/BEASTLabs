@@ -417,7 +417,7 @@ public class ConstrainedClusterTree extends Tree implements StateNodeInitialiser
     				double scale = newHeight / height;
     				
     				// scale clade
-    				node.scale(scale);
+    				scale(node, scale);
     				
     				// adjust parents if necessary
     				Node node2 = node;
@@ -435,6 +435,20 @@ public class ConstrainedClusterTree extends Tree implements StateNodeInitialiser
     			handlebounds(child, nodeToBoundMap, EPSILON);
     		}
     	}
+	}
+
+
+	private static void scale(Node node, double scale) {
+        if (!node.isLeaf() && !node.isFake()) {
+            double height = node.getHeight() * scale;
+            scale(node.getLeft(), scale);
+            if (node.getRight() != null) {
+                scale(node.getRight(), scale);
+            }
+            height = Math.max(node.getLeft().getHeight(), Math.max(height, node.getRight().getHeight()));
+            node.setHeight(height);
+        }
+		
 	}
 
 
