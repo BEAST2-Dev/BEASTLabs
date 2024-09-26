@@ -37,6 +37,7 @@
 		<fileset dir="${liblabs}" includes="nashorn-core-15.3.jar"/>
 		<fileset dir="${beast2path}/lib/junit" includes="junit-*.jar"/>
 		<fileset dir="${beast2path}/lib" includes="*.jar"/>
+		<fileset dir="${beast2path}/lib" includes="colt.jar"/>
         <pathelement path="${beast2classpath}"/>
         <pathelement path="${BeastFXpath}/build"/>
 	</path>

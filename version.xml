@@ -63,6 +63,7 @@
         <provider classname="beastlabs.evolution.substitutionmodel.EpochSubstitutionModel"/>
         <provider classname="beastlabs.evolution.substitutionmodel.GeneralLazySubstitutionModel"/>
         <provider classname="beastlabs.evolution.substitutionmodel.LazyHKY"/>
+        <provider classname="beastlabs.evolution.substitutionmodel.EmpiricalAAModelFromFile"/>
         <provider classname="beastlabs.evolution.taxonomy.Taxon"/>
         <provider classname="beastlabs.evolution.tree.ConstrainedClusterTree"/>
         <provider classname="beastlabs.evolution.tree.ConstrainedRandomTree"/>
