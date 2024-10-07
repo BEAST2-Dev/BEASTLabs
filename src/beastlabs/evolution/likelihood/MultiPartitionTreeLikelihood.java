@@ -78,8 +78,9 @@ public class MultiPartitionTreeLikelihood extends Distribution {
     private static final long MAX_UNDERFLOWS_BEFORE_ERROR = 100;
 
     private static final boolean RESCALING_OFF = false; // a debugging switch
-    private static final boolean DEBUG = true;
-static int instanceCount;
+    private static final boolean DEBUG = false;
+    static int instanceCount;
+    
     public static boolean IS_MULTI_PARTITION_RECOMMENDED() {
         if (!IS_MULTI_PARTITION_COMPATIBLE()) {
             return false;
@@ -349,9 +350,9 @@ static int instanceCount;
 
                 categoryRateBufferHelper[i] = new BufferIndexHelper(1, 0, i);
                 
-                eigenBufferHelper[i] = new BufferIndexHelper(1, 0);
+                eigenBufferHelper[i] = new BufferIndexHelper(1, 0, i);
                 
-                matrixBufferHelper[i] = new BufferIndexHelper(nodeCount, 0);
+                matrixBufferHelper[i] = new BufferIndexHelper(nodeCount, 0, i);
             }
 
             int eigenBufferCount = 0;
@@ -366,7 +367,7 @@ static int instanceCount;
 
                 // TODO: deal with substmodels that require more than 1 eigendecomposition (like epoch models)
                 eigenBufferCount += 2;  //substitutionModelDelegate.getEigenBufferCount();
-                matrixBufferCount += nodeCount; // substitutionModelDelegate.getMatrixBufferCount();
+                matrixBufferCount += nodeCount * 2; // substitutionModelDelegate.getMatrixBufferCount();
 
                 partitionNumber ++;
             }
@@ -564,8 +565,9 @@ static int instanceCount;
                     preferenceFlags,
                     requirementFlags
             );
-            BeagleDebugger debugger = new BeagleDebugger(beagle);
-            beagle = debugger;
+            
+//            BeagleDebugger debugger = new BeagleDebugger(beagle);
+//            beagle = debugger;
 
             InstanceDetails instanceDetails = beagle.getDetails();
             ResourceDetails resourceDetails = null;
@@ -1538,6 +1540,7 @@ static int instanceCount;
             flip[i] = true;
         }
         System.arraycopy(cachedLogLikelihoodsByPartition, 0, storedCachedLogLikelihoodsByPartition, 0, cachedLogLikelihoodsByPartition.length);
+        super.store();
     }
 
     /**
@@ -1568,6 +1571,7 @@ static int instanceCount;
         cachedLogLikelihoodsByPartition = storedCachedLogLikelihoodsByPartition;
         storedCachedLogLikelihoodsByPartition = tmp;
 
+        super.restore();
     }
 
     // @Override
