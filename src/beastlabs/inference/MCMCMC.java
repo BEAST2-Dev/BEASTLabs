@@ -33,6 +33,7 @@ import java.util.List;
 		"Note that log file names should have $(seed) in their name so " +
 		"that the first chain uses the actual seed in the file name and all subsequent chains add one to it." +
 		"Furthermore, the log and tree log should have the same sample frequency.")
+@Deprecated(since="Use the CoupledMCMC package instead https://github.com/nicfel/CoupledMCMC")
 public class MCMCMC extends MCMC {
 	public Input<Integer> nrOfChainsInput = new Input<Integer>("chains", " number of chains to run in parallel (default 2)", 2);
 	public Input<Integer> resampleEveryInput = new Input<Integer>("resampleEvery", "number of samples in between resampling (and possibly swappping) states", 1000);
@@ -57,6 +58,10 @@ public class MCMCMC extends MCMC {
 
 	@Override
 	public void initAndValidate() {
+		Log.warning("This class is deprecated");
+		Log.warning("Use the CoupledMCMCM package instead.");
+		Log.warning("https://github.com/nicfel/CoupledMCMC");
+		
 		if (nrOfChainsInput.get() < 1) {
 			throw new RuntimeException("chains must be at least 1");
 		}
