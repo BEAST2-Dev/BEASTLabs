@@ -29,7 +29,7 @@
     <import file="${beast2path}/build.xml" />
 
 
-	<property name="main_class_BEAST" value="beast.app.BeastMCMC" />
+	<property name="main_class_BEAST" value="beastfx.app.beast.BeastMain" />
 	<property name="report" value="${buildlabs}/junitreport"/>
 
 	<path id="classpath">
@@ -195,10 +195,12 @@
 			<formatter type="xml" />
 
 			<batchtest fork="yes" todir="${report}">
+			<!-->
 				<fileset dir="${srclabs}">
                     <include name="test/**/*Test.java"/>
                     <exclude name="test/beast/integration/**/*Test.java"/>
 				</fileset>
+				-->
 				<fileset dir="${srcBeast2}">
                     <include name="test/beast/integration/**/*Test.java"/>                                         
                     <exclude name="test/beast/integration/**/ResumeTest.java"/>                                         

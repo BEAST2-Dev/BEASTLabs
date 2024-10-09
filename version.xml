@@ -33,6 +33,7 @@
         <provider classname="beastlabs.evolution.likelihood.ExperimentalTreeLikelihood"/>
         <provider classname="beastlabs.evolution.likelihood.SupertreeLikelihood"/>
         <provider classname="beastlabs.evolution.likelihood.TraitedTreeLikelihood"/>
+        <provider classname="beastlabs.evolution.likelihood.MultiPartitionTreeLikelihood"/>
         <provider classname="beastlabs.evolution.operators.AdaptableVarianceMultivariateNormalOperator"/>
         <provider classname="beastlabs.evolution.operators.AttachAndUniformOperator"/>
         <provider classname="beastlabs.evolution.operators.AttachOperator"/>
