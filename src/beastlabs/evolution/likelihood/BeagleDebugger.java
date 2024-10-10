@@ -117,21 +117,21 @@ print();
 		beagle.setTipPartials(tipIndex, inPartials);
 	}
 
-	public void setRootPrePartials(            final int[] inbufferIndices,
-            final int[] instateFrequenciesIndices,
-            int count
-    )
-{
-print("setRootPrePartials");
-print("inbufferIndices",inbufferIndices);
-print("instateFrequenciesIndices",instateFrequenciesIndices);
-print("count",count);
-
-beagle.setRootPrePartials(inbufferIndices,
-instateFrequenciesIndices,
-count
-);
-}
+//	public void setRootPrePartials(            final int[] inbufferIndices,
+//            final int[] instateFrequenciesIndices,
+//            int count
+//    )
+//{
+//print("setRootPrePartials");
+//print("inbufferIndices",inbufferIndices);
+//print("instateFrequenciesIndices",instateFrequenciesIndices);
+//print("count",count);
+//
+//beagle.setRootPrePartials(inbufferIndices,
+//instateFrequenciesIndices,
+//count
+//);
+//}
 
 	public void setPartials(int bufferIndex, final double[] inPartials) {
 		print("setPartials");
@@ -220,27 +220,27 @@ print();
 		beagle.convolveTransitionMatrices(firstIndices, secondIndices, resultIndices, matrixCount);
 	}
 
-	public void addTransitionMatrices(final int[] firstIndices, final int[] secondIndices, final int[] resultIndices,
-			int matrixCount) {
-		print("addTransitionMatrices");
-		print("firstIndices", firstIndices);
-		print("secondIndices", secondIndices);
-		print("resultIndices", resultIndices);
-		print("matrixCount", matrixCount);
-
-print();
-		beagle.addTransitionMatrices(firstIndices, secondIndices, resultIndices, matrixCount);
-	}
-
-	public void transposeTransitionMatrices(final int[] inIndices, final int[] outIndices, int matrixCount) {
-		print("transposeTransitionMatrices");
-		print("inIndices", inIndices);
-		print("outIndices", outIndices);
-		print("matrixCount", matrixCount);
-
-print();
-		beagle.transposeTransitionMatrices(inIndices, outIndices, matrixCount);
-	}
+//	public void addTransitionMatrices(final int[] firstIndices, final int[] secondIndices, final int[] resultIndices,
+//			int matrixCount) {
+//		print("addTransitionMatrices");
+//		print("firstIndices", firstIndices);
+//		print("secondIndices", secondIndices);
+//		print("resultIndices", resultIndices);
+//		print("matrixCount", matrixCount);
+//
+//print();
+//		beagle.addTransitionMatrices(firstIndices, secondIndices, resultIndices, matrixCount);
+//	}
+//
+//	public void transposeTransitionMatrices(final int[] inIndices, final int[] outIndices, int matrixCount) {
+//		print("transposeTransitionMatrices");
+//		print("inIndices", inIndices);
+//		print("outIndices", outIndices);
+//		print("matrixCount", matrixCount);
+//
+//print();
+//		beagle.transposeTransitionMatrices(inIndices, outIndices, matrixCount);
+//	}
 
 	public void updateTransitionMatrices(int eigenIndex, final int[] probabilityIndices, final int[] firstDerivativeIndices,
 			final int[] secondDervativeIndices, final double[] edgeLengths, int count) {
@@ -284,14 +284,14 @@ print();
 		beagle.setTransitionMatrix(matrixIndex, inMatrix, paddedValue);
 	}
 
-	public void setDifferentialMatrix(int matrixIndex, final double[] inMatrix) {
-		print("setDifferentialMatrix");
-		print("matrixIndex", matrixIndex);
-		print("inMatrix", inMatrix);
-
-print();
-		beagle.setDifferentialMatrix(matrixIndex, inMatrix);
-	}
+//	public void setDifferentialMatrix(int matrixIndex, final double[] inMatrix) {
+//		print("setDifferentialMatrix");
+//		print("matrixIndex", matrixIndex);
+//		print("inMatrix", inMatrix);
+//
+//print();
+//		beagle.setDifferentialMatrix(matrixIndex, inMatrix);
+//	}
 
 	public void getTransitionMatrix(int matrixIndex, double[] outMatrix) {
 		print("getTransitionMatrix");
@@ -302,84 +302,84 @@ print();
 		beagle.getTransitionMatrix(matrixIndex, outMatrix);
 	}
 
-	public void updatePrePartials(final int[] operations, int operationCount, int cumulativeScaleIndex) {
-		print("updatePrePartials");
-		print("operations", operations);
-		print("operationCount", operationCount);
-		print("cumulativeScaleIndex", cumulativeScaleIndex);
-
-print();
-		beagle.updatePrePartials(operations, operationCount, cumulativeScaleIndex);
-	}
-
-	public void updatePrePartialsByPartition(final int[] operations, int operationCount) {
-		print("updatePrePartialsByPartition");
-		print("operations", operations);
-		print("operationCount", operationCount);
-
-print();
-		beagle.updatePrePartialsByPartition(operations, operationCount);
-	}
-
-	public void calculateEdgeDerivative(final int[] postBufferIndices, final int[] preBufferIndices, final int rootBufferIndex,
-			final int[] firstDerivativeIndices, final int[] secondDerivativeIndices, final int categoryWeightsIndex,
-			final int categoryRatesIndex, final int stateFrequenciesIndex, final int[] cumulativeScaleIndices,
-			int count, double[] outFirstDerivative, double[] outDiagonalSecondDerivative) {
-		print("calculateEdgeDerivative");
-		print("postBufferIndices", postBufferIndices);
-		print("preBufferIndices", preBufferIndices);
-		print("rootBufferIndex", rootBufferIndex);
-		print("firstDerivativeIndices", firstDerivativeIndices);
-		print("secondDerivativeIndices", secondDerivativeIndices);
-		print("categoryWeightsIndex", categoryWeightsIndex);
-		print("categoryRatesIndex", categoryRatesIndex);
-		print("stateFrequenciesIndex", stateFrequenciesIndex);
-		print("cumulativeScaleIndices", cumulativeScaleIndices);
-		print("count", count);
-		print("outFirstDerivative", outFirstDerivative);
-		print("outDiagonalSecondDerivative", outDiagonalSecondDerivative);
-
-print();
-		beagle.calculateEdgeDerivative(postBufferIndices, preBufferIndices, rootBufferIndex, firstDerivativeIndices,
-				secondDerivativeIndices, categoryWeightsIndex, categoryRatesIndex, stateFrequenciesIndex,
-				cumulativeScaleIndices, count, outFirstDerivative, outDiagonalSecondDerivative);
-	}
-
-	public void calculateEdgeDifferentials(final int[] postBufferIndices, final int[] preBufferIndices,
-			final int[] derivativeMatrixIndices, final int[] categoryWeightsIndices, int count, double[] outDerivatives,
-			double[] outSumDerivatives, double[] outSumSquaredDerivatives) {
-		print("calculateEdgeDifferentials");
-		print("postBufferIndices", postBufferIndices);
-		print("preBufferIndices", preBufferIndices);
-		print("derivativeMatrixIndices", derivativeMatrixIndices);
-		print("categoryWeightsIndices", categoryWeightsIndices);
-		print("count", count);
-		print("outDerivatives", outDerivatives);
-		print("outSumDerivatives", outSumDerivatives);
-		print("outSumSquaredDerivatives", outSumSquaredDerivatives);
-
-print();
-		beagle.calculateEdgeDifferentials(postBufferIndices, preBufferIndices, derivativeMatrixIndices,
-				categoryWeightsIndices, count, outDerivatives, outSumDerivatives, outSumSquaredDerivatives);
-	}
-
-	public void calculateCrossProductDifferentials(final int[] postBufferIndices, final int[] preBufferIndices,
-			final int[] categoryRateIndices, final int[] categoryWeightsIndices, final double[] edgeLengths, int count,
-			double[] outSumDerivatives, double[] outSumSquaredDerivatives) {
-		print("calculateCrossProductDifferentials");
-		print("postBufferIndices", postBufferIndices);
-		print("preBufferIndices", preBufferIndices);
-		print("categoryRateIndices", categoryRateIndices);
-		print("categoryWeightsIndices", categoryWeightsIndices);
-		print("edgeLengths", edgeLengths);
-		print("count", count);
-		print("outSumDerivatives", outSumDerivatives);
-		print("outSumSquaredDerivatives", outSumSquaredDerivatives);
-
-print();
-		beagle.calculateCrossProductDifferentials(postBufferIndices, preBufferIndices, categoryRateIndices,
-				categoryWeightsIndices, edgeLengths, count, outSumDerivatives, outSumSquaredDerivatives);
-	}
+//	public void updatePrePartials(final int[] operations, int operationCount, int cumulativeScaleIndex) {
+//		print("updatePrePartials");
+//		print("operations", operations);
+//		print("operationCount", operationCount);
+//		print("cumulativeScaleIndex", cumulativeScaleIndex);
+//
+//print();
+//		beagle.updatePrePartials(operations, operationCount, cumulativeScaleIndex);
+//	}
+//
+//	public void updatePrePartialsByPartition(final int[] operations, int operationCount) {
+//		print("updatePrePartialsByPartition");
+//		print("operations", operations);
+//		print("operationCount", operationCount);
+//
+//print();
+//		beagle.updatePrePartialsByPartition(operations, operationCount);
+//	}
+//
+//	public void calculateEdgeDerivative(final int[] postBufferIndices, final int[] preBufferIndices, final int rootBufferIndex,
+//			final int[] firstDerivativeIndices, final int[] secondDerivativeIndices, final int categoryWeightsIndex,
+//			final int categoryRatesIndex, final int stateFrequenciesIndex, final int[] cumulativeScaleIndices,
+//			int count, double[] outFirstDerivative, double[] outDiagonalSecondDerivative) {
+//		print("calculateEdgeDerivative");
+//		print("postBufferIndices", postBufferIndices);
+//		print("preBufferIndices", preBufferIndices);
+//		print("rootBufferIndex", rootBufferIndex);
+//		print("firstDerivativeIndices", firstDerivativeIndices);
+//		print("secondDerivativeIndices", secondDerivativeIndices);
+//		print("categoryWeightsIndex", categoryWeightsIndex);
+//		print("categoryRatesIndex", categoryRatesIndex);
+//		print("stateFrequenciesIndex", stateFrequenciesIndex);
+//		print("cumulativeScaleIndices", cumulativeScaleIndices);
+//		print("count", count);
+//		print("outFirstDerivative", outFirstDerivative);
+//		print("outDiagonalSecondDerivative", outDiagonalSecondDerivative);
+//
+//print();
+//		beagle.calculateEdgeDerivative(postBufferIndices, preBufferIndices, rootBufferIndex, firstDerivativeIndices,
+//				secondDerivativeIndices, categoryWeightsIndex, categoryRatesIndex, stateFrequenciesIndex,
+//				cumulativeScaleIndices, count, outFirstDerivative, outDiagonalSecondDerivative);
+//	}
+//
+//	public void calculateEdgeDifferentials(final int[] postBufferIndices, final int[] preBufferIndices,
+//			final int[] derivativeMatrixIndices, final int[] categoryWeightsIndices, int count, double[] outDerivatives,
+//			double[] outSumDerivatives, double[] outSumSquaredDerivatives) {
+//		print("calculateEdgeDifferentials");
+//		print("postBufferIndices", postBufferIndices);
+//		print("preBufferIndices", preBufferIndices);
+//		print("derivativeMatrixIndices", derivativeMatrixIndices);
+//		print("categoryWeightsIndices", categoryWeightsIndices);
+//		print("count", count);
+//		print("outDerivatives", outDerivatives);
+//		print("outSumDerivatives", outSumDerivatives);
+//		print("outSumSquaredDerivatives", outSumSquaredDerivatives);
+//
+//print();
+//		beagle.calculateEdgeDifferentials(postBufferIndices, preBufferIndices, derivativeMatrixIndices,
+//				categoryWeightsIndices, count, outDerivatives, outSumDerivatives, outSumSquaredDerivatives);
+//	}
+//
+//	public void calculateCrossProductDifferentials(final int[] postBufferIndices, final int[] preBufferIndices,
+//			final int[] categoryRateIndices, final int[] categoryWeightsIndices, final double[] edgeLengths, int count,
+//			double[] outSumDerivatives, double[] outSumSquaredDerivatives) {
+//		print("calculateCrossProductDifferentials");
+//		print("postBufferIndices", postBufferIndices);
+//		print("preBufferIndices", preBufferIndices);
+//		print("categoryRateIndices", categoryRateIndices);
+//		print("categoryWeightsIndices", categoryWeightsIndices);
+//		print("edgeLengths", edgeLengths);
+//		print("count", count);
+//		print("outSumDerivatives", outSumDerivatives);
+//		print("outSumSquaredDerivatives", outSumSquaredDerivatives);
+//
+//print();
+//		beagle.calculateCrossProductDifferentials(postBufferIndices, preBufferIndices, categoryRateIndices,
+//				categoryWeightsIndices, edgeLengths, count, outSumDerivatives, outSumSquaredDerivatives);
+//	}
 
 	public void updatePartials(final int[] operations, int operationCount, int cumulativeScaleIndex) {
 		print("updatePartials");
