@@ -125,7 +125,7 @@ public class MultiParititionTreeLikelihoodTest extends TestCase {
 
 		
 		MultiPartitionTreeLikelihood tl = new MultiPartitionTreeLikelihood();
-		tl.initByName("likelihood", likelihood, "likelihood", likelihood2);
+		tl.initByName("distribution", likelihood, "distribution", likelihood2);
 		
 		double fLogP = 0;
 		fLogP = tl.calculateLogP();
@@ -135,7 +135,7 @@ public class MultiParititionTreeLikelihoodTest extends TestCase {
 		likelihood.initByName("useAmbiguities", true, "data",data, "tree",tree, "siteModel", siteModel);
 		likelihood2.initByName("useAmbiguities", true, "data",data, "tree",tree, "siteModel", siteModel2);
 		tl = new MultiPartitionTreeLikelihood();
-		tl.initByName("likelihood", likelihood, "likelihood", likelihood2);
+		tl.initByName("distribution", likelihood, "distribution", likelihood2);
 		
 		fLogP = tl.calculateLogP();
 		assertEquals(fLogP, -1856.3418881275286-1992.2056440317247, BEASTTestCase.PRECISION);

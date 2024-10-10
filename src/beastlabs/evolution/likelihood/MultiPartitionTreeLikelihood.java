@@ -70,7 +70,7 @@ import java.util.Random;
 @Description("A DataLikelihoodDelegate that uses BEAGLE 3 to allow for parallelization across multiple data partitions")
 public class MultiPartitionTreeLikelihood extends Distribution {
 	
-    final public Input<List<GenericTreeLikelihood>> likelihoodsInput = new Input<>("likelihood", "tree likelilhood for each of the partitions", new ArrayList<>(), Validate.REQUIRED);
+    final public Input<List<GenericTreeLikelihood>> likelihoodsInput = new Input<>("distribution", "tree likelilhood for each of the partitions", new ArrayList<>(), Validate.REQUIRED);
 
 
     boolean needsUpdate;
@@ -80,7 +80,7 @@ public class MultiPartitionTreeLikelihood extends Distribution {
     private static final long MAX_UNDERFLOWS_BEFORE_ERROR = 100;
 
     private static final boolean RESCALING_OFF = false; // a debugging switch
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
     static int instanceCount;
     
     public static boolean IS_MULTI_PARTITION_RECOMMENDED() {
@@ -268,7 +268,7 @@ public class MultiPartitionTreeLikelihood extends Distribution {
                                                   throws DelegateTypeException {
 
 
-        setID(Alignments.get(0).getID());
+        //setID(Alignments.get(0).getID());
 
         this.Alignments = Alignments;
         this.dataType = Alignments.get(0).getDataType();
@@ -568,8 +568,8 @@ public class MultiPartitionTreeLikelihood extends Distribution {
                     requirementFlags
             );
             
-            BeagleDebugger debugger = new BeagleDebugger(beagle);
-            beagle = debugger;
+//            BeagleDebugger debugger = new BeagleDebugger(beagle);
+//            beagle = debugger;
 
             InstanceDetails instanceDetails = beagle.getDetails();
             ResourceDetails resourceDetails = null;
@@ -930,15 +930,15 @@ public class MultiPartitionTreeLikelihood extends Distribution {
      *
      * @return the log likelihood.
      */
-    int x = 0;
+//    int x = 0;
     @Override
     public double calculateLogP() {
 
-    	x++;
+//    	x++;
     	//System.err.println(x);
-    	if (x > 265) {
-    		((BeagleDebugger)beagle).output = true;
-    	}
+//    	if (x > 265) {
+//    		((BeagleDebugger)beagle).output = true;
+//    	}
         logP = Double.NEGATIVE_INFINITY;
         boolean done = false;
         long underflowCount = 0;
@@ -1051,7 +1051,7 @@ public class MultiPartitionTreeLikelihood extends Distribution {
                 if (DEBUG) {
                     System.out.println("updateSubstitutionModels, updatePartition["+k+"] = " + updatePartition[k]);
                 }
-                updateAllPartitions = false;
+//                updateAllPartitions = false;
                 // we are currently assuming a no-category model...
             }
             k++;
@@ -1083,7 +1083,7 @@ public class MultiPartitionTreeLikelihood extends Distribution {
                 if (DEBUG) {
                     System.out.println("updateSiteRateModels, updatePartition["+k+"] = " + updatePartition[k]);
                 }
-                updateAllPartitions = false;
+//                updateAllPartitions = false;
             }
             k++;
         }
@@ -1503,12 +1503,17 @@ public class MultiPartitionTreeLikelihood extends Distribution {
               needsUpdate |= updateSiteRateModels[i]; 
           }
 
-    	  // updateSubstitutionModel((BranchRateModel)model);
-          for (int i = 0; i < substitutionModels.size(); i++) {
-              updateSubstitutionModels[i] = substitutionModels.get(i).isDirtyCalculation();
-              needsUpdate |= updateSubstitutionModels[i]; 
-          }
+          
+          updateAllPartitions = tree.somethingIsDirty();
+          //if (!updateAllPartitions) {
+	    	  // updateSubstitutionModel((BranchRateModel)model);
+	          for (int i = 0; i < substitutionModels.size(); i++) {
+	              updateSubstitutionModels[i] = substitutionModels.get(i).isDirtyCalculation();
+	              needsUpdate |= updateSubstitutionModels[i]; 
+	          }
+          //}
   // Tell TreeDataLikelihood to update all nodes
+          
     	return super.requiresRecalculation();
     }
     // @Override

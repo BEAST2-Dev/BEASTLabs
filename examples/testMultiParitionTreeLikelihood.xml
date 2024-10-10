@@ -130,8 +130,8 @@ filter="450-898"/>
                 </distribution>
               </distribution>
               <distribution id="MultiPartitionTreeLikelihood" spec="beastlabs.evolution.likelihood.MultiPartitionTreeLikelihood">
-                	<likelihood idref="treeLikelihood.firsthalf"/>
-                	<likelihood idref="treeLikelihood.secondhalf"/>
+                	<distribution idref="treeLikelihood.firsthalf"/>
+                	<distribution idref="treeLikelihood.secondhalf"/>
               </distribution>
             </distribution>
         </distribution>
@@ -174,20 +174,9 @@ filter="450-898"/>
                 <parameter idref="freqParameter.s:firsthalf"/>
             </operator>
         </operator>
-        <!-->
         <operator id="FrequenciesExchanger.s:secondhalf" spec="AdaptableOperatorSampler" weight="0.05">
             <parameter idref="freqParameter.s:secondhalf"/>
-            <operator id="AVMNOperatorsecondhalf" spec="kernel.AdaptableVarianceMultivariateNormalOperator" allowNonsense="true" beta="0.05" burnin="400" initial="800" weight="0.1">
-                <transformations id="AVMNSumTransformsecondhalf" spec="operator.kernel.Transform$LogConstrainedSumTransform">
-                    <f idref="freqParameter.s:secondhalf"/>
-                </transformations>
-                <transformations id="AVMNLogTransformsecondhalf" spec="operator.kernel.Transform$LogTransform">
-                    <f idref="gammaShape.s:secondhalf"/>
-                    <f idref="kappa.s:secondhalf"/>
-                </transformations>
-                <transformations idref="AVMNNoTransform.firsthalf"/>
-                <kernelDistribution id="KernelDistribution$Bactrian.7" spec="operator.kernel.KernelDistribution$Bactrian"/>
-            </operator>
+            <operator idref="AVMNOperator.secondhalf"/>
             <operator id="FrequenciesExchangerX.s:secondhalf" spec="operator.kernel.BactrianDeltaExchangeOperator" delta="0.01" weight="0.1">
                 <parameter idref="freqParameter.s:secondhalf"/>
                 <kernelDistribution id="KernelDistribution$Bactrian.28" spec="operator.kernel.KernelDistribution$Bactrian"/>
@@ -203,22 +192,25 @@ filter="450-898"/>
                     <f idref="gammaShape.s:secondhalf"/>
                     <f idref="kappa.s:secondhalf"/>
                 </transformations>
+                <!--
                 <transformations id="AVMNNoTransform.secondhalf" spec="operator.kernel.Transform$NoTransform">
                     <f idref="Tree.t:tree"/>
                 </transformations>
+            -->
             </operator>
             <operator id="gammaShapeScalerX.s:secondhalf" spec="kernel.BactrianScaleOperator" parameter="@gammaShape.s:secondhalf" scaleFactor="0.5" upper="10.0" weight="0.1">
                 <kernelDistribution id="KernelDistribution$Bactrian.12" spec="operator.kernel.KernelDistribution$Bactrian"/>
             </operator>
-            <operator idref="AVMNOperatorsecondhalf"/>
+            <operator idref="AVMNOperator.secondhalf"/>
         </operator>
         <operator id="KappaScaler.s:secondhalf" spec="AdaptableOperatorSampler" weight="0.05">
             <parameter idref="kappa.s:secondhalf"/>
-            <operator idref="AVMNOperatorsecondhalf"/>
+            <operator idref="AVMNOperator.secondhalf"/>
             <operator id="KappaScalerX.s:secondhalf" spec="kernel.BactrianScaleOperator" parameter="@kappa.s:secondhalf" scaleFactor="0.1" upper="10.0" weight="0.1">
                 <kernelDistribution id="KernelDistribution$Bactrian.27" spec="operator.kernel.KernelDistribution$Bactrian"/>
             </operator>
         </operator>
+        <!-->
         -->
 
         <logger id="tracelog" spec="Logger" fileName="$(filebase).log" logEvery="1000" model="@posterior" sanitiseHeaders="true" sort="smart">
@@ -240,7 +232,7 @@ filter="450-898"/>
             <log idref="MultiPartitionTreeLikelihood0"/>
             <log idref="MultiPartitionTreeLikelihood"/>
         </logger>
-        <logger id="screenlog" spec="Logger" logEvery="1">
+        <logger id="screenlog" spec="Logger" logEvery="100">
             <log idref="posterior"/>
             <log idref="likelihood"/>
             <log idref="prior"/>
@@ -248,6 +240,10 @@ filter="450-898"/>
             <log idref="treeLikelihood.secondhalf"/>
             <log idref="MultiPartitionTreeLikelihood0"/>
             <log idref="MultiPartitionTreeLikelihood"/>
+            <log spec="beast.base.inference.util.RPNcalculator" expression="MultiPartitionTreeLikelihood0 MultiPartitionTreeLikelihood -">
+                <parameter idref="MultiPartitionTreeLikelihood0"/>
+                <parameter idref="MultiPartitionTreeLikelihood"/>
+            </log>
         </logger>
         <logger id="treelog.t:tree" spec="Logger" fileName="$(filebase)-$(tree).trees" logEvery="1000" mode="tree">
             <log id="TreeWithMetaDataLogger.t:tree" spec="beast.base.evolution.TreeWithMetaDataLogger" tree="@Tree.t:tree"/>
