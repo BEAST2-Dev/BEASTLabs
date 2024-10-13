@@ -55,6 +55,8 @@ spec="Alignment">
             <parameter id="freqParameter.s:secondhalf" spec="parameter.RealParameter" dimension="4" lower="0.0" name="stateNode" upper="1.0">0.25</parameter>
             <parameter id="gammaShape.s:secondhalf" spec="parameter.RealParameter" lower="0.1" name="stateNode">1.0</parameter>
             <parameter id="kappa.s:secondhalf" spec="parameter.RealParameter" lower="0.0" name="stateNode">2.0</parameter>
+            <parameter id="mutationRate.s:secondhalf" spec="parameter.RealParameter" lower="0.0" name="stateNode">1.0</parameter>
+            <parameter id="mutationRate.s:firsthalf" spec="parameter.RealParameter" lower="0.0" name="stateNode">1.0</parameter>
         </state>
         <init id="RandomTree.t:tree" spec="RandomTree" estimate="false" initial="@Tree.t:tree" taxa="@firsthalf">
             <populationModel id="ConstantPopulation0.t:tree" spec="ConstantPopulation">
@@ -104,7 +106,7 @@ spec="Alignment">
 	          <distribution id="MultiPartitionTreeLikelihood0" spec="CompoundDistribution" useThreads="true">
                 <distribution id="treeLikelihood.firsthalf" spec="TreeLikelihood" data="@firsthalf" tree="@Tree.t:tree">
                     <siteModel id="SiteModel.s:firsthalf" spec="SiteModel" gammaCategoryCount="4" shape="@gammaShape.s:firsthalf">
-                        <parameter id="mutationRate.s:firsthalf" spec="parameter.RealParameter" estimate="false" lower="0.0" name="mutationRate">1.0</parameter>
+                        <mutationRate idref="mutationRate.s:firsthalf"/>
                         <parameter id="proportionInvariant.s:firsthalf" spec="parameter.RealParameter" estimate="false" lower="0.0" name="proportionInvariant" upper="1.0">0.0</parameter>
                         <substModel id="hky.s:firsthalf" spec="HKY" kappa="@kappa.s:firsthalf">
                             <frequencies id="estimatedFreqs.s:firsthalf" spec="Frequencies" frequencies="@freqParameter.s:firsthalf"/>
@@ -121,7 +123,7 @@ spec="FilteredAlignment"
 data="@Primates"
 filter="450-898"/>
                     <siteModel id="SiteModel.s:secondhalf" spec="SiteModel" gammaCategoryCount="4" shape="@gammaShape.s:secondhalf">
-                        <parameter id="mutationRate.s:secondhalf" spec="parameter.RealParameter" estimate="false" lower="0.0" name="mutationRate">1.0</parameter>
+                        <mutationRate idref="mutationRate.s:secondhalf"/>
                         <parameter id="proportionInvariant.s:secondhalf" spec="parameter.RealParameter" estimate="false" lower="0.0" name="proportionInvariant" upper="1.0">0.0</parameter>
                         <substModel id="hky.s:secondhalf" spec="HKY" kappa="@kappa.s:secondhalf">
                             <frequencies id="estimatedFreqs.s:secondhalf" spec="Frequencies" frequencies="@freqParameter.s:secondhalf"/>
@@ -145,7 +147,12 @@ filter="450-898"/>
         <operator id="YuleModelBICEPSEpochTop.t:tree" spec="EpochFlexOperator" scaleFactor="0.1" tree="@Tree.t:tree" weight="2.0"/>
         <operator id="YuleModelBICEPSEpochAll.t:tree" spec="EpochFlexOperator" fromOldestTipOnly="false" scaleFactor="0.1" tree="@Tree.t:tree" weight="2.0"/>
         <operator id="YuleModelBICEPSTreeFlex.t:tree" spec="TreeStretchOperator" scaleFactor="0.01" tree="@Tree.t:tree" weight="2.0"/>
-
+        <operator id="FixMeanMutationRatesOperator" spec="operator.kernel.BactrianDeltaExchangeOperator" delta="0.75" weight="2.0">
+            <parameter idref="mutationRate.s:firsthalf"/>
+            <parameter idref="mutationRate.s:secondhalf"/>
+            <weightvector id="weightparameter" spec="parameter.IntegerParameter" dimension="2" estimate="false" lower="0" upper="0">449 449</weightvector>
+        </operator>
+        
         <operator id="gammaShapeScaler.s:firsthalf" spec="AdaptableOperatorSampler" weight="0.05">
             <parameter idref="gammaShape.s:firsthalf"/>
             <operator id="AVMNOperator.firsthalf" spec="kernel.AdaptableVarianceMultivariateNormalOperator" allowNonsense="true" beta="0.05" burnin="400" initial="800" weight="0.1">
@@ -231,6 +238,8 @@ filter="450-898"/>
 
             <log idref="MultiPartitionTreeLikelihood0"/>
             <log idref="MultiPartitionTreeLikelihood"/>
+            <log idref="mutationRate.s:firsthalf"/>
+            <log idref="mutationRate.s:secondhalf"/>
         </logger>
         <logger id="screenlog" spec="Logger" logEvery="100">
             <log idref="posterior"/>

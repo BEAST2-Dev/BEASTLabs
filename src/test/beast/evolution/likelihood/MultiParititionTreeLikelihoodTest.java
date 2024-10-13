@@ -2,35 +2,30 @@ package test.beast.evolution.likelihood;
 
 
 
+import java.io.File;
 import java.util.concurrent.Executors;
 
 import junit.framework.TestCase;
 import org.junit.Test;
 
+import beast.base.core.BEASTInterface;
 import beast.base.core.ProgramStatus;
 import beast.base.evolution.alignment.Alignment;
-import beast.base.evolution.alignment.Sequence;
-import beast.base.evolution.likelihood.ThreadedTreeLikelihood;
 import beast.base.evolution.likelihood.TreeLikelihood;
 import beast.base.evolution.sitemodel.SiteModel;
-import beast.base.evolution.substitutionmodel.Blosum62;
-import beast.base.evolution.substitutionmodel.CPREV;
-import beast.base.evolution.substitutionmodel.Dayhoff;
 import beast.base.evolution.substitutionmodel.Frequencies;
-import beast.base.evolution.substitutionmodel.GeneralSubstitutionModel;
 import beast.base.evolution.substitutionmodel.HKY;
-import beast.base.evolution.substitutionmodel.JTT;
-import beast.base.evolution.substitutionmodel.MTREV;
-import beast.base.evolution.substitutionmodel.SubstitutionModel;
-import beast.base.evolution.substitutionmodel.WAG;
 import beast.base.evolution.tree.Tree;
 import beast.base.evolution.tree.TreeParser;
+import beast.base.inference.Distribution;
+import beast.base.inference.MCMC;
+import beast.base.inference.State;
+import beast.base.inference.parameter.RealParameter;
+import beast.base.parser.XMLParser;
 import beastlabs.evolution.likelihood.MultiPartitionTreeLikelihood;
 import test.beast.BEASTTestCase;
 
-/** This test mimics the testLikelihood.xml file from Beast 1, which compares Beast 1 results to PAUP results. 
- * So, it these tests succeed, then Beast II calculates the same for these simple models as Beast 1 and PAUP.
- * **/
+/** test MultiParititionTreeLikelihood with two partitions **/
 public class MultiParititionTreeLikelihoodTest extends TestCase {
 
     public MultiParititionTreeLikelihoodTest() {
@@ -51,53 +46,11 @@ public class MultiParititionTreeLikelihoodTest extends TestCase {
 		return tl;
 	}
 
-	
-    static public Tree getTree(Alignment data, String tree) throws Exception {
-        TreeParser t = new TreeParser();
-        t.initByName("taxa", data,
-                "newick", tree,
-                "IsLabelledNewick", true);
-        return t;
-    }
-
-    static public Alignment getAlignment() throws Exception {
-//        Sequence human = new Sequence("human", "AGAAATATGTCTGATAAAAGAGTTACTTTGATAGAGTAAATAATAGGAGCTTAAACCCCCTTATTTCTACTAGGACTATGAGAATCGAACCCATCCCTGAGAATCCAAAATTCTCCGTGCCACCTATCACACCCCATCCTAAGTAAGGTCAGCTAAATAAGCTATCGGGCCCATACCCCGAAAATGTTGGTTATACCCTTCCCGTACTAAGAAATTTAGGTTAAATACAGACCAAGAGCCTTCAAAGCCCTCAGTAAGTTG-CAATACTTAATTTCTGTAAGGACTGCAAAACCCCACTCTGCATCAACTGAACGCAAATCAGCCACTTTAATTAAGCTAAGCCCTTCTAGACCAATGGGACTTAAACCCACAAACACTTAGTTAACAGCTAAGCACCCTAATCAAC-TGGCTTCAATCTAAAGCCCCGGCAGG-TTTGAAGCTGCTTCTTCGAATTTGCAATTCAATATGAAAA-TCACCTCGGAGCTTGGTAAAAAGAGGCCTAACCCCTGTCTTTAGATTTACAGTCCAATGCTTCA-CTCAGCCATTTTACCACAAAAAAGGAAGGAATCGAACCCCCCAAAGCTGGTTTCAAGCCAACCCCATGGCCTCCATGACTTTTTCAAAAGGTATTAGAAAAACCATTTCATAACTTTGTCAAAGTTAAATTATAGGCT-AAATCCTATATATCTTA-CACTGTAAAGCTAACTTAGCATTAACCTTTTAAGTTAAAGATTAAGAGAACCAACACCTCTTTACAGTGA");
-//        Sequence chimp = new Sequence("chimp", "AGAAATATGTCTGATAAAAGAATTACTTTGATAGAGTAAATAATAGGAGTTCAAATCCCCTTATTTCTACTAGGACTATAAGAATCGAACTCATCCCTGAGAATCCAAAATTCTCCGTGCCACCTATCACACCCCATCCTAAGTAAGGTCAGCTAAATAAGCTATCGGGCCCATACCCCGAAAATGTTGGTTACACCCTTCCCGTACTAAGAAATTTAGGTTAAGCACAGACCAAGAGCCTTCAAAGCCCTCAGCAAGTTA-CAATACTTAATTTCTGTAAGGACTGCAAAACCCCACTCTGCATCAACTGAACGCAAATCAGCCACTTTAATTAAGCTAAGCCCTTCTAGATTAATGGGACTTAAACCCACAAACATTTAGTTAACAGCTAAACACCCTAATCAAC-TGGCTTCAATCTAAAGCCCCGGCAGG-TTTGAAGCTGCTTCTTCGAATTTGCAATTCAATATGAAAA-TCACCTCAGAGCTTGGTAAAAAGAGGCTTAACCCCTGTCTTTAGATTTACAGTCCAATGCTTCA-CTCAGCCATTTTACCACAAAAAAGGAAGGAATCGAACCCCCTAAAGCTGGTTTCAAGCCAACCCCATGACCTCCATGACTTTTTCAAAAGATATTAGAAAAACTATTTCATAACTTTGTCAAAGTTAAATTACAGGTT-AACCCCCGTATATCTTA-CACTGTAAAGCTAACCTAGCATTAACCTTTTAAGTTAAAGATTAAGAGGACCGACACCTCTTTACAGTGA");
-//        Sequence bonobo = new Sequence("bonobo", "AGAAATATGTCTGATAAAAGAATTACTTTGATAGAGTAAATAATAGGAGTTTAAATCCCCTTATTTCTACTAGGACTATGAGAGTCGAACCCATCCCTGAGAATCCAAAATTCTCCGTGCCACCTATCACACCCCATCCTAAGTAAGGTCAGCTAAATAAGCTATCGGGCCCATACCCCGAAAATGTTGGTTATACCCTTCCCGTACTAAGAAATTTAGGTTAAACACAGACCAAGAGCCTTCAAAGCTCTCAGTAAGTTA-CAATACTTAATTTCTGTAAGGACTGCAAAACCCCACTCTGCATCAACTGAACGCAAATCAGCCACTTTAATTAAGCTAAGCCCTTCTAGATTAATGGGACTTAAACCCACAAACATTTAGTTAACAGCTAAACACCCTAATCAGC-TGGCTTCAATCTAAAGCCCCGGCAGG-TTTGAAGCTGCTTCTTTGAATTTGCAATTCAATATGAAAA-TCACCTCAGAGCTTGGTAAAAAGAGGCTTAACCCCTGTCTTTAGATTTACAGTCCAATGCTTCA-CTCAGCCATTTTACCACAAAAAAGGAAGGAATCGAACCCCCTAAAGCTGGTTTCAAGCCAACCCCATGACCCCCATGACTTTTTCAAAAGATATTAGAAAAACTATTTCATAACTTTGTCAAAGTTAAATTACAGGTT-AAACCCCGTATATCTTA-CACTGTAAAGCTAACCTAGCATTAACCTTTTAAGTTAAAGATTAAGAGGACCAACACCTCTTTACAGTGA");
-
-        Sequence human = new Sequence("human", "AGAAATATGTCTGATAAAAGAGTTACTTTGATAGAGTAAATAATAGGAGCTTAAACCCCCTTATTTCTACTAGGACTATGAGAATCGAACCCATCCCTGAGAATCCAAAATTCTCCGTGCCACCTATCACACCCCATCCTAAGTAAGGTCAGCTAAATAAGCTATCGGGCCCATACCCCGAAAATGTTGGTTATACCCTTCCCGTACTAAGAAATTTAGGTTAAATACAGACCAAGAGCCTTCAAAGCCCTCAGTAAGTTG-CAATACTTAATTTCTGTAAGGACTGCAAAACCCCACTCTGCATCAACTGAACGCAAATCAGCCACTTTAATTAAGCTAAGCCCTTCTAGACCAATGGGACTTAAACCCACAAACACTTAGTTAACAGCTAAGCACCCTAATCAAC-TGGCTTCAATCTAAAGCCCCGGCAGG-TTTGAAGCTGCTTCTTCGAATTTGCAATTCAATATGAAAA-TCACCTCGGAGCTTGGTAAAAAGAGGCCTAACCCCTGTCTTTAGATTTACAGTCCAATGCTTCA-CTCAGCCATTTTACCACAAAAAAGGAAGGAATCGAACCCCCCAAAGCTGGTTTCAAGCCAACCCCATGGCCTCCATGACTTTTTCAAAAGGTATTAGAAAAACCATTTCATAACTTTGTCAAAGTTAAATTATAGGCT-AAATCCTATATATCTTA-CACTGTAAAGCTAACTTAGCATTAACCTTTTAAGTTAAAGATTAAGAGAACCAACACCTCTTTACAGTGA");
-        Sequence chimp = new Sequence("chimp", "AGAAATATGTCTGATAAAAGAATTACTTTGATAGAGTAAATAATAGGAGTTCAAATCCCCTTATTTCTACTAGGACTATAAGAATCGAACTCATCCCTGAGAATCCAAAATTCTCCGTGCCACCTATCACACCCCATCCTAAGTAAGGTCAGCTAAATAAGCTATCGGGCCCATACCCCGAAAATGTTGGTTACACCCTTCCCGTACTAAGAAATTTAGGTTAAGCACAGACCAAGAGCCTTCAAAGCCCTCAGCAAGTTA-CAATACTTAATTTCTGTAAGGACTGCAAAACCCCACTCTGCATCAACTGAACGCAAATCAGCCACTTTAATTAAGCTAAGCCCTTCTAGATTAATGGGACTTAAACCCACAAACATTTAGTTAACAGCTAAACACCCTAATCAAC-TGGCTTCAATCTAAAGCCCCGGCAGG-TTTGAAGCTGCTTCTTCGAATTTGCAATTCAATATGAAAA-TCACCTCAGAGCTTGGTAAAAAGAGGCTTAACCCCTGTCTTTAGATTTACAGTCCAATGCTTCA-CTCAGCCATTTTACCACAAAAAAGGAAGGAATCGAACCCCCTAAAGCTGGTTTCAAGCCAACCCCATGACCTCCATGACTTTTTCAAAAGATATTAGAAAAACTATTTCATAACTTTGTCAAAGTTAAATTACAGGTT-AACCCCCGTATATCTTA-CACTGTAAAGCTAACCTAGCATTAACCTTTTAAGTTAAAGATTAAGAGGACCGACACCTCTTTACAGTGA");
-        Sequence gorilla = new Sequence("gorilla", "AGAAATATGTCTGATAAAAGAGTTACTTTGATAGAGTAAATAATAGAGGTTTAAACCCCCTTATTTCTACTAGGACTATGAGAATTGAACCCATCCCTGAGAATCCAAAATTCTCCGTGCCACCTGTCACACCCCATCCTAAGTAAGGTCAGCTAAATAAGCTATCGGGCCCATACCCCGAAAATGTTGGTCACATCCTTCCCGTACTAAGAAATTTAGGTTAAACATAGACCAAGAGCCTTCAAAGCCCTTAGTAAGTTA-CAACACTTAATTTCTGTAAGGACTGCAAAACCCTACTCTGCATCAACTGAACGCAAATCAGCCACTTTAATTAAGCTAAGCCCTTCTAGATCAATGGGACTCAAACCCACAAACATTTAGTTAACAGCTAAACACCCTAGTCAAC-TGGCTTCAATCTAAAGCCCCGGCAGG-TTTGAAGCTGCTTCTTCGAATTTGCAATTCAATATGAAAT-TCACCTCGGAGCTTGGTAAAAAGAGGCCCAGCCTCTGTCTTTAGATTTACAGTCCAATGCCTTA-CTCAGCCATTTTACCACAAAAAAGGAAGGAATCGAACCCCCCAAAGCTGGTTTCAAGCCAACCCCATGACCTTCATGACTTTTTCAAAAGATATTAGAAAAACTATTTCATAACTTTGTCAAGGTTAAATTACGGGTT-AAACCCCGTATATCTTA-CACTGTAAAGCTAACCTAGCGTTAACCTTTTAAGTTAAAGATTAAGAGTATCGGCACCTCTTTGCAGTGA");
-
-        Alignment data = new Alignment();
-//        data.initByName("sequence", human, "sequence", chimp, "sequence", bonobo, 
-//                "dataType", "nucleotide"
-//        );
-        data.initByName("sequence", human, "sequence", chimp, "sequence", gorilla, 
-                "dataType", "nucleotide"
-        );
-        return data;
-    }
-
-    static public Tree getTree(Alignment data) throws Exception {
-        TreeParser tree = new TreeParser();
-        tree.initByName("taxa", data,
-                "newick", "((human:0.1,chimp:0.1):0.1,gorilla:0.2);",
-//                "newick", "(human:0.024003,chimp:0.024003);",
-                "IsLabelledNewick", true);
-        tree.setID("Tree.t:tree");
-        return tree;
-    }
-
-    @Test
+	@Test
 	public void testJC69Likelihood() throws Exception {
-    	// for (int i = 0; i < 1; i++) {
-		// Set up JC69 model: uniform freqs, kappa = 1, 0 gamma categories
     	
 		Alignment data = BEASTTestCase.getAlignment();
 		Tree tree = BEASTTestCase.getTree(data);
-//        Alignment data = getAlignment();
-//        Tree tree = getTree(data);
 		
 		Frequencies freqs = new Frequencies();
 		freqs.initByName("data", data, 
@@ -111,7 +64,6 @@ public class MultiParititionTreeLikelihoodTest extends TestCase {
 		siteModel.initByName("mutationRate", "1.0", "gammaCategoryCount", 1, "substModel", jc, "shape", "0.5");
 
 		TreeLikelihood likelihood = newTreeLikelihood();
-		//System.setProperty("java.only", "true");
 		likelihood.initByName("data",data, "tree",tree, "siteModel", siteModel);
 	
 		HKY hky = new HKY();
@@ -139,542 +91,186 @@ public class MultiParititionTreeLikelihoodTest extends TestCase {
 		
 		fLogP = tl.calculateLogP();
 		assertEquals(fLogP, -1856.3418881275286-1992.2056440317247, BEASTTestCase.PRECISION);
-    	// }
+    }
+    
+    
+    @Test
+    public void testStateUpdate() throws Exception {
+    	XMLParser parser = new XMLParser();
+    	MCMC mcmc = (MCMC) parser.parseFile(new File("examples/testMultiParitionTreeLikelihood.xml"));
+    	State state = mcmc.startStateInput.get();
+    	int k = 0;
+    	Tree tree = (Tree) state.stateNodeInput.get().get(k++);
+    	TreeParser tp = new TreeParser("((((((Gorilla:0.0723395143713732,(Homo_sapiens:0.052879787958654334,Pan:0.052879787958654334):0.01945972641271887):0.07620607670523938,Pongo:0.14854559107661247):0.04562010226275853,Hylobates:0.19416569333937111):0.14412091592210913,((M_fascicularis:0.05467554166298294,(M_mulatta:0.019285644045882844,Macaca_fuscata:0.019285644045882844):0.0353898976171001):0.03224313872198703,M_sylvanus:0.08691868038496997):0.25136792887651027):0.11469256513277382,Saimiri_sciureus:0.45297917439425395):0.13803066465903857,(Lemur_catta:0.4409509877855818,Tarsius_syrichta:0.4409509877855818):0.15005885126771074):0.0");
+    	tree.assignFrom(tp);
+    	
+    	MultiPartitionTreeLikelihood beagleTL = null;
+    	for (BEASTInterface o : tree.getOutputs()) {
+    		if (o instanceof TreeLikelihood) {
+    			for (BEASTInterface o2 : o.getOutputs()) {
+    				if (o2 instanceof MultiPartitionTreeLikelihood) {
+    	    			beagleTL = (MultiPartitionTreeLikelihood) o2;
+    	    			break;
+    				}
+    			}
+    		}
+    	}
+    	if (beagleTL == null) {
+    		throw new RuntimeException("Expected MultiPartitionTreeLikelihood in output of tree");
+    	}
+    	RealParameter birthRatetree = (RealParameter) state.stateNodeInput.get().get(k++);
+    	RealParameter gammaShapefirsthalf = (RealParameter) state.stateNodeInput.get().get(k++);
+    	RealParameter kappafirsthalf = (RealParameter) state.stateNodeInput.get().get(k++);
+    	RealParameter freqParameterfirsthalf = (RealParameter) state.stateNodeInput.get().get(k++);
+    	RealParameter freqParametersecondhalf = (RealParameter) state.stateNodeInput.get().get(k++);
+    	RealParameter gammaShapesecondhalf = (RealParameter) state.stateNodeInput.get().get(k++);
+    	RealParameter kappasecondhalf = (RealParameter) state.stateNodeInput.get().get(k++);
+    	RealParameter mutationRatefirsthalf = (RealParameter) state.stateNodeInput.get().get(k++);
+    	RealParameter mutationRatesecondhalf = (RealParameter) state.stateNodeInput.get().get(k++);
+    	Distribution posterior = mcmc.posteriorInput.get();
+    	
+
+    	double logP = state.robustlyCalcPosterior(mcmc.posteriorInput.get());
+    	assertEquals(-16297.263551345248, logP);
+    	assertEquals(44, beagleTL.totalMatrixUpdateCount);
+    	assertEquals(22, beagleTL.totalPartialsUpdateCount);
+    	assertEquals(1, beagleTL.totalEvaluationCount);
+
+    	long lastMUC = beagleTL.totalMatrixUpdateCount;
+    	long lastPUC = beagleTL.totalPartialsUpdateCount;
+    	
+    	state.store(0);
+    	testParameterUpdate(birthRatetree, 3.5, -16291.090775947769, 44, 22, 1, state, posterior, beagleTL);
+    	lastMUC = report(lastMUC, beagleTL.totalMatrixUpdateCount);
+    	lastPUC = report2(lastPUC, beagleTL.totalPartialsUpdateCount);
+    	
+    	state.store(0);
+    	testParameterUpdate(gammaShapefirsthalf, 0.3
+    			,/*logP*/-16161.361498166185
+    	    	,/*expectedMatrixUpdateCount*/66
+    	    	,/*expectedPartialsUpdateCount*/33
+    	    	,/*expectedEvaluationCount*/2, state, posterior, beagleTL);
+    	lastMUC = report(lastMUC, beagleTL.totalMatrixUpdateCount);
+    	lastPUC = report2(lastPUC, beagleTL.totalPartialsUpdateCount);
+
+    	state.store(0);
+    	testParameterUpdate(gammaShapesecondhalf, 0.38
+    			,/*logP*/-16015.435567151202
+    	    	,/*expectedMatrixUpdateCount*/88
+    	    	,/*expectedPartialsUpdateCount*/44
+    	    	,/*expectedEvaluationCount*/3, state, posterior, beagleTL);
+    	lastMUC = report(lastMUC, beagleTL.totalMatrixUpdateCount);
+    	lastPUC = report2(lastPUC, beagleTL.totalPartialsUpdateCount);
+
+    	state.store(0);
+    	testParameterUpdate(kappafirsthalf, 13.8
+    			,/*logP*/-15968.91544381202
+    	    	,/*expectedMatrixUpdateCount*/110
+    	    	,/*expectedPartialsUpdateCount*/55
+    	    	,/*expectedEvaluationCount*/4, state, posterior, beagleTL);
+    	lastMUC = report(lastMUC, beagleTL.totalMatrixUpdateCount);
+    	lastPUC = report2(lastPUC, beagleTL.totalPartialsUpdateCount);
+
+    	state.store(0);
+    	testParameterUpdate(kappasecondhalf, 11.7
+    			,/*logP*/-15840.822384672445
+    	    	,/*expectedMatrixUpdateCount*/132
+    	    	,/*expectedPartialsUpdateCount*/66
+    	    	,/*expectedEvaluationCount*/5, state, posterior, beagleTL);
+    	lastMUC = report(lastMUC, beagleTL.totalMatrixUpdateCount);
+    	lastPUC = report2(lastPUC, beagleTL.totalPartialsUpdateCount);
+    	
+    	state.store(0);
+		System.out.println("setting " + mutationRatefirsthalf.getID() + " to " + 1.22);
+    	mutationRatefirsthalf.setValue(1.22);
+		System.out.println("setting " + mutationRatesecondhalf.getID() + " to " + 0.88);
+    	mutationRatesecondhalf.setValue(0.88);
+    	state.storeCalculationNodes();
+        state.checkCalculationNodesDirtiness();
+        logP = posterior.calculateLogP();
+        state.acceptCalculationNodes();
+    	
+    	assertEquals(-15828.783962608246, logP);
+    	assertEquals(176, beagleTL.totalMatrixUpdateCount);
+    	assertEquals(88, beagleTL.totalPartialsUpdateCount);
+    	assertEquals(6, beagleTL.totalEvaluationCount);
+    	lastMUC = report(lastMUC, beagleTL.totalMatrixUpdateCount);
+    	lastPUC = report2(lastPUC, beagleTL.totalPartialsUpdateCount);
+
+    
+    	state.store(0);
+    	freqParameterfirsthalf.setValue(1, 0.35);
+    	freqParameterfirsthalf.setValue(2, 0.08);
+    	freqParameterfirsthalf.setValue(3, 0.22);
+    	testParameterUpdate(freqParameterfirsthalf, 0.35
+    			,/*logP*/-15415.55555897793
+    	    	,/*expectedMatrixUpdateCount*/198
+    	    	,/*expectedPartialsUpdateCount*/99
+    	    	,/*expectedEvaluationCount*/7, state, posterior, beagleTL);
+    	lastMUC = report(lastMUC, beagleTL.totalMatrixUpdateCount);
+    	lastPUC = report2(lastPUC, beagleTL.totalPartialsUpdateCount);
+
+    	state.store(0);
+    	freqParametersecondhalf.setValue(1, 0.28);
+    	freqParametersecondhalf.setValue(2, 0.09);
+    	freqParametersecondhalf.setValue(3, 0.24);
+    	testParameterUpdate(freqParametersecondhalf, 0.39
+    			,/*logP*/-15096.62559406815
+    	    	,/*expectedMatrixUpdateCount*/220
+    	    	,/*expectedPartialsUpdateCount*/110
+    	    	,/*expectedEvaluationCount*/8, state, posterior, beagleTL);
+    	lastMUC = report(lastMUC, beagleTL.totalMatrixUpdateCount);
+    	lastPUC = report2(lastPUC, beagleTL.totalPartialsUpdateCount);
+    	
+    	state.store(0);
+    	tree.getRoot().setHeight(0.65);
+    	testParameterUpdate(birthRatetree, 3.5, -15130.412022712584, 224, 112, 9, state, posterior, beagleTL);
+    	lastMUC = report(lastMUC, beagleTL.totalMatrixUpdateCount);
+    	lastPUC = report2(lastPUC, beagleTL.totalPartialsUpdateCount);
+
+    	
+    	state.robustlyCalcPosterior(posterior);
+    	lastMUC = report(lastMUC, beagleTL.totalMatrixUpdateCount);
+    	lastPUC = report2(lastPUC, beagleTL.totalPartialsUpdateCount);
+    	
+    	state.store(0);
+    	tree.scale(1.1);
+    	testParameterUpdate(birthRatetree, 3.5, -15078.013548252191, 312, 156, 11, state, posterior, beagleTL);
+    	lastMUC = report(lastMUC, beagleTL.totalMatrixUpdateCount);
+    	lastPUC = report2(lastPUC, beagleTL.totalPartialsUpdateCount);
+
+    }
+
+	private long report(long lastMUC, long totalMatrixUpdateCount) {
+		System.out.println("Matrix operations: " + (totalMatrixUpdateCount - lastMUC) + " out of " + totalMatrixUpdateCount);
+		return totalMatrixUpdateCount;
 	}
 
-//    @Test
-//	public void testProportionsOfLikelihood() throws Exception {
-//		// 2 threads
-//		Alignment data = BEASTTestCase.getAlignment();
-//		Tree tree = BEASTTestCase.getTree(data);
-//		
-//		Frequencies freqs = new Frequencies();
-//		freqs.initByName("data", data, 
-//						 "estimate", false);
-//
-//		HKY hky = new HKY();
-//		hky.initByName("kappa", "1.0", 
-//				       "frequencies",freqs);
-//
-//		SiteModel siteModel = new SiteModel();
-//		siteModel.initByName("mutationRate", "1.0", "gammaCategoryCount", 1, "substModel", hky);
-//
-//		ThreadedTreeLikelihood likelihood = newThreadedTreeLikelihood();
-//		likelihood.initByName("data",data, "tree",tree, "siteModel", siteModel, "proportions", "1 2");
-//		double fLogP = 0;
-//		fLogP = likelihood.calculateLogP();
-//		assertEquals(fLogP, -1992.2056440317247, BEASTTestCase.PRECISION);
-// 
-//		likelihood.initByName("useAmbiguities", true, "data",data, "tree",tree, "siteModel", siteModel);
-//		fLogP = likelihood.calculateLogP();
-//		assertEquals(fLogP, -1992.2056440317247, BEASTTestCase.PRECISION);
-//
-//		// 3 threads
-//		ProgramStatus.m_nThreads = 3;
-//		ProgramStatus.g_exec = Executors.newFixedThreadPool(ProgramStatus.m_nThreads);
-//    
-//		likelihood = newThreadedTreeLikelihood();
-//		likelihood.initByName("data",data, "tree",tree, "siteModel", siteModel, "proportions", "1 2");
-//		fLogP = 0;
-//		fLogP = likelihood.calculateLogP();
-//		assertEquals(fLogP, -1992.2056440317247, BEASTTestCase.PRECISION);
-//
-//		// 5 threads
-//		ProgramStatus.m_nThreads = 5;
-//		ProgramStatus.g_exec = Executors.newFixedThreadPool(ProgramStatus.m_nThreads);
-//    
-//		likelihood = newThreadedTreeLikelihood();
-//		likelihood.initByName("data",data, "tree",tree, "siteModel", siteModel, "proportions", "1 2");
-//		fLogP = 0;
-//		fLogP = likelihood.calculateLogP();
-//		assertEquals(fLogP, -1992.2056440317247, BEASTTestCase.PRECISION);
-//
-//		// restore to 2 threads
-//		ProgramStatus.m_nThreads = 2;
-//		ProgramStatus.g_exec = Executors.newFixedThreadPool(ProgramStatus.m_nThreads);
-//}
-//
-//    @Test
-//	public void testAscertainedJC69Likelihood() throws Exception {
-//		// as testJC69Likelihood but with ascertained alignment	
-//		Alignment data = BEASTTestCase.getAscertainedAlignment();
-//		Tree tree = BEASTTestCase.getTree(data);
-//		
-//		Frequencies freqs = new Frequencies();
-//		freqs.initByName("data", data, 
-//				 "estimate", false);
-//
-//		HKY hky = new HKY();
-//		hky.initByName("kappa", "1.0", "frequencies", freqs);
-//
-//		SiteModel siteModel = new SiteModel();
-//		siteModel.initByName("mutationRate", "1.0", "gammaCategoryCount", 1, "substModel", hky);
-//
-//		ThreadedTreeLikelihood likelihood = newThreadedTreeLikelihood();
-//		likelihood.initByName("data",data, "tree",tree, "siteModel", siteModel);
-//
-//		double fLogP = 0;
-//		fLogP = likelihood.calculateLogP();
-//		// the following number comes from Beast 1.6
-//		assertEquals(fLogP, -737.7140695360017, BEASTTestCase.PRECISION);
-//	}
-//	
-//	@Test
-//	public void testK80Likelihood() throws Exception {
-//		// Set up K80 model: uniform freqs, kappa = 27.402591, 0 gamma categories	
-//		Alignment data = BEASTTestCase.getAlignment();
-//		Tree tree = BEASTTestCase.getTree(data);
-//		
-//		Frequencies freqs = new Frequencies();
-//		freqs.initByName("data", data, 
-//				 "estimate", false);
-//
-//		HKY hky = new HKY();
-//		hky.initByName("kappa", "27.40259", "frequencies", freqs);
-//
-//		SiteModel siteModel = new SiteModel();
-//		siteModel.initByName("mutationRate", "1.0", "gammaCategoryCount", 1, "substModel", hky);
-//
-//		ThreadedTreeLikelihood likelihood = newThreadedTreeLikelihood();
-//		likelihood.initByName("data",data, "tree",tree, "siteModel", siteModel);
-//
-//		double fLogP = 0;
-//		fLogP = likelihood.calculateLogP();
-//		assertEquals(fLogP, -1856.303048876734, BEASTTestCase.PRECISION);
-//
-//		likelihood.initByName("useAmbiguities", true, "data",data, "tree",tree, "siteModel", siteModel);
-//		fLogP = likelihood.calculateLogP();
-//		assertEquals(fLogP, -1856.303048876734, BEASTTestCase.PRECISION);
-//	}
-//	
-//	@Test
-//	public void testHKY85Likelihood() throws Exception {
-//		// Set up HKY85 model: estimated freqs, kappa = 29.739445, 0 gamma categories	
-//		Alignment data = BEASTTestCase.getAlignment();
-//		Tree tree = BEASTTestCase.getTree(data);
-//		
-//		Frequencies freqs = new Frequencies();
-//		freqs.initByName("data", data); 
-//
-//		HKY hky = new HKY();
-//		hky.initByName("kappa", "29.739445", "frequencies", freqs);
-//
-//		SiteModel siteModel = new SiteModel();
-//		siteModel.initByName("mutationRate", "1.0", "gammaCategoryCount", 1, "substModel", hky);
-//
-//		ThreadedTreeLikelihood likelihood = newThreadedTreeLikelihood();
-//		likelihood.initByName("data",data, "tree",tree, "siteModel", siteModel);
-//
-//		double fLogP = 0;
-//		fLogP = likelihood.calculateLogP();
-//		assertEquals(fLogP, -1825.2131708068507, BEASTTestCase.PRECISION);
-//	
-//		likelihood.initByName("useAmbiguities", true, "data",data, "tree",tree, "siteModel", siteModel);
-//		fLogP = likelihood.calculateLogP();
-//		assertEquals(fLogP, -1825.2131708068507, BEASTTestCase.PRECISION);
-//	}
-//	
-//	
-//	@Test
-//	public void testHKY85GLikelihood() throws Exception {
-//		// Set up HKY85+G model: estimated freqs, kappa = 38.82974, 4 gamma categories, shape = 0.137064	
-//		Alignment data = BEASTTestCase.getAlignment();
-//		Tree tree = BEASTTestCase.getTree(data);
-//		
-//		Frequencies freqs = new Frequencies();
-//		freqs.initByName("data", data); 
-//
-//		HKY hky = new HKY();
-//		hky.initByName("kappa", "38.82974", "frequencies", freqs);
-//
-//		SiteModel siteModel = new SiteModel();
-//		siteModel.initByName("mutationRate", "1.0", "gammaCategoryCount", 4,
-//				"shape", "0.137064", 
-//				"proportionInvariant", "0.0",
-//				"substModel", hky);
-//
-//		ThreadedTreeLikelihood likelihood = newThreadedTreeLikelihood();
-//		likelihood.initByName("data",data, "tree",tree, "siteModel", siteModel);
-//
-//		double fLogP = 0;
-//		fLogP = likelihood.calculateLogP();
-//		System.err.println(fLogP - -1789.7593576610134);
-//		assertEquals(fLogP, -1789.7593576610134, BEASTTestCase.PRECISION);
-//	
-//		likelihood.initByName("useAmbiguities", true, "data",data, "tree",tree, "siteModel", siteModel);
-//		fLogP = likelihood.calculateLogP();
-//		assertEquals(fLogP, -1789.7593576610134, BEASTTestCase.PRECISION);
-//	}
-//
-//	@Test
-//	public void testHKY85ILikelihood() throws Exception {
-//		// Set up HKY85+I model: estimated freqs, kappa = 38.564672, 0 gamma categories, prop invariant = 0.701211	
-//		Alignment data = BEASTTestCase.getAlignment();
-//		Tree tree = BEASTTestCase.getTree(data);
-//		
-//		Frequencies freqs = new Frequencies();
-//		freqs.initByName("data", data); 
-//
-//		HKY hky = new HKY();
-//		hky.initByName("kappa", "38.564672", "frequencies", freqs);
-//
-//		SiteModel siteModel = new SiteModel();
-//		siteModel.initByName("mutationRate", "1.0", "gammaCategoryCount", 1,
-//				"shape", "0.137064", 
-//				"proportionInvariant", "0.701211",
-//				"substModel", hky);
-//
-//		ThreadedTreeLikelihood likelihood = newThreadedTreeLikelihood();
-//		likelihood.initByName("data",data, "tree",tree, "siteModel", siteModel);
-//
-//		double fLogP = 0;
-//		fLogP = likelihood.calculateLogP();
-//		assertEquals(fLogP, -1789.912401996943, BEASTTestCase.PRECISION);
-//
-//		likelihood.initByName("useAmbiguities", true, "data",data, "tree",tree, "siteModel", siteModel);
-//		fLogP = likelihood.calculateLogP();
-//		assertEquals(fLogP, -1789.912401996943, BEASTTestCase.PRECISION);
-//	}
-//
-//	@Test
-//	public void testHKY85GILikelihood() throws Exception {
-//		// Set up HKY85+G+I model: estimated freqs, kappa = 39.464538, 4 gamma categories, shape = 0.587649, prop invariant = 0.486548	
-//		Alignment data = BEASTTestCase.getAlignment();
-//		Tree tree = BEASTTestCase.getTree(data);
-//		
-//		Frequencies freqs = new Frequencies();
-//		freqs.initByName("data", data); 
-//
-//		HKY hky = new HKY();
-//		hky.initByName("kappa", "39.464538", "frequencies", freqs);
-//
-//		SiteModel siteModel = new SiteModel();
-//		siteModel.initByName("mutationRate", "1.0", "gammaCategoryCount", 4,
-//				"shape", "0.587649", 
-//				"proportionInvariant", "0.486548",
-//				"substModel", hky);
-//
-//		ThreadedTreeLikelihood likelihood = newThreadedTreeLikelihood();
-//		likelihood.initByName("data",data, "tree",tree, "siteModel", siteModel);
-//
-//		double fLogP = 0;
-//		fLogP = likelihood.calculateLogP();
-//		assertEquals(fLogP, -1789.639227747059, BEASTTestCase.PRECISION);
-//
-//		likelihood.initByName("useAmbiguities", true, "data",data, "tree",tree, "siteModel", siteModel);
-//		fLogP = likelihood.calculateLogP();
-//		assertEquals(fLogP, -1789.639227747059, BEASTTestCase.PRECISION);
-//	}
-//
-//
-//	@Test
-//	public void testGTRLikelihood() throws Exception {
-//		// Set up GTR model: no gamma categories, no proportion invariant 	
-//		Alignment data = BEASTTestCase.getAlignment();
-//		Tree tree = BEASTTestCase.getTree(data);
-//		
-//		Frequencies freqs = new Frequencies();
-//		freqs.initByName("data", data); 
-//
-//		GeneralSubstitutionModel gsm = new GeneralSubstitutionModel();
-//		gsm.initByName("rates", "1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0", "frequencies", freqs);
-//
-//		SiteModel siteModel = new SiteModel();
-//		siteModel.initByName("mutationRate", "1.0", "gammaCategoryCount", 1,
-//				"substModel", gsm);
-//
-//		ThreadedTreeLikelihood likelihood = newThreadedTreeLikelihood();
-//		likelihood.initByName("data",data, "tree",tree, "siteModel", siteModel);
-//
-//		double fLogP = 0;
-//		fLogP = likelihood.calculateLogP();
-//		assertEquals(fLogP, -1969.145839307625, BEASTTestCase.PRECISION);
-//
-//		likelihood.initByName("useAmbiguities", false, "data",data, "tree",tree, "siteModel", siteModel);
-//		fLogP = likelihood.calculateLogP();
-//		assertEquals(fLogP, -1969.145839307625, BEASTTestCase.PRECISION);
-//	}
-//
-//	@Test
-//	public void testGTRILikelihood() throws Exception {
-//		// Set up GTR model: prop invariant = 0.5
-//		Alignment data = BEASTTestCase.getAlignment();
-//		Tree tree = BEASTTestCase.getTree(data);
-//		
-//		Frequencies freqs = new Frequencies();
-//		freqs.initByName("data", data); 
-//
-//		GeneralSubstitutionModel gsm = new GeneralSubstitutionModel();
-//		gsm.initByName("rates", "1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0", "frequencies", freqs);
-//
-//		SiteModel siteModel = new SiteModel();
-//		siteModel.initByName("mutationRate", "1.0", "gammaCategoryCount", 1,
-//				"proportionInvariant", "0.5",
-//				"substModel", gsm);
-//		//siteModel.init("1.0", 1, null, "0.5", gsm);
-//
-//		ThreadedTreeLikelihood likelihood = newThreadedTreeLikelihood();
-//		likelihood.initByName("data",data, "tree",tree, "siteModel", siteModel);
-//
-//		double fLogP = 0;
-//		fLogP = likelihood.calculateLogP();
-//		assertEquals(fLogP, -1948.8417455357564, BEASTTestCase.PRECISION);
-//
-//		likelihood.initByName("useAmbiguities", false, "data",data, "tree",tree, "siteModel", siteModel);
-//		fLogP = likelihood.calculateLogP();
-//		assertEquals(fLogP, -1948.8417455357564, BEASTTestCase.PRECISION);
-//	}
-//	
-//	@Test
-//	public void testGTRGLikelihood() throws Exception {
-//		// Set up GTR model: 4 gamma categories, gamma shape = 0.5
-//		Alignment data = BEASTTestCase.getAlignment();
-//		Tree tree = BEASTTestCase.getTree(data);
-//		
-//		Frequencies freqs = new Frequencies();
-//		freqs.initByName("data", data); 
-//
-//		GeneralSubstitutionModel gsm = new GeneralSubstitutionModel();
-//		gsm.initByName("rates", "1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0", "frequencies", freqs);
-//
-//		SiteModel siteModel = new SiteModel();
-//		siteModel.initByName("mutationRate", "1.0", "gammaCategoryCount", 4,
-//				"shape", "0.5", 
-//				"substModel", gsm);
-//
-//		ThreadedTreeLikelihood likelihood = newThreadedTreeLikelihood();
-//		likelihood.initByName("data",data, "tree",tree, "siteModel", siteModel);
-//
-//		double fLogP = 0;
-//		fLogP = likelihood.calculateLogP();
-//		assertEquals(fLogP, -1949.0360143622, BEASTTestCase.PRECISION);
-//
-//		likelihood.initByName("useAmbiguities", false, "data",data, "tree",tree, "siteModel", siteModel);
-//		fLogP = likelihood.calculateLogP();
-//		assertEquals(fLogP, -1949.0360143622, BEASTTestCase.PRECISION);
-//	}
-//	
-//	@Test
-//	public void testGTRGILikelihood() throws Exception {
-//		// Set up GTR model: 4 gamma categories, gamma shape = 0.5, prop invariant = 0.5
-//		Alignment data = BEASTTestCase.getAlignment();
-//		Tree tree = BEASTTestCase.getTree(data);
-//		
-//		Frequencies freqs = new Frequencies();
-//		freqs.initByName("data", data); 
-//
-//		GeneralSubstitutionModel gsm = new GeneralSubstitutionModel();
-//		gsm.initByName("rates", "1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0", "frequencies", freqs);
-//
-//		SiteModel siteModel = new SiteModel();
-//		siteModel.initByName("mutationRate", "1.0", "gammaCategoryCount", 4,
-//				"shape", "0.5", 
-//				"proportionInvariant", "0.5",
-//				"substModel", gsm);
-//
-//		ThreadedTreeLikelihood likelihood = newThreadedTreeLikelihood();
-//		likelihood.initByName("data",data, "tree",tree, "siteModel", siteModel);
-//
-//		double fLogP = 0;
-//		fLogP = likelihood.calculateLogP();
-//		assertEquals(fLogP, -1947.5829396144961, BEASTTestCase.PRECISION);
-//
-//		likelihood.initByName("useAmbiguities", false, "data",data, "tree",tree, "siteModel", siteModel);
-//		fLogP = likelihood.calculateLogP();
-//		assertEquals(fLogP, -1947.5829396144961, BEASTTestCase.PRECISION);
-//	}
-//
-//	void aminoacidModelTest(SubstitutionModel substModel, double fExpectedValue) throws Exception {
-//		Alignment data = BEASTTestCase.getAminoAcidAlignment();
-//		Tree tree = BEASTTestCase.getAminoAcidTree(data);
-//		SiteModel siteModel = new SiteModel();
-//		siteModel.initByName("mutationRate", "1.0", "gammaCategoryCount", 1, "substModel", substModel);
-//
-//		ThreadedTreeLikelihood likelihood = newThreadedTreeLikelihood();
-//		likelihood.initByName("data",data, "tree",tree, "siteModel", siteModel);
-//		double fLogP = 0;
-//		fLogP = likelihood.calculateLogP();
-//		assertEquals(fExpectedValue, fLogP, BEASTTestCase.PRECISION);
-//	}
-//
-//	@Test
-//	public void testAminoAcidLikelihoodWAG() throws Exception {
-//		// Set up WAG model	
-//		WAG wag = new WAG();
-//		wag.initAndValidate();
-//		aminoacidModelTest(wag, -338.6388785157248);
-//		
-//	}
-//
-//	@Test
-//	public void testAminoAcidLikelihoodJTT() throws Exception {
-//		// JTT
-//		JTT jtt = new JTT();
-//		jtt.initAndValidate();
-//		aminoacidModelTest(jtt, -338.80761792179726);
-//
-//	}
-//
-//	@Test
-//	public void testAminoAcidLikelihoodBlosum62() throws Exception {
-//		// Blosum62
-//		Blosum62 blosum62 = new Blosum62();
-//		blosum62.initAndValidate();
-//		aminoacidModelTest(blosum62, -345.3825963600176);
-//
-//	}
-//
-//	@Test
-//	public void testAminoAcidLikelihoodDayhoff() throws Exception {
-//		// Dayhoff
-//		Dayhoff dayhoff = new Dayhoff();
-//		dayhoff.initAndValidate();
-//		aminoacidModelTest(dayhoff, -340.6149187667345);
-//	}
-//
-//	@Test
-//	public void testAminoAcidLikelihoodcpRev() throws Exception {
-//		// cpRev
-//		CPREV cpRev = new CPREV();
-//		cpRev.initAndValidate();
-//		aminoacidModelTest(cpRev, -348.71458467304154);
-//	}
-//
-//	@Test
-//	public void testAminoAcidLikelihoodMTRev() throws Exception {
-//		// MTRev
-//		MTREV mtRev = new MTREV();
-//		mtRev.initAndValidate();
-//		aminoacidModelTest(mtRev, -369.4791633617842);
-//		
-//	}
-//	
-//	void aminoacidModelTestI(SubstitutionModel substModel, double fExpectedValue) throws Exception {
-//		Alignment data = BEASTTestCase.getAminoAcidAlignment();
-//		Tree tree = BEASTTestCase.getAminoAcidTree(data);
-//		SiteModel siteModel = new SiteModel();
-//		siteModel.initByName("mutationRate", "1.0", "gammaCategoryCount", 1, "substModel", substModel,
-//				"proportionInvariant", "0.2");
-//
-//		ThreadedTreeLikelihood likelihood = newThreadedTreeLikelihood();
-//		likelihood.initByName("data",data, "tree",tree, "siteModel", siteModel);
-//		double fLogP = 0;
-//		fLogP = likelihood.calculateLogP();
-//		assertEquals(fExpectedValue, fLogP, BEASTTestCase.PRECISION);
-//	}
-//
-//	@Test
-//	public void testAminoAcidLikelihoodIWAG() throws Exception {
-//		// Set up WAG model	
-//		WAG wag = new WAG();
-//		wag.initAndValidate();
-//		aminoacidModelTestI(wag, -338.7631166242887);
-//	}
-//
-//	@Test
-//	public void testAminoAcidLikelihoodIJTT() throws Exception {
-//		// JTT
-//		JTT jtt = new JTT();
-//		jtt.initAndValidate();
-//		aminoacidModelTestI(jtt, -338.97566093453275);
-//	}
-//
-//	@Test
-//	public void testAminoAcidLikelihoodIBlosum62() throws Exception {
-//		// Blosum62
-//		Blosum62 blosum62 = new Blosum62();
-//		blosum62.initAndValidate();
-//		aminoacidModelTestI(blosum62, -345.4456979614507);
-//	}
-//
-//	@Test
-//	public void testAminoAcidLikelihoodIDayhoff() throws Exception {
-//		// Dayhoff
-//		Dayhoff dayhoff = new Dayhoff();
-//		dayhoff.initAndValidate();
-//		aminoacidModelTestI(dayhoff, -340.7630258641759);
-//	}
-//
-//	@Test
-//	public void testAminoAcidLikelihoodIcpRev() throws Exception {
-//		// cpRev
-//		CPREV cpRev = new CPREV();
-//		cpRev.initAndValidate();
-//		aminoacidModelTestI(cpRev, -348.66316715026977);
-//	}
-//
-//	@Test
-//	public void testAminoAcidLikelihoodIMTRev() throws Exception {
-//		// MTRev
-//		MTREV mtRev = new MTREV();
-//		mtRev.initAndValidate();
-//		aminoacidModelTestI(mtRev, -369.34449408200175);
-//	
-//	}
-//
-//	void aminoacidModelTestIG(SubstitutionModel substModel, double fExpectedValue) throws Exception {
-//		Alignment data = BEASTTestCase.getAminoAcidAlignment();
-//		Tree tree = BEASTTestCase.getAminoAcidTree(data);
-//		SiteModel siteModel = new SiteModel();
-//		siteModel.initByName("mutationRate", "1.0", "gammaCategoryCount", 1, "substModel", substModel,
-//				"gammaCategoryCount", 4,
-//				"shape", "0.15", 
-//				"proportionInvariant", "0.2");
-//
-//		ThreadedTreeLikelihood likelihood = newThreadedTreeLikelihood();
-//		likelihood.initByName("data",data, "tree",tree, "siteModel", siteModel);
-//		double fLogP = 0;
-//		fLogP = likelihood.calculateLogP();
-//		assertEquals(fExpectedValue, fLogP, BEASTTestCase.PRECISION);
-//	}
-//
-//	@Test
-//	public void testAminoAcidLikelihoodGIWAG() throws Exception {
-//		// Set up WAG model	
-//		WAG wag = new WAG();
-//		wag.initAndValidate();
-//		aminoacidModelTestIG(wag, -342.69745607208495);
-//	}
-//
-//	@Test
-//	public void testAminoAcidLikelihoodGIJTT() throws Exception {
-//		// JTT
-//		JTT jtt = new JTT();
-//		jtt.initAndValidate();
-//		aminoacidModelTestIG(jtt, -343.23738058653373);
-//	}
-//
-//	@Test
-//	public void testAminoAcidLikelihoodGIBlosum62() throws Exception {
-//		// Blosum62
-//		Blosum62 blosum62 = new Blosum62();
-//		blosum62.initAndValidate();
-//		aminoacidModelTestIG(blosum62, -348.7305212479578);
-//	}
-//
-//	@Test
-//	public void testAminoAcidLikelihoodGIDayhoff() throws Exception {
-//		// Dayhoff
-//		Dayhoff dayhoff = new Dayhoff();
-//		dayhoff.initAndValidate();
-//		aminoacidModelTestIG(dayhoff, -345.11861069556966);
-//	}
-//
-//	@Test
-//	public void testAminoAcidLikelihoodGIcpRev() throws Exception {
-//		
-//		// cpRev
-//		CPREV cpRev = new CPREV();
-//		cpRev.initAndValidate();
-//		aminoacidModelTestIG(cpRev, -351.35553855806137);
-//	}
-//
-//	@Test
-//	public void testAminoAcidLikelihoodGIMTRev() throws Exception {
-//		// MTRev
-//		MTREV mtRev = new MTREV();
-//		mtRev.initAndValidate();
-//		aminoacidModelTestIG(mtRev, -371.0038574147396);
-//	
-//	}
+	private long report2(long lastPUC, long totalPartialsUpdateCount) {
+		System.out.println("Partials operations: " + (totalPartialsUpdateCount - lastPUC) + " out of " + totalPartialsUpdateCount);
+		return totalPartialsUpdateCount;
+	}
+
+	private void testParameterUpdate(RealParameter parameter, double value, double expectedLogP, 
+			int expectedMatrixUpdateCount, int expectedPartialsUpdateCount, int expectedEvaluationCount, 
+			State state, Distribution posterior, MultiPartitionTreeLikelihood beagleTL) {
+		System.out.println("setting " + parameter.getID() + " to " + value);
+		
+    	parameter.setValue(value);
+    	state.storeCalculationNodes();
+        state.checkCalculationNodesDirtiness();
+        double logP = posterior.calculateLogP();
+        state.acceptCalculationNodes();
+    	assertEquals(expectedLogP, logP);
+    	assertEquals(expectedMatrixUpdateCount, beagleTL.totalMatrixUpdateCount);
+    	assertEquals(expectedPartialsUpdateCount, beagleTL.totalPartialsUpdateCount);
+    	assertEquals(expectedEvaluationCount, beagleTL.totalEvaluationCount);
+
+//		System.out.println("logP "+ logP);
+//		System.out.println("expectedMatrixUpdateCount "+ beagleTL.totalMatrixUpdateCount);
+//		System.out.println("expectedPartialsUpdateCount "+ beagleTL.totalPartialsUpdateCount);
+//		System.out.println("expectedEvaluationCount "+ beagleTL.totalEvaluationCount);
+	}
+    
+    
 } // class MultiParititionTreeLikelihoodTest

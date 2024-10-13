@@ -14,8 +14,9 @@ public class BeagleDebugger implements Beagle {
 	
 	public boolean output = false;
 
-	public BeagleDebugger(Beagle beagle) {
+	public BeagleDebugger(Beagle beagle, boolean output) {
 		this.beagle = beagle;
+		this.output = output;
 	}
 	
 	public void finalize() throws Throwable {

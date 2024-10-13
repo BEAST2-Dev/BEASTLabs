@@ -83,6 +83,14 @@ public class MultiPartitionTreeLikelihood extends Distribution {
     private static final boolean DEBUG = false;
     static int instanceCount;
     
+    
+    private double [][] lastKnownFrequencies;
+    private double [][] lastKnownCategorieWeights;
+    private double [][] lastKnownCategorieRates;
+    
+    public int matrixUpdateCount;
+    public int partialUpdateCount;
+    
     public static boolean IS_MULTI_PARTITION_RECOMMENDED() {
         if (!IS_MULTI_PARTITION_COMPATIBLE()) {
             return false;
@@ -165,9 +173,9 @@ public class MultiPartitionTreeLikelihood extends Distribution {
     private static final int RESCALE_TIMES = 1;
 
     // count the number of partial likelihood and matrix updates
-    private long totalMatrixUpdateCount = 0;
-    private long totalPartialsUpdateCount = 0;
-    private long totalEvaluationCount = 0;
+    public long totalMatrixUpdateCount = 0;
+    public long totalPartialsUpdateCount = 0;
+    public long totalEvaluationCount = 0;
 
     private TreeInterface tree;
     private BranchRateModel branchRateModel;
@@ -568,7 +576,7 @@ public class MultiPartitionTreeLikelihood extends Distribution {
                     requirementFlags
             );
             
-//            BeagleDebugger debugger = new BeagleDebugger(beagle);
+//            BeagleDebugger debugger = new BeagleDebugger(beagle, true);
 //            beagle = debugger;
 
             InstanceDetails instanceDetails = beagle.getDetails();
@@ -686,6 +694,10 @@ public class MultiPartitionTreeLikelihood extends Distribution {
             throw new RuntimeException(mte.toString());
         }
 
+        lastKnownFrequencies = new double[siteRateModels.size()][stateCount];
+        lastKnownCategorieWeights = new double[siteRateModels.size()][categoryCount];
+        lastKnownCategorieRates = new double[siteRateModels.size()*2][categoryCount];
+
         instanceCount ++;
     }
 
@@ -718,11 +730,11 @@ public class MultiPartitionTreeLikelihood extends Distribution {
 //        return RateRescalingScheme.NONE;
 //    }
 
-    private void updateSubstitutionModels(boolean... state) {
-        for (int i = 0; i < updateSubstitutionModels.length; i++) {
-            updateSubstitutionModels[i] = (state.length < 1 || state[0]);
-        }
-    }
+//    private void updateSubstitutionModels(boolean... state) {
+//        for (int i = 0; i < updateSubstitutionModels.length; i++) {
+//            updateSubstitutionModels[i] = (state.length < 1 || state[0]);
+//        }
+//    }
 
 //    private void updateSubstitutionModel(BranchRateModel branchModel) {
 //        for (int i = 0; i < branchModels.size(); i++) {
@@ -732,11 +744,11 @@ public class MultiPartitionTreeLikelihood extends Distribution {
 //        }
 //    }
 
-    private void updateSiteRateModels(boolean... state) {
-        for (int i = 0; i < updateSiteRateModels.length; i++) {
-            updateSiteRateModels[i] = (state.length < 1 || state[0]);
-        }
-    }
+//    private void updateSiteRateModels(boolean... state) {
+//        for (int i = 0; i < updateSiteRateModels.length; i++) {
+//            updateSiteRateModels[i] = (state.length < 1 || state[0]);
+//        }
+//    }
 
 //    private void updateSiteRateModel(SiteModel siteRateModel) {
 //        for (int i = 0; i < siteRateModels.size(); i++) {
@@ -954,7 +966,7 @@ public class MultiPartitionTreeLikelihood extends Distribution {
 //            final List<NodeOperation> nodeOperations = getNodeOperations();
 
             if (COUNT_TOTAL_OPERATIONS) {
-                totalMatrixUpdateCount += branchOperations.size();
+                //totalMatrixUpdateCount += branchOperations.size();
                 //totalOperationCount += nodeOperations.size();
             }
 
@@ -1078,7 +1090,10 @@ public class MultiPartitionTreeLikelihood extends Distribution {
                     categoryRateBufferHelper[k].flipOffset(0);
                 }
 
-                beagle.setCategoryRatesWithIndex(categoryRateBufferHelper[k].getOffsetIndex(0), categoryRates);
+                if (changed(categoryRates, lastKnownCategorieRates[categoryRateBufferHelper[k].getOffsetIndex(0)])) {
+                	beagle.setCategoryRatesWithIndex(categoryRateBufferHelper[k].getOffsetIndex(0), categoryRates);
+                	System.arraycopy(categoryRates, 0, lastKnownCategorieRates[categoryRateBufferHelper[k].getOffsetIndex(0)], 0, categoryCount);
+                }
                 updatePartition[k] = true;
                 if (DEBUG) {
                     System.out.println("updateSiteRateModels, updatePartition["+k+"] = " + updatePartition[k]);
@@ -1103,7 +1118,7 @@ public class MultiPartitionTreeLikelihood extends Distribution {
             int   [] probabilityIndices        = new int   [branchUpdateCount * partitionCount];
             double[] edgeLengths               = new double[branchUpdateCount * partitionCount];
 
-            int operationCount = 0;
+            matrixUpdateCount = 0;
             int partition = 0;
             for (SubstitutionModel evolutionaryProcessDelegate : substitutionModels) {
                 if (updatePartition[partition] || updateAllPartitions) {
@@ -1113,12 +1128,12 @@ public class MultiPartitionTreeLikelihood extends Distribution {
                     }
 
                     for (int i = 0; i < branchUpdateCount; i++) {
-                        eigenDecompositionIndices[operationCount] = eigenBufferHelper[partition].getOffsetIndex(0);
+                        eigenDecompositionIndices[matrixUpdateCount] = eigenBufferHelper[partition].getOffsetIndex(0);
                         	// = evolutionaryProcessDelegate.getEigenIndex(0);
-                        categoryRateIndices[operationCount] = categoryRateBufferHelper[partition].getOffsetIndex(0);
-                        probabilityIndices[operationCount] = /*evolutionaryProcessDelegate*/getMatrixIndex(branchUpdateIndices[i], partition);
-                        edgeLengths[operationCount] = branchLengths[i];
-                        operationCount++;
+                        categoryRateIndices[matrixUpdateCount] = categoryRateBufferHelper[partition].getOffsetIndex(0);
+                        probabilityIndices[matrixUpdateCount] = /*evolutionaryProcessDelegate*/getMatrixIndex(branchUpdateIndices[i], partition);
+                        edgeLengths[matrixUpdateCount] = branchLengths[i];
+                        matrixUpdateCount++;
                     }
                 }
                 partition++;
@@ -1131,10 +1146,10 @@ public class MultiPartitionTreeLikelihood extends Distribution {
                     null, // firstDerivativeIndices
                     null, // secondDerivativeIndices
                     edgeLengths,
-                    operationCount);
+                    matrixUpdateCount);
 
             if (COUNT_CALCULATIONS) {
-                totalMatrixUpdateCount += operationCount;
+                totalMatrixUpdateCount += matrixUpdateCount;
             }
 
         }
@@ -1157,7 +1172,7 @@ public class MultiPartitionTreeLikelihood extends Distribution {
         }
 
 
-        int operationCount = 0;
+        partialUpdateCount = 0;
         k = 0;
         for (NodeOperation op : nodeOperations) {
             int nodeNum = op.getNodeNumber();
@@ -1235,17 +1250,17 @@ public class MultiPartitionTreeLikelihood extends Distribution {
                     }
 
                     k += Beagle.PARTITION_OPERATION_TUPLE_SIZE;
-                    operationCount++;
+                    partialUpdateCount++;
                 }
 
             }
         }
 
-        beagle.updatePartialsByPartition(operations, operationCount);
+        beagle.updatePartialsByPartition(operations, partialUpdateCount);
 
         if (COUNT_CALCULATIONS) {
             totalEvaluationCount += 1;
-            totalPartialsUpdateCount += operationCount;
+            totalPartialsUpdateCount += partialUpdateCount;
         }
 
 
@@ -1271,14 +1286,19 @@ public class MultiPartitionTreeLikelihood extends Distribution {
 //        double[] scaleFactors = new double[totalPatternCount];
 //        beagle.getLogScaleFactors(cumulateScaleBufferIndex, scaleFactors);
 
-        // these could be set only when they change but store/restore would need to be considered
         for (int i = 0; i < siteRateModels.size(); i++) {
             double[] categoryWeights = this.siteRateModels.get(i).getCategoryProportions(null);
-            beagle.setCategoryWeights(i, categoryWeights);
+            if (changed(categoryWeights, lastKnownCategorieWeights[i])) {
+            	beagle.setCategoryWeights(i, categoryWeights);
+            	System.arraycopy(categoryWeights, 0, lastKnownCategorieWeights[i], 0, categoryWeights.length);
+            }
 
             // This should probably explicitly be the state frequencies for the root node...
             double[] frequencies = substitutionModels.get(i).getFrequencies();
-            beagle.setStateFrequencies(i, frequencies);
+            if (changed(frequencies, lastKnownFrequencies[i])) {
+            	beagle.setStateFrequencies(i, frequencies);
+            	System.arraycopy(frequencies, 0, lastKnownFrequencies[i], 0, frequencies.length);
+            }
         }
 
 
@@ -1360,8 +1380,10 @@ public class MultiPartitionTreeLikelihood extends Distribution {
 //        }
 //        beagle.getSiteLogLikelihoods(patternLogLikelihoods);
 
-        updateSubstitutionModels(false);
-        updateSiteRateModels(false);
+//        updateSubstitutionModels(false);
+        Arrays.fill(updateSubstitutionModels, false);
+//        updateSiteRateModels(false);
+        Arrays.fill(updateSiteRateModels, false);
         updateAllPartitions = true;
 
         if (Double.isNaN(tmpLogL) || Double.isInfinite(tmpLogL)) {
@@ -1470,7 +1492,16 @@ public class MultiPartitionTreeLikelihood extends Distribution {
 //    }
 
     
-    private void updateSubstitutionModels(int partition, Beagle beagle, boolean flip) {
+    private boolean changed(double[] array, double[] lastKnown) {
+		for (int i = 0; i < array.length; i++) {
+			if (array[i] != lastKnown[i]) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private void updateSubstitutionModels(int partition, Beagle beagle, boolean flip) {
         if (flip) {
             eigenBufferHelper[partition].flipOffset(0);
         }
@@ -2030,8 +2061,7 @@ public class MultiPartitionTreeLikelihood extends Distribution {
         int nodeNum = node.getNr();
 
         // First update the transition probability matrix(ices) for this branch
-        if (needsUpdate || 
-        		(node.getParent() != null && node.isDirty()!= Tree.IS_CLEAN)) { //updateNode[nodeNum]) {
+        if (node.getParent() != null && (needsUpdate || node.isDirty()!= Tree.IS_CLEAN)) { //updateNode[nodeNum]) {
             // TODO - at the moment a matrix is updated even if a branch length doesn't change
 
             // addBranchUpdateOperation(tree, node);
