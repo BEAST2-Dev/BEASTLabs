@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><beast beautitemplate='Standard' beautistatus='' namespace="beast.core:beast.evolution.alignment:beast.evolution.tree.coalescent:beast.core.util:beast.evolution.nuc:beast.evolution.operators:beast.evolution.sitemodel:beast.evolution.substitutionmodel:beast.base.evolution.alignment:beast.pkgmgmt:beast.base.core:beast.base.inference:beast.base.evolution.tree.coalescent:beast.pkgmgmt:beast.base.core:beast.base.inference.util:beast.evolution.nuc:beast.base.evolution.operator:beast.base.inference.operator:beast.base.evolution.sitemodel:beast.base.evolution.substitutionmodel:beast.base.evolution.likelihood" required="BEAST.base v2.7.7" version="2.7">
+
+    <data
+id="input_alignment"
+spec="Alignment"
+name="alignment">
+<plate var="n" range="$(taxa=1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20)">
+                        <sequence id="seq_t$(n)" spec="Sequence" taxon="t$(n)" totalcount="4" value="?"/>
+</plate>
+    </data>
+
+      <!-- The true tree down which sequences are simulated. -->
+      <tree id="trueTree" spec='beast.base.evolution.tree.TreeParser'
+            newick="((((((t1:0.006396850332260451,t13:0.006396850332260451):0.010486776423173305,t2:0.016883626755433756):0.06537083414956002,t5:0.082254460904994):0.13672119505416602,t9:0.2189756559591598):0.2987430259469357,t15:0.5177186819060955):1.2322087821856562,(((((t3:0.04328249093970249,(t8:0.015450499432502873,t16:0.015450499432502873):0.027831991507199616):0.09099083898334448,t14:0.1342733299230472):0.038497871746370205,t7:0.1727712016694174):0.4804824697979151,((((t4:0.013222969836625076,t12:0.013222969836625076):0.07634550975344245,t19:0.08956847959006775):0.03226431032407073,t6:0.12183278991413826):0.18887395974737653,(t11:0.06043221112172392,(t17:0.0359748124500221,t20:0.0359748124500221):0.024457398671701602):0.25027453853979087):0.3425469218058177):0.11231072654013552,(t10:0.37206582842030533,t18:0.37206582842030533):0.39349856958716245):0.9843630660842839):0.0"
+            IsLabelledNewick="true" adjustTipHeights="false"/>
+
+
+<plate var="p" range="$(range=1,2,3,4,5,6,7,8,9,10)">
+    <!-- The simulated sequence alignment. -->
+    <data spec='beastfx.app.seqgen.SimulatedAlignment' id="alignment.$(p)"
+          sequencelength="$(sl=500)">
+    <tree idref="trueTree"/>
+
+
+      <data idref="input_alignment"/>
+
+                <siteModel id="trueSiteModel.s:$(p)" spec="SiteModel"
+                    gammaCategoryCount="4"
+                    shape="0.5">
+                <parameter id="truemutationRate.s:$(p)" spec="parameter.RealParameter" estimate="false" name="mutationRate">1.0</parameter>
+                <parameter id="trueproportionInvariant.s:$(p)" spec="parameter.RealParameter" estimate="false" lower="0.0" name="proportionInvariant" upper="1.0">0.0</parameter>
+                <substModel id="trueHKY.s:$(p)" spec="HKY" kappa="5.0">
+                    <frequencies id="trueFreqs.s:$(p)" spec="Frequencies" frequencies="0.1 0.2 0.3 0.4"/>
+                </substModel>
+      </siteModel>      
+      <branchRateModel id="trueStrictClock.c:$(p)" spec="beast.base.evolution.branchratemodel.StrictClockModel" clock.rate="1.0"/>
+    </data>
+</plate>    
+
+
+    <map name="Uniform" >beast.base.inference.distribution.Uniform</map>
+    <map name="Exponential" >beast.base.inference.distribution.Exponential</map>
+    <map name="LogNormal" >beast.base.inference.distribution.LogNormalDistributionModel</map>
+    <map name="Normal" >beast.base.inference.distribution.Normal</map>
+    <map name="Beta" >beast.base.inference.distribution.Beta</map>
+    <map name="Gamma" >beast.base.inference.distribution.Gamma</map>
+    <map name="LaplaceDistribution" >beast.base.inference.distribution.LaplaceDistribution</map>
+    <map name="prior" >beast.base.inference.distribution.Prior</map>
+    <map name="InverseGamma" >beast.base.inference.distribution.InverseGamma</map>
+    <map name="OneOnX" >beast.base.inference.distribution.OneOnX</map>
+
+    <branchRateModel id="StrictClock.c:clock" spec="beast.base.evolution.branchratemodel.StrictClockModel" clock.rate="1.0"/>
+
+    <run id="mcmc" spec="MCMC" chainLength="10000000">
+        <state id="state" spec="State" storeEvery="5000">
+            <tree id="Tree.t:tree" spec="beast.base.evolution.tree.Tree" name="stateNode">
+                <taxonset id="TaxonSet" spec="TaxonSet">
+                    <alignment idref="input_alignment"/>
+                </taxonset>
+            </tree>
+            <parameter id="birthRate.t:tree" spec="parameter.RealParameter" lower="0.0" name="stateNode">1.0</parameter>
+            <plate var="p" range="$(range)">
+                <parameter id="gammaShape.s:$(p)" spec="parameter.RealParameter" lower="0.1" name="stateNode">1.0</parameter>
+                <parameter id="kappa.s:$(p)" spec="parameter.RealParameter" lower="0.0" name="stateNode">2.0</parameter>
+                <parameter id="freqParameter.s:$(p)" spec="parameter.RealParameter" dimension="4" lower="0.0" name="stateNode" upper="1.0">0.25</parameter>
+                <parameter id="mutationRate.s:$(p)" spec="parameter.RealParameter" lower="0.0" name="stateNode">1.0</parameter>
+            </plate>
+        </state>
+
+        <init id="RandomTree.t:tree" spec="RandomTree" estimate="false" initial="@Tree.t:tree" taxa="@input_alignment">
+            <populationModel id="ConstantPopulation0.t:tree" spec="ConstantPopulation">
+                <parameter id="randomPopSize.t:tree" spec="parameter.RealParameter" name="popSize">1.0</parameter>
+            </populationModel>
+        </init>
+
+        <distribution id="posterior" spec="CompoundDistribution">
+            <distribution id="prior" spec="CompoundDistribution">
+                <distribution id="YuleModel.t:tree" spec="beast.base.evolution.speciation.YuleModel" birthDiffRate="@birthRate.t:tree" tree="@Tree.t:tree"/>
+                <prior id="YuleBirthRatePrior.t:tree" name="distribution" x="@birthRate.t:tree">
+                    <Uniform id="Uniform.1" name="distr" upper="Infinity"/>
+                </prior>
+                <plate var="p" range="$(range)">
+                    <prior id="FrequenciesPrior.s:$(p)" name="distribution" x="@freqParameter.s:$(p)">
+                        <distr spec="distribution.Dirichlet" alpha="4.0 4.0 4.0 4.0"/>
+                    </prior>
+                    <prior id="GammaShapePrior.s:$(p)" name="distribution" x="@gammaShape.s:$(p)">
+                        <Exponential name="distr" mean="1.0"/>
+                    </prior>
+                    <prior id="KappaPrior.s:$(p)" name="distribution" x="@kappa.s:$(p)">
+                        <LogNormal name="distr" M="1.0" S="1.25"/>
+                    </prior>
+                </plate>
+            </distribution>
+            <distribution id="likelihood" spec="CompoundDistribution" useThreads="true">
+                <!--
+              <distribution id="MultiPartitionTreeLikelihood" spec="beastlabs.evolution.likelihood.MultiPartitionTreeLikelihood">
+              -->
+                <plate var="p" range="$(range)">
+                    <distribution id="treeLikelihood.$(p)" spec="TreeLikelihood" data="@alignment.$(p)" tree="@Tree.t:tree">
+                        <siteModel id="SiteModel.s:$(p)" spec="SiteModel" gammaCategoryCount="4" shape="@gammaShape.s:$(p)">
+                            <mutationRate idref="mutationRate.s:$(p)"/>
+                            <parameter id="proportionInvariant.s:$(p)" spec="parameter.RealParameter" estimate="false" lower="0.0" name="proportionInvariant" upper="1.0">0.0</parameter>
+                            <substModel id="hky.s:$(p)" spec="HKY" kappa="@kappa.s:$(p)">
+                                <frequencies id="estimatedFreqs.s:$(p)" spec="Frequencies" frequencies="@freqParameter.s:$(p)"/>
+                            </substModel>
+                        </siteModel>
+                        <branchRateModel idref="StrictClock.c:clock"/>
+                    </distribution>
+                </plate>
+                <!--
+              </distribution>
+          -->
+            </distribution>
+        </distribution>
+
+        <operator id="YuleBirthRateScaler.t:tree" spec="kernel.BactrianScaleOperator" parameter="@birthRate.t:tree" upper="10.0" weight="3.0"/>
+        <operator id="YuleModelTreeRootScaler.t:tree" spec="kernel.BactrianScaleOperator" rootOnly="true" scaleFactor="0.5" tree="@Tree.t:tree" upper="10.0" weight="3.0"/>
+        <operator id="YuleModelUniformOperator.t:tree" spec="kernel.BactrianNodeOperator" tree="@Tree.t:tree" weight="30.0"/>
+        <operator id="YuleModelSubtreeSlide.t:tree" spec="kernel.BactrianSubtreeSlide" tree="@Tree.t:tree" weight="15.0"/>
+        <operator id="YuleModelNarrow.t:tree" spec="Exchange" tree="@Tree.t:tree" weight="15.0"/>
+        <operator id="YuleModelWide.t:tree" spec="Exchange" isNarrow="false" tree="@Tree.t:tree" weight="3.0"/>
+        <operator id="YuleModelWilsonBalding.t:tree" spec="WilsonBalding" tree="@Tree.t:tree" weight="3.0"/>
+        <operator id="YuleModelBICEPSEpochTop.t:tree" spec="EpochFlexOperator" scaleFactor="0.1" tree="@Tree.t:tree" weight="2.0"/>
+        <operator id="YuleModelBICEPSEpochAll.t:tree" spec="EpochFlexOperator" fromOldestTipOnly="false" scaleFactor="0.1" tree="@Tree.t:tree" weight="2.0"/>
+        <operator id="YuleModelBICEPSTreeFlex.t:tree" spec="TreeStretchOperator" scaleFactor="0.01" tree="@Tree.t:tree" weight="2.0"/>
+
+        <operator id="FixMeanMutationRatesOperator" spec="operator.kernel.BactrianDeltaExchangeOperator" delta="0.75" weight="2.0">
+            <plate var="p" range="$(range)">
+                <parameter idref="mutationRate.s:$(p)"/>
+            </plate>
+        </operator>
+        
+        <plate var="p" range="$(range)">
+            <operator id="gammaShapeScaler.s:$(p)" spec="AdaptableOperatorSampler" weight="0.05">
+                <parameter idref="gammaShape.s:$(p)"/>
+                <operator id="AVMNOperator.$(p)" spec="kernel.AdaptableVarianceMultivariateNormalOperator" allowNonsense="true" beta="0.05" burnin="400" initial="800" weight="0.1">
+                    <transformations id="AVMNSumTransform.$(p)" spec="operator.kernel.Transform$LogConstrainedSumTransform">
+                        <f idref="freqParameter.s:$(p)"/>
+                    </transformations>
+                    <transformations id="AVMNLogTransform.$(p)" spec="operator.kernel.Transform$LogTransform">
+                        <f idref="gammaShape.s:$(p)"/>
+                        <f idref="kappa.s:$(p)"/>
+                    </transformations>
+                    <transformations id="AVMNNoTransform.$(p)" spec="operator.kernel.Transform$NoTransform">
+                        <f idref="Tree.t:tree"/>
+                    </transformations>
+                </operator>
+                <operator id="gammaShapeScalerX.s:$(p)" spec="kernel.BactrianScaleOperator" parameter="@gammaShape.s:$(p)" scaleFactor="0.5" upper="10.0" weight="0.1"/>
+            </operator>
+            <operator id="KappaScaler.s:$(p)" spec="AdaptableOperatorSampler" weight="0.05">
+                <parameter idref="kappa.s:$(p)"/>
+                <operator idref="AVMNOperator.$(p)"/>
+                <operator id="KappaScalerX.s:$(p)" spec="kernel.BactrianScaleOperator" parameter="@kappa.s:$(p)" scaleFactor="0.1" upper="10.0" weight="0.1"/>
+            </operator>
+            <operator id="FrequenciesExchanger.s:$(p)" spec="AdaptableOperatorSampler" weight="0.05">
+                <parameter idref="freqParameter.s:$(p)"/>
+                <operator idref="AVMNOperator.$(p)"/>
+                <operator id="FrequenciesExchangerX.s:$(p)" spec="operator.kernel.BactrianDeltaExchangeOperator" delta="0.01" weight="0.1">
+                    <parameter idref="freqParameter.s:$(p)"/>
+                </operator>
+            </operator>
+        </plate>
+
+        
+
+        <logger id="tracelog" spec="Logger" fileName="$(filebase).log" logEvery="10000" model="@posterior" sanitiseHeaders="true" sort="smart">
+            <log idref="posterior"/>
+            <log idref="likelihood"/>
+            <log idref="prior"/>
+            <log id="TreeHeight.t:tree" spec="beast.base.evolution.tree.TreeStatLogger" tree="@Tree.t:tree"/>
+            <log idref="YuleModel.t:tree"/>
+            <log idref="birthRate.t:tree"/>
+            <plate var="p" range="$(range)">
+                <log idref="treeLikelihood.$(p)"/>
+                <log idref="gammaShape.s:$(p)"/>
+                <log idref="kappa.s:$(p)"/>
+                <log idref="freqParameter.s:$(p)"/>
+            </plate>
+        </logger>
+
+        <logger id="screenlog" spec="Logger" logEvery="10000">
+            <log idref="posterior"/>
+            <log idref="likelihood"/>
+            <log idref="prior"/>
+        </logger>
+
+        <logger id="treelog.t:tree" spec="Logger" fileName="$(filebase)-$(tree).trees" logEvery="10000" mode="tree">
+            <log id="TreeWithMetaDataLogger.t:tree" spec="beast.base.evolution.TreeWithMetaDataLogger" tree="@Tree.t:tree"/>
+        </logger>
+        <operatorschedule id="OperatorSchedule" spec="OperatorSchedule"/>
+    </run>
+
+
+</beast>
