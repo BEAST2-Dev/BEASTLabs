@@ -188,8 +188,9 @@ public class MultiParititionTreeLikelihoodTest extends TestCase {
 
     	XMLParser parser = new XMLParser();
     	MCMC mcmc = (MCMC) parser.parseFragment(xml, true);
-    	mcmc.setUpState();
+    	// mcmc.setUpState();
     	State state = mcmc.startStateInput.get();
+    	state.robustlyCalcPosterior(mcmc.posteriorInput.get());
     	double logP = mcmc.posteriorInput.get().getCurrentLogP();
 
     	state.store(0);
