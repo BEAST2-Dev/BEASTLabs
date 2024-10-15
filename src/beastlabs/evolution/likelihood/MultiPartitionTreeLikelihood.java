@@ -46,6 +46,7 @@ import beast.base.evolution.substitutionmodel.SubstitutionModel;
 import beast.base.evolution.tree.Node;
 import beast.base.evolution.tree.Tree;
 import beast.base.evolution.tree.TreeInterface;
+import beast.base.inference.CalculationNode;
 import beast.base.inference.Distribution;
 import beast.base.inference.State;
 
@@ -71,7 +72,7 @@ import java.util.Random;
 public class MultiPartitionTreeLikelihood extends Distribution {
 	
     final public Input<List<GenericTreeLikelihood>> likelihoodsInput = new Input<>("distribution", "tree likelilhood for each of the partitions", new ArrayList<>(), Validate.REQUIRED);
-
+    final public Input<Boolean> delayScalingUntillUnderflowInput = new Input<>("delayScalingUntillUnderflow", "delay first scaling till underflow is reached", true);
 
     boolean needsUpdate;
     	
@@ -81,6 +82,8 @@ public class MultiPartitionTreeLikelihood extends Distribution {
 
     private static final boolean RESCALING_OFF = false; // a debugging switch
     private static final boolean DEBUG = false;
+    
+    // TODO: refer to BeagleTreeLikelihood.instanceCount
     static int instanceCount;
     
     
@@ -90,6 +93,18 @@ public class MultiPartitionTreeLikelihood extends Distribution {
     
     public int matrixUpdateCount;
     public int partialUpdateCount;
+    
+    /**
+     * Lengths of the branches in the tree associated with each of the nodes
+     * in the tree through their node  numbers. By comparing whether the
+     * current branch length differs from stored branch lengths, it is tested
+     * whether a node is dirty and needs to be recomputed (there may be other
+     * reasons as well...).
+     * These lengths take branch rate models in account.
+     */
+    protected double[] m_branchLengths;
+    protected double[] storedBranchLengths;
+
     
     public static boolean IS_MULTI_PARTITION_RECOMMENDED() {
         if (!IS_MULTI_PARTITION_COMPATIBLE()) {
@@ -228,7 +243,7 @@ public class MultiPartitionTreeLikelihood extends Distribution {
         }
 		
         try {
-        	initialise(tree, Alignments, /*branchModels,*/ siteRateModels, useAmbiguities, useTipLikelihoods, rescalingScheme, delayRescalingUntilUnderflow);
+        	initialise(tree, Alignments, /*branchModels,*/ siteRateModels, useAmbiguities, useTipLikelihoods, rescalingScheme, delayScalingUntillUnderflowInput.get());
         } catch (DelegateTypeException e) {
         	e.printStackTrace();
         }
@@ -328,6 +343,9 @@ public class MultiPartitionTreeLikelihood extends Distribution {
 
         branchUpdateIndices = new int[nodeCount];
         branchLengths = new double[nodeCount];
+        
+        m_branchLengths = new double[nodeCount];
+        storedBranchLengths = new double[nodeCount];
         //changed initialization to account for multiple partitions
         scaleBufferIndices = new int[partitionCount][internalNodeCount];
         storedScaleBufferIndices = new int[partitionCount][internalNodeCount];
@@ -1528,6 +1546,15 @@ public class MultiPartitionTreeLikelihood extends Distribution {
 	@Override
     protected boolean requiresRecalculation() {
 		needsUpdate = false;
+		
+		if (initialEvaluation) {
+			updateAllPartitions = true;
+			Arrays.fill(updateSiteRateModels, true);
+			Arrays.fill(updateSubstitutionModels, true);
+			needsUpdate = true;
+			return true;
+		}
+		
     	  // updateSiteRateModel((SiteModel)model);
           for (int i = 0; i < siteRateModels.size(); i++) {
               updateSiteRateModels[i] = siteRateModels.get(i).isDirtyCalculation();
@@ -1544,6 +1571,10 @@ public class MultiPartitionTreeLikelihood extends Distribution {
 	          }
           //}
   // Tell TreeDataLikelihood to update all nodes
+	          
+	      if (((CalculationNode)branchRateModel).isDirtyCalculation()) {
+	    	  updateAllPartitions = true;
+	      }
           
     	return super.requiresRecalculation();
     }
@@ -1592,6 +1623,7 @@ public class MultiPartitionTreeLikelihood extends Distribution {
         System.arraycopy(cachedLogLikelihoodsByPartition, 0, storedCachedLogLikelihoodsByPartition, 0, cachedLogLikelihoodsByPartition.length);
         super.store();
         needsUpdate = false;
+        System.arraycopy(m_branchLengths, 0, storedBranchLengths, 0, m_branchLengths.length);
     }
 
     /**
@@ -1626,6 +1658,10 @@ public class MultiPartitionTreeLikelihood extends Distribution {
 
         super.restore();
         needsUpdate = false;
+        
+        tmp = m_branchLengths;
+        m_branchLengths = storedBranchLengths;
+        storedBranchLengths = tmp;
     }
 
     // @Override
@@ -2061,12 +2097,17 @@ public class MultiPartitionTreeLikelihood extends Distribution {
         int nodeNum = node.getNr();
 
         // First update the transition probability matrix(ices) for this branch
-        if (node.getParent() != null && (needsUpdate || node.isDirty()!= Tree.IS_CLEAN)) { //updateNode[nodeNum]) {
+        
+        final double branchRate = branchRateModel.getRateForBranch(node);
+        final double branchTime = node.getLength() * branchRate;
+        
+        if (node.getParent() != null && (needsUpdate || node.isDirty()!= Tree.IS_CLEAN || branchTime != m_branchLengths[nodeNum])) { //updateNode[nodeNum]) {
+        	m_branchLengths[nodeNum] = branchTime;
             // TODO - at the moment a matrix is updated even if a branch length doesn't change
 
             // addBranchUpdateOperation(tree, node);
-        	double rate = branchRateModel.getRateForBranch(node);
-            branchOperations.add(new BranchOperation(node.getNr(), rate * node.getLength()));
+        	//double rate = branchRateModel.getRateForBranch(node);
+            branchOperations.add(new BranchOperation(node.getNr(), branchTime));
                     // computeBranchLength(tree, node)));
 
             update = true;

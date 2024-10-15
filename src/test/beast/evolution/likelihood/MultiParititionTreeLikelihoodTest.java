@@ -23,6 +23,7 @@ import beast.base.inference.State;
 import beast.base.inference.parameter.IntegerParameter;
 import beast.base.inference.parameter.RealParameter;
 import beast.base.parser.XMLParser;
+import beast.base.util.Randomizer;
 import beastlabs.evolution.likelihood.MultiPartitionTreeLikelihood;
 import test.beast.BEASTTestCase;
 
@@ -126,9 +127,11 @@ public class MultiParititionTreeLikelihoodTest extends TestCase {
 
 		
 		MultiPartitionTreeLikelihood tl = new MultiPartitionTreeLikelihood();
-		tl.initByName("distribution", likelihood, "distribution", likelihood2);
+		tl.initByName("distribution", likelihood, "distribution", likelihood2, "delayScalingUntillUnderflow", false);
 		
 		double fLogP = 0;
+		fLogP = tl.calculateLogP();
+		// calculate again: scale factors are disabled at initial calculateLogP
 		fLogP = tl.calculateLogP();
 		assertEquals(fLogP, -1856.3418881275286-1992.2056440317247, BEASTTestCase.PRECISION);
 
@@ -136,8 +139,10 @@ public class MultiParititionTreeLikelihoodTest extends TestCase {
 		likelihood.initByName("useAmbiguities", true, "data",data, "tree",tree, "siteModel", siteModel);
 		likelihood2.initByName("useAmbiguities", true, "data",data, "tree",tree, "siteModel", siteModel2);
 		tl = new MultiPartitionTreeLikelihood();
-		tl.initByName("distribution", likelihood, "distribution", likelihood2);
+		tl.initByName("distribution", likelihood, "distribution", likelihood2, "delayScalingUntillUnderflow", false);
 		
+		fLogP = tl.calculateLogP();
+		// calculate again: scale factors are disabled at initial calculateLogP
 		fLogP = tl.calculateLogP();
 		assertEquals(fLogP, -1856.3418881275286-1992.2056440317247, BEASTTestCase.PRECISION);
     }
@@ -186,6 +191,7 @@ public class MultiParititionTreeLikelihoodTest extends TestCase {
     	</beast>
 """;
 
+    	Randomizer.setSeed(127);
     	XMLParser parser = new XMLParser();
     	MCMC mcmc = (MCMC) parser.parseFragment(xml, true);
     	// mcmc.setUpState();
@@ -195,7 +201,7 @@ public class MultiParititionTreeLikelihoodTest extends TestCase {
 
     	state.store(0);
     	IntegerParameter categories = (IntegerParameter) state.stateNodeInput.get().get(1);
-    	categories.setValue(1, 3);
+    	categories.setValue(1, 3 - categories.getValue(1));
     	
     	state.storeCalculationNodes();
         state.checkCalculationNodesDirtiness();
