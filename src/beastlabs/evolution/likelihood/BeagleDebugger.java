@@ -59,11 +59,19 @@ public class BeagleDebugger implements Beagle {
 	}
 
 	private void print(String str, int[] v) {
-		out.println(" /*" + str + " = */" + (v == null ? "null" : "new int[] {" + Arrays.toString(v).replaceAll("[\\[\\]]","") + "},"));
+		String values = v == null ? "null" : Arrays.toString(v).replaceAll("[\\[\\]]","");
+		if (values.length() > 100) {
+			values = values.substring(0, 100) + "...";
+		}
+		out.println(" /*" + str + " = */" + (v == null ? "null" : "new int[] {" + values + "},"));
 	}
 
 	private void print(String str, double[] v) {
-		out.println(" /*" + str + " = */" + (v == null ? "null" : "new double[] {" + Arrays.toString(v).replaceAll("[\\[\\]]","") + "},"));
+		String values = v == null ? "null" : Arrays.toString(v).replaceAll("[\\[\\]]","");
+		if (values.length() > 100) {
+			values = values.substring(0, 100) + "...";
+		}
+		out.println(" /*" + str + " = */" + (v == null ? "null" : "new double[] {" + values + "},"));
 	}
 
 	public void setCPUThreadCount(int threadCount) {

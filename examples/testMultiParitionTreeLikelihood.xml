@@ -104,7 +104,7 @@ spec="Alignment">
             </distribution>
             <distribution id="likelihood" spec="CompoundDistribution" useThreads="true">
 	          <distribution id="MultiPartitionTreeLikelihood0" spec="CompoundDistribution" useThreads="true">
-                <distribution id="treeLikelihood.firsthalf" spec="TreeLikelihood" data="@firsthalf" tree="@Tree.t:tree">
+                <distribution id="treeLikelihood.firsthalf" spec="ThreadedTreeLikelihood" data="@firsthalf" tree="@Tree.t:tree">
                     <siteModel id="SiteModel.s:firsthalf" spec="SiteModel" gammaCategoryCount="4" shape="@gammaShape.s:firsthalf">
                         <mutationRate idref="mutationRate.s:firsthalf"/>
                         <parameter id="proportionInvariant.s:firsthalf" spec="parameter.RealParameter" estimate="false" lower="0.0" name="proportionInvariant" upper="1.0">0.0</parameter>

@@ -40,6 +40,7 @@ import beast.base.evolution.datatype.DataType;
 import beast.base.evolution.likelihood.BeagleTreeLikelihood.PartialsRescalingScheme;
 import beast.base.evolution.likelihood.TreeLikelihood.Scaling;
 import beast.base.evolution.likelihood.GenericTreeLikelihood;
+import beast.base.evolution.likelihood.ThreadedTreeLikelihood;
 import beast.base.evolution.sitemodel.SiteModel;
 import beast.base.evolution.substitutionmodel.EigenDecomposition;
 import beast.base.evolution.substitutionmodel.SubstitutionModel;
@@ -205,7 +206,7 @@ public class MultiPartitionTreeLikelihood extends Distribution {
         tree = tl0.treeInput.get();
         branchRateModel = tl0.branchRateModelInput.get();
         boolean useAmbiguities = (boolean) tl0.getInput("useAmbiguities").get();
-        boolean useTipLikelihoods = (boolean) tl0.getInput("useTipLikelihoods").get();
+        boolean useTipLikelihoods = tl0 instanceof ThreadedTreeLikelihood ? false : (boolean) tl0.getInput("useTipLikelihoods").get();
         rescalingScheme = getRescalingScheme(tl0);
 
         for (GenericTreeLikelihood tl : likelihoodsInput.get()) {
@@ -223,7 +224,9 @@ public class MultiPartitionTreeLikelihood extends Distribution {
         		throw new IllegalArgumentException("All partitions must use ambiguities, or ignore ambiguities, but found a difference between " +
         				tl.getID() + " and " + likelihoodsInput.get().get(0).getID());
         	}
-        	if (useTipLikelihoods != (boolean)tl.getInput("useTipLikelihoods").get()) {
+
+        	boolean b = tl instanceof ThreadedTreeLikelihood ? false : (boolean)tl.getInput("useTipLikelihoods").get();
+        	if (useTipLikelihoods != b) {
         		throw new IllegalArgumentException("All partitions must use tip likelihoods, or ignore tip likelihoods, but found a difference between " +
         				tl.getID() + " and " + likelihoodsInput.get().get(0).getID());
         	}
