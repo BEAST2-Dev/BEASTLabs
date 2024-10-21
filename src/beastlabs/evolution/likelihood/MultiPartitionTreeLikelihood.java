@@ -252,7 +252,7 @@ public class MultiPartitionTreeLikelihood extends Distribution {
         }
 	}
 
-	private PartialsRescalingScheme getRescalingScheme(GenericTreeLikelihood tl0) {
+	static public PartialsRescalingScheme getRescalingScheme(GenericTreeLikelihood tl0) {
 		PartialsRescalingScheme rescalingScheme = DEFAULT_RESCALING_SCHEME;
         String scaling = null;
         try {
