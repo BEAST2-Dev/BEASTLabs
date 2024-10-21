@@ -35,7 +35,7 @@ import beast.base.inference.State;
         + "types of BEAGLE instances, and"
         + "whether to use BEAGLE 2 or 3 API (i.e. seperate TreeLikelihoods or MultiPartitionTreeLikelihood). "
         + "Self tuning replacement of CompounDistribution with id=='likelihood'.")
-public class BenchmarkingCompoundDistribution extends Distribution {
+public class SelfTuningCompoundDistribution extends Distribution {
     // no need to make this input REQUIRED. If no distribution input is
     // specified the class just returns probability 1.
     final public Input<List<Distribution>> pDistributions =
@@ -48,12 +48,13 @@ public class BenchmarkingCompoundDistribution extends Distribution {
     final public Input<Boolean> ignoreInput = new Input<>("ignore", "ignore all distributions and return 1 as distribution (default false)", false);
     
 
-    final public Input<Long> swithcCountInput = new Input<>("switchCount","number of times to calculate likelihood before switching configuration", 1000l);
+    final public Input<Long> swithcCountInput = new Input<>("switchCount", "number of milli seconds to calculate likelihood before switching configuration", 1000l);
+    final public Input<Long> reconfigCountInput = new Input<>("reconfigCount", "number of times to calculate likelihood before self tuning again", 100000l);
     
     
     class Configuration {
     	long nrOfSamples;
-    	long totalRunTime;
+    	double totalRunTime;
     	int threadCount;
     	
     	Configuration(int threadCount) {
@@ -103,6 +104,11 @@ public class BenchmarkingCompoundDistribution extends Distribution {
 	        }
     		calculateLogP();
     	}
+    	
+    	@Override
+    	public String toString() {
+    		return "Separate partition " + threadCount + " thread" + (threadCount > 1 ? "s" :"");
+    	}
     }
 
     class MultiPartitionConfiguration extends Configuration {
@@ -114,6 +120,9 @@ public class BenchmarkingCompoundDistribution extends Distribution {
     	}
     	
     	double calculateLogP() {
+    		if (nrOfSamples == 1) {
+    			switchTime = System.currentTimeMillis();
+    		}
     		nrOfSamples++;
     		return mpTreeLikelihood.calculateLogP();
     	}
@@ -123,6 +132,11 @@ public class BenchmarkingCompoundDistribution extends Distribution {
         	Tree tree = (Tree) mpTreeLikelihood.likelihoodsInput.get().get(0).getInput("tree").get();
         	tree.setEverythingDirty(true);
     		calculateLogP();
+    	}
+    	
+    	@Override
+    	public String toString() {
+    		return "Multi Partition";
     	}
 
     }
@@ -163,6 +177,8 @@ public class BenchmarkingCompoundDistribution extends Distribution {
 		}
 
         ignore = ignoreInput.get();
+        
+        switchCount = swithcCountInput.get();
 
         if (pDistributions.get().size() == 0) {
             logP = 0;
@@ -171,6 +187,8 @@ public class BenchmarkingCompoundDistribution extends Distribution {
         MultiPartitionTreeLikelihood mpTreeLikelihood = createMultiPartitionTreeLikelihood();
         
         currentConfiguration = initConfigurations(mpTreeLikelihood);
+		Log.warning("Starting with " + currentConfiguration.toString());
+
     }
 
 
@@ -182,7 +200,7 @@ public class BenchmarkingCompoundDistribution extends Distribution {
         boolean useAmbiguities = false;
         boolean useTipLikelihoods = false;
         PartialsRescalingScheme rescalingScheme = null;
-		List<Alignment> Alignments = new ArrayList<>();
+		List<Alignment> alignments = new ArrayList<>();
         List<SiteModel> siteRateModels = new ArrayList<>();
         List<GenericTreeLikelihood> distributions = new ArrayList<>();
         String dataType = null;
@@ -235,9 +253,9 @@ public class BenchmarkingCompoundDistribution extends Distribution {
     	        				+ "All scaling must be the same.  -- MultiPartitionTreeLikelihood not considered");
     	        	}
     				
-    	        	Alignments.add(tl.dataInput.get());
-    	        	siteRateModels.add((SiteModel) tl.siteModelInput.get());
     			}
+	        	alignments.add(tl.dataInput.get());
+	        	siteRateModels.add((SiteModel) tl.siteModelInput.get());
     			distributions.add(tl);
     		}
     	}
@@ -245,7 +263,7 @@ public class BenchmarkingCompoundDistribution extends Distribution {
         MultiPartitionTreeLikelihood mpt = new MultiPartitionTreeLikelihood();
         mpt.likelihoodsInput.get().addAll(distributions);
         try {
-        	mpt.initialise(tree, Alignments, siteRateModels, useAmbiguities, useTipLikelihoods, rescalingScheme, useTipLikelihoods);
+        	mpt.initialise(tree, alignments, branchRateModel, siteRateModels, useAmbiguities, useTipLikelihoods, rescalingScheme, useTipLikelihoods);
         } catch (Exception e) {
         	e.printStackTrace();
         	return null;
@@ -267,7 +285,7 @@ public class BenchmarkingCompoundDistribution extends Distribution {
         }
 
         
-        for (int threadCount = minNrOfThreadsInput.get(); threadCount < maxNrOfThreads; threadCount++) {
+        for (int threadCount = minNrOfThreadsInput.get(); threadCount <= maxNrOfThreads; threadCount++) {
         	Configuration oneThreadCfg = new Configuration(threadCount);
         	configurations.add(oneThreadCfg);
         }
@@ -293,16 +311,19 @@ public class BenchmarkingCompoundDistribution extends Distribution {
 			bestConfigurationSoFar = cfg0;
 			for (Configuration cfg : configurations) {
 				double score = cfg.totalRunTime / cfg.nrOfSamples;
+				Log.warning(cfg.toString() + ": " + cfg.totalRunTime + "/" + cfg.nrOfSamples + " " + cfg.totalRunTime / cfg.nrOfSamples);
 				if (score < best) {
-					bestConfigurationSoFar = cfg0;
+					bestConfigurationSoFar = cfg;
 					best = score;
 				}
 			}
-			return;
+			
+			currentConfiguration = bestConfigurationSoFar;
+		} else {
+			// continue with next configuration
+			currentConfiguration = configurations.get(i);
 		}
 		
-		// continue with next configuration
-		currentConfiguration = configurations.get(i);
 		if (exec != null) {
 			exec.shutdown();
 		}
@@ -311,7 +332,9 @@ public class BenchmarkingCompoundDistribution extends Distribution {
 		}
 		
 		currentConfiguration.reset();
-    	switchTime = System.currentTimeMillis();
+
+		Log.warning("Switching to " + currentConfiguration.toString());
+		switchTime = System.currentTimeMillis();
 	}
 	
 
@@ -326,15 +349,45 @@ public class BenchmarkingCompoundDistribution extends Distribution {
         	return logP;
         }
         nrOfSamples++;
+        
         if (nrOfSamples % switchCount == 0) {
         	switchConfiguration();
+        }
+//        if (System.currentTimeMillis() - switchTime > switchCount) {
+//        	switchConfiguration();
+//        }
+        
+        
+        if (nrOfSamples % reconfigCountInput.get() == 0) {
+        	restartTuning();
         }
         currentConfiguration.nrOfSamples++;
         logP = currentConfiguration.calculateLogP();
         return logP;
     }
 
-    class CoreRunnable implements java.lang.Runnable {
+    private void restartTuning() {
+		bestConfigurationSoFar = null;
+		for (Configuration cfg : configurations) {
+			cfg.nrOfSamples = 0;
+			cfg.totalRunTime = 0;
+		}
+		
+		currentConfiguration = configurations.get(0);
+		if (exec != null) {
+			exec.shutdown();
+		}
+		if (currentConfiguration.threadCount > 1) {
+			exec = Executors.newFixedThreadPool(currentConfiguration.threadCount);
+		}
+		
+		currentConfiguration.reset();
+
+		Log.warning("Switching to " + currentConfiguration.toString());
+		switchTime = System.currentTimeMillis();
+	}
+
+	class CoreRunnable implements java.lang.Runnable {
         Distribution distr;
 
         CoreRunnable(Distribution core) {
@@ -475,5 +528,13 @@ public class BenchmarkingCompoundDistribution extends Distribution {
     	return list;
     }
 
+    
+    @Override
+    public void restore() {
+    	if (currentConfiguration.nrOfSamples <= 2) {
+    		currentConfiguration.reset();
+    	}
+    	super.restore();
+    }
 
 } // class CompoundDistribution

@@ -198,7 +198,7 @@ public class MultiPartitionTreeLikelihood extends Distribution {
     
 	@Override
 	public void initAndValidate() {
-		List<Alignment> Alignments = new ArrayList<>();
+		List<Alignment> alignments = new ArrayList<>();
         // List<BranchRateModel> branchModels = new ArrayList<>();
         siteRateModels = new ArrayList<>();
         
@@ -231,7 +231,7 @@ public class MultiPartitionTreeLikelihood extends Distribution {
         				tl.getID() + " and " + likelihoodsInput.get().get(0).getID());
         	}
         	
-        	Alignments.add(tl.dataInput.get());
+        	alignments.add(tl.dataInput.get());
         	//branchModels.add(tl.branchRateModelInput.get());
         	siteRateModels.add((SiteModel) tl.siteModelInput.get());
         	
@@ -246,7 +246,7 @@ public class MultiPartitionTreeLikelihood extends Distribution {
         }
 		
         try {
-        	initialise(tree, Alignments, /*branchModels,*/ siteRateModels, useAmbiguities, useTipLikelihoods, rescalingScheme, delayScalingUntillUnderflowInput.get());
+        	initialise(tree, alignments, branchRateModel, siteRateModels, useAmbiguities, useTipLikelihoods, rescalingScheme, delayScalingUntillUnderflowInput.get());
         } catch (DelegateTypeException e) {
         	e.printStackTrace();
         }
@@ -277,15 +277,15 @@ public class MultiPartitionTreeLikelihood extends Distribution {
      *
      * @param tree Used for configuration - shouldn't be watched for changes
      * @param branchModels Specifies a list of branch models for each partition
-     * @param Alignments List of Alignments comprising each partition
+     * @param alignments List of Alignments comprising each partition
      * @param siteRateModels A list of siteRateModels for each partition
      * @param useAmbiguities Whether to respect state ambiguities in data
      */
     
     
     public void initialise(TreeInterface tree,
-                                                List<Alignment> Alignments,
-                                                //List<BranchRateModel> branchModels,
+                                                List<Alignment> alignments,
+                                                BranchRateModel branchRateModel,
                                                 List<SiteModel> siteRateModels,
                                                 boolean useAmbiguities,
                                                 boolean useTipLikelihoods,
@@ -295,16 +295,17 @@ public class MultiPartitionTreeLikelihood extends Distribution {
 
 
         //setID(Alignments.get(0).getID());
-
-        this.Alignments = Alignments;
-        this.dataType = Alignments.get(0).getDataType();
+    	this.tree = tree;
+    	this.branchRateModel = branchRateModel;
+        this.Alignments = alignments;
+        this.dataType = alignments.get(0).getDataType();
         stateCount = dataType.getStateCount();
 
-        partitionCount = Alignments.size();
+        partitionCount = alignments.size();
         patternCounts = new int[partitionCount];
         int total = 0;
         int k = 0;
-        for (Alignment Alignment : Alignments) {
+        for (Alignment Alignment : alignments) {
             assert(Alignment.getDataType().equals(this.dataType));
             patternCounts[k] = Alignment.getPatternCount();
             total += patternCounts[k];
@@ -335,9 +336,11 @@ public class MultiPartitionTreeLikelihood extends Distribution {
 
         // SiteRateModels determine the rates per category (for site-heterogeneity models).
         // There can be either one per partition or one shared across all partitions
-        assert(siteRateModels.size() == 1 || (siteRateModels.size() == Alignments.size()));
+        assert(siteRateModels.size() == 1 || (siteRateModels.size() == alignments.size()));
 
-        //this.siteRateModels.addAll(siteRateModels);
+        if (this.siteRateModels.size() == 0l) {
+        	this.siteRateModels.addAll(siteRateModels);
+        }
         this.categoryCount = this.siteRateModels.get(0).getCategoryCount();
 
         nodeCount = tree.getNodeCount();
@@ -651,7 +654,7 @@ public class MultiPartitionTreeLikelihood extends Distribution {
 
             int j = 0;
             k = 0;
-            for (Alignment Alignment : Alignments) {
+            for (Alignment Alignment : alignments) {
                 int[] pw = Alignment.getWeights();
                 for (int i = 0; i < Alignment.getPatternCount(); i++) {
                     patternPartitions[k] = j;
@@ -663,17 +666,17 @@ public class MultiPartitionTreeLikelihood extends Distribution {
 
             Log.warning("  " + (useAmbiguities ? "Using" : "Ignoring") + " ambiguities in tree likelihood.");
             Log.warning.println("  " + (useTipLikelihoods ? "Using" : "Ignoring") + " character uncertainty in tree likelihood.");
-            String patternCountString = "" + Alignments.get(0).getPatternCount();
-            for (int i = 1; i < Alignments.size(); i++) {
-                patternCountString += ", " + Alignments.get(i).getPatternCount();
+            String patternCountString = "" + alignments.get(0).getPatternCount();
+            for (int i = 1; i < alignments.size(); i++) {
+                patternCountString += ", " + alignments.get(i).getPatternCount();
             }
-            Log.warning("  With " + Alignments.size() + " partitions comprising " + patternCountString + " unique site patterns");
+            Log.warning("  With " + alignments.size() + " partitions comprising " + patternCountString + " unique site patterns");
 
             for (int i = 0; i < tipCount; i++) {
                 if (useAmbiguities || useTipLikelihoods) {
-                    setPartials(beagle, Alignments, tree.getNode(i));
+                    setPartials(beagle, alignments, tree.getNode(i));
                 } else {
-                    setStates(beagle, Alignments, tree.getNode(i));
+                    setStates(beagle, alignments, tree.getNode(i));
                 }
             }
 
