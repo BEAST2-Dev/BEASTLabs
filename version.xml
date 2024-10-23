@@ -34,6 +34,7 @@
         <provider classname="beastlabs.evolution.likelihood.SupertreeLikelihood"/>
         <provider classname="beastlabs.evolution.likelihood.TraitedTreeLikelihood"/>
         <provider classname="beastlabs.evolution.likelihood.MultiPartitionTreeLikelihood"/>
+        <provider classname="beastlabs.evolution.likelihood.SelfTuningMCMC"/>
         <provider classname="beastlabs.evolution.likelihood.SelfTuningCompoundDistribution"/>
         <provider classname="beastlabs.evolution.operators.AdaptableVarianceMultivariateNormalOperator"/>
         <provider classname="beastlabs.evolution.operators.AttachAndUniformOperator"/>

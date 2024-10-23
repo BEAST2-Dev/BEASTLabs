@@ -48,9 +48,13 @@ public class SelfTuningCompoundDistribution extends Distribution {
     final public Input<Boolean> ignoreInput = new Input<>("ignore", "ignore all distributions and return 1 as distribution (default false)", false);
     
 
-    final public Input<Long> swithcCountInput = new Input<>("switchCount", "number of milli seconds to calculate likelihood before switching configuration", 1000l);
+    final public Input<Long> swithcCountInput = new Input<>("switchCount", "number of milli seconds to calculate likelihood before switching configuration", 500l);
     final public Input<Long> reconfigCountInput = new Input<>("reconfigCount", "number of times to calculate likelihood before self tuning again", 100000l);
+
     
+    final public Input<Boolean> includeMPTLInput = new Input<>("includeMPTL", "include multi-partition (BEAGLE 3) tree likelihood in configurations", true);
+    final public Input<Boolean> includeSPTLInput = new Input<>("includeSPTL", "include single-partition (BEAGLE 2) tree likelihood in configurations", true);
+
     
     class Configuration {
     	long nrOfSamples;
@@ -98,11 +102,11 @@ public class SelfTuningCompoundDistribution extends Distribution {
     	}
     	
     	void reset() {
-	        for (Distribution dists : pDistributions.get()) {
-	        	Tree tree = (Tree) dists.getInput("tree").get();
-	        	tree.setEverythingDirty(true);
-	        }
-    		calculateLogP();
+//	        for (Distribution dists : pDistributions.get()) {
+//	        	Tree tree = (Tree) dists.getInput("tree").get();
+//	        	tree.setEverythingDirty(true);
+//	        }
+//    		calculateLogP();
     	}
     	
     	@Override
@@ -120,18 +124,15 @@ public class SelfTuningCompoundDistribution extends Distribution {
     	}
     	
     	double calculateLogP() {
-    		if (nrOfSamples == 1) {
-    			switchTime = System.currentTimeMillis();
-    		}
     		nrOfSamples++;
     		return mpTreeLikelihood.calculateLogP();
     	}
     	
     	@Override
     	void reset() {
-        	Tree tree = (Tree) mpTreeLikelihood.likelihoodsInput.get().get(0).getInput("tree").get();
-        	tree.setEverythingDirty(true);
-    		calculateLogP();
+//        	Tree tree = (Tree) mpTreeLikelihood.likelihoodsInput.get().get(0).getInput("tree").get();
+//        	tree.setEverythingDirty(true);
+//    		calculateLogP();
     	}
     	
     	@Override
@@ -147,7 +148,7 @@ public class SelfTuningCompoundDistribution extends Distribution {
     
     // represent current configuration
 	private long switchTime = 0;
-	private long nrOfSamples, switchCount;
+	private long switchCount;
 
     
     /**
@@ -184,11 +185,16 @@ public class SelfTuningCompoundDistribution extends Distribution {
             logP = 0;
         }
         
-        MultiPartitionTreeLikelihood mpTreeLikelihood = createMultiPartitionTreeLikelihood();
+        
+        MultiPartitionTreeLikelihood mpTreeLikelihood = null;
+        if (includeMPTLInput.get()) {
+        	mpTreeLikelihood = createMultiPartitionTreeLikelihood();
+        }
         
         currentConfiguration = initConfigurations(mpTreeLikelihood);
 		Log.warning("Starting with " + currentConfiguration.toString());
 
+		switchTime = System.currentTimeMillis();
     }
 
 
@@ -284,20 +290,21 @@ public class SelfTuningCompoundDistribution extends Distribution {
         	configurations.add(new MultiPartitionConfiguration(mpTreeLikelihood));
         }
 
-        
-        for (int threadCount = minNrOfThreadsInput.get(); threadCount <= maxNrOfThreads; threadCount++) {
-        	Configuration oneThreadCfg = new Configuration(threadCount);
-        	configurations.add(oneThreadCfg);
+        if (includeSPTLInput.get()) {
+	        for (int threadCount = minNrOfThreadsInput.get(); threadCount <= maxNrOfThreads; threadCount++) {
+	        	Configuration oneThreadCfg = new Configuration(threadCount);
+	        	configurations.add(oneThreadCfg);
+	        }
         }
 
         return configurations.get(0);
 	}
 
 
-	private void switchConfiguration() {
+	private boolean switchConfiguration() {
 		if (bestConfigurationSoFar != null) {
 			// all configurations tried, and best one found
-			return;
+			return false;
 		}
 		
 		long endTime = System.currentTimeMillis();
@@ -332,9 +339,13 @@ public class SelfTuningCompoundDistribution extends Distribution {
 		}
 		
 		currentConfiguration.reset();
+		
+		currentConfiguration.nrOfSamples = 1;
+//		currentConfiguration.totalRunTime = 0;
 
 		Log.warning("Switching to " + currentConfiguration.toString());
 		switchTime = System.currentTimeMillis();
+		return true;
 	}
 	
 
@@ -348,30 +359,24 @@ public class SelfTuningCompoundDistribution extends Distribution {
         if (ignore) {
         	return logP;
         }
-        nrOfSamples++;
         
-        if (nrOfSamples % switchCount == 0) {
-        	switchConfiguration();
-        }
-//        if (System.currentTimeMillis() - switchTime > switchCount) {
+//        if (currentConfiguration.nrOfSamples % switchCount == 0 && currentConfiguration.nrOfSamples > 0) {
 //        	switchConfiguration();
 //        }
-        
-        
-        if (nrOfSamples % reconfigCountInput.get() == 0) {
-        	restartTuning();
-        }
-        currentConfiguration.nrOfSamples++;
+////        if (System.currentTimeMillis() - switchTime > switchCount) {
+////        	switchConfiguration();
+////        }
+//        
+//        if (currentConfiguration.nrOfSamples % reconfigCountInput.get() == 0) {
+//        	restartTuning();
+//        }
+
         logP = currentConfiguration.calculateLogP();
         return logP;
     }
 
     private void restartTuning() {
 		bestConfigurationSoFar = null;
-		for (Configuration cfg : configurations) {
-			cfg.nrOfSamples = 0;
-			cfg.totalRunTime = 0;
-		}
 		
 		currentConfiguration = configurations.get(0);
 		if (exec != null) {
@@ -383,6 +388,10 @@ public class SelfTuningCompoundDistribution extends Distribution {
 		
 		currentConfiguration.reset();
 
+		for (Configuration cfg : configurations) {
+			cfg.nrOfSamples = 0;
+			cfg.totalRunTime = 0;
+		}
 		Log.warning("Switching to " + currentConfiguration.toString());
 		switchTime = System.currentTimeMillis();
 	}
@@ -529,12 +538,29 @@ public class SelfTuningCompoundDistribution extends Distribution {
     }
 
     
-    @Override
-    public void restore() {
-    	if (currentConfiguration.nrOfSamples <= 2) {
-    		currentConfiguration.reset();
-    	}
-    	super.restore();
-    }
+//    @Override
+//    public void restore() {
+//    	if (currentConfiguration.nrOfSamples <= 2) {
+//    		currentConfiguration.reset();
+//    	}
+//    	super.restore();
+//    }
+
+
+	public boolean update(long sample) {
+        if (sample > 0 && sample % reconfigCountInput.get() == 0 && configurations.size() > 1) {
+        	restartTuning();
+        	return true;
+        }
+
+        if (currentConfiguration.nrOfSamples % switchCount == 0 && currentConfiguration.nrOfSamples > 0) {
+        	return switchConfiguration();
+        }
+//        if (System.currentTimeMillis() - switchTime > switchCount) {
+//        	switchConfiguration();
+//        }
+        
+    	return false;
+	}
 
 } // class CompoundDistribution
