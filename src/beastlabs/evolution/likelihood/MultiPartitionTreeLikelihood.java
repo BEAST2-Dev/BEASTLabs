@@ -1810,6 +1810,18 @@ public class MultiPartitionTreeLikelihood extends Distribution {
      * the BEAGLE library instance
      */
     private Beagle beagle;
+    
+    public String getProcessor() {
+    	InstanceDetails details = beagle.getDetails();
+    	for (BeagleFlag flag : BeagleFlag.values()) {
+            if (flag.isSet(details.getFlags())) {
+                if (flag.getMeaning().contains("processor")) {
+                	return flag.getMeaning();
+                }
+            }
+        }
+    	return null;
+    }
 
     /**
      * Cached log likelihood for each partition

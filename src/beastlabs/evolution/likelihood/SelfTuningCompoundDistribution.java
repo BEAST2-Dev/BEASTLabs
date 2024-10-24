@@ -3,6 +3,7 @@ package beastlabs.evolution.likelihood;
 
 
 
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -22,8 +23,8 @@ import beast.base.evolution.alignment.Alignment;
 import beast.base.evolution.branchratemodel.BranchRateModel;
 import beast.base.evolution.likelihood.BeagleTreeLikelihood.PartialsRescalingScheme;
 import beast.base.evolution.likelihood.GenericTreeLikelihood;
+import beast.base.evolution.likelihood.TreeLikelihood;
 import beast.base.evolution.sitemodel.SiteModel;
-import beast.base.evolution.tree.Tree;
 import beast.base.evolution.tree.TreeInterface;
 import beast.base.inference.Distribution;
 import beast.base.inference.State;
@@ -50,7 +51,7 @@ public class SelfTuningCompoundDistribution extends Distribution {
 
     final public Input<Long> swithcCountInput = new Input<>("switchCount", "number of milli seconds to calculate likelihood before switching configuration", 500l);
     final public Input<Long> reconfigCountInput = new Input<>("reconfigCount", "number of times to calculate likelihood before self tuning again", 100000l);
-
+    final public Input<Integer> stopAfterSamerResultsInput = new Input<>("stopAfterSamerResults", "number of times the same configuration is optimal in a row before stopping to tune", 3);
     
     final public Input<Boolean> includeMPTLInput = new Input<>("includeMPTL", "include multi-partition (BEAGLE 3) tree likelihood in configurations", true);
     final public Input<Boolean> includeSPTLInput = new Input<>("includeSPTL", "include single-partition (BEAGLE 2) tree likelihood in configurations", true);
@@ -137,18 +138,24 @@ public class SelfTuningCompoundDistribution extends Distribution {
     	
     	@Override
     	public String toString() {
-    		return "Multi Partition";
+    		String hardware = mpTreeLikelihood.getProcessor();
+    		return "Multipartition " + hardware;
     	}
 
     }
     
     private List<Configuration> configurations;
-    private Configuration bestConfigurationSoFar;
+    private Configuration bestConfigurationSoFar, lastBestConfiguration = null;
     private Configuration currentConfiguration = null;
     
     // represent current configuration
 	private long switchTime = 0;
 	private long switchCount;
+	
+	
+	private boolean keepTuning;
+	private boolean initialMeasurement;
+	private int sameOptimumCount;
 
     
     /**
@@ -166,6 +173,10 @@ public class SelfTuningCompoundDistribution extends Distribution {
         
         if (minNrOfThreadsInput.get() < 1) {
         	throw new IllegalArgumentException("minThreads must be at least 1");
+        }
+        
+        if (stopAfterSamerResultsInput.get() < 1) {
+        	throw new IllegalArgumentException("stopAfterSamerResults must be at least 1");
         }
         
         useThreads = useThreadsInput.get() && (ProgramStatus.m_nThreads > 1);
@@ -194,6 +205,10 @@ public class SelfTuningCompoundDistribution extends Distribution {
         currentConfiguration = initConfigurations(mpTreeLikelihood);
 		Log.warning("Starting with " + currentConfiguration.toString());
 
+		keepTuning = configurations.size() > 1;
+		sameOptimumCount = 0;
+		initialMeasurement = true;
+		
 		switchTime = System.currentTimeMillis();
     }
 
@@ -286,6 +301,7 @@ public class SelfTuningCompoundDistribution extends Distribution {
         rd.getNumber();
 
         configurations = new ArrayList<>();
+
         if (mpTreeLikelihood != null) {
         	configurations.add(new MultiPartitionConfiguration(mpTreeLikelihood));
         }
@@ -297,14 +313,23 @@ public class SelfTuningCompoundDistribution extends Distribution {
 	        }
         }
 
+
         return configurations.get(0);
 	}
 
 
 	private boolean switchConfiguration() {
-		if (bestConfigurationSoFar != null) {
+		if (bestConfigurationSoFar != null || !keepTuning) {
 			// all configurations tried, and best one found
 			return false;
+		}
+		
+		if (initialMeasurement) {
+			currentConfiguration.nrOfSamples = 1;
+			switchTime = System.currentTimeMillis();
+			initialMeasurement = false;
+			Log.warning("Start timing " + currentConfiguration.toString());
+			return true;
 		}
 		
 		long endTime = System.currentTimeMillis();
@@ -318,7 +343,7 @@ public class SelfTuningCompoundDistribution extends Distribution {
 			bestConfigurationSoFar = cfg0;
 			for (Configuration cfg : configurations) {
 				double score = cfg.totalRunTime / cfg.nrOfSamples;
-				Log.warning(cfg.toString() + ": " + cfg.totalRunTime + "/" + cfg.nrOfSamples + " " + cfg.totalRunTime / cfg.nrOfSamples);
+				Log.warning(cfg.toString() + ": " + cfg.totalRunTime + "/" + cfg.nrOfSamples + " = " + cfg.totalRunTime / cfg.nrOfSamples);
 				if (score < best) {
 					bestConfigurationSoFar = cfg;
 					best = score;
@@ -326,6 +351,19 @@ public class SelfTuningCompoundDistribution extends Distribution {
 			}
 			
 			currentConfiguration = bestConfigurationSoFar;
+			
+			if (lastBestConfiguration == bestConfigurationSoFar) {
+				// stop tuning if  consecutive tuning sessions gave the same configuration
+				sameOptimumCount++;
+				if (sameOptimumCount == stopAfterSamerResultsInput.get()-1) {
+					keepTuning = false;
+				}
+			} else {
+				sameOptimumCount = 0;
+				keepTuning = true;
+			}
+			lastBestConfiguration = bestConfigurationSoFar;
+
 		} else {
 			// continue with next configuration
 			currentConfiguration = configurations.get(i);
@@ -343,7 +381,11 @@ public class SelfTuningCompoundDistribution extends Distribution {
 		currentConfiguration.nrOfSamples = 1;
 //		currentConfiguration.totalRunTime = 0;
 
-		Log.warning("Switching to " + currentConfiguration.toString());
+		if (keepTuning) {
+			Log.warning((i != configurations.size() ? "Start timing ": "Using ") + currentConfiguration.toString());
+		} else {
+			Log.warning("Settling for " + currentConfiguration.toString() + " -- tuning finished");
+		}
 		switchTime = System.currentTimeMillis();
 		return true;
 	}
@@ -376,6 +418,12 @@ public class SelfTuningCompoundDistribution extends Distribution {
     }
 
     private void restartTuning() {
+    	if (!keepTuning) {
+    		return;
+    	}
+    	
+    	lastBestConfiguration = bestConfigurationSoFar;
+
 		bestConfigurationSoFar = null;
 		
 		currentConfiguration = configurations.get(0);
@@ -392,7 +440,7 @@ public class SelfTuningCompoundDistribution extends Distribution {
 			cfg.nrOfSamples = 0;
 			cfg.totalRunTime = 0;
 		}
-		Log.warning("Switching to " + currentConfiguration.toString());
+		Log.warning("Start timing " + currentConfiguration.toString());
 		switchTime = System.currentTimeMillis();
 	}
 
