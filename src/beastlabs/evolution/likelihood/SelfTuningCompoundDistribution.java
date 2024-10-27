@@ -23,6 +23,7 @@ import beast.base.evolution.alignment.Alignment;
 import beast.base.evolution.branchratemodel.BranchRateModel;
 import beast.base.evolution.likelihood.BeagleTreeLikelihood.PartialsRescalingScheme;
 import beast.base.evolution.likelihood.GenericTreeLikelihood;
+import beast.base.evolution.likelihood.ThreadedTreeLikelihood;
 import beast.base.evolution.likelihood.TreeLikelihood;
 import beast.base.evolution.sitemodel.SiteModel;
 import beast.base.evolution.tree.TreeInterface;
@@ -55,7 +56,6 @@ public class SelfTuningCompoundDistribution extends Distribution {
     
     final public Input<Boolean> includeMPTLInput = new Input<>("includeMPTL", "include multi-partition (BEAGLE 3) tree likelihood in configurations", true);
     final public Input<Boolean> includeSPTLInput = new Input<>("includeSPTL", "include single-partition (BEAGLE 2) tree likelihood in configurations", true);
-
     
     class Configuration {
     	long nrOfSamples;
@@ -210,6 +210,8 @@ public class SelfTuningCompoundDistribution extends Distribution {
 		initialMeasurement = true;
 		
 		switchTime = System.currentTimeMillis();
+		
+		
     }
 
 
@@ -235,7 +237,7 @@ public class SelfTuningCompoundDistribution extends Distribution {
     		        tree = tl0.treeInput.get();
     		        branchRateModel = tl0.branchRateModelInput.get();
     		        useAmbiguities = (boolean) tl0.getInput("useAmbiguities").get();
-    		        useTipLikelihoods = (boolean) tl0.getInput("useTipLikelihoods").get();
+    		        useTipLikelihoods = tl0 instanceof TreeLikelihood ? (boolean) tl0.getInput("useTipLikelihoods").get() : false;
     		        rescalingScheme = MultiPartitionTreeLikelihood.getRescalingScheme(tl0);
     		        dataType = tl0.dataInput.get().getDataType().toString();
     			} else {
@@ -263,7 +265,7 @@ public class SelfTuningCompoundDistribution extends Distribution {
     	        				tl.getID() + " and " + tl0.getID()+"  -- MultiPartitionTreeLikelihood not considered");
     	        		return null;
     	        	}
-    	        	if (useTipLikelihoods != (boolean)tl.getInput("useTipLikelihoods").get()) {
+    	        	if (tl instanceof TreeLikelihood && useTipLikelihoods != (boolean)tl.getInput("useTipLikelihoods").get()) {
     	        		Log.warning("All partitions must use tip likelihoods, or ignore tip likelihoods, but found a difference between " +
     	        				tl.getID() + " and " + tl0.getID() + " -- MultiPartitionTreeLikelihood not considered");
     	        		return null;
