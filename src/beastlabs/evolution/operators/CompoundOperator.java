@@ -133,6 +133,7 @@ public class CompoundOperator extends Operator {
 	
 	@Override
 	public void setOperatorSchedule(final OperatorSchedule operatorSchedule) {
+		super.setOperatorSchedule(operatorSchedule);
         for (Operator o : operators) {
         	o.setOperatorSchedule(operatorSchedule);
         }
