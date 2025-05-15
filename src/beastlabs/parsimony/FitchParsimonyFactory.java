@@ -1,8 +1,6 @@
 package beastlabs.parsimony;
 
 import beast.base.evolution.alignment.Alignment;
-import beastlabs.parsimony.FitchParsimony;
-import beastlabs.parsimony.ParsimonyCriterion;
 
 public class FitchParsimonyFactory {
 
