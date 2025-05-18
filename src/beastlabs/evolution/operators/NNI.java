@@ -1,5 +1,6 @@
 package beastlabs.evolution.operators;
 
+
 import java.util.List;
 
 import beast.base.core.Description;
@@ -83,7 +84,7 @@ public class NNI extends RestrictedSubtreeSlide {
 
         double ran;
         do {
-            ran = Math.random();
+            ran = Randomizer.nextDouble();
         } while( ran == 0.0 || ran == 1.0 );
 
         // now calculate the new height for father between the height of the
