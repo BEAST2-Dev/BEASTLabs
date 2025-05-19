@@ -78,8 +78,8 @@ public class NNI extends RestrictedSubtreeSlide {
 
         final double heightGrandfather = iGrandParent.getHeight();
         final double heightUncle = iUncle.getHeight();
-        final double minHeightFather = Math.max(heightUncle, getOtherChild(iParent, i).getHeight());
         final double heightI = i.getHeight();
+        final double minHeightFather = Math.max(heightI, heightUncle);
         final double minHeightReverse = Math.max(heightI, getOtherChild(iParent, i).getHeight());
 
         double ran;
