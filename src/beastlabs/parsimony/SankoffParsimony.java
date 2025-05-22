@@ -191,19 +191,19 @@ public class SankoffParsimony implements ParsimonyCriterion {
             int[] pattern = patterns.getPattern(i);
 
             if (compressStates) {
-                Set observedStates = new TreeSet();
+                Set<Integer> observedStates = new TreeSet<>();
                 for (int j = 0; j < pattern.length; j++) {
                     boolean[] stateSet = patterns.getDataType().getStateSet(pattern[j]);
                     for (int k = 0; k < stateSet.length; k++) {
                         if (stateSet[k]) {
-                            observedStates.add(new Integer(k));
+                            observedStates.add(k);
                         }
                     }
                 }
 
                 stateSets[i] = new int[observedStates.size()];
 
-                Iterator iter = observedStates.iterator();
+                Iterator<Integer> iter = observedStates.iterator();
                 int j = 0;
                 while (iter.hasNext()) {
                     stateSets[i][j] = ((Integer)iter.next()).intValue();

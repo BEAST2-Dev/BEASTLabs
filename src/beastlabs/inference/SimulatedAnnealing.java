@@ -18,9 +18,11 @@ import beast.base.util.Randomizer;
 
 @Description("Maximum likelihood by simulated annealing")
 public class SimulatedAnnealing extends MCMC implements Loggable {
-	public Input<Double> startTemp = new Input<Double>("startTemp","starting temperature (default 1.0)", 1.0);
-	public Input<Double> endTemp = new Input<Double>("endTemp","end temperature. Together with startTemp this " +
+	public Input<Double> startTemp = new Input<>("startTemp","starting temperature (default 1.0)", 1.0);
+	public Input<Double> endTemp = new Input<>("endTemp","end temperature. Together with startTemp this " +
 			"determines the temperature trajectory (default 1e-4)", 1e-4);
+	public Input<Integer> repeatsInput = new Input<>("repeats","number of times to traverse the temperature schedule (default 1)."
+			+ "For a given chainlength, this increases the number of samples by number of repeats.", 1);
 	
 	protected double m_fDeltaLogTemp;
 	
@@ -61,6 +63,7 @@ public class SimulatedAnnealing extends MCMC implements Loggable {
 		
 //    	reportLogLikelihoods(posterior, "");
 
+		for (int i = 0; i < repeatsInput.get(); i++) {
         for (int iSample = -burnIn; iSample <= chainLength; iSample++) {
             state.store(iSample);
             if (storeEvery > 0 && iSample % storeEvery == 0 && iSample > 0) {
@@ -161,6 +164,7 @@ public class SimulatedAnnealing extends MCMC implements Loggable {
 			} else {
 				Log.debug(sn.getID() + ": " + sn.toString());
 			}
+		}
 		}
     }
 
