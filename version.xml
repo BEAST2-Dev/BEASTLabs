@@ -60,6 +60,9 @@
         <provider classname="beastlabs.evolution.operators.TreeWithMetaDataRandomWalker"/>
         <provider classname="beastlabs.evolution.operators.UniformOperatorSelective"/>
         <provider classname="beastlabs.evolution.operators.UniformSelective"/>
+
+        <provider classname="beastlabs.evolution.sitemodel.SiteModelGI"/>
+
         <provider classname="beastlabs.evolution.speciation.RandomLocalYuleModel"/>
         <provider classname="beastlabs.evolution.substitutionmodel.CladeSubstitutionModel"/>
         <provider classname="beastlabs.evolution.substitutionmodel.ComplexSubstitutionModel"/>
