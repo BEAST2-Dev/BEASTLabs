@@ -10,25 +10,27 @@ import beast.base.util.Randomizer;
 import org.apache.commons.math.distribution.Distribution;
 
 /**
+ * WeightedDirichlet includes an optional input: the expected mean, which defaults to 1.
+ * During both sampling and inference, the values drawn from the distribution are scaled to maintain this expected mean.
  * @author Alexei Drummond
  * @author Walter Xie
  */
-@Description("Weighted Dirichlet distribution that scales dimensions by weight")
+@Description("Weighted Dirichlet distribution that scales dimensions by weight, where the values are scaled to maintain the expected mean (default to 1).")
 public class WeightedDirichlet extends ParametricDistribution {
     final public Input<Function> alphaInput = new Input<>("alpha", "coefficients of the Dirichlet distribution", Validate.REQUIRED);
     // IntegerParameter
     final public Input<Function> weightsInput = new Input<>("weights", "weights of the scaled Dirichlet distribution", Validate.REQUIRED);
-    // must be required
-    final public Input<Double> sumInput = new Input<>("sum",
-            "expected sum of the values", Validate.REQUIRED);
+    // optional
+    final public Input<Double> meanInput = new Input<>("mean",
+            "expected mean of the values, default to 1", 1.0);
 
-    // the expectedSum should be 3, for 3 relative rates to fix the mean to 1
-    private double expectedSum;
+    // the expectedMean is default to 1, mostly used for 3 relative rates to fix the mean to 1
+    private double expectedMean = 1.0;
 
     @Override
     public void initAndValidate() {
 //        super.initAndValidate();
-        expectedSum = sumInput.get();
+        expectedMean = meanInput.get();
     }
 
     @Override
@@ -60,8 +62,9 @@ public class WeightedDirichlet extends ParametricDistribution {
         // re-normalise sumX based on weights
         sumX /= sumWeight;
 
-        if (Math.abs(sumX - expectedSum) > 1e-6) {
-            Log.trace("sum of values (" + sumX +") differs significantly from the expected sum of values (" + expectedSum +")");
+        int dim = pX.getDimension();
+        if (Math.abs(sumX - (expectedMean*dim)) > 1e-6) {
+            Log.trace("sum of values (" + sumX +") differs significantly from the expected sum of values (" + expectedMean +")");
             return Double.NEGATIVE_INFINITY;
         }
 
@@ -92,8 +95,8 @@ public class WeightedDirichlet extends ParametricDistribution {
                 sum += dirichletSample[j] * weightsInput.get().getArrayValue(j);
             }
             for (int j = 0; j < dim; j++) {
-                // if expectedSum != 1, then adjust the sum to it
-                dirichletSample[j] = (dirichletSample[j] / sum) * expectedSum;
+                // adjust the sum to the expectation
+                dirichletSample[j] = (dirichletSample[j] / sum) * expectedMean * dim;
             }
             samples[i] = dirichletSample;
         }
