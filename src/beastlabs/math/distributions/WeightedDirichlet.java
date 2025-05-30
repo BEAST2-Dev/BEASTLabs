@@ -31,40 +31,35 @@ public class WeightedDirichlet extends ParametricDistribution {
     public void initAndValidate() {
 //        super.initAndValidate();
         expectedMean = meanInput.get();
+        if (weightsInput.get().getDimension() != alphaInput.get().getDimension()) {
+            throw new IllegalArgumentException("Dimensions of alpha and weights should be the same, but dim(alphaInput)=" + alphaInput.get().getDimension()
+                    + " and dim(weights)=" + weightsInput.get().getDimension());
+        }
     }
 
     @Override
     public double calcLogP(Function pX) {
 
         double[] alpha = alphaInput.get().getDoubleValues();
-        if (alphaInput.get().getDimension() != pX.getDimension()) {
-            throw new IllegalArgumentException("Dimensions of alpha and x should be the same, but dim(alpha)=" + alphaInput.get().getDimension()
-                    + " and dim(x)=" + pX.getDimension());
-        }
-        double[] weight = weightsInput.get().getDoubleValues();
-        if (weightsInput.get().getDimension() != pX.getDimension()) {
-            throw new IllegalArgumentException("Dimensions of weight and x should be the same, but dim(weight)=" + weightsInput.get().getDimension()
+        if (alpha.length != pX.getDimension()) {
+            throw new IllegalArgumentException("Dimensions of alpha and x should be the same, but dim(alpha)=" + alpha.length
                     + " and dim(x)=" + pX.getDimension());
         }
 
+        // the weights are maintained by sample method and operator, not here
+
         double logP = 0;
         double sumAlpha = 0;
-        double sumWeight = 0;
         double sumX = 0;
 
         // check sumX first
         for (int i = 0; i < pX.getDimension(); i++) {
-            sumX += pX.getArrayValue(i) * weight[i];
-            sumWeight += weight[i];
+            sumX += pX.getArrayValue(i);
         }
-        if (sumWeight <= 0)
-            throw new RuntimeException("sum of weights (" + sumWeight +") must > 0 !");
-        // re-normalise sumX based on weights
-        sumX /= sumWeight;
 
         int dim = pX.getDimension();
         if (Math.abs(sumX - (expectedMean*dim)) > 1e-6) {
-            Log.trace("sum of values (" + sumX +") differs significantly from the expected sum of values (" + expectedMean +")");
+            Log.trace("sum of values (" + sumX +") differs significantly from the expected sum of values (" + (expectedMean*dim) +")");
             return Double.NEGATIVE_INFINITY;
         }
 
@@ -79,7 +74,6 @@ public class WeightedDirichlet extends ParametricDistribution {
         logP += org.apache.commons.math.special.Gamma.logGamma(sumAlpha);
         // area = sumX^(dim-1)
         logP -= (pX.getDimension() - 1) * Math.log(sumX);
-
         return logP;
     }
 
