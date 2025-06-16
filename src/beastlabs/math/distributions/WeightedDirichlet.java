@@ -4,10 +4,11 @@ import beast.base.core.Description;
 import beast.base.core.Function;
 import beast.base.core.Input;
 import beast.base.core.Input.Validate;
-import beast.base.core.Log;
 import beast.base.inference.distribution.ParametricDistribution;
 import beast.base.util.Randomizer;
 import org.apache.commons.math.distribution.Distribution;
+
+import java.util.Arrays;
 
 /**
  * WeightedDirichlet includes an optional input: the expected mean, which defaults to 1.
@@ -22,7 +23,7 @@ public class WeightedDirichlet extends ParametricDistribution {
     final public Input<Function> weightsInput = new Input<>("weights", "weights of the scaled Dirichlet distribution", Validate.REQUIRED);
     // optional
     final public Input<Double> meanInput = new Input<>("mean",
-            "expected mean of the values, default to 1", 1.0);
+            "the expected weighted mean of the values, default to 1", 1.0);
 
     // the expectedMean is default to 1, mostly used for 3 relative rates to fix the mean to 1
     private double expectedMean = 1.0;
@@ -39,67 +40,127 @@ public class WeightedDirichlet extends ParametricDistribution {
 
     @Override
     public double calcLogP(Function pX) {
+        final double[] x = pX.getDoubleValues();
+        final double[] alpha = alphaInput.get().getDoubleValues();
+        validateDimensions(alpha, x, "alpha", "values");
 
-        double[] alpha = alphaInput.get().getDoubleValues();
-        if (alpha.length != pX.getDimension()) {
-            throw new IllegalArgumentException("Dimensions of alpha and x should be the same, but dim(alpha)=" + alpha.length
-                    + " and dim(x)=" + pX.getDimension());
+        final double[] weights = weightsInput.get().getDoubleValues();
+        validateDimensions(weights, x, "weights", "values");
+
+        final int dim = x.length;
+        double weightSum = 0.0; // ∑ (weight[i])
+        for (int i = 0; i < dim; i++)
+            weightSum += weights[i];
+
+        // Normalize weights to be scale-invariant
+        double[] weightsNorm = new double[dim];
+        // ∑ (x[i] * weights_norm[i]) == target_sum
+        double weightsNormSumX = 0.0;
+        for (int i = 0; i < dim; i++) {
+            // weights_norm = weight[i] * len(weights) / ∑ (weight[i])
+            weightsNorm[i] = weights[i] * dim / weightSum;
+            // weightsNormSumX = ∑ (x[i] * weights_norm[i]), and it is also target_sum
+            weightsNormSumX += x[i] * weightsNorm[i];
         }
 
-        // the weights are maintained by sample method and operator, not here
-
-        double logP = 0;
-        double sumAlpha = 0;
-        double sumX = 0;
-
-        // check sumX first
-        for (int i = 0; i < pX.getDimension(); i++) {
-            sumX += pX.getArrayValue(i);
+        // (weightsNormSumX / dim) is the weighted mean
+        if (Math.abs(weightsNormSumX / dim - expectedMean) > 1e-6) {
+//            return Double.NEGATIVE_INFINITY;
+            throw new RuntimeException("The weighted mean of values (" + (weightsNormSumX / dim) +
+                    ") must be same as the expected mean of values (" + expectedMean + ") !");
         }
 
-        int dim = pX.getDimension();
-        if (Math.abs(sumX - (expectedMean*dim)) > 1e-6) {
-            Log.trace("sum of values (" + sumX +") differs significantly from the expected sum of values (" + (expectedMean*dim) +")");
-            return Double.NEGATIVE_INFINITY;
-        }
-
-        for (int i = 0; i < pX.getDimension(); i++) {
-            double x = pX.getArrayValue(i) / sumX;
-
-            logP += (alpha[i] - 1) * Math.log(x);
+        // log_density = gammaln(np.sum(conc)) - np.sum(gammaln(conc))
+        //        + np.sum((conc - 1) * np.log(y))
+        double sumLgWeightsNorm = 0.0; // for Jacobian term
+        double logP = 0.0;
+        double sumAlpha = 0.0;
+        for (int i = 0; i < dim; i++) {
+            // Transform to standard Dirichlet space
+            // y = (x[i] * weights_norm[i]) / target_sum
+            double y = (x[i] * weightsNorm[i]) / weightsNormSumX;
+            // log density
+            logP += (alpha[i] - 1) * Math.log(y);
             logP -= org.apache.commons.math.special.Gamma.logGamma(alpha[i]);
             sumAlpha += alpha[i];
-        }
 
+            sumLgWeightsNorm += Math.log(weightsNorm[i]);
+        }
         logP += org.apache.commons.math.special.Gamma.logGamma(sumAlpha);
-        // area = sumX^(dim-1)
-        logP -= (pX.getDimension() - 1) * Math.log(sumX);
-        return logP;
+
+        // TODO Jacobian term needs to test
+        // log_jacobian = np.sum(np.log(weights_norm)) - len(x) * np.log(target_sum)
+        double logJacobian = sumLgWeightsNorm - dim * Math.log(weightsNormSumX);
+        return logP + logJacobian;
     }
 
     @Override
     public Double[][] sample(int size) {
-        int dim = alphaInput.get().getDimension();
+        final double[] alpha = alphaInput.get().getDoubleValues();
+        final double[] weights = weightsInput.get().getDoubleValues();
+        validateDimensions(alpha, weights, "alpha", "weights");
+
+        final int dim = alpha.length;
+        double weightSum = 0.0;
+        for (int j = 0; j < dim; j++)
+            weightSum += weights[j];
+
         Double[][] samples = new Double[size][];
         for (int i = 0; i < size; i++) {
-            Double[] dirichletSample = new Double[dim];
+            Double[] x = new Double[dim];
+            // step 1: Sample from standard Dirichlet
             double sum = 0.0;
             for (int j = 0; j < dim; j++) {
-                dirichletSample[j] = Randomizer.nextGamma(alphaInput.get().getArrayValue(j), 1.0);
-                sum += dirichletSample[j] * weightsInput.get().getArrayValue(j);
+                x[j] = Randomizer.nextGamma(alpha[j], 1.0);
+                sum += x[j];
             }
             for (int j = 0; j < dim; j++) {
-                // adjust the sum to the expectation
-                dirichletSample[j] = (dirichletSample[j] / sum) * expectedMean * dim;
+                // if expectedMean != 1, then adjust it
+                x[j] = x[j] / sum;
             }
-            samples[i] = dirichletSample;
+
+            // step 2: Transform to weighted rates:
+            for (int j = 0; j < dim; j++) {
+                x[j] = expectedMean * x[j] * weightSum / weights[j];
+            }
+
+            // validate : weighted mean = ∑(x[j] * weight[j]) / ∑(weight[j])
+            double weightedMeanX = getWeightedMean(Arrays.stream(x)
+                    .mapToDouble(Double::doubleValue).toArray(), weights);
+            if (Math.abs(weightedMeanX  - expectedMean) > 1e-6)
+                throw new RuntimeException("The weighted mean of values (" + weightedMeanX +
+                        ") differs significantly from the expected weighted mean of values (" + expectedMean +") !");
+
+            samples[i] = x;
         }
         return samples;
     }
 
+    public static double getWeightedMean(double[] samples, double[] weights) {
+        validateDimensions(weights, samples, "weights", "values");
+        // the weight mean = sum(x[i] * weight[i]) / sum(weight[i])
+        double weightedSumX = 0.0;
+        for (int i = 0; i < samples.length; i++)
+            weightedSumX += samples[i] * weights[i];
+        double weightSum = 0.0;
+        for (double weight : weights)
+            weightSum += weight;
+        if (weightSum <= 0.0)
+            return Double.NEGATIVE_INFINITY;
+        return weightedSumX / weightSum;
+    }
+
+    private static void validateDimensions(double[] arr, double[] reference, String arrName, String referenceName) {
+        if (arr.length != reference.length) {
+            throw new IllegalArgumentException( "Dimensions of " + arrName + " and " +
+                    referenceName + " should be the same, but dim(" + arrName + ") = " + arr.length +
+                    " and dim(" + referenceName + ") = " + reference.length);
+        }
+    }
+
     @Override
     public Distribution getDistribution() {
-        return null;
+        throw new UnsupportedOperationException("Not implemented yet");
     }
 
 }
