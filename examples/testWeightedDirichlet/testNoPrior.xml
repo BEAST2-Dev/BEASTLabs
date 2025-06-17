@@ -1,0 +1,56 @@
+<beast version='2.0'
+       namespace='beast.base.evolution.alignment:beast.pkgmgmt:beast.base.core:beast.base.inference:beast.base.evolution.tree.coalescent:beast.pkgmgmt:beast.base.core:beast.base.inference.util:beast.evolution.nuc:beast.base.evolution.operator:beast.base.inference.operator:beast.base.evolution.sitemodel:beast.base.evolution.substitutionmodel:beast.base.evolution.likelihood'>
+
+
+    <run spec="MCMC" id="mcmc" chainLength="100000000" preBurnin="100000">
+
+        <state id="State" spec="State">
+			<parameter id="r1" spec="parameter.RealParameter" lower="0.0" name="stateNode">1.0</parameter>
+			<parameter id="r2" spec="parameter.RealParameter" lower="0.0" name="stateNode">1.0</parameter>
+			<parameter id="r3" spec="parameter.RealParameter" lower="0.0" name="stateNode">1.0</parameter>
+        </state>
+
+        <distribution spec='CompoundDistribution' id='posterior'>
+
+                <!-- 
+<distribution id="r.prior" spec="distribution.Prior">
+                    <x id="r" spec="feast.function.Concatenate">
+                        <arg idref="r1"/>
+                        <arg idref="r2"/>
+                        <arg idref="r3"/>
+                    </x>
+                    <distr id="WeightedDirichlet" spec="beastlabs.math.distributions.WeightedDirichlet">
+<!~~  same to simulation ~~>
+                        <parameter id="RealParameter.alpha" spec="parameter.RealParameter" 
+                              dimension="3" estimate="false" name="alpha">1.0 1.0 1.0</parameter>
+                        <weights id="L" spec="parameter.IntegerParameter" 
+                              dimension="3" estimate="false">100 200 700</weights>
+                    </distr>
+                </distribution>
+ -->
+
+        </distribution>
+
+    <operatorschedule autoOptimize="false" id="OperatorSchedule" spec="OperatorSchedule">
+        <operator id="r.deltaExchange" spec="operator.DeltaExchangeOperator" delta="1" 
+                  weight="2" weightvector="100 200 700">
+            <parameter idref="r1"/>
+            <parameter idref="r2"/>
+            <parameter idref="r3"/>
+        </operator>
+    </operatorschedule>
+        
+
+        <logger logEvery="1000" fileName="testNoPrior.log">
+            <log idref="r1"/>
+            <log idref="r2"/>
+            <log idref="r3"/>
+        </logger>
+        <logger logEvery="100000">
+            <log idref="r1"/>
+            <log idref="r2"/>
+            <log idref="r3"/>
+        </logger>
+    </run>
+
+</beast>
