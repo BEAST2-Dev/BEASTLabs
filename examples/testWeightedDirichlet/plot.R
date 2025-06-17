@@ -106,7 +106,7 @@ p3 <- ggplot(df_all_long, aes(x = value, fill = source)) +
   scale_color_brewer(palette = "Dark2") +
   scale_fill_brewer(palette = "Dark2") +
   labs( title = "Test Weighted Dirichlet, weights = [100 200 700]",
-        y = "Frequency") +
+        y = "Density") +
   theme_minimal() +
   theme( strip.text = element_text(face = "bold"),
     plot.title = element_text(hjust = 0.5) )
