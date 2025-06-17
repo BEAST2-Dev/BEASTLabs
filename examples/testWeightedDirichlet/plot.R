@@ -18,13 +18,13 @@ get_weighted_mean <- function(samples, weights) {
 # Read tab-delimited file with header and skip comment lines
 sim_a111 <- read_tsv("WeightedDirichletA111.log", comment = "#")
 sim_a222 <- read_tsv("WeightedDirichletA222.log", comment = "#")
-#sim_a127 <- read_tsv("WeightedDirichletA127.log", comment = "#")
-sim_a <- read_tsv("WeightedDirichletA731.log", comment = "#")
+sim_a <- read_tsv("WeightedDirichletA127.log", comment = "#")
+#sim_a <- read_tsv("WeightedDirichletA731.log", comment = "#")
 mcmc_no_prior <- read_tsv("testNoPrior.log", comment = "#")
 mcmc_a111 <- read_tsv("testAlpha111.log", comment = "#")
 mcmc_a222 <- read_tsv("testAlpha222.log", comment = "#")
-#mcmc_a127 <- read_tsv("testAlpha127.log", comment = "#")
-mcmc_a <- read_tsv("testAlpha731.log", comment = "#")
+mcmc_a <- read_tsv("testAlpha127.log", comment = "#")
+#mcmc_a <- read_tsv("testAlpha731.log", comment = "#")
 
 
 cat("mcmc_data has ", nrow(mcmc_a111), " samples, and sim_data has ", 
@@ -49,10 +49,10 @@ df_sim2 <- as_tibble(sim_a222) |> select(-Sample) |>
   mutate(source = "SimAlpha222")
 df_mcmc <- as_tibble(mcmc_a) |> select(-Sample) |> 
   mutate(across(everything(), ~ as.numeric(as.character(.)))) |> 
-  mutate(source = "MCMCAlpha731")
+  mutate(source = "MCMCAlpha127")
 df_sim <- as_tibble(sim_a) |> select(-Sample) |> 
   mutate(across(everything(), ~ as.numeric(as.character(.)))) |> 
-  mutate(source = "SimAlpha731")
+  mutate(source = "SimAlpha127")
 
 #alpha = as.numeric(c(1.0,1.0,1.0))
 weights = as.numeric(c(100,200,700))
@@ -97,7 +97,7 @@ p3 <- ggplot(df_all_long, aes(x = value, fill = source)) +
   #geom_freqpoly(bins = 1000, size=0.3, alpha = 0.6, linetype="dotted", position = "identity") +
   #geom_histogram(bins = 100, position = "identity") +
   geom_density(alpha = 0.3, size = 0.1, position = "identity") +
-  geom_vline(xintercept=1.0, linetype = "dashed", size = 0.3) +
+  geom_vline(xintercept=1.0, linetype = "dashed", linewidth = 0.3) +
   # guides(color = guide_legend(override.aes = list(
   #   linetype = "solid",  # solid line in legend
   #   size = 10,          # thicker line in legend
@@ -112,7 +112,7 @@ p3 <- ggplot(df_all_long, aes(x = value, fill = source)) +
     plot.title = element_text(hjust = 0.5) )
 p3
 ggsave(filename = "testWeightedDirichlet.pdf", plot = p3, 
-       width = 8, height = 8)
+       width = 8, height = 6)
 
 
 
