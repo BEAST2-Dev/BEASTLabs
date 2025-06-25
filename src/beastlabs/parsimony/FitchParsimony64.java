@@ -15,7 +15,6 @@ import beast.base.evolution.datatype.DataType;
 import beast.base.evolution.tree.Node;
 import beast.base.evolution.tree.Tree;
 import beast.base.evolution.tree.TreeUtils;
-import beastlabs.parsimony.ParsimonyCriterion;
 import beast.base.core.BEASTObject;
 import beast.base.core.Description;
 import beast.base.core.Input;
@@ -237,8 +236,8 @@ public class FitchParsimony64 extends BEASTObject implements ParsimonyCriterion 
 						first = false;
 					} else {
 						for (int i = 0; i < patterns.getPatternCount(); i++) {
-							union[i] &= childStateSet[i];
-							intersection[i] |= childStateSet[i];
+							union[i] |= childStateSet[i];
+							intersection[i] &= childStateSet[i];
 						}
 					}
 				}
