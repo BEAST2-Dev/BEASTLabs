@@ -52,6 +52,7 @@ public class FitchParsimony64 extends BEASTObject implements ParsimonyCriterion 
 	
 	long [] union;
 	long [] intersection;
+	long mask;
 
 	public FitchParsimony64() {
 		
@@ -85,6 +86,11 @@ public class FitchParsimony64 extends BEASTObject implements ParsimonyCriterion 
 			throw new IllegalArgumentException("At most 64 states can be handled by this implementation");
 		}
 		
+		mask = 0;
+		for (int i = 0; i < stateCount; i++) {
+			mask |= (1<<i);
+		}
+
 		this.siteScores = new double[patterns.getPatternCount()];
 		
 		patternCount = patterns.getPatternCount();
@@ -220,8 +226,12 @@ public class FitchParsimony64 extends BEASTObject implements ParsimonyCriterion 
 
 					int state = pattern[index];
 					stateArray[i] = state;
-					if (gapsAreStates && state < 0) { //.isGap()) {
-						stateSet[i] = 1l<<(stateCount-1);
+					if (state < 0) { //.isGap()) {
+						if (gapsAreStates) {
+							stateSet[i] = 1l<<(stateCount-1);
+						} else {
+							stateSet[i] = mask;
+						}
 					} else {
 						stateSet[i] = (1l << state);
 					}
@@ -243,7 +253,7 @@ public class FitchParsimony64 extends BEASTObject implements ParsimonyCriterion 
 				}
 
 				for (int i = 0; i < patterns.getPatternCount(); i++) {
-					if (Long.bitCount(intersection[i]) > 0) {
+					if (Long.bitCount(intersection[i] & mask) > 0) {
 						nodeStateSet[i] = intersection[i];
 					} else {
 						nodeStateSet[i] = union[i];

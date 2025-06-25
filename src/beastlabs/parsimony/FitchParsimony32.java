@@ -28,7 +28,7 @@ import beast.base.core.Input;
  * @version $Id: FitchParsimony.java 604 2007-01-04 20:22:42Z msuchard $
  */
 /** ported from jebl to BEAST 2 **/
-/** optmised for bit operations **/
+/** optimised for bit operations **/
 @Description("Reconstructing characters using Fitch parsimony")
 public class FitchParsimony32 extends BEASTObject implements ParsimonyCriterion {
 
@@ -52,6 +52,7 @@ public class FitchParsimony32 extends BEASTObject implements ParsimonyCriterion 
 	
 	int [] union;
 	int [] intersection;
+	int mask;
 
 	public FitchParsimony32() {
 		
@@ -80,9 +81,14 @@ public class FitchParsimony32 extends BEASTObject implements ParsimonyCriterion 
 		} else {
 			stateCount = sequenceType.getStateCount();
 		}
-		
+				
 		if (stateCount > 32) {
 			throw new IllegalArgumentException("At most 32 states can be handled by this implementation");
+		}
+		
+		mask = 0;
+		for (int i = 0; i < stateCount; i++) {
+			mask |= (1<<i);
 		}
 		
 		this.siteScores = new double[patterns.getPatternCount()];
@@ -220,8 +226,12 @@ public class FitchParsimony32 extends BEASTObject implements ParsimonyCriterion 
 
 					int state = pattern[index];
 					stateArray[i] = state;
-					if (gapsAreStates && state < 0) { //.isGap()) {
-						stateSet[i] = 1<<(stateCount-1);
+					if (state < 0) { //.isGap()) {
+						if (gapsAreStates) {
+							stateSet[i] = 1<<(stateCount-1);
+						} else {
+							stateSet[i] = mask;
+						}
 					} else {
 						stateSet[i] = (1 << state);
 					}
@@ -243,7 +253,7 @@ public class FitchParsimony32 extends BEASTObject implements ParsimonyCriterion 
 				}
 
 				for (int i = 0; i < patterns.getPatternCount(); i++) {
-					if (Integer.bitCount(intersection[i]) > 0) {
+					if (Integer.bitCount(intersection[i] & mask) > 0) {
 						nodeStateSet[i] = intersection[i];
 					} else {
 						nodeStateSet[i] = union[i];
@@ -270,7 +280,7 @@ public class FitchParsimony32 extends BEASTObject implements ParsimonyCriterion 
 
 			for (int i = 0; i < patterns.getPatternCount(); i++) {
 
-				if (parentStates != null && (nodeStateSet[i] & parentStates[i]) > 0) {
+				if (parentStates != null && (nodeStateSet[i] & (1<<parentStates[i])) > 0) {
 					nodeStates[i] = parentStates[i];
 				} else {
 					int first = Integer.numberOfTrailingZeros(nodeStateSet[i]);
