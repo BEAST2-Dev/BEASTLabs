@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import beast.base.core.BEASTInterface;
 import beast.base.core.Description;
 import beast.base.core.Input;
 import beast.base.core.Input.Validate;
@@ -37,6 +38,15 @@ public class EpochSubstitutionModel extends Base {
 		if (m_substitutionModels.length != m_epochDates.get().getDimension()+1) {
 			throw new IllegalArgumentException("The number of epoch dates should be one less than the number of substitution models");
 		}
+		
+		// sanity check
+		int stateCount = getFrequencies().length;
+		for (SubstitutionModel s : m_substitutionModels) {
+			if (s.getFrequencies().length != stateCount) {
+				throw new IllegalArgumentException("Frequencies should all be the same length ("+stateCount+") but found " + s.getFrequencies().length + " in " + ((BEASTInterface)s).getID());
+			}
+		}
+		
 	}
 	
 	@Override
