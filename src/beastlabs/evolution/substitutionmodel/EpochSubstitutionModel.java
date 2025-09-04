@@ -36,7 +36,8 @@ public class EpochSubstitutionModel extends Base {
 		}
 		// ensure the number of epoch dates is one less than the nr of models
 		if (m_substitutionModels.length != m_epochDates.get().getDimension()+1) {
-			throw new IllegalArgumentException("The number of epoch dates should be one less than the number of substitution models");
+			throw new IllegalArgumentException("The number of epoch dates ("+m_epochDates.get().getDimension()+") "
+					+ "should be one less than the number of substitution models (" + m_substitutionModels.length + ")");
 		}
 		
 		// sanity check
