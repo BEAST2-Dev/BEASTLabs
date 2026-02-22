@@ -106,6 +106,7 @@
         <provider classname="beastlabs.math.distributions.MonoPoints"/>
         <provider classname="beastlabs.math.distributions.MultiMRCAPriors"/>
         <provider classname="beastlabs.math.distributions.MultiMonophyleticConstraint"/>
+        <provider classname="beastlabs.math.distributions.RandomCompositionPositive"/>
         <provider classname="beastlabs.math.distributions.SingleParamGamma"/>
         <provider classname="beastlabs.math.distributions.WeibullDistribution"/>
         <provider classname="beastlabs.math.distributions.WeightedDirichlet"/>
