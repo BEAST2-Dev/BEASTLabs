@@ -8,7 +8,6 @@ import junit.framework.TestCase;
 import org.junit.Test;
 
 import beast.base.evolution.alignment.Alignment;
-import beast.base.evolution.alignment.AscertainedAlignment;
 import beast.base.evolution.alignment.Sequence;
 import beast.base.evolution.sitemodel.SiteModel;
 import beast.base.evolution.substitutionmodel.Frequencies;

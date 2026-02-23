@@ -10,12 +10,13 @@ import java.util.Set;
 import org.w3c.dom.Node;
 
 import beast.base.core.Description;
+import beast.base.inference.Scalable;
 import beast.base.inference.StateNode;
 
 
 
 @Description("Prevalence list is a linked list with times and actions")
-public class PrevalenceList extends StateNode {
+public class PrevalenceList extends StateNode implements Scalable {
 
 	@Override
 	public void initAndValidate() {
@@ -304,6 +305,13 @@ public class PrevalenceList extends StateNode {
 	}
 
 	@Override
+	public void scaleOne(int i, double scale) {
+		int iTime = indexOfNode(i);
+		Item item = m_items.get(iTime); 
+		move(iTime, item.m_fTime * scale);
+	}
+
+	@Override
 	public void setEverythingDirty(boolean isDirty) {
     	setSomethingIsDirty(isDirty);
 	}
@@ -321,21 +329,6 @@ public class PrevalenceList extends StateNode {
 	public void log(long nSample, PrintStream out) {
 	}
 
-	/** Valuable interface methods **/
-	@Override
-	public double getArrayValue() {
-		return 0;
-	}
-
-	@Override
-	public double getArrayValue(int iDim) {
-		return 0;
-	}
-
-	@Override
-	public int getDimension() {
-		return 0;
-	}
 
 	@Override
 	public void restore() {
@@ -373,5 +366,6 @@ public class PrevalenceList extends StateNode {
 			m_storedNodeIDtoItemMap.put(key, m_storeditems.get(i));
 		}
 	}
+
 
 }

@@ -10,7 +10,6 @@ import org.xml.sax.SAXException;
 
 import beast.base.core.Description;
 import beast.base.inference.Distribution;
-import beast.base.inference.Evaluator;
 import beast.base.inference.Logger;
 import beast.base.inference.MCMC;
 import beast.base.inference.Operator;
@@ -166,34 +165,7 @@ public class HeatedMCMC extends MCMC {
 	            final Operator operator = operatorSchedule.selectOperator();
 	            //System.out.print("\n" + sampleNr + " " + operator.getName()+ ":");
 
-	            final Distribution evaluatorDistribution = operator.getEvaluatorDistribution();
-	            Evaluator evaluator = null;
-
-	            if (evaluatorDistribution != null) {
-	                evaluator = new Evaluator() {
-	                    @Override
-	                    public double evaluate() {
-	                        double logP = 0.0;
-
-	                        state.storeCalculationNodes();
-	                        state.checkCalculationNodesDirtiness();
-
-	                        try {
-	                            logP = evaluatorDistribution.calculateLogP();
-	                        } catch (Exception e) {
-	                            e.printStackTrace();
-	                            System.exit(1);
-	                        }
-
-	                        state.restore();
-	                        state.store(currentState);
-
-	                        return logP;
-	                    }
-	                };
-	            }
-
-	            final double logHastingsRatio = operator.proposal(evaluator);
+	            final double logHastingsRatio = operator.proposal();
 
 	            if (logHastingsRatio != Double.NEGATIVE_INFINITY) {
 

@@ -15,6 +15,7 @@ import beast.base.inference.parameter.BooleanParameter;
 import beast.base.inference.parameter.IntegerParameter;
 import beast.base.inference.parameter.Parameter;
 import beast.base.inference.parameter.RealParameter;
+import beast.base.spec.type.Tensor;
 import beastfx.app.tools.LogAnalyser;
 import beastfx.app.util.LogFile;
 
@@ -95,8 +96,8 @@ public class TraceStateNodeSource extends BEASTObject implements StateNodeSource
 					}
 					if (from.equals("last label reached")) {
 						StateNode stateNode = stateInput.get().stateNodeInput.get().get(stateNodeNr);
-						if (dimension < stateNode.getDimension()) {
-							throw new IllegalArgumentException("Could not find all dimensions of " + stateNode.getID() + " in trace file: " + dimension + "!=" + stateNode.getDimension());
+						if (dimension < ((Tensor<?, ?>) stateNode).size()) {
+							throw new IllegalArgumentException("Could not find all dimensions of " + stateNode.getID() + " in trace file: " + dimension + "!=" + ((Tensor<?, ?>) stateNode).size());
 						}
 					}
 					
