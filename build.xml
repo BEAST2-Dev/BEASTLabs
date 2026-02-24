@@ -13,15 +13,15 @@
 	<property name="liblabs" location="../BEASTLabs/lib" />
 	<property name="release_dir" value="release" />
 	<property name="distlabs" location="${buildlabs}/dist" />
-	<property name="beast2path" location="../beast2" />
+	<property name="beast2path" location="../beast3" />
 	<property name="BeastFXpath" location="../BeastFX" />
 	<property name="srcBeast2" location="${beast2path}/test" />
 	<property name="beast2classpath" location="${beast2path}/build" />
 	<property name="Add_on_dir" value="${release_dir}/add-on" />
 
-	<!-- BEAST 2 currently uses Java 17 -->
-	<property name="sourceVersion" value="17"/>
-	<property name="targetVersion" value="17"/>
+	<!-- BEAST 2 currently uses Java 25 -->
+	<property name="sourceVersion" value="25"/>
+	<property name="targetVersion" value="25"/>
 
 
 	<property name="version" value="1.9.7" />

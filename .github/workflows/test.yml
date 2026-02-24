@@ -15,31 +15,23 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
-          java-version: '17'
+          java-version: '25'
           java-package: jdk+fx
 
-      - name: Checkout beast2
+      - name: Checkout beast3
         uses: actions/checkout@v4
         with:
-          repository: CompEvol/beast2
-          path: beast2
-
-      - name: Checkout BeastFX
-        uses: actions/checkout@v4
-        with:
-          repository: CompEvol/BeastFX
-          path: BeastFX
+          repository: CompEvol/beast3
+          path: beast3
 
       - name: Find build.xml
         run: |
           pwd
           find . -name "build.xml"
 
-      - name: Build beast2
-        run: ant -noinput -buildfile ./beast2/build.xml compile-all
+      - name: Build beast3
+        run: ant -noinput -buildfile ./beast3/build.xml compile-all
 
-      - name: Build BeastFX
-        run: ant -noinput -buildfile ./BeastFX/build.xml compile-allBeastFX
 
       - name: Run BEASTlbs Ant
         run: ant -noinput -buildfile ./BEASTLabs/build.xml junitBEASTlabs
