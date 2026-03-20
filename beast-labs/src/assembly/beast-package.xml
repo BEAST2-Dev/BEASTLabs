@@ -1,0 +1,43 @@
+<assembly xmlns="http://maven.apache.org/ASSEMBLY/2.2.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.2.0 http://maven.apache.org/xsd/assembly-2.2.0.xsd">
+    <id>beast-package</id>
+    <formats>
+        <format>zip</format>
+    </formats>
+    <includeBaseDirectory>false</includeBaseDirectory>
+
+    <!-- version.xml -->
+    <files>
+        <file>
+            <source>${project.basedir}/version.xml</source>
+            <outputDirectory>/</outputDirectory>
+        </file>
+    </files>
+
+    <!-- Module JAR only (BEAST core and transitive deps provided by runtime) -->
+    <dependencySets>
+        <dependencySet>
+            <outputDirectory>/lib</outputDirectory>
+            <useProjectArtifact>true</useProjectArtifact>
+            <scope>runtime</scope>
+            <includes>
+                <include>io.github.compevol:beast-labs</include>
+                <include>org.openjdk.nashorn:nashorn-core</include>
+            </includes>
+        </dependencySet>
+    </dependencySets>
+
+    <fileSets>
+        <!-- fxtemplates/ -->
+        <fileSet>
+            <directory>${project.basedir}/src/main/resources/beast.beastlabs/fxtemplates</directory>
+            <outputDirectory>/fxtemplates</outputDirectory>
+        </fileSet>
+        <!-- examples/ from project root -->
+        <fileSet>
+            <directory>${project.parent.basedir}/examples</directory>
+            <outputDirectory>/examples</outputDirectory>
+        </fileSet>
+    </fileSets>
+</assembly>
