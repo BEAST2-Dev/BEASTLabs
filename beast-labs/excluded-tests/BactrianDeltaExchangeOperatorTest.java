@@ -1,5 +1,6 @@
 package test.beast.evolution.operators;
 
+import static org.junit.jupiter.api.Assertions.*;
 
 import beast.base.inference.parameter.IntegerParameter;
 import beast.base.inference.parameter.RealParameter;
@@ -15,7 +16,7 @@ import beast.base.util.Randomizer;
 import beastlabs.core.*;
 import test.beast.evolution.operator.TestOperator;
 
-import org.apache.commons.math3.stat.StatUtils;
+import org.apache.commons.math4.legacy.stat.StatUtils;
 import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 

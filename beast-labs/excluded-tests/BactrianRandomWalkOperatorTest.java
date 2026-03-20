@@ -1,5 +1,6 @@
 package test.beast.evolution.operators;
 
+import static org.junit.jupiter.api.Assertions.*;
 import beast.base.inference.parameter.RealParameter;
 import beast.base.inference.util.ESS;
 import beast.base.inference.operator.kernel.BactrianRandomWalkOperator;
@@ -18,7 +19,7 @@ import beast.base.inference.distribution.Prior;
 import beast.base.util.Randomizer;
 import beastlabs.core.*;
 
-import org.apache.commons.math3.stat.StatUtils;
+import org.apache.commons.math4.legacy.stat.StatUtils;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;

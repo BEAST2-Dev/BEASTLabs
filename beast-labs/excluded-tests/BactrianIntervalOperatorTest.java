@@ -1,8 +1,9 @@
 package test.beast.evolution.operators;
 
+import static org.junit.jupiter.api.Assertions.*;
 import java.util.List;
 
-import org.apache.commons.math3.stat.StatUtils;
+import org.apache.commons.math4.legacy.stat.StatUtils;
 import org.junit.jupiter.api.Test;
 
 import beast.base.inference.MCMC;
