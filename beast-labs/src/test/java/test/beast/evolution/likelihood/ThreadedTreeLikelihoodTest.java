@@ -1,5 +1,6 @@
 package test.beast.evolution.likelihood;
 
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.concurrent.Executors;
 
@@ -67,7 +68,7 @@ public class ThreadedTreeLikelihoodTest  {
 		likelihood.initByName("data",data, "tree",tree, "siteModel", siteModel);
 		double fLogP = 0;
 		fLogP = likelihood.calculateLogP();
-		assertEquals("Attempt "+i ,fLogP, -1992.2056440317247, BEASTTestCase.PRECISION);
+		assertEquals(-1992.2056440317247, fLogP, BEASTTestCase.PRECISION, "Attempt "+i);
  
 		likelihood.initByName("useAmbiguities", true, "data",data, "tree",tree, "siteModel", siteModel);
 		fLogP = likelihood.calculateLogP();

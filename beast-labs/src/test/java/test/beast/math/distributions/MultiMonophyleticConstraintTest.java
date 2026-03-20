@@ -1,5 +1,6 @@
 package test.beast.math.distributions;
 
+import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 
 import beast.base.evolution.alignment.Alignment;

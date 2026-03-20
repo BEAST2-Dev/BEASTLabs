@@ -1,5 +1,6 @@
 package test.beast.evolution.likelihood;
 
+import static org.junit.jupiter.api.Assertions.*;
 import java.io.FileWriter;
 import java.util.Arrays;
 
