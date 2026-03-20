@@ -1,9 +1,7 @@
 package beastlabs.math.distributions;
 
 
-import org.apache.commons.math.MathException;
-import org.apache.commons.math.distribution.ContinuousDistribution;
-import org.apache.commons.math.distribution.GammaDistributionImpl;
+import org.apache.commons.statistics.distribution.GammaDistribution;
 
 import beast.base.core.Description;
 import beast.base.core.Input;
@@ -18,7 +16,7 @@ import beast.base.inference.parameter.RealParameter;
 public class GammaOneP extends ParametricDistribution {
     final public Input<RealParameter> shapeInput = new Input<>("shape", "shape parameter, defaults to 1");
 
-    org.apache.commons.math.distribution.GammaDistribution m_dist = new GammaDistributionImpl(1.0, 1.0);
+    GammaDistribution m_dist = GammaDistribution.of(1.0, 1.0);
 
     @Override
     public void initAndValidate() {
@@ -28,7 +26,6 @@ public class GammaOneP extends ParametricDistribution {
     /**
      * make sure internal state is up to date *
      */
-    @SuppressWarnings("deprecation")
 	void refresh() {
         double shape;
         if (shapeInput.get() == null) {
@@ -36,24 +33,23 @@ public class GammaOneP extends ParametricDistribution {
         } else {
             shape = shapeInput.get().getValue();
         }
-        m_dist.setAlpha(shape);
-        m_dist.setBeta(1.0 / shape);
+        m_dist = GammaDistribution.of(shape, 1.0 / shape);
     }
 
     @Override
-    public ContinuousDistribution getDistribution() {
+    public GammaDistribution getDistribution() {
         refresh();
         return m_dist;
     }
-    
-    
-    
+
+
+
     @Override
-    public double inverseCumulativeProbability(double p) throws MathException {
+    public double inverseCumulativeProbability(double p) {
     	double x = super.inverseCumulativeProbability(p);
     	return x;
     }
-    
+
     @Override
     protected double getMeanWithoutOffset() {
     	return 1.0;

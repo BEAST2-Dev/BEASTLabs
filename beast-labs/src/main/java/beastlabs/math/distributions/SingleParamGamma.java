@@ -1,8 +1,7 @@
 package beastlabs.math.distributions;
 
 
-import org.apache.commons.math.distribution.ContinuousDistribution;
-import org.apache.commons.math.distribution.GammaDistributionImpl;
+import org.apache.commons.statistics.distribution.GammaDistribution;
 
 import beast.base.core.Description;
 import beast.base.core.Input;
@@ -14,7 +13,7 @@ import beast.base.inference.parameter.RealParameter;
 public class SingleParamGamma extends ParametricDistribution {
     final public Input<RealParameter> alphaInput = new Input<>("alpha", "shape parameter, defaults to 2");
 
-    org.apache.commons.math.distribution.GammaDistribution m_dist = new GammaDistributionImpl(1, 1);
+    GammaDistribution m_dist = GammaDistribution.of(1, 1);
 
     @Override
     public void initAndValidate() {
@@ -24,7 +23,6 @@ public class SingleParamGamma extends ParametricDistribution {
     /**
      * make sure internal state is up to date *
      */
-    @SuppressWarnings("deprecation")
 	void refresh() {
         double alpha;
         if (alphaInput.get() == null) {
@@ -32,19 +30,18 @@ public class SingleParamGamma extends ParametricDistribution {
         } else {
             alpha = alphaInput.get().getValue();
         }
-        m_dist.setAlpha(alpha);
-        m_dist.setBeta(1 / alpha);
+        m_dist = GammaDistribution.of(alpha, 1.0 / alpha);
     }
 
     @Override
-    public ContinuousDistribution getDistribution() {
+    public GammaDistribution getDistribution() {
         refresh();
         return m_dist;
     }
 
-    
+
     @Override
     protected double getMeanWithoutOffset() {
-    	return m_dist.getAlpha() * m_dist.getBeta();
+    	return m_dist.getShape() * m_dist.getScale();
     }
 } // class Gamma

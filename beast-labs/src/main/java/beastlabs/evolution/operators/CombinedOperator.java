@@ -14,9 +14,9 @@ import beast.base.inference.StateNode;
 import beast.base.util.Randomizer;
 import beastlabs.core.*;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import beast.base.internal.json.JSONArray;
+import beast.base.internal.json.JSONException;
+import beast.base.internal.json.JSONObject;
 
 
 @Description("Combines propoosals by randomly selecting from two groups of operators")

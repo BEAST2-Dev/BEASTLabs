@@ -46,7 +46,6 @@ import beastlabs.evolution.operators.DistanceProvider;
 
 import java.util.*;
 
-import org.apache.commons.math.MathException;
 
 
 @Description("This class provides the basic engine for coalescent simulation of a given demographic model over a given time period. ")
@@ -253,7 +252,7 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
 		                	bounds.upper = tmp;
 		                }
                         assert bounds.lower <= bounds.upper;
-					} catch (MathException e) {
+					} catch (Exception e) {
 						Log.warning.println("Could not set bounds in SimpleRandomTree::doTheWork : " + e.getMessage());
 					}
 	            }
@@ -888,11 +887,9 @@ public class SimpleRandomTree extends Tree implements StateNodeInitialiser {
                                 b.upper = Math.min(b.upper, high);
                             }
                         }
-                    } catch (MathException e) {
-                    } catch (RuntimeException e) {
+                    } catch (Exception e) {
                     	b.lower = 0.0;
                     	b.upper = Double.POSITIVE_INFINITY;
-                        //e.printStackTrace();
                     }
                 }
             }

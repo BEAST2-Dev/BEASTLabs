@@ -7,7 +7,7 @@ import java.nio.charset.StandardCharsets;
 
 import beagle.Beagle;
 import beagle.InstanceDetails;
-import cern.colt.Arrays;
+import java.util.Arrays;
 
 public class BeagleDebugger implements Beagle {
 	Beagle beagle;

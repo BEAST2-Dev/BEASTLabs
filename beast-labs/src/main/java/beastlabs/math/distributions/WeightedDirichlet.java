@@ -6,7 +6,7 @@ import beast.base.core.Input;
 import beast.base.core.Input.Validate;
 import beast.base.inference.distribution.ParametricDistribution;
 import beast.base.util.Randomizer;
-import org.apache.commons.math.distribution.Distribution;
+import org.apache.commons.numbers.gamma.LogGamma;
 
 import java.util.Arrays;
 
@@ -81,12 +81,12 @@ public class WeightedDirichlet extends ParametricDistribution {
             double y = (x[i] * weightsNorm[i]) / weightsNormSumX;
             // log density
             logP += (alpha[i] - 1) * Math.log(y);
-            logP -= org.apache.commons.math.special.Gamma.logGamma(alpha[i]);
+            logP -= LogGamma.value(alpha[i]);
             sumAlpha += alpha[i];
 
             sumLgWeightsNorm += Math.log(weightsNorm[i]);
         }
-        logP += org.apache.commons.math.special.Gamma.logGamma(sumAlpha);
+        logP += LogGamma.value(sumAlpha);
 
         // TODO Jacobian term needs to test
         // log_jacobian = np.sum(np.log(weights_norm)) - len(x) * np.log(target_sum)
@@ -159,7 +159,7 @@ public class WeightedDirichlet extends ParametricDistribution {
     }
 
     @Override
-    public Distribution getDistribution() {
+    public Object getDistribution() {
         throw new UnsupportedOperationException("Not implemented yet");
     }
 

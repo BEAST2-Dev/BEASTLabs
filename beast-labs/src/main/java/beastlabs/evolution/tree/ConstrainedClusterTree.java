@@ -45,8 +45,6 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.*;
 
-import org.apache.commons.math.MathException;
-
 
 
 
@@ -217,7 +215,7 @@ public class ConstrainedClusterTree extends Tree implements StateNodeInitialiser
         	// adjust node heights to MRCAPriors
         	try {
 				handlebounds(getRoot(), nodeToBoundMap, EPSILON);
-			} catch (MathException e) {
+			} catch (Exception e) {
 				Log.warning.println("Bounds could not be set");
 			}
         }
@@ -377,8 +375,8 @@ public class ConstrainedClusterTree extends Tree implements StateNodeInitialiser
 
     /** go through MRCAPriors
      * Since we can easily scale a clade, start with the highest MRCAPrior, then process the nested ones 
-     * @throws MathException **/
-    static public void handlebounds(Node node, Map<Node, MRCAPrior> nodeToBoundMap, double EPSILON) throws MathException {
+     **/
+    static public void handlebounds(Node node, Map<Node, MRCAPrior> nodeToBoundMap, double EPSILON) {
     	if (!node.isLeaf()) {
     		if (nodeToBoundMap.containsKey(node)) {
     			MRCAPrior calibration = nodeToBoundMap.get(node);

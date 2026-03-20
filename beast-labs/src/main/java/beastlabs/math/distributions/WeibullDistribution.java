@@ -1,8 +1,6 @@
 package beastlabs.math.distributions;
 
-import beast.base.inference.Distribution;
-import org.apache.commons.math.distribution.WeibullDistributionImpl;
-import org.apache.commons.math.special.Gamma;
+import org.apache.commons.numbers.gamma.LogGamma;
 
 import beast.base.core.Description;
 import beast.base.core.Input;
@@ -13,11 +11,11 @@ import beast.base.inference.distribution.ParametricDistribution;
 public class WeibullDistribution extends ParametricDistribution {
     final public Input<RealParameter> shapeInput = new Input<>("shape", "shape parameter, defaults to 1");
     final public Input<RealParameter> scaleInput = new Input<>("scale", "scale parameter, defaults to 1 unless meanOne=true, then scale is set to 1/Gamma(1+shape) so mean of the distribution = 1");
-	
+
     final public Input<Boolean> meanOneInput =
             new Input<>("meanOne", "Fix mean to one, ignore scale parameter", false);
 
-    org.apache.commons.math.distribution.WeibullDistribution dist = new WeibullDistributionImpl(1, 1);
+    org.apache.commons.statistics.distribution.WeibullDistribution dist = org.apache.commons.statistics.distribution.WeibullDistribution.of(1, 1);
 
 	@Override
 	public void initAndValidate() {
@@ -27,7 +25,6 @@ public class WeibullDistribution extends ParametricDistribution {
     /**
      * make sure internal state is up to date *
      */
-    @SuppressWarnings("deprecation")
 	void refresh() {
         double shape = 1.0;
         double scale = 1.0;
@@ -35,25 +32,24 @@ public class WeibullDistribution extends ParametricDistribution {
             shape = shapeInput.get().getValue();
         }
         if (meanOneInput.get()) {
-    		scale = 1.0 / Math.exp(Gamma.logGamma(1.0 + 1.0/shape));
+    		scale = 1.0 / Math.exp(LogGamma.value(1.0 + 1.0/shape));
         } else {
         	if (scaleInput.get() != null) {
         		scale = scaleInput.get().getValue();
         	}
         }
 
-        dist.setShape(shape);
-        dist.setScale(scale);
+        dist = org.apache.commons.statistics.distribution.WeibullDistribution.of(shape, scale);
     }
 
 	@Override
-	public org.apache.commons.math.distribution.Distribution getDistribution() {
+	public org.apache.commons.statistics.distribution.WeibullDistribution getDistribution() {
 		return dist;
 	}
 
     @Override
     protected double getMeanWithoutOffset() {
     	refresh();
-    	return dist.getScale() * Math.exp(Gamma.logGamma(1.0 + 1.0/dist.getShape()));
+    	return dist.getScale() * Math.exp(LogGamma.value(1.0 + 1.0/dist.getShape()));
     }
 }
