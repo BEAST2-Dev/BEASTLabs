@@ -5,8 +5,7 @@ package test.beast.evolution.likelihood;
 import java.io.File;
 import java.util.concurrent.Executors;
 
-import junit.framework.TestCase;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import beast.base.core.BEASTInterface;
 import beast.base.core.ProgramStatus;
@@ -28,7 +27,7 @@ import beastlabs.evolution.likelihood.MultiPartitionTreeLikelihood;
 import test.beast.BEASTTestCase;
 
 /** test MultiParititionTreeLikelihood with two partitions **/
-public class MultiParititionTreeLikelihoodTest extends TestCase {
+public class MultiParititionTreeLikelihoodTest  {
 
     public MultiParititionTreeLikelihoodTest() {
 		super();

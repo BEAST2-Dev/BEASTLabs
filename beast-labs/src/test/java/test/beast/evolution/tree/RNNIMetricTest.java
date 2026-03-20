@@ -1,12 +1,13 @@
 package test.beast.evolution.tree;
 
+import static org.junit.jupiter.api.Assertions.*;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import beastfx.app.treeannotator.TreeAnnotator;
 import beastfx.app.treeannotator.TreeAnnotator.MemoryFriendlyTreeSet;
@@ -17,9 +18,8 @@ import beast.base.evolution.tree.TreeInterface;
 import beast.base.util.Randomizer;
 import beastlabs.evolution.tree.RNNIMetric;
 import beast.base.evolution.tree.TreeParser;
-import junit.framework.TestCase;
 
-public class RNNIMetricTest extends TestCase {
+public class RNNIMetricTest  {
 	
 	@Test
 	public void testRNNIMetricBasic() {

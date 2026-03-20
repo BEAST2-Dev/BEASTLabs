@@ -3,8 +3,7 @@ package test.beast.evolution.likelihood;
 
 import java.util.concurrent.Executors;
 
-import junit.framework.TestCase;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import beast.base.core.ProgramStatus;
 import beast.base.evolution.alignment.Alignment;
@@ -27,7 +26,7 @@ import test.beast.BEASTTestCase;
 /** This test mimics the testLikelihood.xml file from Beast 1, which compares Beast 1 results to PAUP results. 
  * So, it these tests succeed, then Beast II calculates the same for these simple models as Beast 1 and PAUP.
  * **/
-public class ThreadedTreeLikelihoodTest extends TestCase {
+public class ThreadedTreeLikelihoodTest  {
 
     public ThreadedTreeLikelihoodTest() {
 		super();

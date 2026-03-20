@@ -1,6 +1,7 @@
 package test.beast.evolution.operators;
 
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 
 import beast.base.inference.State;
 import beastlabs.evolution.operators.RestrictedSubtreeSlide;
@@ -10,10 +11,9 @@ import beast.base.evolution.alignment.Taxon;
 import beast.base.evolution.alignment.TaxonSet;
 import beast.base.evolution.tree.Node;
 import beast.base.evolution.tree.TreeParser;
-import junit.framework.TestCase;
 
 
-public class RestrictedSubtreeSlideTest extends TestCase {
+public class RestrictedSubtreeSlideTest  {
 	
 	boolean isMonophyletic = false;
 	

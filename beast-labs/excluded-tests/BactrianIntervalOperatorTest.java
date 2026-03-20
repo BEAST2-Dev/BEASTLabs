@@ -3,7 +3,7 @@ package test.beast.evolution.operators;
 import java.util.List;
 
 import org.apache.commons.math3.stat.StatUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import beast.base.inference.MCMC;
 import beast.base.inference.State;

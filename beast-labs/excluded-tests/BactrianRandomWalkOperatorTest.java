@@ -17,10 +17,9 @@ import beast.base.inference.distribution.ParametricDistribution;
 import beast.base.inference.distribution.Prior;
 import beast.base.util.Randomizer;
 import beastlabs.core.*;
-import junit.framework.TestCase;
 
 import org.apache.commons.math3.stat.StatUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -29,7 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class BactrianRandomWalkOperatorTest extends TestCase {
+public class BactrianRandomWalkOperatorTest  {
 
 	@Test
 	public void testNormalDistribution() throws Exception {

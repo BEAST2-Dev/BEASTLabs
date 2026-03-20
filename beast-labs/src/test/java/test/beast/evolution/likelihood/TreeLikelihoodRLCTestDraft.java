@@ -1,5 +1,6 @@
 package test.beast.evolution.likelihood;
 
+import static org.junit.jupiter.api.Assertions.*;
 
 import beast.base.inference.parameter.BooleanParameter;
 import beast.base.inference.parameter.IntegerParameter;
@@ -15,8 +16,7 @@ import beast.base.evolution.substitutionmodel.HKY;
 import beast.base.evolution.tree.Node;
 import beast.base.util.Randomizer;
 import beast.base.evolution.tree.TreeParser;
-import junit.framework.TestCase;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
@@ -24,7 +24,7 @@ import java.util.List;
  * Sharp spikes in posterior trace random local clock
  * https://github.com/CompEvol/beast2/issues/785
  */
-public class TreeLikelihoodRLCTestDraft extends TestCase {
+public class TreeLikelihoodRLCTestDraft  {
 
     public TreeLikelihoodRLCTestDraft() {
         super();

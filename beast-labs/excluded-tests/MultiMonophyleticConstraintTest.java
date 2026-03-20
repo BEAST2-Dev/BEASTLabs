@@ -1,15 +1,14 @@
 package test.beast.math.distributions;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import beast.base.evolution.alignment.Alignment;
 import beast.base.evolution.alignment.TaxonSet;
 import beast.base.evolution.tree.Tree;
 import beastlabs.math.distributions.MultiMonophyleticConstraint;
 import test.beast.BEASTTestCase;
-import junit.framework.TestCase;
 
-public class MultiMonophyleticConstraintTest extends TestCase {
+public class MultiMonophyleticConstraintTest  {
 
 	@Test
 	public void testMultiMonophylecitConstraint() throws Exception {

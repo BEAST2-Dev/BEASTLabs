@@ -1,11 +1,12 @@
 package test.beast.evolution.operators;
 
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import beastfx.app.inputeditor.BeautiDoc;
 import beast.base.inference.Operator;
@@ -16,9 +17,8 @@ import beast.base.inference.parameter.RealParameter;
 import beastlabs.evolution.operators.CompoundOperator;
 import beast.base.inference.operator.DeltaExchangeOperator;
 import beast.base.evolution.operator.ScaleOperator;
-import junit.framework.TestCase;
 
-public class CompoundOperatorTest extends TestCase {
+public class CompoundOperatorTest  {
 	
 	@Test
 	public void testCompoundOperator() {

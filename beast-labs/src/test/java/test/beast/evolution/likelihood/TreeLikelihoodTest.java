@@ -1,11 +1,11 @@
 package test.beast.evolution.likelihood;
 
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import junit.framework.TestCase;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import beast.base.evolution.alignment.Alignment;
 import beast.base.evolution.alignment.Sequence;
@@ -20,7 +20,7 @@ import beastlabs.evolution.likelihood.ExperimentalTreeLikelihood;
 /** This test mimics the testLikelihood.xml file from Beast 1, which compares Beast 1 results to PAUP results. 
  * So, it these tests succeed, then Beast II calculates the same for these simple models as Beast 1 and PAUP.
  * **/
-public class TreeLikelihoodTest extends TestCase {
+public class TreeLikelihoodTest  {
 	final static double PRECISION = 1e-6;
 	final static boolean g_bUseAmbiguities = false;
 	

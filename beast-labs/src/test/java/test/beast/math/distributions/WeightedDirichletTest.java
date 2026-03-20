@@ -1,10 +1,10 @@
 package test.beast.math.distributions;
 
+import static org.junit.jupiter.api.Assertions.*;
 import beast.base.inference.parameter.IntegerParameter;
 import beast.base.inference.parameter.RealParameter;
 import beastlabs.math.distributions.WeightedDirichlet;
-import junit.framework.TestCase;
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 
 /**
  * require(gtools)
@@ -14,13 +14,13 @@ import org.junit.Before;
  *
  * @author Walter Xie
  */
-public class WeightedDirichletTest extends TestCase {
+public class WeightedDirichletTest  {
 
     RealParameter alpha;
     RealParameter p1;
     RealParameter p2;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         alpha = new RealParameter(new Double[]{2.0,2.0,2.0});
     }

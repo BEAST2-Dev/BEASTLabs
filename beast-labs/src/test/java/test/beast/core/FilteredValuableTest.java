@@ -1,13 +1,13 @@
 package test.beast.core;
 
+import static org.junit.jupiter.api.Assertions.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import beast.base.inference.parameter.RealParameter;
 import beastlabs.core.FilteredValuable;
-import junit.framework.TestCase;
 
-public class FilteredValuableTest  extends TestCase {
+public class FilteredValuableTest   {
 	
     @Test
     public void testFilteredParameter() throws Exception {

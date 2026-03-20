@@ -16,7 +16,7 @@ import beastlabs.core.*;
 import test.beast.evolution.operator.TestOperator;
 
 import org.apache.commons.math3.stat.StatUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;

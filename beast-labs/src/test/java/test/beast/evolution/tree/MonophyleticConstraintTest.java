@@ -1,6 +1,7 @@
 package test.beast.evolution.tree;
 
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 
 import beast.base.evolution.alignment.Alignment;
 import beast.base.evolution.alignment.Taxon;
@@ -10,9 +11,8 @@ import beastlabs.evolution.tree.MonophyleticConstraint;
 import test.beast.evolution.likelihood.ExperimentalTreeLikelihoodTest;
 
 
-import junit.framework.TestCase;
 
-public class MonophyleticConstraintTest extends TestCase {
+public class MonophyleticConstraintTest  {
 
 	@Test
 	public void testSingleMonophyleticConstraint() throws Exception {

@@ -3,7 +3,7 @@ package test.beast.evolution.likelihood;
 import java.io.FileWriter;
 import java.util.Arrays;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import beast.base.evolution.alignment.Alignment;
 import beast.base.evolution.likelihood.TreeLikelihood;
@@ -17,10 +17,9 @@ import beast.base.evolution.substitutionmodel.MTREV;
 import beast.base.evolution.substitutionmodel.WAG;
 import beast.base.evolution.tree.Tree;
 import beastlabs.evolution.substitutionmodel.EmpiricalAAModelFromFile;
-import junit.framework.TestCase;
 import test.beast.BEASTTestCase;
 
-public class EmpiricalModelTest extends TestCase {
+public class EmpiricalModelTest  {
 	
     @Test
     public void testAminoAcidLikelihoodWAG() throws Exception {

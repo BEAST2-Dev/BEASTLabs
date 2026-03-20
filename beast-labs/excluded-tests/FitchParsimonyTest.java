@@ -2,16 +2,15 @@ package test.beast.parsimony;
 
 import java.util.Arrays;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import beast.base.evolution.alignment.Alignment;
 import beast.base.evolution.tree.Node;
 import beast.base.evolution.tree.Tree;
 import beastlabs.parsimony.FitchParsimony;
-import junit.framework.TestCase;
 import test.beast.BEASTTestCase;
 
-public class FitchParsimonyTest extends TestCase {
+public class FitchParsimonyTest  {
 
 	/** basic test that parsimony class produces results **/
 	@Test
