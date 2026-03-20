@@ -33,6 +33,14 @@
             <optional>true</optional>
         </dependency>
 
+        <!-- Beagle (optional in beast-base, needed for JPMS) -->
+        <dependency>
+            <groupId>io.github.compevol</groupId>
+            <artifactId>beagle</artifactId>
+            <version>1.0</version>
+            <optional>true</optional>
+        </dependency>
+
         <!-- Nashorn scripting engine (standalone, removed from JDK) -->
         <dependency>
             <groupId>org.openjdk.nashorn</groupId>
