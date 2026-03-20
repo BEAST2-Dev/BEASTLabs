@@ -80,7 +80,7 @@
                         --add-reads beast.pkgmgmt=ALL-UNNAMED
                     </argLine>
                     <systemPropertyVariables>
-                        <BEAST_PACKAGE_PATH>${project.build.outputDirectory}</BEAST_PACKAGE_PATH>
+                        <BEAST_PACKAGE_PATH>${project.build.outputDirectory}:${settings.localRepository}/io/github/compevol/beast-base/${beast.version}/beast-base-${beast.version}.jar</BEAST_PACKAGE_PATH>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
