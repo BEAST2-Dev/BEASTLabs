@@ -9,7 +9,7 @@ open module beast.labs {
     requires org.apache.commons.numbers.gamma;
     requires static beast.fx;
     requires static javafx.controls;
-    requires static beast.test.utils;
+
 
     exports beastlabs.core;
     exports beastlabs.core.parameter;

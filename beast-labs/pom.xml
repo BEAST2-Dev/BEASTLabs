@@ -54,12 +54,9 @@
             <artifactId>junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>io.github.compevol</groupId>
-            <artifactId>beast-test-utils</artifactId>
-            <version>${beast.version}</version>
-            <optional>true</optional>
-        </dependency>
+        <!-- BEASTTestCase is copied into test sources rather than depending
+             on a beast-test-utils module, to avoid module proliferation in
+             beast3 core. See CompEvol/beast3:test-utils for the module approach. -->
     </dependencies>
 
     <build>
@@ -69,10 +66,6 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
                     <release>25</release>
-                    <compilerArgs>
-                        <arg>--add-reads</arg>
-                        <arg>beast.labs=beast.test.utils</arg>
-                    </compilerArgs>
                 </configuration>
             </plugin>
             <plugin>
@@ -83,7 +76,6 @@
                     <workingDirectory>${project.build.testOutputDirectory}</workingDirectory>
                     <argLine>
                         --add-reads beast.labs=ALL-UNNAMED
-                        --add-reads beast.labs=beast.test.utils
                         --add-reads beast.base=ALL-UNNAMED
                         --add-reads beast.pkgmgmt=ALL-UNNAMED
                     </argLine>
