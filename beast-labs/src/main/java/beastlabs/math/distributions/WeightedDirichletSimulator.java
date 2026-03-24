@@ -1,7 +1,7 @@
 package beastlabs.math.distributions;
 
-import beast.base.inference.parameter.IntegerParameter;
-import beast.base.inference.parameter.RealParameter;
+import beast.base.spec.domain.Real;
+import beast.base.spec.inference.parameter.RealVectorParam;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -15,9 +15,10 @@ public class WeightedDirichletSimulator {
 
     public static void main(String[] args) {
         WeightedDirichlet weightedDirichlet = new WeightedDirichlet();
-        RealParameter alphaParam = new RealParameter(new Double[]{1.0,2.0,7.0});
-        Integer[] weights = new Integer[]{100,200,700};
-        IntegerParameter weightParam = new IntegerParameter(weights);
+        RealVectorParam<Real> alphaParam = new RealVectorParam<>();
+        alphaParam.initByName("value", "1.0 2.0 7.0");
+        RealVectorParam<Real> weightParam = new RealVectorParam<>();
+        weightParam.initByName("value", "100.0 200.0 700.0");
 
         weightedDirichlet.initByName("alpha", alphaParam, "weights", weightParam);
 
@@ -28,7 +29,7 @@ public class WeightedDirichletSimulator {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(outFile))) {
             // header
             writer.write("Sample\t");
-            if (alphaParam.getDimension() == 3) {
+            if (alphaParam.size() == 3) {
                 writer.write("r1\tr2\tr3");
             } else {
                 for (int i = 0; i < val2d[0].length; i++) {

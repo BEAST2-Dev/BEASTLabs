@@ -4,7 +4,9 @@ import beast.base.core.Description;
 import beast.base.core.Input;
 import beast.base.inference.Distribution;
 import beast.base.inference.State;
-import beast.base.inference.parameter.IntegerParameter;
+import beast.base.spec.domain.PositiveInt;
+import beast.base.spec.inference.parameter.IntScalarParam;
+import beast.base.spec.inference.parameter.IntVectorParam;
 import beast.base.util.Binomial;
 
 import java.util.ArrayList;
@@ -19,21 +21,21 @@ import java.util.Random;
 @Description("Samples a random k-tuple of positive integers that sum to n.")
 public class RandomCompositionPositive extends Distribution {
 
-    final public Input<IntegerParameter> compositionInput = new Input<>("composition", "the k-tuple positive integers.", Input.Validate.REQUIRED);
+    final public Input<IntVectorParam<? extends PositiveInt>> compositionInput = new Input<>("composition", "the k-tuple positive integers.", Input.Validate.REQUIRED);
 
-    final public Input<IntegerParameter> kInput = new Input<>("k", "the size of the random tuple, k>1.", Input.Validate.REQUIRED);
-    final public Input<IntegerParameter> nInput = new Input<>("n", "the sum of the random tuple, n>1.", Input.Validate.REQUIRED);
+    final public Input<IntScalarParam<? extends PositiveInt>> kInput = new Input<>("k", "the size of the random tuple, k>1.", Input.Validate.REQUIRED);
+    final public Input<IntScalarParam<? extends PositiveInt>> nInput = new Input<>("n", "the sum of the random tuple, n>1.", Input.Validate.REQUIRED);
 
     @Override
     public void initAndValidate() {
-        final int k = kInput.get().getValue();
-        final int n = nInput.get().getValue();
-        IntegerParameter composition = compositionInput.get();
-        if (composition.getDimension() != k || k <= 0)
-            throw new IllegalArgumentException("The composition must be size of k (" + k + "), but its dim = " + composition.getDimension());
+        final int k = kInput.get().get();
+        final int n = nInput.get().get();
+        IntVectorParam<? extends PositiveInt> composition = compositionInput.get();
+        if (composition.size() != k || k <= 0)
+            throw new IllegalArgumentException("The composition must be size of k (" + k + "), but its dim = " + composition.size());
 
         int sum = 0;
-        for (Integer value : composition.getValues()) {
+        for (int value : composition.getValues()) {
             if (value <= 0)
                 throw new IllegalArgumentException("The integer must > 0, but it is " + value);
             sum += value;
@@ -46,14 +48,14 @@ public class RandomCompositionPositive extends Distribution {
     public double calculateLogP() {
         logP = 0.0;
         // k >0, n>=k
-        final int k = kInput.get().getValue();
-        final int n = nInput.get().getValue();
-        IntegerParameter composition = compositionInput.get();
-        if (composition.getDimension() != k || k <= 0)
+        final int k = kInput.get().get();
+        final int n = nInput.get().get();
+        IntVectorParam<? extends PositiveInt> composition = compositionInput.get();
+        if (composition.size() != k || k <= 0)
             return Double.NEGATIVE_INFINITY;
 
         int sum = 0;
-        for (Integer value : composition.getValues()) {
+        for (int value : composition.getValues()) {
             if (value <= 0)
                 return Double.NEGATIVE_INFINITY;
             sum += value;

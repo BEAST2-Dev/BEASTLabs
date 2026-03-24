@@ -6,7 +6,8 @@ import org.apache.commons.statistics.distribution.GammaDistribution;
 import beast.base.core.Description;
 import beast.base.core.Input;
 import beast.base.inference.distribution.ParametricDistribution;
-import beast.base.inference.parameter.RealParameter;
+import beast.base.spec.domain.PositiveReal;
+import beast.base.spec.type.RealScalar;
 
 
 
@@ -14,7 +15,7 @@ import beast.base.inference.parameter.RealParameter;
         "If the input x is a multidimensional parameter, each of the dimensions is considered as a " +
         "separate independent component.")
 public class GammaOneP extends ParametricDistribution {
-    final public Input<RealParameter> shapeInput = new Input<>("shape", "shape parameter, defaults to 1");
+    final public Input<RealScalar<? extends PositiveReal>> shapeInput = new Input<>("shape", "shape parameter, defaults to 1");
 
     GammaDistribution m_dist = GammaDistribution.of(1.0, 1.0);
 
@@ -31,7 +32,7 @@ public class GammaOneP extends ParametricDistribution {
         if (shapeInput.get() == null) {
             shape = 1;
         } else {
-            shape = shapeInput.get().getValue();
+            shape = shapeInput.get().get();
         }
         m_dist = GammaDistribution.of(shape, 1.0 / shape);
     }

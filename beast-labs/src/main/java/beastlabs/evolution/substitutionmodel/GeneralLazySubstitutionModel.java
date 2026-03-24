@@ -31,7 +31,8 @@ import java.util.Arrays;
 
 import beast.base.core.Description;
 import beast.base.core.Input;
-import beast.base.inference.parameter.RealParameter;
+import beast.base.spec.domain.PositiveReal;
+import beast.base.spec.type.RealScalar;
 import beast.base.evolution.substitutionmodel.GeneralSubstitutionModel;
 import beast.base.evolution.tree.Node;
 import beast.base.util.GammaFunction;
@@ -46,7 +47,7 @@ public class GeneralLazySubstitutionModel extends GeneralSubstitutionModel {
     };
     public Input<RelaxationMode> m_modeInput = new Input<RelaxationMode>("mode", "form of the  prior distribution used for relaxation " +
             "This can be " + Arrays.toString(RelaxationMode.values()) + " (default 'exponential')", RelaxationMode.exponential, RelaxationMode.values());
-    public Input<RealParameter> m_theta = new Input<RealParameter>("theta", "shape parameter, ignored with exponential prior");
+    public Input<RealScalar<? extends PositiveReal>> m_theta = new Input<>("theta", "shape parameter, ignored with exponential prior");
 
     
     // shadows the input
@@ -86,7 +87,7 @@ public class GeneralLazySubstitutionModel extends GeneralSubstitutionModel {
         double[] Ievc = eigenDecomposition.getInverseEigenVectors();
         // Eigen values
         double[] Eval = eigenDecomposition.getEigenValues();
-        double fTheta = (m_theta.get() == null ? 1.0 : m_theta.get().getValue());
+        double fTheta = (m_theta.get() == null ? 1.0 : m_theta.get().get());
         for (i = 0; i < nrOfStates; i++) {
             //temp = Math.exp(distance * Eval[i]);
         	switch (m_relaxationMode) {

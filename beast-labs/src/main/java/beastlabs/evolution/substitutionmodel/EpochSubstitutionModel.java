@@ -8,7 +8,8 @@ import beast.base.core.BEASTInterface;
 import beast.base.core.Description;
 import beast.base.core.Input;
 import beast.base.core.Input.Validate;
-import beast.base.inference.parameter.RealParameter;
+import beast.base.spec.domain.Real;
+import beast.base.spec.inference.parameter.RealVectorParam;
 import beast.base.evolution.datatype.DataType;
 import beast.base.evolution.substitutionmodel.EigenDecomposition;
 import beast.base.evolution.substitutionmodel.SubstitutionModel;
@@ -20,7 +21,7 @@ import beast.base.evolution.tree.Node;
 @Description("A substitution model that can change at various threshold dates.")
 public class EpochSubstitutionModel extends Base {
 	public Input<List<SubstitutionModel>> m_models = new Input<List<SubstitutionModel>>("model","substitution models that apply for certain time intervals", new ArrayList<SubstitutionModel>());
-	public Input<RealParameter> m_epochDates = new Input<RealParameter>("epochDates","list of threshold dates. " +
+	public Input<RealVectorParam<? extends Real>> m_epochDates = new Input<>("epochDates","list of threshold dates. " +
 			"The list indicates the dates at which substitution models are switched.", Validate.REQUIRED);
 
 	/** shadows m_models **/
@@ -35,8 +36,8 @@ public class EpochSubstitutionModel extends Base {
 			m_substitutionModels[i++] = model;
 		}
 		// ensure the number of epoch dates is one less than the nr of models
-		if (m_substitutionModels.length != m_epochDates.get().getDimension()+1) {
-			throw new IllegalArgumentException("The number of epoch dates ("+m_epochDates.get().getDimension()+") "
+		if (m_substitutionModels.length != m_epochDates.get().size()+1) {
+			throw new IllegalArgumentException("The number of epoch dates ("+m_epochDates.get().size()+") "
 					+ "should be one less than the number of substitution models (" + m_substitutionModels.length + ")");
 		}
 		
@@ -54,7 +55,7 @@ public class EpochSubstitutionModel extends Base {
 	public void getTransitionProbabilities(Node node, double fStartTime, double fEndTime, double fRate, double[] matrix) {
 		
 		/** threshold dates **/
-		Double [] fEpochDates = m_epochDates.get().getValues();
+		double [] fEpochDates = m_epochDates.get().getValues();
 		/** find start substitution model **/
 		int iStart = fEpochDates.length ;
 		while (iStart > 0 && fEpochDates[iStart- 1] > fStartTime) {

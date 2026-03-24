@@ -1,10 +1,11 @@
 package beastlabs.math.distributions;
 
 import beast.base.core.Description;
-import beast.base.core.Function;
 import beast.base.core.Input;
 import beast.base.core.Input.Validate;
 import beast.base.inference.distribution.ParametricDistribution;
+import beast.base.spec.domain.Real;
+import beast.base.spec.type.RealVector;
 import beast.base.util.Randomizer;
 import org.apache.commons.numbers.gamma.LogGamma;
 
@@ -18,9 +19,8 @@ import java.util.Arrays;
  */
 @Description("Weighted Dirichlet distribution that scales dimensions by weight, where the values are scaled to maintain the expected mean (default to 1).")
 public class WeightedDirichlet extends ParametricDistribution {
-    final public Input<Function> alphaInput = new Input<>("alpha", "coefficients of the Dirichlet distribution", Validate.REQUIRED);
-    // IntegerParameter
-    final public Input<Function> weightsInput = new Input<>("weights", "weights of the scaled Dirichlet distribution", Validate.REQUIRED);
+    final public Input<RealVector<? extends Real>> alphaInput = new Input<>("alpha", "coefficients of the Dirichlet distribution", Validate.REQUIRED);
+    final public Input<RealVector<? extends Real>> weightsInput = new Input<>("weights", "weights of the scaled Dirichlet distribution", Validate.REQUIRED);
     // optional
     final public Input<Double> meanInput = new Input<>("mean",
             "the expected weighted mean of the values, default to 1", 1.0);
@@ -32,19 +32,25 @@ public class WeightedDirichlet extends ParametricDistribution {
     public void initAndValidate() {
 //        super.initAndValidate();
         expectedMean = meanInput.get();
-        if (weightsInput.get().getDimension() != alphaInput.get().getDimension()) {
-            throw new IllegalArgumentException("Dimensions of alpha and weights should be the same, but dim(alphaInput)=" + alphaInput.get().getDimension()
-                    + " and dim(weights)=" + weightsInput.get().getDimension());
+        if (weightsInput.get().size() != alphaInput.get().size()) {
+            throw new IllegalArgumentException("Dimensions of alpha and weights should be the same, but dim(alphaInput)=" + alphaInput.get().size()
+                    + " and dim(weights)=" + weightsInput.get().size());
         }
     }
 
+    private static double[] toArray(RealVector<?> v) {
+        double[] a = new double[v.size()];
+        for (int i = 0; i < a.length; i++) a[i] = v.get(i);
+        return a;
+    }
+
     @Override
-    public double calcLogP(Function pX) {
-        final double[] x = pX.getDoubleValues();
-        final double[] alpha = alphaInput.get().getDoubleValues();
+    public double calcLogP(RealVector<?> pX) {
+        final double[] x = toArray(pX);
+        final double[] alpha = toArray(alphaInput.get());
         validateDimensions(alpha, x, "alpha", "values");
 
-        final double[] weights = weightsInput.get().getDoubleValues();
+        final double[] weights = toArray(weightsInput.get());
         validateDimensions(weights, x, "weights", "values");
 
         final int dim = x.length;
@@ -96,8 +102,8 @@ public class WeightedDirichlet extends ParametricDistribution {
 
     @Override
     public Double[][] sample(int size) {
-        final double[] alpha = alphaInput.get().getDoubleValues();
-        final double[] weights = weightsInput.get().getDoubleValues();
+        final double[] alpha = toArray(alphaInput.get());
+        final double[] weights = toArray(weightsInput.get());
         validateDimensions(alpha, weights, "alpha", "weights");
 
         final int dim = alpha.length;

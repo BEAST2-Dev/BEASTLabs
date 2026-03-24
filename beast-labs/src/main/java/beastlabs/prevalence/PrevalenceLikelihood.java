@@ -9,8 +9,10 @@ import beast.base.inference.Distribution;
 import beast.base.core.Input;
 import beast.base.inference.State;
 import beast.base.core.Input.Validate;
-import beast.base.inference.parameter.IntegerParameter;
-import beast.base.inference.parameter.RealParameter;
+import beast.base.spec.domain.PositiveInt;
+import beast.base.spec.domain.PositiveReal;
+import beast.base.spec.inference.parameter.IntScalarParam;
+import beast.base.spec.type.RealScalar;
 import beastlabs.prevalence.PrevalenceList.Item;
 
 
@@ -18,9 +20,9 @@ import beastlabs.prevalence.PrevalenceList.Item;
 
 @Description("likelihood of the prevalence sequence based on a set of parameters")
 public class PrevalenceLikelihood extends Distribution {
-	public Input<RealParameter> m_beta = new Input<RealParameter>("beta", "parameter for x y z", Validate.REQUIRED);
-	public Input<RealParameter> m_gamma = new Input<RealParameter>("gamma", "parameter for x y z", Validate.REQUIRED);
-	public Input<IntegerParameter> m_popSize = new Input<IntegerParameter>("popSize", "parameter for x y z", Validate.REQUIRED);
+	public Input<RealScalar<? extends PositiveReal>> m_beta = new Input<>("beta", "parameter for x y z", Validate.REQUIRED);
+	public Input<RealScalar<? extends PositiveReal>> m_gamma = new Input<>("gamma", "parameter for x y z", Validate.REQUIRED);
+	public Input<IntScalarParam<? extends PositiveInt>> m_popSize = new Input<>("popSize", "parameter for x y z", Validate.REQUIRED);
 	public Input<PrevalenceList> m_list = new Input<PrevalenceList>("list", "prevalence list representing infection/recovery times", Validate.REQUIRED);
 	//public Input<TreeIntervals> m_intervals = new Input<TreeIntervals>("intervals", "tree intervals for beast.tree", Validate.REQUIRED);
 	
@@ -33,11 +35,11 @@ public class PrevalenceLikelihood extends Distribution {
         logP = 0.0;
         PrevalenceList list = m_list.get();
         List<Item> items = list.getItems();
-        double beta = m_beta.get().getValue();
-        double gamma = m_gamma.get().getValue();
+        double beta = m_beta.get().get();
+        double gamma = m_gamma.get().get();
         // RRB: N is population size? Is population size an int?
         // DW: yes, N is popSize and is a positive integer
-        int N = m_popSize.get().getValue();
+        int N = m_popSize.get().get();
                 
         Item start, finish;
         // keep track of number infected

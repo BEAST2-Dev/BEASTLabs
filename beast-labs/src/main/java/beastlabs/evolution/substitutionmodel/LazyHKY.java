@@ -29,7 +29,8 @@ import java.util.Arrays;
 
 import beast.base.core.Description;
 import beast.base.core.Input;
-import beast.base.inference.parameter.RealParameter;
+import beast.base.spec.domain.PositiveReal;
+import beast.base.spec.type.RealScalar;
 import beast.base.evolution.substitutionmodel.HKY;
 import beast.base.evolution.tree.Node;
 
@@ -42,7 +43,7 @@ public final class LazyHKY extends HKY {
     };
     public Input<RelaxationMode> m_modeInput = new Input<RelaxationMode>("mode", "form of the  prior distribution used for relaxation " +
             "This can be " + Arrays.toString(RelaxationMode.values()) + " (default 'exponential')", RelaxationMode.exponential, RelaxationMode.values());
-    public Input<RealParameter> m_theta = new Input<RealParameter>("theta", "shape parameter, ignored with exponential prior");
+    public Input<RealScalar<? extends PositiveReal>> m_theta = new Input<>("theta", "shape parameter, ignored with exponential prior");
 
     
     // shadows the input
@@ -74,7 +75,7 @@ public final class LazyHKY extends HKY {
         double bbY = Math.exp(xx * A_Y);
         double aa = Math.exp(xx);
 
-        double fTheta = (m_theta.get() == null ? 1.0 : m_theta.get().getValue());
+        double fTheta = (m_theta.get() == null ? 1.0 : m_theta.get().get());
 
     	switch (m_relaxationMode) {
     	case exponential:

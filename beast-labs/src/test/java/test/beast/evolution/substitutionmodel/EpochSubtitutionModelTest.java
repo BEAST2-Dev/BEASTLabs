@@ -8,11 +8,18 @@ import beast.base.evolution.substitutionmodel.ComplexSubstitutionModel;
 import beast.base.evolution.substitutionmodel.Frequencies;
 import beast.base.evolution.substitutionmodel.HKY;
 import beast.base.inference.parameter.RealParameter;
+import beast.base.spec.domain.Real;
+import beast.base.spec.inference.parameter.RealVectorParam;
 import beastlabs.evolution.substitutionmodel.EpochSubstitutionModel;
 
 public class EpochSubtitutionModelTest {
 
-	
+	private static RealVectorParam<Real> realVec(String values) {
+		RealVectorParam<Real> p = new RealVectorParam<>();
+		p.initByName("value", values);
+		return p;
+	}
+
 	@Test
 	public void testConsistencyForHKY() {
 		// set up HKY model with unequal frequencies
@@ -36,7 +43,7 @@ public class EpochSubtitutionModelTest {
 				"model", model, 
 				"model", model,
 				"model", model,
-				"epochDates","0.1 0.4"
+				"epochDates", realVec("0.1 0.4")
 				);
 	
 		double [] epochProbs = new double[5*5];
@@ -72,7 +79,7 @@ public class EpochSubtitutionModelTest {
 				"model", model, 
 				"model", model,
 				"model", model,
-				"epochDates","0.1 0.4"
+				"epochDates", realVec("0.1 0.4")
 				);
 	
 		double [] epochProbs = new double[5*5];
@@ -115,7 +122,7 @@ public class EpochSubtitutionModelTest {
 				"model", model, 
 				"model", model2,
 				"model", model,
-				"epochDates","0.1 0.4"
+				"epochDates", realVec("0.1 0.4")
 				);
 	
 		double [] epochProbs = new double[5*5];

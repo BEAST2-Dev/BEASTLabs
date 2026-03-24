@@ -9,7 +9,8 @@ import beast.base.core.Input;
 import beast.base.inference.StateNode;
 import beast.base.inference.StateNodeInitialiser;
 import beast.base.core.Input.Validate;
-import beast.base.inference.parameter.RealParameter;
+import beast.base.spec.domain.Real;
+import beast.base.spec.inference.parameter.RealVectorParam;
 import beast.base.evolution.tree.Node;
 import beast.base.evolution.tree.Tree;
 
@@ -17,7 +18,7 @@ import beast.base.evolution.tree.Tree;
 @Description("Sets values of a parameter from metadata values associated with a newick tree")
 public class InitParamFromTree extends beast.base.core.BEASTObject implements StateNodeInitialiser {
 	public Input<Tree> m_tree = new Input<Tree>("tree", "tree containing some meta data", Validate.REQUIRED);
-	public Input<RealParameter> m_parameter = new Input<RealParameter>("initial","parameter to be initialised", Validate.REQUIRED);
+	public Input<RealVectorParam<? extends Real>> m_parameter = new Input<>("initial","parameter to be initialised", Validate.REQUIRED);
 	public Input<String> m_sPattern = new Input<String>("pattern","name of the metadata item to be parsed", Validate.REQUIRED);
 	
 	@Override
@@ -28,20 +29,16 @@ public class InitParamFromTree extends beast.base.core.BEASTObject implements St
 	@Override
 	public void initStateNodes() {
 		Node root = m_tree.get().getRoot();
-		Double [] fValues = new Double[m_tree.get().getNodeCount()];
+		double [] fValues = new double[m_tree.get().getNodeCount()];
 		String sPattern = m_sPattern.get();
 		traverse(root, fValues, sPattern);
-		RealParameter p;
-		try {
-			p = new RealParameter(fValues);
-			m_parameter.get().assignFrom(p);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		RealVectorParam<Real> p = new RealVectorParam<>();
+		p.initByName("value", fValues);
+		m_parameter.get().assignFrom(p);
 	}
 
 	/** traverse tree and pick up meta data values on the way **/
-	private void traverse(Node node, Double[] fValues, String sPattern) {
+	private void traverse(Node node, double[] fValues, String sPattern) {
 		if (node.metaDataString != null) {
             String[] sMetaData = node.metaDataString.split(",");
             for (int i = 0; i < sMetaData.length; i++) {

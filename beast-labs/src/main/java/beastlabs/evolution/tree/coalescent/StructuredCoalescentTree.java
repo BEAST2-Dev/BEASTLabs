@@ -6,8 +6,10 @@ import java.util.List;
 
 import beast.base.core.Description;
 import beast.base.core.Input;
-import beast.base.inference.parameter.IntegerParameter;
-import beast.base.inference.parameter.RealParameter;
+import beast.base.spec.domain.NonNegativeInt;
+import beast.base.spec.domain.Real;
+import beast.base.spec.inference.parameter.IntVectorParam;
+import beast.base.spec.inference.parameter.RealVectorParam;
 import beast.base.evolution.tree.Node;
 import beast.base.evolution.tree.Tree;
 import beast.base.util.Binomial;
@@ -21,13 +23,13 @@ import beast.base.util.Randomizer;
 public class StructuredCoalescentTree extends Tree {
 
     // off-diagonal migration rates are in units of expected migrants per generation
-    public Input<RealParameter> popSizesMigrationRates = new Input<RealParameter>("popSizesMigrationRates", "A matrix of migration rates and population sizes. Population sizes occupy the diagonal and migration rates occupy the off-diagonals");
-    public Input<IntegerParameter> sampleSizes = new Input<IntegerParameter>("sampleSizes", "The sample sizes for each population");
+    public Input<RealVectorParam<? extends Real>> popSizesMigrationRates = new Input<>("popSizesMigrationRates", "A matrix of migration rates and population sizes. Population sizes occupy the diagonal and migration rates occupy the off-diagonals");
+    public Input<IntVectorParam<? extends NonNegativeInt>> sampleSizes = new Input<>("sampleSizes", "The sample sizes for each population");
 
     public StructuredCoalescentTree() {
     }
 
-    public StructuredCoalescentTree(RealParameter popSizesMigrationRatesParameter, IntegerParameter sampleSizesParameter) throws Exception {
+    public StructuredCoalescentTree(RealVectorParam<? extends Real> popSizesMigrationRatesParameter, IntVectorParam<? extends NonNegativeInt> sampleSizesParameter) throws Exception {
         popSizesMigrationRates.setValue(popSizesMigrationRatesParameter, this);
         sampleSizes.setValue(sampleSizesParameter, this);
         initAndValidate();
@@ -39,9 +41,9 @@ public class StructuredCoalescentTree extends Tree {
 
         int count = 0;
         List<List<Node>> nodes = new ArrayList<List<Node>>();
-        for (int i = 0; i < sampleSizes.get().getDimension(); i++) {
+        for (int i = 0; i < sampleSizes.get().size(); i++) {
             nodes.add(new ArrayList<Node>());
-            for (int j = 0; j < sampleSizes.get().getValue(i); j++) {
+            for (int j = 0; j < sampleSizes.get().get(i); j++) {
                 Node node = new Node();
                 node.setNr(count);
                 node.setID(count + "");
@@ -55,7 +57,7 @@ public class StructuredCoalescentTree extends Tree {
         initArrays();
     }
 
-    private List<Node> simulateStructuredCoalescentForest(List<List<Node>> nodes, RealParameter popSizesMigrationRates, double stopTime) {
+    private List<Node> simulateStructuredCoalescentForest(List<List<Node>> nodes, RealVectorParam<? extends Real> popSizesMigrationRates, double stopTime) {
 
         //diagonals are coalescent rates, off-diagonals are migration rates
         double[][] rates = new double[nodes.size()][nodes.size()];
@@ -167,20 +169,21 @@ public class StructuredCoalescentTree extends Tree {
         throw new RuntimeException();
     }
 
-    private double populateRateMatrix(List<List<Node>> nodes, RealParameter popSizesMigrationRates, double[][] rates) {
+    private double populateRateMatrix(List<List<Node>> nodes, RealVectorParam<? extends Real> popSizesMigrationRates, double[][] rates) {
 
         double totalRate = 0;
+        int dim = rates.length;
 
         // coalescent rates
-        for (int i = 0; i < rates.length; i++) {
-            double popSizei = popSizesMigrationRates.getMatrixValue(i, i);
-            for (int j = 0; j < rates.length; j++) {
-                double popSizej = popSizesMigrationRates.getMatrixValue(j, j);
+        for (int i = 0; i < dim; i++) {
+            double popSizei = popSizesMigrationRates.get(i * dim + i);
+            for (int j = 0; j < dim; j++) {
+                double popSizej = popSizesMigrationRates.get(j * dim + j);
                 if (i == j) {
                     rates[i][i] = Binomial.choose2(nodes.get(i).size()) / popSizei;
                 } else {
                     // off-diagonal migration rates are in units of expected migrants per generation (thus division by popSizei)
-                    rates[i][j] = nodes.get(i).size() * (popSizesMigrationRates.getMatrixValue(i, j) * popSizej) / popSizei;
+                    rates[i][j] = nodes.get(i).size() * (popSizesMigrationRates.get(i * dim + j) * popSizej) / popSizei;
                 }
                 totalRate += rates[i][j];
             }
@@ -216,10 +219,11 @@ public class StructuredCoalescentTree extends Tree {
                 int count = 0;
                 for (int j = 0; j < reps; j++) {
 
-                    Tree tree = new StructuredCoalescentTree(
-                            new RealParameter(new Double[]{popSize1[i], m, popSize2[i], m}),
-                            new IntegerParameter(new Integer[]{2, 2})
-                    );
+                    RealVectorParam<Real> psm = new RealVectorParam<>();
+                    psm.initByName("value", popSize1[i] + " " + m + " " + popSize2[i] + " " + m);
+                    IntVectorParam<NonNegativeInt> ss = new IntVectorParam<>();
+                    ss.initByName("value", "2 2");
+                    Tree tree = new StructuredCoalescentTree(psm, ss);
 
                     //trees.add(tree);
 

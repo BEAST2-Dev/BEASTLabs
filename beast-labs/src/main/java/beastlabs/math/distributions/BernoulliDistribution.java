@@ -4,9 +4,11 @@ import beast.base.core.Description;
 import beast.base.inference.Distribution;
 import beast.base.core.Input;
 import beast.base.inference.State;
-import beast.base.inference.parameter.BooleanParameter;
-import beast.base.inference.parameter.IntegerParameter;
-import beast.base.inference.parameter.RealParameter;
+import beast.base.spec.domain.NonNegativeInt;
+import beast.base.spec.domain.UnitInterval;
+import beast.base.spec.inference.parameter.BoolVectorParam;
+import beast.base.spec.inference.parameter.IntScalarParam;
+import beast.base.spec.inference.parameter.RealVectorParam;
 
 import java.util.List;
 import java.util.Random;
@@ -19,48 +21,48 @@ import java.util.Random;
         "separate independent component.")
 public class BernoulliDistribution extends Distribution {
 
-    final public Input<RealParameter> pInput = new Input<>("p", "probability p parameter. Must be either " +
+    final public Input<RealVectorParam<? extends UnitInterval>> pInput = new Input<>("p", "probability p parameter. Must be either " +
             "size 1 for iid trials, or the same dimension as trials parameter if inhomogeneous bernoulli process.", Input.Validate.REQUIRED);
-    final public Input<BooleanParameter> trialsInput = new Input<>("parameter", "the results of a series of bernoulli trials.");
+    final public Input<BoolVectorParam> trialsInput = new Input<>("parameter", "the results of a series of bernoulli trials.");
 
-    final public Input<IntegerParameter> minSuccessesInput = new Input<>("minSuccesses",
+    final public Input<IntScalarParam<? extends NonNegativeInt>> minSuccessesInput = new Input<>("minSuccesses",
             "Optional condition: the minimum number of ones in the boolean array.");
 
     public double calculateLogP() {
         logP = 0.0;
 
-        BooleanParameter trials = trialsInput.get();
-        RealParameter p = pInput.get();
-        IntegerParameter minSuccesses = minSuccessesInput.get();
+        BoolVectorParam trials = trialsInput.get();
+        RealVectorParam<? extends UnitInterval> p = pInput.get();
+        IntScalarParam<? extends NonNegativeInt> minSuccesses = minSuccessesInput.get();
 
         // for efficiency split the two options
-        if (p.getDimension() == 1) {
-            double prob = p.getArrayValue();
+        if (p.size() == 1) {
+            double prob = p.get(0);
             double logProb = Math.log(prob);
             double log1MinusProb = Math.log(1.0-prob);
 
-            for (int i = 0; i < trials.getDimension(); i++) {
-                logP += trials.getValue(i) ? logProb : log1MinusProb;
+            for (int i = 0; i < trials.size(); i++) {
+                logP += trials.get(i) ? logProb : log1MinusProb;
             }
 
         } else {
             // reject if < minSuccesses
-            if (minSuccesses != null && hammingWeight(trials) < minSuccesses.getValue())
+            if (minSuccesses != null && hammingWeight(trials) < minSuccesses.get())
                 return Double.NEGATIVE_INFINITY;
 
-            for (int i = 0; i < trials.getDimension(); i++) {
-                double prob = p.getArrayValue(i);
-                logP += Math.log(trials.getValue(i) ? prob : 1.0 - prob);
+            for (int i = 0; i < trials.size(); i++) {
+                double prob = p.get(i);
+                logP += Math.log(trials.get(i) ? prob : 1.0 - prob);
             }
 
         }
         return logP;
     }
 
-    private int hammingWeight(BooleanParameter trials) {
+    private int hammingWeight(BoolVectorParam trials) {
         int sum = 0;
-        for (int i = 0; i < trials.getDimension(); i++)
-            if (trials.getValue(i)) sum += 1;
+        for (int i = 0; i < trials.size(); i++)
+            if (trials.get(i)) sum += 1;
         return sum;
     }
 
@@ -81,8 +83,8 @@ public class BernoulliDistribution extends Distribution {
 
     @Override
     public void initAndValidate() {
-        if (pInput.get().getDimension() != 1 && pInput.get().getDimension() != trialsInput.get().getDimension()) {
-            throw new RuntimeException("p parameter must be size 1 or the same size as trials parameter but it was dimension " + pInput.get().getDimension());
+        if (pInput.get().size() != 1 && pInput.get().size() != trialsInput.get().size()) {
+            throw new RuntimeException("p parameter must be size 1 or the same size as trials parameter but it was dimension " + pInput.get().size());
         }
     }
 }

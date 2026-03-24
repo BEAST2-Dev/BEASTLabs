@@ -10,14 +10,15 @@ import beast.base.core.Description;
 import beast.base.inference.Distribution;
 import beast.base.core.Input;
 import beast.base.core.Input.Validate;
-import beast.base.inference.parameter.RealParameter;
+import beast.base.spec.domain.Real;
+import beast.base.spec.inference.parameter.RealVectorParam;
 import beast.base.inference.State;
 import beast.base.math.LogTricks;;
 
 @Description("Takes mixture of distributions")
 public class MixtureDistribution extends Distribution {
 	public final Input<List<Distribution>> distrsInput = new Input<>("distribution", "distribution to average over", new ArrayList<>(), Validate.REQUIRED);
-    public final Input<RealParameter> weightsInput = new Input<>("weights", "weights on the distributions, should sum to 1 if specified");
+    public final Input<RealVectorParam<? extends Real>> weightsInput = new Input<>("weights", "weights on the distributions, should sum to 1 if specified");
     public final Input<Boolean> useLogSpaceInput = new Input<>("useLogSpace", "if false (default) use sum_i w_i P_i, if true use sum_i w_i log(P_i). "
     		+ "Note if useLogSpace=true, the resulting distribution is not normalised (unless one of the weights is 1), while "
     		+ "if useLogSpace=false, the resulting distribution is normalised iff all mixture components are normalised.", false);
@@ -37,7 +38,7 @@ public class MixtureDistribution extends Distribution {
 				weights[i] = 1.0 / weights.length;
 			}
 		} else {
-			weights = weightsInput.get().getDoubleValues();
+			weights = weightsInput.get().getValues();
 			
 			// sanity checks
 			if (weights.length != distrs.size()) {
