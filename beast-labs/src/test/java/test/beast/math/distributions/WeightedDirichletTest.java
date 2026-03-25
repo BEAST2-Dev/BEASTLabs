@@ -1,8 +1,9 @@
 package test.beast.math.distributions;
 
 import static org.junit.jupiter.api.Assertions.*;
-import beast.base.inference.parameter.IntegerParameter;
-import beast.base.inference.parameter.RealParameter;
+import beast.base.spec.domain.PositiveReal;
+import beast.base.spec.inference.parameter.RealVectorParam;
+import beast.base.spec.inference.parameter.SimplexParam;
 import beastlabs.math.distributions.WeightedDirichlet;
 import org.junit.jupiter.api.BeforeEach;
 
@@ -16,47 +17,41 @@ import org.junit.jupiter.api.BeforeEach;
  */
 public class WeightedDirichletTest  {
 
-    RealParameter alpha;
-    RealParameter p1;
-    RealParameter p2;
+    RealVectorParam<PositiveReal> alpha;
 
     @BeforeEach
     public void setUp() throws Exception {
-        alpha = new RealParameter(new Double[]{2.0,2.0,2.0});
+        alpha = new RealVectorParam<>(new double[]{2.0,2.0,2.0}, PositiveReal.INSTANCE);
     }
 
     public void testLogPEqualWeights() {
-        IntegerParameter weights = new IntegerParameter(new Integer[]{1,1,1});
-        WeightedDirichlet weightedDirichlet = new WeightedDirichlet();
-        weightedDirichlet.initByName("alpha", alpha, "weights", weights);
-
-        // sum = 1
-        p1 = new RealParameter(new Double[]{0.589929287159556,0.254172576287574,0.155898136552870});
-        p2 = new RealParameter(new Double[]{0.671034770323350,0.169251509344698,0.159713720331952});
+        RealVectorParam<PositiveReal> weights = new RealVectorParam<>(new double[]{1.0,1.0,1.0}, PositiveReal.INSTANCE);
+        SimplexParam p1 = new SimplexParam(new double[]{0.589929287159556,0.254172576287574,0.155898136552870});
+        WeightedDirichlet wd1 = new WeightedDirichlet(p1, alpha, weights);
 
         // 15 decimals
-        double prob = weightedDirichlet.calcLogP(p1);
-        assertEquals(1.031444876947574, prob, 1e-10);
+        assertEquals(1.031444876947574, wd1.calculateLogP(), 1e-10);
 
-        prob = weightedDirichlet.calcLogP(p2);
-        assertEquals(0.777815654415272, prob, 1e-10);
+        SimplexParam p2 = new SimplexParam(new double[]{0.671034770323350,0.169251509344698,0.159713720331952});
+        WeightedDirichlet wd2 = new WeightedDirichlet(p2, alpha, weights);
+
+        assertEquals(0.777815654415272, wd2.calculateLogP(), 1e-10);
     }
 
     public void testLogP() {
-        IntegerParameter weights = new IntegerParameter(new Integer[]{100,150,250});
-        WeightedDirichlet weightedDirichlet = new WeightedDirichlet();
-        weightedDirichlet.initByName("alpha", alpha, "weights", weights);
+        RealVectorParam<PositiveReal> weights = new RealVectorParam<>(new double[]{100.0,150.0,250.0}, PositiveReal.INSTANCE);
 
         // sum != 1, [0.3333333333333333, 0.3333333333333333, 0.3333333333333333]
-        p1 = new RealParameter(new Double[]{10.0,10.0,10.0});
-        p2 = new RealParameter(new Double[]{100.0,100.0,100.0});
+        SimplexParam p1 = new SimplexParam(new double[]{10.0,10.0,10.0});
+        WeightedDirichlet wd1 = new WeightedDirichlet(p1, alpha, weights);
 
         // 15 decimals
-        double prob = weightedDirichlet.calcLogP(p1);
-        assertEquals(1.491654876777717, prob, 1e-10);
+        assertEquals(1.491654876777717, wd1.calculateLogP(), 1e-10);
 
-        prob = weightedDirichlet.calcLogP(p2);
-        assertEquals(1.491654876777717, prob, 1e-10);
+        SimplexParam p2 = new SimplexParam(new double[]{100.0,100.0,100.0});
+        WeightedDirichlet wd2 = new WeightedDirichlet(p2, alpha, weights);
+
+        assertEquals(1.491654876777717, wd2.calculateLogP(), 1e-10);
     }
 
 
