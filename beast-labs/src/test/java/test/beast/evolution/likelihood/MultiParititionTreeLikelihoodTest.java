@@ -1,11 +1,13 @@
 package test.beast.evolution.likelihood;
 
 import static org.junit.jupiter.api.Assertions.*;
-
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.File;
 import java.util.concurrent.Executors;
 
+import beagle.BeagleFactory;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import beast.base.core.BEASTInterface;
@@ -29,6 +31,12 @@ import test.beast.BEASTTestCase;
 
 /** test MultiParititionTreeLikelihood with two partitions **/
 public class MultiParititionTreeLikelihoodTest  {
+
+    @BeforeAll
+    static void requireBeagle() {
+        assumeTrue(!BeagleFactory.getResourceDetails().isEmpty(),
+                "Native BEAGLE library not installed — skipping");
+    }
 
     public MultiParititionTreeLikelihoodTest() {
 		super();
