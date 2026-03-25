@@ -17,6 +17,7 @@ jobs:
           distribution: 'zulu'
           java-version: '25'
           java-package: jdk+fx
+          cache: maven
 
       - name: Checkout beast3
         uses: actions/checkout@v4
@@ -24,20 +25,17 @@ jobs:
           repository: CompEvol/beast3
           path: beast3
 
-      - name: Find build.xml
-        run: |
-          pwd
-          find . -name "build.xml"
+      - name: Install beagle.jar to local Maven repo
+        run: >
+          mvn install:install-file
+          -Dfile=beast3/lib/beagle.jar
+          -DgroupId=io.github.compevol
+          -DartifactId=beagle
+          -Dversion=1.0
+          -Dpackaging=jar
 
-      - name: Build beast3
-        run: ant -noinput -buildfile ./beast3/build.xml compile-all
+      - name: Build and install beast3
+        run: mvn -f beast3/pom.xml install -DskipTests -q
 
-
-      - name: Run BEASTlbs Ant
-        run: ant -noinput -buildfile ./BEASTLabs/build.xml junitBEASTlabs
-
-#      - name: Publish unit test results
-#        uses: EnricoMi/publish-unit-test-result-action@v2
-#        if: always()
-#        with:
-#          junit_files: BEASTLabs/build/junitreport/**/*.xml
+      - name: Build and test BEASTLabs
+        run: mvn -f BEASTLabs/pom.xml test
