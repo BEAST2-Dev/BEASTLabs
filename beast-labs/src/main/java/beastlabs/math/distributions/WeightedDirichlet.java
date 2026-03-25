@@ -3,13 +3,15 @@ package beastlabs.math.distributions;
 import beast.base.core.Description;
 import beast.base.core.Input;
 import beast.base.core.Input.Validate;
-import beast.base.inference.distribution.ParametricDistribution;
 import beast.base.spec.domain.Real;
+import beast.base.spec.inference.distribution.TensorDistribution;
 import beast.base.spec.type.RealVector;
+import beast.base.spec.type.Simplex;
 import beast.base.util.Randomizer;
 import org.apache.commons.numbers.gamma.LogGamma;
 
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * WeightedDirichlet includes an optional input: the expected mean, which defaults to 1.
@@ -18,7 +20,7 @@ import java.util.Arrays;
  * @author Walter Xie
  */
 @Description("Weighted Dirichlet distribution that scales dimensions by weight, where the values are scaled to maintain the expected mean (default to 1).")
-public class WeightedDirichlet extends ParametricDistribution {
+public class WeightedDirichlet extends TensorDistribution<Simplex, Double> {
     final public Input<RealVector<? extends Real>> alphaInput = new Input<>("alpha", "coefficients of the Dirichlet distribution", Validate.REQUIRED);
     final public Input<RealVector<? extends Real>> weightsInput = new Input<>("weights", "weights of the scaled Dirichlet distribution", Validate.REQUIRED);
     // optional
@@ -28,14 +30,25 @@ public class WeightedDirichlet extends ParametricDistribution {
     // the expectedMean is default to 1, mostly used for 3 relative rates to fix the mean to 1
     private double expectedMean = 1.0;
 
+    public WeightedDirichlet() {}
+
+    public WeightedDirichlet(Simplex param, RealVector<? extends Real> alpha, RealVector<? extends Real> weights) {
+        try {
+            initByName("param", param, "alpha", alpha, "weights", weights);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to initialize " + getClass().getSimpleName() +
+                    " via initByName in constructor.", e);
+        }
+    }
+
     @Override
     public void initAndValidate() {
-//        super.initAndValidate();
         expectedMean = meanInput.get();
         if (weightsInput.get().size() != alphaInput.get().size()) {
             throw new IllegalArgumentException("Dimensions of alpha and weights should be the same, but dim(alphaInput)=" + alphaInput.get().size()
                     + " and dim(weights)=" + weightsInput.get().size());
         }
+        super.initAndValidate();
     }
 
     private static double[] toArray(RealVector<?> v) {
@@ -45,106 +58,110 @@ public class WeightedDirichlet extends ParametricDistribution {
     }
 
     @Override
-    public double calcLogP(RealVector<?> pX) {
-        final double[] x = toArray(pX);
+    public void refresh() {
+        // alpha and weights are read fresh in calcLogP
+    }
+
+    @Override
+    protected double calcLogP(Double... value) {
+        return calcLogP(Arrays.asList(value));
+    }
+
+    @Override
+    public double calculateLogP() {
+        logP = calcLogP(param.getElements());
+        return logP;
+    }
+
+    private double calcLogP(List<Double> x) {
         final double[] alpha = toArray(alphaInput.get());
-        validateDimensions(alpha, x, "alpha", "values");
-
         final double[] weights = toArray(weightsInput.get());
-        validateDimensions(weights, x, "weights", "values");
+        final int dim = x.size();
 
-        final int dim = x.length;
-        double weightSum = 0.0; // ∑ (weight[i])
+        if (alpha.length != dim)
+            throw new IllegalArgumentException("Dimensions of alpha and values should be the same");
+        if (weights.length != dim)
+            throw new IllegalArgumentException("Dimensions of weights and values should be the same");
+
+        double weightSum = 0.0;
         for (int i = 0; i < dim; i++)
             weightSum += weights[i];
 
         // Normalize weights to be scale-invariant
         double[] weightsNorm = new double[dim];
-        // ∑ (x[i] * weights_norm[i]) == target_sum
         double weightsNormSumX = 0.0;
         for (int i = 0; i < dim; i++) {
-            // weights_norm = weight[i] * len(weights) / ∑ (weight[i])
             weightsNorm[i] = weights[i] * dim / weightSum;
-            // weightsNormSumX = ∑ (x[i] * weights_norm[i]), and it is also target_sum
-            weightsNormSumX += x[i] * weightsNorm[i];
+            weightsNormSumX += x.get(i) * weightsNorm[i];
         }
 
-        // (weightsNormSumX / dim) is the weighted mean
         if (Math.abs(weightsNormSumX / dim - expectedMean) > 1e-6) {
-//            return Double.NEGATIVE_INFINITY;
             throw new RuntimeException("The weighted mean of values (" + (weightsNormSumX / dim) +
                     ") must be same as the expected mean of values (" + expectedMean + ") !");
         }
 
-        // log_density = gammaln(np.sum(conc)) - np.sum(gammaln(conc))
-        //        + np.sum((conc - 1) * np.log(y))
-        double sumLgWeightsNorm = 0.0; // for Jacobian term
+        double sumLgWeightsNorm = 0.0;
         double logP = 0.0;
         double sumAlpha = 0.0;
         for (int i = 0; i < dim; i++) {
-            // Transform to standard Dirichlet space
-            // y = (x[i] * weights_norm[i]) / target_sum
-            double y = (x[i] * weightsNorm[i]) / weightsNormSumX;
-            // log density
+            double y = (x.get(i) * weightsNorm[i]) / weightsNormSumX;
             logP += (alpha[i] - 1) * Math.log(y);
             logP -= LogGamma.value(alpha[i]);
             sumAlpha += alpha[i];
-
             sumLgWeightsNorm += Math.log(weightsNorm[i]);
         }
         logP += LogGamma.value(sumAlpha);
 
-        // TODO Jacobian term needs to test
-        // log_jacobian = np.sum(np.log(weights_norm)) - len(x) * np.log(target_sum)
+        // Jacobian term
         double logJacobian = sumLgWeightsNorm - dim * Math.log(weightsNormSumX);
         return logP + logJacobian;
     }
 
     @Override
-    public Double[][] sample(int size) {
+    public List<Double> sample() {
         final double[] alpha = toArray(alphaInput.get());
         final double[] weights = toArray(weightsInput.get());
-        validateDimensions(alpha, weights, "alpha", "weights");
-
         final int dim = alpha.length;
+
         double weightSum = 0.0;
         for (int j = 0; j < dim; j++)
             weightSum += weights[j];
 
-        Double[][] samples = new Double[size][];
-        for (int i = 0; i < size; i++) {
-            Double[] x = new Double[dim];
-            // step 1: Sample from standard Dirichlet
-            double sum = 0.0;
-            for (int j = 0; j < dim; j++) {
-                x[j] = Randomizer.nextGamma(alpha[j], 1.0);
-                sum += x[j];
-            }
-            for (int j = 0; j < dim; j++) {
-                // if expectedMean != 1, then adjust it
-                x[j] = x[j] / sum;
-            }
-
-            // step 2: Transform to weighted rates:
-            for (int j = 0; j < dim; j++) {
-                x[j] = expectedMean * x[j] * weightSum / weights[j];
-            }
-
-            // validate : weighted mean = ∑(x[j] * weight[j]) / ∑(weight[j])
-            double weightedMeanX = getWeightedMean(Arrays.stream(x)
-                    .mapToDouble(Double::doubleValue).toArray(), weights);
-            if (Math.abs(weightedMeanX  - expectedMean) > 1e-6)
-                throw new RuntimeException("The weighted mean of values (" + weightedMeanX +
-                        ") differs significantly from the expected weighted mean of values (" + expectedMean +") !");
-
-            samples[i] = x;
+        Double[] x = new Double[dim];
+        double sum = 0.0;
+        for (int j = 0; j < dim; j++) {
+            x[j] = Randomizer.nextGamma(alpha[j], 1.0);
+            sum += x[j];
         }
-        return samples;
+        for (int j = 0; j < dim; j++) {
+            x[j] = x[j] / sum;
+        }
+        for (int j = 0; j < dim; j++) {
+            x[j] = expectedMean * x[j] * weightSum / weights[j];
+        }
+
+        double weightedMeanX = getWeightedMean(Arrays.stream(x)
+                .mapToDouble(Double::doubleValue).toArray(), weights);
+        if (Math.abs(weightedMeanX - expectedMean) > 1e-6)
+            throw new RuntimeException("The weighted mean of values (" + weightedMeanX +
+                    ") differs significantly from the expected weighted mean of values (" + expectedMean + ") !");
+
+        return List.of(x);
+    }
+
+    @Override
+    public Double getLowerBoundOfParameter() {
+        return 0.0;
+    }
+
+    @Override
+    public Double getUpperBoundOfParameter() {
+        return Double.POSITIVE_INFINITY;
     }
 
     public static double getWeightedMean(double[] samples, double[] weights) {
-        validateDimensions(weights, samples, "weights", "values");
-        // the weight mean = sum(x[i] * weight[i]) / sum(weight[i])
+        if (weights.length != samples.length)
+            throw new IllegalArgumentException("Dimensions of weights and values should be the same");
         double weightedSumX = 0.0;
         for (int i = 0; i < samples.length; i++)
             weightedSumX += samples[i] * weights[i];
@@ -155,18 +172,4 @@ public class WeightedDirichlet extends ParametricDistribution {
             return Double.NEGATIVE_INFINITY;
         return weightedSumX / weightSum;
     }
-
-    private static void validateDimensions(double[] arr, double[] reference, String arrName, String referenceName) {
-        if (arr.length != reference.length) {
-            throw new IllegalArgumentException( "Dimensions of " + arrName + " and " +
-                    referenceName + " should be the same, but dim(" + arrName + ") = " + arr.length +
-                    " and dim(" + referenceName + ") = " + reference.length);
-        }
-    }
-
-    @Override
-    public Object getDistribution() {
-        throw new UnsupportedOperationException("Not implemented yet");
-    }
-
 }

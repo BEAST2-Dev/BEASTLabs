@@ -2,28 +2,29 @@ package beastlabs.math.distributions;
 
 import beast.base.spec.domain.Real;
 import beast.base.spec.inference.parameter.RealVectorParam;
+import beast.base.spec.inference.parameter.SimplexParam;
 
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.List;
 
 public class WeightedDirichletSimulator {
 
-//    static String homePath = System.getProperty("user.home");
     static File outFile = new File("WeightedDirichletA127.log");
 
     public static void main(String[] args) {
-        WeightedDirichlet weightedDirichlet = new WeightedDirichlet();
         RealVectorParam<Real> alphaParam = new RealVectorParam<>();
         alphaParam.initByName("value", "1.0 2.0 7.0");
         RealVectorParam<Real> weightParam = new RealVectorParam<>();
         weightParam.initByName("value", "100.0 200.0 700.0");
+        SimplexParam simplexParam = new SimplexParam();
+        simplexParam.initByName("value", "0.1 0.2 0.7");
 
-        weightedDirichlet.initByName("alpha", alphaParam, "weights", weightParam);
+        WeightedDirichlet weightedDirichlet = new WeightedDirichlet(simplexParam, alphaParam, weightParam);
 
         final int size = 100000;
-        Double[][] val2d = weightedDirichlet.sample(size);
         System.out.println("Simulate " + size + " samples");
 
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(outFile))) {
@@ -32,32 +33,22 @@ public class WeightedDirichletSimulator {
             if (alphaParam.size() == 3) {
                 writer.write("r1\tr2\tr3");
             } else {
-                for (int i = 0; i < val2d[0].length; i++) {
+                for (int i = 0; i < alphaParam.size(); i++) {
                     writer.write("Var" + (i + 1));
-                    if (i < val2d[0].length - 1) {
-                        writer.write('\t'); // tab delimiter
-                    }
+                    if (i < alphaParam.size() - 1) writer.write('\t');
                 }
             }
-            writer.newLine(); // new line after each row
+            writer.newLine();
 
-            for (int n = 0; n < val2d.length; n++) {
-                // the weight mean = sum(x[i] * weight[i]) / sum(weight[i])
-//                double weightedMeanX = WeightedDirichlet.getWeightedMean(Arrays.stream(val2d[n])
-//                                .mapToDouble(Double::doubleValue).toArray(),
-//                        Arrays.stream(weights).mapToDouble(Integer::doubleValue).toArray());
-//
-//                if (Math.abs(weightedMeanX  - weightedDirichlet.meanInput.get()) > 1e-6)
-//                    throw new RuntimeException("Replicate " + n + ", values = " + Arrays.toString(val2d[n]));
+            for (int n = 0; n < size; n++) {
+                List<Double> sample = weightedDirichlet.sample();
 
                 writer.write(Integer.toString(n) + '\t');
-                for (int i = 0; i < val2d[n].length; i++) {
-                    writer.write(Double.toString(val2d[n][i]));
-                    if (i < val2d[n].length - 1) {
-                        writer.write('\t'); // tab delimiter
-                    }
+                for (int i = 0; i < sample.size(); i++) {
+                    writer.write(Double.toString(sample.get(i)));
+                    if (i < sample.size() - 1) writer.write('\t');
                 }
-                writer.newLine(); // new line after each row
+                writer.newLine();
 
                 if (n % 1000 == 0) {
                     System.out.println("Wrote " + n + " lines...");
