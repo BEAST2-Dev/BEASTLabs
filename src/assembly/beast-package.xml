@@ -31,12 +31,12 @@
     <fileSets>
         <!-- fxtemplates/ -->
         <fileSet>
-            <directory>${project.basedir}/src/main/resources/beast.beastlabs/fxtemplates</directory>
+            <directory>${project.basedir}/src/main/resources/beast.labs/fxtemplates</directory>
             <outputDirectory>/fxtemplates</outputDirectory>
         </fileSet>
         <!-- examples/ from project root -->
         <fileSet>
-            <directory>${project.parent.basedir}/examples</directory>
+            <directory>${project.basedir}/examples</directory>
             <outputDirectory>/examples</outputDirectory>
         </fileSet>
     </fileSets>

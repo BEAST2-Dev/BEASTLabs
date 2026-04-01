@@ -13,18 +13,17 @@ set -euo pipefail
 
 # --- Extract metadata from version.xml ---
 
-VERSION_XML="beast-labs/version.xml"
-if [[ ! -f "$VERSION_XML" ]]; then
-    echo "ERROR: $VERSION_XML not found in $(pwd)" >&2
+if [[ ! -f version.xml ]]; then
+    echo "ERROR: version.xml not found in $(pwd)" >&2
     exit 1
 fi
 
-PKG_LINE=$(grep '<package ' "$VERSION_XML" | head -1)
+PKG_LINE=$(grep '<package ' version.xml | head -1)
 PKG_NAME=$(echo "$PKG_LINE" | sed "s/.*name=['\"]\\([^'\"]*\\)['\"].*/\\1/")
 VERSION=$(echo "$PKG_LINE" | sed "s/.*version=['\"]\\([^'\"]*\\)['\"].*/\\1/")
 
 if [[ -z "$PKG_NAME" || -z "$VERSION" ]]; then
-    echo "ERROR: could not parse name/version from $VERSION_XML" >&2
+    echo "ERROR: could not parse name/version from version.xml" >&2
     exit 1
 fi
 
@@ -42,7 +41,7 @@ mvn clean package -Dmaven.test.skip=true
 echo ""
 
 # Locate the ZIP produced by maven-assembly-plugin
-ZIP_PATH="beast-labs/target/${ZIP_NAME}"
+ZIP_PATH="target/${ZIP_NAME}"
 if [[ ! -f "$ZIP_PATH" ]]; then
     echo "ERROR: expected ZIP not found at ${ZIP_PATH}" >&2
     exit 1

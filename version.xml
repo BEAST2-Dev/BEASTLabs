@@ -1,21 +1,20 @@
-<package name='BEASTLabs' version='2.0.3'>
-	<depends on='BEAST.base' atleast='2.7.0'/>
-	<depends on='BEAST.app' atleast='2.7.0'/>
+<package name='BEASTLabs' version='2.1.0'>
+  <depends on='BEAST.base' atleast='2.8.0'/>
+
     <packageapp description="View parametric distributions"
               class="beastlabs.app.beauti.DistributionViewer"
               args=""
-              icon=""
-            />
-            
-	<service type="beastfx.app.inputeditor.InputEditor">
-        <provider classname="beastlabs.app.beauti.MultiMonophyleticConstraintInputEditor"/>
-	</service>
+              />
 
-	<service type="beastfx.app.beauti.PriorProvider">
+    <service type="beastfx.app.inputeditor.InputEditor">
         <provider classname="beastlabs.app.beauti.MultiMonophyleticConstraintInputEditor"/>
     </service>
-                        
-	<service type="beast.base.core.BEASTInterface">
+
+    <service type="beastfx.app.beauti.PriorProvider">
+        <provider classname="beastlabs.app.beauti.MultiMonophyleticConstraintInputEditor"/>
+    </service>
+
+    <service type="beast.base.core.BEASTInterface">
         <provider classname="beastlabs.core.DataNode"/>
         <provider classname="beastlabs.core.FilteredValuable"/>
         <provider classname="beastlabs.core.GridSearch"/>
@@ -36,22 +35,11 @@
         <provider classname="beastlabs.evolution.likelihood.MultiPartitionTreeLikelihood"/>
         <provider classname="beastlabs.evolution.likelihood.SelfTuningMCMC"/>
         <provider classname="beastlabs.evolution.likelihood.SelfTuningCompoundDistribution"/>
-        <provider classname="beastlabs.evolution.operators.AdaptableVarianceMultivariateNormalOperator"/>
         <provider classname="beastlabs.evolution.operators.AttachAndUniformOperator"/>
         <provider classname="beastlabs.evolution.operators.AttachOperator"/>
-        <provider classname="beastlabs.evolution.operators.BactrianDeltaExchangeOperator"/>
-        <provider classname="beastlabs.evolution.operators.BactrianIntervalOperator"/>
-        <provider classname="beastlabs.evolution.operators.BactrianNodeOperator"/>
-        <provider classname="beastlabs.evolution.operators.BactrianOperatorSchedule"/>
-        <provider classname="beastlabs.evolution.operators.BactrianRandomWalkOperator"/>
-        <provider classname="beastlabs.evolution.operators.BactrianScaleOperator"/>
-        <provider classname="beastlabs.evolution.operators.BactrianSubtreeSlide"/>
-        <provider classname="beastlabs.evolution.operators.BactrianTipDatesRandomWalker"/>
-        <provider classname="beastlabs.evolution.operators.BactrianUpDownOperator"/>
         <provider classname="beastlabs.evolution.operators.CladeInternalAttachOperator"/>
         <provider classname="beastlabs.evolution.operators.CombinedOperator"/>
         <provider classname="beastlabs.evolution.operators.CompoundOperator"/>
-        <provider classname="beastlabs.evolution.operators.KernelOperator"/>
         <provider classname="beastlabs.evolution.operators.MultiCladeAttachOperator"/>
         <provider classname="beastlabs.evolution.operators.NNI"/>
         <provider classname="beastlabs.evolution.operators.RestrictedSubtreeSlide"/>
@@ -60,12 +48,9 @@
         <provider classname="beastlabs.evolution.operators.TreeWithMetaDataRandomWalker"/>
         <provider classname="beastlabs.evolution.operators.UniformOperatorSelective"/>
         <provider classname="beastlabs.evolution.operators.UniformSelective"/>
-
         <provider classname="beastlabs.evolution.sitemodel.SiteModelGI"/>
-
         <provider classname="beastlabs.evolution.speciation.RandomLocalYuleModel"/>
         <provider classname="beastlabs.evolution.substitutionmodel.CladeSubstitutionModel"/>
-        <provider classname="beastlabs.evolution.substitutionmodel.ComplexSubstitutionModel"/>
         <provider classname="beastlabs.evolution.substitutionmodel.EpochSubstitutionModel"/>
         <provider classname="beastlabs.evolution.substitutionmodel.GeneralLazySubstitutionModel"/>
         <provider classname="beastlabs.evolution.substitutionmodel.LazyHKY"/>
@@ -111,6 +96,8 @@
         <provider classname="beastlabs.math.distributions.WeibullDistribution"/>
         <provider classname="beastlabs.math.distributions.WeightedDirichlet"/>
         <provider classname="beastlabs.parsimony.FitchParsimony"/>
+        <provider classname="beastlabs.parsimony.FitchParsimony32"/>
+        <provider classname="beastlabs.parsimony.FitchParsimony64"/>
         <provider classname="beastlabs.prevalence.AddOperator"/>
         <provider classname="beastlabs.prevalence.DelOperator"/>
         <provider classname="beastlabs.prevalence.MoveOperator"/>
@@ -128,8 +115,5 @@
         <provider classname="beastlabs.tools.TraceStateNodeSource"/>
         <provider classname="beastlabs.tools.TreeStateNodeSource"/>
     </service>
-
-
-
 
 </package>
