@@ -36,7 +36,7 @@ import beast.base.core.BEASTObject;
 import beast.base.core.Description;
 import beast.base.core.Function;
 import beast.base.core.Input;
-import beast.base.inference.parameter.RealParameter;
+import beast.base.spec.inference.parameter.RealVectorParam;
 import beast.base.core.Log;
 import beast.base.math.matrixalgebra.Matrix;
 import beast.base.util.Randomizer;
@@ -627,8 +627,7 @@ public interface Transform {
     	public void initAndValidate() {
     		super.initAndValidate();
     		for (Function f : parameter) {
-    			if (f instanceof RealParameter) {
-    				RealParameter p  = (RealParameter) f;
+    			if (f instanceof RealVectorParam<?> p) {
     				if (p.getLower() < 0) {
     					Log.warning("\n\nWarning: parameter " + p.getID() + " has lower bound < 0, which is not appropriate for a LogTransform\n");
     				}
@@ -749,8 +748,7 @@ public interface Transform {
 				setWeights(Stream.of(weightsInput.get()).mapToDouble(Double::doubleValue).toArray());
 			}
     		for (Function f : parameter) {
-    			if (f instanceof RealParameter) {
-    				RealParameter p  = (RealParameter) f;
+    			if (f instanceof RealVectorParam<?> p) {
     				if (p.getLower() < 0) {
     					Log.warning("\n\nWarning: parameter " + p.getID() + " has lower bound < 0, which is not appropriate for a LogConstrainedTransform\n");
     				}

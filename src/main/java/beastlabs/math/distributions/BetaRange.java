@@ -10,7 +10,8 @@ import beast.base.core.Function;
 import beast.base.inference.Distribution;
 import beast.base.core.Input;
 import beast.base.inference.State;
-import beast.base.inference.parameter.RealParameter;
+import beast.base.spec.domain.Real;
+import beast.base.spec.inference.parameter.RealVectorParam;
 
 @Description("Expansion of the Beta distribution, except it respects the upper/lower limits of the parameter " +
  " Can handle a different prior per parameter if the dimension of 'x' is equal to the dimension of the gamma parameters " +
@@ -18,7 +19,7 @@ import beast.base.inference.parameter.RealParameter;
  " If the parameter exceeds lower/upper, the log density is negative infinity")
 public class BetaRange extends Distribution  {
 
-	final public Input<RealParameter> parameterInput = new Input<>("x", "the parameter at which the density is calculated", Input.Validate.REQUIRED);
+	final public Input<RealVectorParam<? extends Real>> parameterInput = new Input<>("x", "the parameter at which the density is calculated", Input.Validate.REQUIRED);
 	final public Input<Function> alphaInput = new Input<>("alpha", "first shape parameter (default 1)");
 	final public Input<Function> betaInput = new Input<>("beta", "the other shape parameter (default 1)");
     final public Input<Function> lowerInput = new Input<>("lower", "lower limit of the parameter (default 0)");
@@ -44,12 +45,12 @@ public class BetaRange extends Distribution  {
 
 		logP = 0;
 
-		RealParameter param = parameterInput.get();
-		for (int i = 0; i < param.getDimension(); i ++) {
+		RealVectorParam<? extends Real> param = parameterInput.get();
+		for (int i = 0; i < param.size(); i ++) {
 
 			//System.out.println("BETARANGE " + i + ": " + logP);
 
-			double val = param.getValue(i);
+			double val = param.get(i);
 			double alpha = getValOrDefault(alphaInput.get(), i, 1);
 			double beta = getValOrDefault(betaInput.get(), i, 1);
 			double lower = getValOrDefault(lowerInput.get(), i, 0);

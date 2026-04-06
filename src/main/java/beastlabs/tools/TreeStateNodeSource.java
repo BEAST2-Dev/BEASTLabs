@@ -12,7 +12,9 @@ import beast.base.evolution.tree.Node;
 import beast.base.evolution.tree.Tree;
 import beast.base.inference.State;
 import beast.base.inference.StateNode;
-import beast.base.inference.parameter.Parameter;
+import beast.base.core.Function;
+import beast.base.spec.inference.parameter.IntVectorParam;
+import beast.base.spec.inference.parameter.RealVectorParam;
 import beastfx.app.treeannotator.TreeAnnotator;
 import beastfx.app.treeannotator.TreeAnnotator.MemoryFriendlyTreeSet;
 import beastfx.app.util.TreeFile;
@@ -76,7 +78,7 @@ public class TreeStateNodeSource extends BEASTObject implements StateNodeSource 
 				boolean found = false;
 				for (StateNode s : stateInput.get().stateNodeInput.get()) {
 					if (s.getID().equals(id)) {
-						if (!(s instanceof Parameter<?>)) {
+						if (!(s instanceof Function)) {
 							throw new IllegalArgumentException("Expected a parameter statenode (id=" + s.getID() + ")");
 						}
 						metaDataStateNodes.add(s);
@@ -123,11 +125,16 @@ public class TreeStateNodeSource extends BEASTObject implements StateNodeSource 
 			Node [] nodes = tree.getNodesAsArray();
 			for (int j = 0; j < nodes.length; j++) {
 				for (int k = 0; k < metaDataLabels.size(); k++) {
-					Parameter sn = (Parameter) metaDataStateNodes.get(k);
+					StateNode sn = metaDataStateNodes.get(k);
+					Function fn = (Function) sn;
 					int index = nodes[j].getNr();
-					if (index < sn.getDimension()) {
+					if (index < fn.getDimension()) {
 						Object o = nodes[j].getMetaData(metaDataLabels.get(k));
-						sn.setValue(index, o);
+						if (sn instanceof RealVectorParam<?> rvp) {
+							rvp.set(index, ((Number) o).doubleValue());
+						} else if (sn instanceof IntVectorParam<?> ivp) {
+							ivp.set(index, ((Number) o).intValue());
+						}
 					}
 				}
 			}

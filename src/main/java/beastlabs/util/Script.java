@@ -9,7 +9,8 @@ import beast.base.core.Function;
 import beast.base.core.Input;
 import beast.base.core.Input.Validate;
 import beast.base.inference.CalculationNode;
-import beast.base.inference.parameter.RealParameter;
+import beast.base.spec.domain.Real;
+import beast.base.spec.inference.parameter.RealVectorParam;
 import beast.base.parser.JSONProducer;
 import beast.base.core.Log;
 import beast.base.core.Loggable;
@@ -256,9 +257,11 @@ public class Script extends CalculationNode implements Loggable, beast.base.core
 
 
     public static void main(String[] args) throws Exception {
-      RealParameter a = new RealParameter("1.0 3.0");
+      RealVectorParam<Real> a = new RealVectorParam<>();
+      a.initByName("value", "1.0 3.0");
       a.setID("a");
-      RealParameter b = new RealParameter("4.0");
+      RealVectorParam<Real> b = new RealVectorParam<>();
+      b.initByName("value", "4.0");
       b.setID("b");
       Script jsBEAST = new Script();
 //      jsBEAST.initByName("expression", "3 * sin(a[0]) + log(a[1]) * b", "x", a, "x", b);
@@ -272,7 +275,8 @@ public class Script extends CalculationNode implements Loggable, beast.base.core
       
       
       jsBEAST = new Script();
-      a = new RealParameter("1.0");
+      a = new RealVectorParam<>();
+      a.initByName("value", "1.0");
       jsBEAST.initByName("value", 
     		  "function fac(x) {\n" +
     		  "		if (x <= 1) {return 1;}\n\n" +

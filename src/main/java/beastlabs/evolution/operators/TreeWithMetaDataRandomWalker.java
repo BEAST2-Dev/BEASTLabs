@@ -5,7 +5,8 @@ import beast.base.core.Input;
 import beast.base.inference.Operator;
 import beast.base.core.Input.Validate;
 import beast.base.inference.OperatorSchedule;
-import beast.base.inference.parameter.IntegerParameter;
+import beast.base.spec.domain.NonNegativeInt;
+import beast.base.spec.inference.parameter.IntVectorParam;
 import beast.base.evolution.tree.Node;
 import beast.base.evolution.tree.Tree;
 import beast.base.evolution.tree.TreeInterface;
@@ -17,13 +18,13 @@ import beast.base.util.Randomizer;
 public class TreeWithMetaDataRandomWalker extends Operator {
 	public Input<Operator> treeoperatorInput = new Input<Operator>("treeoperator","tree operator that changes the tree. " +
 			"All changed nodes will have their metadata scaled", Validate.REQUIRED);
-	public Input<IntegerParameter> parameterInput = new Input<IntegerParameter>("intparameter", "parameter representing metadata associated with " +
+	public Input<IntVectorParam<? extends NonNegativeInt>> parameterInput = new Input<>("intparameter", "parameter representing metadata associated with " +
 			"the tree that the treeoperator applies to using the indices of the nodes in the tree", Validate.REQUIRED);
     public Input<Integer> windowSizeInput =
             new Input<Integer>("windowSize", "the size of the window both up and down", Validate.REQUIRED);
 	
 	TreeInterface tree;
-	IntegerParameter parameter;
+	IntVectorParam<? extends NonNegativeInt> parameter;
 	Operator treeoperator;
 	int windowSize;
 	
@@ -42,7 +43,7 @@ public class TreeWithMetaDataRandomWalker extends Operator {
 		Node [] nodes = tree.getNodesAsArray();
 		for (int k = 0; k < nodes.length; k++) {
 			if (nodes[k].isDirty() != Tree.IS_CLEAN && !nodes[k].isRoot()) {
-		        final int value = parameter.getValue(k);
+		        final int value = parameter.get(k);
 		        final int newValue = value + Randomizer.nextInt(2 * windowSize + 1) - windowSize;
 
 		        if (newValue < parameter.getLower() || newValue > parameter.getUpper()) {
@@ -54,7 +55,7 @@ public class TreeWithMetaDataRandomWalker extends Operator {
 		            return Double.NEGATIVE_INFINITY;
 		        }
 
-		        parameter.setValue(k, newValue);
+		        parameter.set(k, newValue);
 			}
 		}
 		return logHastingsRatio;

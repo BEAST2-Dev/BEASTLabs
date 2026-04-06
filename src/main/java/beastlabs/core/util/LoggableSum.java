@@ -8,8 +8,8 @@ import beast.base.core.Input;
 import beast.base.core.Loggable;
 import beast.base.core.BEASTObject;
 import beast.base.core.Input.Validate;
-import beast.base.inference.parameter.BooleanParameter;
-import beast.base.inference.parameter.IntegerParameter;
+import beast.base.spec.inference.parameter.BoolVectorParam;
+import beast.base.spec.inference.parameter.IntVectorParam;
 
 
 
@@ -24,7 +24,7 @@ public class LoggableSum extends BEASTObject implements Loggable {
 	@Override
 	public void initAndValidate() {
 		m_valuable =  m_valuableInput.get();
-		if (m_valuable instanceof IntegerParameter || m_valuable instanceof BooleanParameter) {
+		if (m_valuable instanceof IntVectorParam<?> || m_valuable instanceof BoolVectorParam) {
 			m_mode = Mode.integer_mode;
 		} else {
 			m_mode = Mode.double_mode;

@@ -18,7 +18,8 @@ import javafx.scene.Scene;
 import javafx.scene.control.ComboBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import beast.base.inference.parameter.RealParameter;
+import beast.base.spec.domain.Real;
+import beast.base.spec.inference.parameter.RealScalarParam;
 import beast.base.inference.StateNode;
 import beast.base.inference.distribution.Prior;
 import beast.base.inference.distribution.Uniform;
@@ -31,7 +32,7 @@ public class DistributionViewer extends javafx.application.Application {
 	public DistributionViewer() throws XMLParserException, SAXException, IOException, ParserConfigurationException {
 		doc = new BeautiDoc();
 		doc.parseArgs(new String[]{});
-		doc.beautiConfig.suppressBEASTObjects.add(RealParameter.class.getName() + ".estimate");
+		doc.beautiConfig.suppressBEASTObjects.add(RealScalarParam.class.getName() + ".estimate");
 		doc.beautiConfig.suppressBEASTObjects.add(StateNode.class.getName() + ".estimate");
 	}
 
@@ -42,8 +43,7 @@ public class DistributionViewer extends javafx.application.Application {
         Uniform uniform = new Uniform();
         uniform.setID("Uniform.0");
         uniform.initByName("lower","0.0","upper","1.0");
-        RealParameter parameter = new RealParameter("0.0");
-        parameter.setBounds(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+        RealScalarParam<Real> parameter = new RealScalarParam<>(0.0, Real.INSTANCE);
         prior.initByName("x", parameter, "distr", uniform);
         prior.setID("Parametric.Distribution");
 
