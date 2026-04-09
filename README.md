@@ -58,3 +58,10 @@ TODO:
 - [ ] Add CI workflow (GitHub Actions)
 - [ ] Add `version.xml` for BEAST package manager
 - [ ] Add release script
+
+## IntelliJ
+
+It should look like this after following the developer guide https://github.com/CompEvol/beast3/blob/master/scripts/DevGuideIntelliJ.md
+
+<a href="./IntelliJ.png.png"><img src="IntelliJ.png.png" width="600" ></a>
+
