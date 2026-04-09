@@ -63,5 +63,5 @@ TODO:
 
 It should look like this after following the developer guide https://github.com/CompEvol/beast3/blob/master/scripts/DevGuideIntelliJ.md
 
-<a href="./IntelliJ.png.png"><img src="IntelliJ.png.png" width="600" ></a>
+<a href="./IntelliJ.png"><img src="IntelliJ.png" width="600" ></a>
 
