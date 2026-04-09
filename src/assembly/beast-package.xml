@@ -22,7 +22,7 @@
             <useProjectArtifact>true</useProjectArtifact>
             <scope>runtime</scope>
             <includes>
-                <include>io.github.compevol:beast-labs</include>
+                <include>io.github.beast2-dev:beast-labs</include>
                 <include>org.openjdk.nashorn:nashorn-core</include>
             </includes>
         </dependencySet>
