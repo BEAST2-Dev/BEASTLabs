@@ -2,7 +2,6 @@ package beastlabs.math.distributions;
 
 import beast.base.spec.domain.Real;
 import beast.base.spec.inference.parameter.RealVectorParam;
-import beast.base.spec.inference.parameter.SimplexParam;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -19,10 +18,10 @@ public class WeightedDirichletSimulator {
         alphaParam.initByName("value", "1.0 2.0 7.0");
         RealVectorParam<Real> weightParam = new RealVectorParam<>();
         weightParam.initByName("value", "100.0 200.0 700.0");
-        SimplexParam simplexParam = new SimplexParam();
-        simplexParam.initByName("value", "0.1 0.2 0.7");
 
-        WeightedDirichlet weightedDirichlet = new WeightedDirichlet(simplexParam, alphaParam, weightParam);
+        WeightedDirichlet weightedDirichlet = new WeightedDirichlet();
+        // do not need param if only sampling
+        weightedDirichlet.initByName("alpha", alphaParam, "weights", weightParam);
 
         final int size = 100000;
         System.out.println("Simulate " + size + " samples");

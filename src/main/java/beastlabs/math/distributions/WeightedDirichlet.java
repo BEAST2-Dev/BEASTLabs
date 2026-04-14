@@ -3,10 +3,10 @@ package beastlabs.math.distributions;
 import beast.base.core.Description;
 import beast.base.core.Input;
 import beast.base.core.Input.Validate;
+import beast.base.spec.domain.PositiveReal;
 import beast.base.spec.domain.Real;
 import beast.base.spec.inference.distribution.TensorDistribution;
 import beast.base.spec.type.RealVector;
-import beast.base.spec.type.Simplex;
 import beast.base.util.Randomizer;
 import org.apache.commons.numbers.gamma.LogGamma;
 
@@ -20,7 +20,7 @@ import java.util.List;
  * @author Walter Xie
  */
 @Description("Weighted Dirichlet distribution that scales dimensions by weight, where the values are scaled to maintain the expected mean (default to 1).")
-public class WeightedDirichlet extends TensorDistribution<Simplex, Double> {
+public class WeightedDirichlet extends TensorDistribution<RealVector<PositiveReal>, Double> {
     final public Input<RealVector<? extends Real>> alphaInput = new Input<>("alpha", "coefficients of the Dirichlet distribution", Validate.REQUIRED);
     final public Input<RealVector<? extends Real>> weightsInput = new Input<>("weights", "weights of the scaled Dirichlet distribution", Validate.REQUIRED);
     // optional
@@ -32,7 +32,7 @@ public class WeightedDirichlet extends TensorDistribution<Simplex, Double> {
 
     public WeightedDirichlet() {}
 
-    public WeightedDirichlet(Simplex param, RealVector<? extends Real> alpha, RealVector<? extends Real> weights) {
+    public WeightedDirichlet(RealVector<PositiveReal> param, RealVector<? extends Real> alpha, RealVector<? extends Real> weights) {
         try {
             initByName("param", param, "alpha", alpha, "weights", weights);
         } catch (Exception e) {

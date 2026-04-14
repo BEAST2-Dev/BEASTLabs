@@ -3,9 +3,10 @@ package test.beast.math.distributions;
 import static org.junit.jupiter.api.Assertions.*;
 import beast.base.spec.domain.PositiveReal;
 import beast.base.spec.inference.parameter.RealVectorParam;
-import beast.base.spec.inference.parameter.SimplexParam;
+import beast.base.spec.type.RealVector;
 import beastlabs.math.distributions.WeightedDirichlet;
-import org.junit.jupiter.api.BeforeEach;
+import org.apache.commons.numbers.gamma.LogGamma;
+import org.junit.jupiter.api.Test;
 
 /**
  * require(gtools)
@@ -13,45 +14,69 @@ import org.junit.jupiter.api.BeforeEach;
  * sprintf("%.15f", x[1,])
  * sprintf("%.15f",log(ddirichlet(x[1,], c(2,2,2) )))
  *
+ * WeightedDirichlet param uses mean (sum / dim) = 1,
+ * which is diff to Simplex whose values sum to 1.
  * @author Walter Xie
  */
 public class WeightedDirichletTest  {
 
-    RealVectorParam<PositiveReal> alpha;
-
-    @BeforeEach
-    public void setUp() throws Exception {
-        alpha = new RealVectorParam<>(new double[]{2.0,2.0,2.0}, PositiveReal.INSTANCE);
-    }
-
+    /**
+     * Dirichlet case, copied from DirichletTest.
+     */
+    @Test
     public void testLogPEqualWeights() {
-        RealVectorParam<PositiveReal> weights = new RealVectorParam<>(new double[]{1.0,1.0,1.0}, PositiveReal.INSTANCE);
-        SimplexParam p1 = new SimplexParam(new double[]{0.589929287159556,0.254172576287574,0.155898136552870});
-        WeightedDirichlet wd1 = new WeightedDirichlet(p1, alpha, weights);
+        RealVectorParam<PositiveReal> weights = new RealVectorParam<>(new double[]{1.0,1.0,1.0,1.0,1.0}, PositiveReal.INSTANCE);
+        double[] a = new double[]{1.0, 1.0, 1.0, 1.0, 1.0};
+        RealVector<PositiveReal> alpha = new RealVectorParam<>(a, PositiveReal.INSTANCE);
+        RealVectorParam<PositiveReal> p = new RealVectorParam<>(new double[]{0.2, 0.2, 0.2, 0.2, 0.2}, PositiveReal.INSTANCE);
 
-        // 15 decimals
-        assertEquals(1.031444876947574, wd1.calculateLogP(), 1e-10);
+        WeightedDirichlet wd = new WeightedDirichlet();
+        // mean (sum / dim) = 0.2
+        wd.initByName("param", p, "alpha", alpha, "weights", weights, "mean", 0.2);
+        int n = alpha.size();
+        double f0 = wd.calculateLogP();
 
-        SimplexParam p2 = new SimplexParam(new double[]{0.671034770323350,0.169251509344698,0.159713720331952});
-        WeightedDirichlet wd2 = new WeightedDirichlet(p2, alpha, weights);
+        // Compute expected log density
+        double sumAlpha = 0.0;
+        for (int i = 0; i < n; i++) {
+            sumAlpha += a[i];
+        }
 
-        assertEquals(0.777815654415272, wd2.calculateLogP(), 1e-10);
+        double logGammaSumAlpha = LogGamma.value(sumAlpha);
+
+        double sumLogGammaAlpha = 0.0;
+        for (int i = 0; i < n; i++) {
+            sumLogGammaAlpha += LogGamma.value(a[i]);
+        }
+
+        double sumLogX = 0.0;
+        for (int i = 0; i < n; i++) {
+            sumLogX += (a[i] - 1.0) * Math.log(p.get(i));
+        }
+
+        double exp = logGammaSumAlpha - sumLogGammaAlpha + sumLogX;
+
+        assertEquals(exp, f0, 1e-6);
     }
 
+    @Test
     public void testLogP() {
+        RealVectorParam<PositiveReal> alpha = new RealVectorParam<>(new double[]{2.0,2.0,2.0}, PositiveReal.INSTANCE);
         RealVectorParam<PositiveReal> weights = new RealVectorParam<>(new double[]{100.0,150.0,250.0}, PositiveReal.INSTANCE);
 
-        // sum != 1, [0.3333333333333333, 0.3333333333333333, 0.3333333333333333]
-        SimplexParam p1 = new SimplexParam(new double[]{10.0,10.0,10.0});
+        // mean (sum / dim) = 1
+        RealVectorParam<PositiveReal> p1 = new RealVectorParam<>(new double[]{1.0,1.0,1.0}, PositiveReal.INSTANCE);
         WeightedDirichlet wd1 = new WeightedDirichlet(p1, alpha, weights);
 
         // 15 decimals
-        assertEquals(1.491654876777717, wd1.calculateLogP(), 1e-10);
+        assertEquals(-2.2256240518579173, wd1.calculateLogP(), 1e-10);
 
-        SimplexParam p2 = new SimplexParam(new double[]{100.0,100.0,100.0});
-        WeightedDirichlet wd2 = new WeightedDirichlet(p2, alpha, weights);
+        RealVectorParam<PositiveReal> p2 = new RealVectorParam<>(new double[]{100.0,100.0,100.0}, PositiveReal.INSTANCE);
+        WeightedDirichlet wd2 = new WeightedDirichlet();
+        // mean (sum / dim) = 100
+        wd2.initByName("param", p2, "alpha", alpha, "weights", weights, "mean", 100.0);
 
-        assertEquals(1.491654876777717, wd2.calculateLogP(), 1e-10);
+        assertEquals(-16.041134609822194, wd2.calculateLogP(), 1e-10);
     }
 
 
