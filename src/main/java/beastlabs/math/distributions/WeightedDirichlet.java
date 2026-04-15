@@ -12,7 +12,6 @@ import org.apache.commons.numbers.gamma.LogGamma;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.IntStream;
 
 /**
  * WeightedDirichlet includes an optional input: the expected mean, which defaults to 1.
