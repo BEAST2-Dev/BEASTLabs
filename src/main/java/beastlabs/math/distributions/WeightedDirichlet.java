@@ -99,14 +99,6 @@ public class WeightedDirichlet extends TensorDistribution<RealVector<PositiveRea
             weightsNormSumX += x.get(i) * weightsNorm[i];
         }
 
-        // the weight mean = sum(x[i] * weight[i]) / sum(weight[i])
-        double weightedSumX = IntStream.range(0, x.size())
-                .mapToDouble(i -> x.get(i) * weights[i]).sum();
-        double weightedMeanX = weightedSumX / weightSum;
-
-
-
-        // (weightsNormSumX / dim) is the weighted mean
         if (Math.abs(weightsNormSumX / dim - expectedMean) > 1e-6) {
             throw new RuntimeException("The weighted mean (" + (weightsNormSumX / dim) + ") of values " + x +
                     " must be same as the expected mean of values (" + expectedMean + ") !");
