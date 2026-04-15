@@ -12,6 +12,7 @@ import org.apache.commons.numbers.gamma.LogGamma;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.IntStream;
 
 /**
  * WeightedDirichlet includes an optional input: the expected mean, which defaults to 1.
@@ -89,15 +90,26 @@ public class WeightedDirichlet extends TensorDistribution<RealVector<PositiveRea
 
         // Normalize weights to be scale-invariant
         double[] weightsNorm = new double[dim];
+        // ∑ (x[i] * weights_norm[i]) == target_sum
         double weightsNormSumX = 0.0;
         for (int i = 0; i < dim; i++) {
+            // weights_norm = weight[i] * len(weights) / ∑ (weight[i])
             weightsNorm[i] = weights[i] * dim / weightSum;
+            // weightsNormSumX = ∑ (x[i] * weights_norm[i]), and it is also target_sum
             weightsNormSumX += x.get(i) * weightsNorm[i];
         }
 
+        // the weight mean = sum(x[i] * weight[i]) / sum(weight[i])
+        double weightedSumX = IntStream.range(0, x.size())
+                .mapToDouble(i -> x.get(i) * weights[i]).sum();
+        double weightedMeanX = weightedSumX / weightSum;
+
+
+
+        // (weightsNormSumX / dim) is the weighted mean
         if (Math.abs(weightsNormSumX / dim - expectedMean) > 1e-6) {
-            throw new RuntimeException("The weighted mean of values (" + (weightsNormSumX / dim) +
-                    ") must be same as the expected mean of values (" + expectedMean + ") !");
+            throw new RuntimeException("The weighted mean (" + (weightsNormSumX / dim) + ") of values " + x +
+                    " must be same as the expected mean of values (" + expectedMean + ") !");
         }
 
         double sumLgWeightsNorm = 0.0;
