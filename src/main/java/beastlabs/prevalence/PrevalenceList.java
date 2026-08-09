@@ -294,20 +294,35 @@ public class PrevalenceList extends StateNode implements Scalable {
 
 	@Override
 	/** scale only those items associated with a node and leave the rest **/
-	public int scale(double fScale) {
+	public double scale(double fScale) {
 		Set<Integer> nodes = m_nodeIDtoItemMap.keySet();
 		for (Integer nNodeID : nodes) {
 			int iTime = indexOfNode(nNodeID);
-			Item item = m_items.get(iTime); 
+			Item item = m_items.get(iTime);
 			move(iTime, item.m_fTime * fScale);
 		}
-		return nodes.size();
+		return nodes.size() * Math.log(fScale);
+	}
+
+	/**
+	 * Read this list's position on its dilation axis: sum of times across all
+	 * items associated with a node. Each such time is multiplied by the scale
+	 * factor in {@link #scale(double)}, so the sum is exactly {@code s}-equivariant.
+	 */
+	@Override
+	public double getScalableValue() {
+		double sum = 0.0;
+		for (Integer nNodeID : m_nodeIDtoItemMap.keySet()) {
+			int iTime = indexOfNode(nNodeID);
+			sum += m_items.get(iTime).m_fTime;
+		}
+		return sum;
 	}
 
 	@Override
 	public void scaleOne(int i, double scale) {
 		int iTime = indexOfNode(i);
-		Item item = m_items.get(iTime); 
+		Item item = m_items.get(iTime);
 		move(iTime, item.m_fTime * scale);
 	}
 

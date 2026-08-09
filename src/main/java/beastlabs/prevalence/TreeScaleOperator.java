@@ -59,16 +59,18 @@ public class TreeScaleOperator extends TreeOperator {
 	        double d = Randomizer.nextDouble();
 	        double scale = (m_fScaleFactor + (d * ((1.0 / m_fScaleFactor) - m_fScaleFactor)));
 	        
-	    	Tree tree = m_tree.get(); 
+	    	Tree tree = m_tree.get();
 	        // scale the beast.tree
-	    	int nInternalNodes = tree.scale(scale);
+	        // tree.scale returns the log Jacobian (dof * log(scale));
+	        // operator adds the -2*log(scale) kernel-symmetry correction.
+	    	final double treeLogJacobian = tree.scale(scale);
 
 	    	PrevalenceList list = m_list.get();
-	    	// scale only internal nodes in the list
-	    	// nNodesScaled is the number of nodes that have been scaled
-	    	int nNodesScaled = list.scale(scale);
+	    	// scale only internal nodes in the list (return discarded —
+	    	// see TODO below; list's contribution to HR is not currently included)
+	    	list.scale(scale);
 	        // TODO: check the HastingsRatio, since the prevalence list is assumed to be unchanged here
-	        return Math.log(scale) * (nInternalNodes - 2);
+	        return treeLogJacobian - 2 * Math.log(scale);
     	} catch (Exception e) {
 			return Double.NEGATIVE_INFINITY;
 		}
