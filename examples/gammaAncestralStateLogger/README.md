@@ -48,3 +48,37 @@ Each subfolder has its own `run.sh` and `README.md` with the exact
 commands and expected output. If the `beast` or `iqtree3` binaries are
 not on `$PATH`, set `BEAST=/full/path/to/beast` or
 `IQTREE=/full/path/to/iqtree3` in the environment.
+
+## Compatibility
+
+### BEAST 2.7 vs 2.8
+
+The reconstruction XML (`reconstruct.template.xml`) works on both BEAST
+2.7 and BEAST 2.8: `AncestralStateLogger` inherits its `siteModel` input
+from `GenericTreeLikelihood`, which accepts the `SiteModelInterface`
+interface and is therefore compatible with both the old
+`beast.base.evolution.sitemodel.SiteModel` and the new
+`beast.base.spec.evolution.sitemodel.SiteModel` introduced in BEAST 2.8.
+
+The simulation XML (`simulate.xml`) uses `beastfx.app.seqgen.SequenceSimulator`,
+whose `siteModel` input changed type in BEAST 2.8 to require
+`beast.base.spec.evolution.sitemodel.SiteModel`. Running `simulate.xml`
+directly under BEAST 2.8 will therefore fail with a type-mismatch error.
+Example 1 and the simulation step of Example 2 require BEAST 2.7.x; the
+reconstruction step can be run with either version.
+
+### BEAST X (BEAST 10)
+
+The Gamma-category model implemented in this patch is mathematically
+consistent with the discrete-Gamma simulation model used by BEAST X
+(`beast-dev/beast-mcmc`).
+
+Both BEAST X simulators — `dr.app.seqgen.SequenceSimulator` and the
+BEAGLE-backed `dr.app.beagle.tools.BeagleSequenceSimulator` (via
+`Partition`) — draw a Gamma rate category once per site at the root from
+the category proportions and then hold that category fixed along every
+branch during the tree traversal. This patched `AncestralStateLogger`
+applies the same convention: the per-site category is drawn jointly with
+the root state and propagated unchanged to every descendant node.
+Reconstruction under this patch therefore conditions on the data under
+the same generative assumptions as a BEAST X simulation.
