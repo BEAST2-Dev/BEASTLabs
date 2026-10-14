@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+  Simulate a 1000-nucleotide alignment on a fixed 10-taxon tree under
+  JC + discrete-Gamma site-rate heterogeneity (6 categories, alpha = 0.5).
+
+  Usage: beast -seed <N> simulate.xml
+  Output: sim.out.xml (BEAST <data> block with simulated leaf sequences)
+
+  Different seeds give independent replicate alignments drawn from the
+  same generative model. See ../README.md for the full alpha-recovery
+  workflow.
+-->
+<beast version="2.0"
+       namespace="beast.base.evolution.alignment:beast.base.core:beast.base.inference:beast.base.inference.parameter:beast.base.evolution.sitemodel:beast.base.evolution.substitutionmodel:beast.base.evolution.tree:beastfx.app.seqgen">
+
+  <data id="alignment" dataType="nucleotide">
+    <sequence taxon="t1">?</sequence>
+    <sequence taxon="t2">?</sequence>
+    <sequence taxon="t3">?</sequence>
+    <sequence taxon="t4">?</sequence>
+    <sequence taxon="t5">?</sequence>
+    <sequence taxon="t6">?</sequence>
+    <sequence taxon="t7">?</sequence>
+    <sequence taxon="t8">?</sequence>
+    <sequence taxon="t9">?</sequence>
+    <sequence taxon="t10">?</sequence>
+  </data>
+
+  <tree id="tree" spec="beast.base.evolution.tree.TreeParser"
+        IsLabelledNewick="true" adjustTipHeights="false" taxa="@alignment"
+        newick="(t10:0.1100814891,((t1:0.1942750531,(t8:0.01619546459,((t7:0.1779389172,t4:0.08781047076):0.07665834094,t9:0.1642391854):0.1010206869):0.1859799367):0.02725063262,((t5:0.07624672657,t2:0.1346066326):0.1593377476,(t3:0.1636324898,t6:0.001440847095):0.0007756801952):0.1449060839):0.1776036149);"/>
+
+  <run spec="beastfx.app.seqgen.SequenceSimulator" id="seqgen"
+       data="@alignment" tree="@tree" sequencelength="1000"
+       outputFileName="sim.out.xml">
+    <siteModel spec="SiteModel" id="siteModel" gammaCategoryCount="6">
+      <parameter name="shape" value="0.5" estimate="false"/>
+      <substModel id="jc" spec="JukesCantor"/>
+    </siteModel>
+  </run>
+</beast>

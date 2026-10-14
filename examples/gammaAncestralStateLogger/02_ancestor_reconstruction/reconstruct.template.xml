@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+  Step 2 of 2 in the ancestor-reconstruction workflow.
+  Conditions on the leaves simulated by simulate.xml and samples
+  ancestral sequences at three internal nodes under JC + Gamma(6,
+  alpha = 0.5), using the Gamma-aware AncestralStateLogger from this PR.
+
+  The template string __PLACEHOLDER_LEAVES__ gets replaced by run.sh with
+  the actual simulated leaf sequences. Do not run this file directly;
+  bash run.sh does the substitution and runs BEAST.
+
+  Settings:
+   - chainLength 400000, logEvery 100000 -> 5 stochastic draws per node
+   - no tree/model operators; a dummy parameter + ScaleOperator advances
+     the chain so the loggers fire
+   - three nodes logged: shallow (t5,t2), mid-depth (t5,t2,t3,t6), root
+-->
+<beast version="2.0"
+       namespace="beast.base.core:beast.base.inference:beast.base.inference.parameter:beast.base.inference.operator:beast.base.inference.distribution:beast.base.evolution.alignment:beast.base.evolution.sitemodel:beast.base.evolution.substitutionmodel:beast.base.evolution.tree:beast.base.evolution.branchratemodel:beast.base.evolution.operator:beastlabs.evolution.likelihood">
+
+  <data id="simdata" spec="beast.base.evolution.alignment.Alignment" dataType="nucleotide">
+__PLACEHOLDER_LEAVES__
+  </data>
+
+  <taxonset id="AllTaxa" spec="TaxonSet">
+    <taxon id="t1" spec="beast.base.evolution.alignment.Taxon"/>
+    <taxon id="t2" spec="beast.base.evolution.alignment.Taxon"/>
+    <taxon id="t3" spec="beast.base.evolution.alignment.Taxon"/>
+    <taxon id="t4" spec="beast.base.evolution.alignment.Taxon"/>
+    <taxon id="t5" spec="beast.base.evolution.alignment.Taxon"/>
+    <taxon id="t6" spec="beast.base.evolution.alignment.Taxon"/>
+    <taxon id="t7" spec="beast.base.evolution.alignment.Taxon"/>
+    <taxon id="t8" spec="beast.base.evolution.alignment.Taxon"/>
+    <taxon id="t9" spec="beast.base.evolution.alignment.Taxon"/>
+    <taxon id="t10" spec="beast.base.evolution.alignment.Taxon"/>
+  </taxonset>
+
+  <taxonset id="shallow.set" spec="TaxonSet">
+    <taxon idref="t5"/>
+    <taxon idref="t2"/>
+  </taxonset>
+
+  <taxonset id="mid.set" spec="TaxonSet">
+    <taxon idref="t5"/>
+    <taxon idref="t2"/>
+    <taxon idref="t3"/>
+    <taxon idref="t6"/>
+  </taxonset>
+
+  <taxonset id="root.set" spec="TaxonSet">
+    <taxon idref="t1"/>
+    <taxon idref="t2"/>
+    <taxon idref="t3"/>
+    <taxon idref="t4"/>
+    <taxon idref="t5"/>
+    <taxon idref="t6"/>
+    <taxon idref="t7"/>
+    <taxon idref="t8"/>
+    <taxon idref="t9"/>
+    <taxon idref="t10"/>
+  </taxonset>
+
+  <tree id="tree" spec="beast.base.evolution.tree.TreeParser"
+        IsLabelledNewick="true" adjustTipHeights="false" taxa="@simdata"
+        newick="(t10:0.1100814891,((t1:0.1942750531,(t8:0.01619546459,((t7:0.1779389172,t4:0.08781047076):0.07665834094,t9:0.1642391854):0.1010206869):0.1859799367):0.02725063262,((t5:0.07624672657,t2:0.1346066326):0.1593377476,(t3:0.1636324898,t6:0.001440847095):0.0007756801952):0.1449060839):0.1776036149);"/>
+
+  <!-- JC + Gamma(6, alpha = 0.5): same model used to generate the leaves. -->
+  <siteModel id="siteModelAnc" spec="SiteModel" gammaCategoryCount="6">
+    <parameter name="shape" value="0.5" estimate="false"/>
+    <substModel id="jc" spec="JukesCantor"/>
+  </siteModel>
+
+  <!-- Branch lengths are already in subs/site: clock rate = 1. -->
+  <branchRateModel id="clock" spec="StrictClockModel">
+    <parameter name="clock.rate" value="1.0" estimate="false"/>
+  </branchRateModel>
+
+  <!-- Minimal MCMC: no tree/model moves. One dummy stateNode + a scale
+       operator so the chain can advance states; AncestralStateLogger
+       redraws stochastically on every call regardless. -->
+  <run id="mcmc" spec="MCMC" chainLength="400000">
+    <state id="state">
+      <stateNode id="dummy" spec="parameter.RealParameter" value="1.0" lower="0.0"/>
+    </state>
+    <distribution id="posterior" spec="CompoundDistribution">
+      <distribution id="prior" spec="Prior" x="@dummy">
+        <distr spec="Uniform" lower="0.001" upper="1000.0"/>
+      </distribution>
+    </distribution>
+    <operator id="dummyScale" spec="ScaleOperator" parameter="@dummy" scaleFactor="0.5" weight="1.0"/>
+
+    <logger id="screenlog" spec="Logger" logEvery="100000">
+      <log idref="posterior"/>
+      <log idref="dummy"/>
+    </logger>
+
+    <logger id="ancLog.shallow" spec="Logger" logEvery="100000" fileName="$(filebase).shallow.log">
+      <log id="anc.shallow" spec="beastlabs.evolution.likelihood.AncestralStateLogger"
+           data="@simdata" tree="@tree"
+           siteModel="@siteModelAnc" branchRateModel="@clock"
+           taxonset="@shallow.set" logMRCA="true" logParent="false"/>
+    </logger>
+
+    <logger id="ancLog.mid" spec="Logger" logEvery="100000" fileName="$(filebase).mid.log">
+      <log id="anc.mid" spec="beastlabs.evolution.likelihood.AncestralStateLogger"
+           data="@simdata" tree="@tree"
+           siteModel="@siteModelAnc" branchRateModel="@clock"
+           taxonset="@mid.set" logMRCA="true" logParent="false"/>
+    </logger>
+
+    <logger id="ancLog.root" spec="Logger" logEvery="100000" fileName="$(filebase).root.log">
+      <log id="anc.root" spec="beastlabs.evolution.likelihood.AncestralStateLogger"
+           data="@simdata" tree="@tree"
+           siteModel="@siteModelAnc" branchRateModel="@clock"
+           taxonset="@root.set" logMRCA="true" logParent="false"/>
+    </logger>
+  </run>
+</beast>
