@@ -113,7 +113,9 @@
 
         <!-- Nashorn scripting engine (standalone, removed from JDK), used by beastlabs.util.Script.
              Its ASM dependencies are not provided by BEAST, so they are declared here (overriding
-             nashorn's ASM 7.3.1) and shipped in the package lib by src/assembly/beast-package.xml -->
+             nashorn's ASM 7.3.1) and shipped in the package lib by src/assembly/beast-package.xml.
+             Keep them in nashorn's (compile) scope, otherwise tools that build the module path from
+             compile scope fail with "Module org.objectweb.asm.commons not found, required by org.openjdk.nashorn" -->
         <dependency>
             <groupId>org.openjdk.nashorn</groupId>
             <artifactId>nashorn-core</artifactId>
@@ -123,31 +125,26 @@
             <groupId>org.ow2.asm</groupId>
             <artifactId>asm</artifactId>
             <version>${asm.version}</version>
-            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.ow2.asm</groupId>
             <artifactId>asm-commons</artifactId>
             <version>${asm.version}</version>
-            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.ow2.asm</groupId>
             <artifactId>asm-tree</artifactId>
             <version>${asm.version}</version>
-            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.ow2.asm</groupId>
             <artifactId>asm-util</artifactId>
             <version>${asm.version}</version>
-            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.ow2.asm</groupId>
             <artifactId>asm-analysis</artifactId>
             <version>${asm.version}</version>
-            <scope>runtime</scope>
         </dependency>
 
         <!-- Testing -->

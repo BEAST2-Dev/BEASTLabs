@@ -3,7 +3,6 @@ package beastlabs.util;
 
 
 
-import beast.base.core.BEASTObject;
 import beast.base.core.Description;
 import beast.base.core.Function;
 import beast.base.core.Input;
@@ -11,6 +10,8 @@ import beast.base.core.Input.Validate;
 import beast.base.inference.CalculationNode;
 import beast.base.spec.domain.Real;
 import beast.base.spec.inference.parameter.RealVectorParam;
+import beast.base.spec.type.Scalar;
+import beast.base.spec.type.Vector;
 import beast.base.parser.JSONProducer;
 import beast.base.core.Log;
 import beast.base.core.Loggable;
@@ -35,7 +36,9 @@ public class Script extends CalculationNode implements Loggable, beast.base.core
     public Input<String> scriptInput = new Input<String>("value", "Script script needed for the calculations. " +
     		"It assumes there is a function f defined, which returns a single number or array of numbers.");
     public Input<String> expressionInput = new Input<String>("expression", "expression representing the calculations", Validate.XOR, scriptInput);
-    public Input<List<beast.base.core.Function>> functionInput = new Input<List<beast.base.core.Function>>("x", "Parameters needed for the calculations", new ArrayList<beast.base.core.Function>());
+    public Input<List<CalculationNode>> functionInput = new Input<>("x", "Parameters needed for the calculations: " +
+            "a Tree, a Function (e.g. RealParameter), or a BEAST 3 Scalar or Vector (e.g. RealScalarParam, RealVectorParam)",
+            new ArrayList<CalculationNode>());
     public Input<String> argNames = new Input<>("argnames", "names of arguments used in expression (space delimited)," +
             " order as given by XML");
 
@@ -50,6 +53,13 @@ public class Script extends CalculationNode implements Loggable, beast.base.core
     double [] value;
 
     @Override public void initAndValidate() {
+        for (CalculationNode x : functionInput.get()) {
+            if (!(x instanceof Tree || x instanceof Function || x instanceof Scalar || x instanceof Vector)) {
+                throw new IllegalArgumentException("Input x '" + x.getID() + "' of type " + x.getClass().getName() +
+                        " is not supported: expected a Tree, Function, Scalar or Vector");
+            }
+        }
+
         // create a JavaScript engine
         engine = getScriptEngine(engineInput.get().name());
         if (engine == null) {
@@ -78,8 +88,8 @@ public class Script extends CalculationNode implements Loggable, beast.base.core
                     f.append(", ").append(a);
                 }
             } else {
-                for (Function x : functionInput.get()) {
-                    f.append(((BEASTObject) x).getID());
+                for (CalculationNode x : functionInput.get()) {
+                    f.append(x.getID());
                     f.append(", ");
                 }
 
@@ -131,27 +141,53 @@ public class Script extends CalculationNode implements Loggable, beast.base.core
         return new ScriptEngineManager(Script.class.getClassLoader()).getEngineByName(name);
     }
 
+    /** convert a BEAST 3 Scalar or Vector element (Double, Integer or Boolean) to a number for the script **/
+    private static double toDouble(Object v) {
+        if (v instanceof Boolean b) {
+            return b ? 1.0 : 0.0;
+        }
+        return ((Number) v).doubleValue();
+    }
+
     private void calc() {
         //Bindings bind = engine.getBindings(ScriptContext.ENGINE_SCOPE);
         Object [] args = new Object[functionInput.get().size()];
         int k = 0;
-        for (beast.base.core.Function f : functionInput.get()) {
+        for (CalculationNode x : functionInput.get()) {
             //String name = var.nameInput.get();
             Object _value = null;
             //beast.base.core.Function f = var.functionInput.get();
-            if (f instanceof Tree) {
-                Tree tree = (Tree) f;
+            // Tree is also a Function, so test it first
+            if (x instanceof Tree) {
+                Tree tree = (Tree) x;
                 JSONProducer p = new JSONProducer();
                 String treeString = toJSON(tree.getRoot());
                 _value = "{" + treeString + "}";
-            } else if (f.getDimension() > 1) {
-                Double [] a = new Double[f.getDimension()];
-                for (int i = 0;i < f.getDimension(); i++) {
-                    a[i] = f.getArrayValue(i);
+            } else if (x instanceof Function f) {
+                if (f.getDimension() > 1) {
+                    Double [] a = new Double[f.getDimension()];
+                    for (int i = 0;i < f.getDimension(); i++) {
+                        a[i] = f.getArrayValue(i);
+                    }
+                    _value = a;
+                } else {
+                    _value = f.getArrayValue();
                 }
-                _value = a;
-            } else {
-                _value = f.getArrayValue();
+            } else if (x instanceof Scalar<?, ?> s) {
+                // BEAST 3 scalar, e.g. RealScalarParam, IntScalarParam or BoolScalarParam
+                _value = toDouble(s.get());
+            } else if (x instanceof Vector<?, ?> v) {
+                // BEAST 3 vector, e.g. RealVectorParam; a single value is passed as a number, as for a Function
+                List<?> elements = v.getElements();
+                if (elements.size() > 1) {
+                    Double [] a = new Double[elements.size()];
+                    for (int i = 0; i < a.length; i++) {
+                        a[i] = toDouble(elements.get(i));
+                    }
+                    _value = a;
+                } else {
+                    _value = toDouble(elements.get(0));
+                }
             }
             args[k++] = _value;
             //bind.put(name, _value);
@@ -164,7 +200,8 @@ public class Script extends CalculationNode implements Loggable, beast.base.core
             if (o instanceof ScriptObjectMirror) {
                 value = new double[((ScriptObjectMirror)o).values().size()];
                 for (int i = 0; i < value.length; i++) {
-                    this.value[i] = Double.parseDouble(((ScriptObjectMirror)o).get(i).toString());
+                    // getSlot for array index: standalone nashorn's get(Object) only accepts String keys
+                    this.value[i] = Double.parseDouble(((ScriptObjectMirror)o).getSlot(i).toString());
                 }
             } else {
                 this.value[0] = Double.parseDouble(o.toString());
@@ -259,7 +296,13 @@ public class Script extends CalculationNode implements Loggable, beast.base.core
         return value[iDim];
     }
 
-    @Override public int getDimension() {return value.length;}
+    @Override public int getDimension() {
+        // the dimension is only known after f is evaluated, since f may return an array
+        if (!isUpToDate) {
+            calc();
+        }
+        return value.length;
+    }
 
 
     @Override protected void store() {
@@ -355,17 +398,19 @@ public class Script extends CalculationNode implements Loggable, beast.base.core
     // Loggable implementation
     @Override
     public void init(final PrintStream out) {
-        if (value.length == 1)
+        int dim = getDimension();
+        if (dim == 1)
             out.print(this.getID() + "\t");
         else
-            for (int i = 0; i < value.length; i++)
+            for (int i = 0; i < dim; i++)
                 out.print(this.getID() + "_" + i + "\t");
     }
 
     @Override
     public void log(final long nSample, final PrintStream out) {
     	isUpToDate = false;
-        for (int i = 0; i < value.length; i++)
+        int dim = getDimension();
+        for (int i = 0; i < dim; i++)
             out.print(getArrayValue(i) + "\t");
     }
 
