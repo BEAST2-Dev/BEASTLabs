@@ -319,7 +319,6 @@ public class PrevalenceList extends StateNode implements Scalable {
 		return sum;
 	}
 
-	@Override
 	public void scaleOne(int i, double scale) {
 		int iTime = indexOfNode(i);
 		Item item = m_items.get(iTime);
