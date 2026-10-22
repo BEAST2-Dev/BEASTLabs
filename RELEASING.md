@@ -15,8 +15,8 @@ auto-publishes to Maven Central.
 ## Tag and release
 
 ```bash
-git tag v2.1.0
-git push origin v2.1.0
+git tag v2.1.1
+git push origin v2.1.1
 ```
 
 Monitor the workflow run at:

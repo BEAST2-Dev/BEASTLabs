@@ -21,12 +21,14 @@ import org.openjdk.nashorn.api.scripting.ScriptObjectMirror;
 
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
+import javax.script.ScriptEngineFactory;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.ServiceLoader;
 
 @Description("Base class for Script-BEAST interoperation")
 public class Script extends CalculationNode implements Loggable, beast.base.core.Function {
@@ -48,10 +50,13 @@ public class Script extends CalculationNode implements Loggable, beast.base.core
     double [] value;
 
     @Override public void initAndValidate() {
-        // create a script engine manager
-        ScriptEngineManager factory = new ScriptEngineManager();
         // create a JavaScript engine
-        engine = factory.getEngineByName(engineInput.get().name());
+        engine = getScriptEngine(engineInput.get().name());
+        if (engine == null) {
+            throw new IllegalArgumentException("No " + engineInput.get() + " script engine found. " +
+                    "BEASTLabs ships nashorn-core and ASM in its lib directory, but nashorn also needs the JDK module " +
+                    "jdk.dynalink, which must be added to the BEAST launcher's --add-modules.");
+        }
         value = new double[1];
         value[0] = Double.NaN;
 
@@ -107,6 +112,24 @@ public class Script extends CalculationNode implements Loggable, beast.base.core
 
 
 
+
+    /**
+     * Find a script engine by name. The default ScriptEngineManager searches the thread context
+     * class loader, which cannot see engines in BEAST's package ModuleLayers, so search this
+     * module's layer and its parent layers instead (BEAST may load the engine jars of this package
+     * into a parent layer), falling back to this class's loader when not running as a named module.
+     */
+    private static ScriptEngine getScriptEngine(String name) {
+        ModuleLayer layer = Script.class.getModule().getLayer();
+        if (layer != null) {
+            for (ScriptEngineFactory factory : ServiceLoader.load(layer, ScriptEngineFactory.class)) {
+                if (factory.getNames().contains(name)) {
+                    return factory.getScriptEngine();
+                }
+            }
+        }
+        return new ScriptEngineManager(Script.class.getClassLoader()).getEngineByName(name);
+    }
 
     private void calc() {
         //Bindings bind = engine.getBindings(ScriptContext.ENGINE_SCOPE);

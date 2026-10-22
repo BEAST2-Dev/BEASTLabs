@@ -24,6 +24,8 @@
             <includes>
                 <include>io.github.beast2-dev:beast-labs</include>
                 <include>org.openjdk.nashorn:nashorn-core</include>
+                <!-- nashorn's dependencies, not provided by BEAST -->
+                <include>org.ow2.asm:*</include>
             </includes>
         </dependencySet>
     </dependencySets>

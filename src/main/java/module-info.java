@@ -13,6 +13,9 @@ open module beast.labs {
     requires static beast.fx;
     requires static javafx.controls;
 
+    // beastlabs.util.Script looks up script engines (nashorn) with ServiceLoader
+    uses javax.script.ScriptEngineFactory;
+
     exports beastlabs.app.beauti;
     exports beastlabs.core;
     exports beastlabs.core.parameter;

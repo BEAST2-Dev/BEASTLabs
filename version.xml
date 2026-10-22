@@ -1,4 +1,4 @@
-<package name='BEASTLabs' version='2.1.0'>
+<package name='BEASTLabs' version='2.1.1'>
   <depends on='BEAST.base' atleast='2.8.0'/>
 
     <packageapp description="View parametric distributions"
@@ -109,6 +109,7 @@
         <provider classname="beastlabs.prevalence.Uniform"/>
         <provider classname="beastlabs.prevalence.WilsonBalding"/>
         <provider classname="beastlabs.util.BEASTVector"/>
+<!-- TODO: beastlabs.util.Script requires JavaFX but beast.fx was not required ? -->
         <provider classname="beastlabs.util.Script"/>
         <provider classname="beastlabs.util.TimeLogger"/>
         <provider classname="beastlabs.tools.PostHocAnalyser"/>
