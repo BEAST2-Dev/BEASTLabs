@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import beast.base.evolution.alignment.Alignment;
 import beast.base.evolution.alignment.Taxon;
 import beast.base.evolution.alignment.TaxonSet;
+import beast.base.evolution.datatype.DataType;
 import beast.base.evolution.likelihood.LikelihoodCore;
 import beast.base.evolution.sitemodel.SiteModel;
 import beast.base.evolution.substitutionmodel.Frequencies;
@@ -26,13 +27,20 @@ import beast.base.util.Randomizer;
 import beastlabs.evolution.likelihood.AncestralStateLogger;
 
 /**
- * Tests for AncestralStateLogger under discrete-Gamma rate heterogeneity.
+ * Tests for AncestralStateLogger under discrete-Gamma rate heterogeneity and a
+ * proportion of invariant sites.
  *
- * The sampling test computes the exact marginal posterior of the states at an
- * internal node independently (outside x inside partials, averaged over rate
- * categories) and checks that the logger's draws reproduce it.
+ * The sampling tests compute the exact marginal posterior of the states at a
+ * node independently (outside x inside partials averaged over the Gamma
+ * categories, plus the invariant class, in which every node keeps the root
+ * state) and check that the logger's draws reproduce it. The same reference
+ * calculation is checked against BEAST's own tree likelihood.
  */
 public class AncestralStateLoggerTest {
+
+	static final String[] ALL_TAXA = { "human", "chimp", "bonobo", "gorilla", "orangutan", "siamang" };
+	/** Three branches below the root: exercises the downward pass. */
+	static final String[] HUMAN_CHIMP_BONOBO = { "human", "chimp", "bonobo" };
 
 	/** Exposes the protected likelihood internals needed for the reference calculation. */
 	static class ExposedLogger extends AncestralStateLogger {
@@ -41,19 +49,28 @@ public class AncestralStateLoggerTest {
 		double[] freqs() { return substitutionModel.getFrequencies(); }
 	}
 
-	private static SiteModel gammaSiteModel(Alignment data, Object proportionInvariant) throws Exception {
+	/** HKY, optionally with 4 Gamma categories and/or a proportion of invariant sites. */
+	private static SiteModel siteModel(Alignment data, boolean gamma, Object proportionInvariant) throws Exception {
+		return siteModel(data, gamma, proportionInvariant, "1.0");
+	}
+
+	/** As above; a mutationRate above 1 lengthens every branch, which makes the
+	 * invariant class easier to tell apart from slow Gamma categories. */
+	private static SiteModel siteModel(Alignment data, boolean gamma, Object proportionInvariant,
+			String mutationRate) throws Exception {
 		Frequencies freqs = new Frequencies();
 		freqs.initByName("data", data);
 		HKY hky = new HKY();
 		hky.initByName("kappa", "38.82974", "frequencies", freqs);
-		SiteModel siteModel = new SiteModel();
-		if (proportionInvariant == null) {
-			siteModel.initByName("mutationRate", "1.0", "gammaCategoryCount", 4, "shape", "0.137064",
-					"substModel", hky);
-		} else {
-			siteModel.initByName("mutationRate", "1.0", "gammaCategoryCount", 4, "shape", "0.137064",
-					"proportionInvariant", proportionInvariant, "substModel", hky);
+		List<Object> args = new ArrayList<>(Arrays.asList("mutationRate", mutationRate, "substModel", hky));
+		if (gamma) {
+			args.addAll(Arrays.asList("gammaCategoryCount", 4, "shape", "0.137064"));
 		}
+		if (proportionInvariant != null) {
+			args.addAll(Arrays.asList("proportionInvariant", proportionInvariant));
+		}
+		SiteModel siteModel = new SiteModel();
+		siteModel.initByName(args.toArray());
 		return siteModel;
 	}
 
@@ -66,52 +83,56 @@ public class AncestralStateLoggerTest {
 	}
 
 	@Test
-	public void testFixedProportionInvariantIsRejected() throws Exception {
-		Alignment data = TreeLikelihoodTest.getAlignment();
-		Tree tree = TreeLikelihoodTest.getTree(data);
-		SiteModel siteModel = gammaSiteModel(data, "0.3");
-
-		AncestralStateLogger logger = new AncestralStateLogger();
-		// initByName wraps the IllegalArgumentException from initAndValidate in a RuntimeException.
-		RuntimeException e = assertThrows(RuntimeException.class, () ->
-			logger.initByName("data", data, "tree", tree, "siteModel", siteModel,
-					"taxonset", taxonSet("chimp", "bonobo")));
-		assertTrue(e.getMessage().contains("invariant"), e.getMessage());
-	}
-
-	@Test
-	public void testEstimatedProportionInvariantIsRejected() throws Exception {
-		Alignment data = TreeLikelihoodTest.getAlignment();
-		Tree tree = TreeLikelihoodTest.getTree(data);
-		// Starts at 0 but would move during MCMC, so it must be rejected too.
-		RealParameter pInv = new RealParameter();
-		pInv.initByName("value", "0.0", "lower", 0.0, "upper", 1.0, "estimate", true);
-		SiteModel siteModel = gammaSiteModel(data, pInv);
-
-		AncestralStateLogger logger = new AncestralStateLogger();
-		RuntimeException e = assertThrows(RuntimeException.class, () ->
-			logger.initByName("data", data, "tree", tree, "siteModel", siteModel,
-					"taxonset", taxonSet("chimp", "bonobo")));
-		assertTrue(e.getMessage().contains("invariant"), e.getMessage());
-	}
-
-	@Test
 	public void testGammaDrawsMatchExactMarginalAtRoot() throws Exception {
-		checkDrawsMatchExactMarginal(new String[] { "human", "chimp", "bonobo", "gorilla", "orangutan", "siamang" });
+		checkDrawsMatchExactMarginal(true, null, "1.0", ALL_TAXA);
 	}
 
 	@Test
 	public void testGammaDrawsMatchExactMarginalBelowRoot() throws Exception {
-		// MRCA(human, chimp, bonobo) is three branches below the root, so this
-		// exercises the downward pass with the per-site category carried along.
-		checkDrawsMatchExactMarginal(new String[] { "human", "chimp", "bonobo" });
+		checkDrawsMatchExactMarginal(true, null, "1.0", HUMAN_CHIMP_BONOBO);
 	}
 
-	private void checkDrawsMatchExactMarginal(String[] target) throws Exception {
+	@Test
+	public void testGammaInvariantDrawsMatchExactMarginalAtRoot() throws Exception {
+		checkDrawsMatchExactMarginal(true, "0.5", "5.0", ALL_TAXA);
+	}
+
+	@Test
+	public void testGammaInvariantDrawsMatchExactMarginalBelowRoot() throws Exception {
+		checkDrawsMatchExactMarginal(true, "0.5", "5.0", HUMAN_CHIMP_BONOBO);
+	}
+
+	@Test
+	public void testInvariantOnlyDrawsMatchExactMarginalBelowRoot() throws Exception {
+		checkDrawsMatchExactMarginal(false, "0.5", "5.0", HUMAN_CHIMP_BONOBO);
+	}
+
+	@Test
+	public void testEstimatedProportionInvariantStartingAtZero() throws Exception {
+		// TreeLikelihood only builds the constant-pattern list when pInv > 0 at
+		// start-up; the logger must build it itself so pInv can move later.
+		Alignment data = TreeLikelihoodTest.getAlignment();
+		Tree tree = TreeLikelihoodTest.getTree(data);
+		RealParameter pInv = new RealParameter();
+		pInv.initByName("value", "0.0", "lower", 0.0, "upper", 1.0, "estimate", true);
+		SiteModel siteModel = siteModel(data, true, pInv);
+
+		ExposedLogger logger = new ExposedLogger();
+		logger.initByName("data", data, "tree", tree, "siteModel", siteModel,
+				"taxonset", taxonSet(HUMAN_CHIMP_BONOBO));
+		assertNotNull(logger.getConstantPattern());
+		assertFalse(logger.getConstantPattern().isEmpty());
+
+		ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+		logger.log(0, new PrintStream(bytes));
+		assertEquals(data.getSiteCount(), bytes.toString().trim().split("\t").length);
+	}
+
+	private void checkDrawsMatchExactMarginal(boolean gamma, Object pInv, String mutationRate, String[] target) throws Exception {
 		Randomizer.setSeed(127);
 		Alignment data = TreeLikelihoodTest.getAlignment();
 		Tree tree = TreeLikelihoodTest.getTree(data);
-		SiteModel siteModel = gammaSiteModel(data, null);
+		SiteModel siteModel = siteModel(data, gamma, pInv, mutationRate);
 
 		ExposedLogger logger = new ExposedLogger();
 		logger.initByName("data", data, "tree", tree, "siteModel", siteModel, "taxonset", taxonSet(target));
@@ -132,7 +153,11 @@ public class AncestralStateLoggerTest {
 			}
 		}
 
-		double[][] expected = exactMarginal(logger, tree, data, new HashSet<>(Arrays.asList(target)));
+		Reference ref = new Reference(logger, tree, data);
+		// The reference model must be the model BEAST evaluates.
+		assertEquals(logger.calculateLogP(), ref.logLikelihood(), 1e-8, "reference log-likelihood differs from BEAST's");
+
+		double[][] expected = ref.marginal(new HashSet<>(Arrays.asList(target)));
 		double maxDiff = 0;
 		for (int s = 0; s < siteCount; s++) {
 			double[] p = expected[data.getPatternIndex(s)];
@@ -140,117 +165,168 @@ public class AncestralStateLoggerTest {
 				maxDiff = Math.max(maxDiff, Math.abs((double) counts[s][i] / draws - p[i]));
 			}
 		}
+		System.out.println("AncestralStateLoggerTest gamma=" + gamma + " pInv=" + pInv + " mutationRate=" + mutationRate
+				+ " target=" + target.length + " taxa: max deviation " + maxDiff);
 		// With 4000 draws the standard error of a frequency is at most 0.0079.
 		assertTrue(maxDiff < 0.04, "draws deviate from the exact marginal by " + maxDiff);
 	}
 
 	/**
-	 * Exact per-pattern marginal posterior of the state at MRCA(target):
-	 * P(x = i | D) proportional to sum_k w_k * outside_k(i) * inside_k(i).
-	 * Uses the partials and transition matrices left in the likelihood core by
-	 * the last call to log().
+	 * Independent reference calculation from the partials and transition
+	 * matrices left in the likelihood core by the last call to log().
+	 * Model: Gamma categories with weights w_k (summing to 1 - pInv) plus an
+	 * invariant class with weight pInv in which every node has the root state.
 	 */
-	private static double[][] exactMarginal(ExposedLogger logger, Tree tree, Alignment data, Set<String> target) {
-		LikelihoodCore core = logger.core();
-		int patternCount = data.getPatternCount();
-		int stateCount = 4;
-		int categoryCount = logger.siteModel().getCategoryCount();
-		double[] weights = logger.siteModel().getCategoryProportions(tree.getRoot());
-		double[] pi = logger.freqs();
+	static class Reference {
+		final LikelihoodCore core;
+		final Tree tree;
+		final Alignment data;
+		final int patternCount, stateCount = 4, categoryCount;
+		final double[] weights, pi;
+		final double pInv;
+		/** compatible[p][i]: every taxon at pattern p allows state i. */
+		final boolean[][] compatible;
 
-		Node mrca = null;
-		for (Node node : tree.getNodesAsArray()) {
-			Set<String> leaves = new HashSet<>();
-			for (Node leaf : node.getAllLeafNodes()) {
-				leaves.add(leaf.getID());
-			}
-			if (node.isLeaf()) {
-				leaves.add(node.getID());
-			}
-			if (leaves.equals(target)) {
-				mrca = node;
-			}
-		}
-		assertNotNull(mrca);
+		Reference(ExposedLogger logger, Tree tree, Alignment data) {
+			this.core = logger.core();
+			this.tree = tree;
+			this.data = data;
+			this.patternCount = data.getPatternCount();
+			this.categoryCount = logger.siteModel().getCategoryCount();
+			this.weights = logger.siteModel().getCategoryProportions(tree.getRoot());
+			this.pi = logger.freqs();
+			this.pInv = logger.siteModel().getProportionInvariant();
+			assertEquals(1.0, Arrays.stream(weights).sum() + pInv, 1e-12, "category weights + pInv must sum to 1");
 
-		List<Node> path = new ArrayList<>();
-		for (Node n = mrca; n != null; n = n.getParent()) {
-			path.add(0, n);
-		}
-
-		// outside[k][p][i], starting from the root prior.
-		double[][][] outside = new double[categoryCount][patternCount][stateCount];
-		for (double[][] perCategory : outside) {
-			for (double[] perPattern : perCategory) {
-				System.arraycopy(pi, 0, perPattern, 0, stateCount);
-			}
-		}
-		for (int step = 1; step < path.size(); step++) {
-			Node child = path.get(step);
-			Node parent = child.getParent();
-			Node sibling = parent.getLeft() == child ? parent.getRight() : parent.getLeft();
-			double[][][] next = new double[categoryCount][patternCount][stateCount];
-			for (int k = 0; k < categoryCount; k++) {
-				double[] pChild = matrix(core, child, k, stateCount);
-				double[] pSibling = matrix(core, sibling, k, stateCount);
-				for (int p = 0; p < patternCount; p++) {
-					double[] lSibling = inside(core, sibling, k, p, patternCount, stateCount, categoryCount);
-					for (int s = 0; s < stateCount; s++) {
-						double siblingTerm = 0;
-						for (int t = 0; t < stateCount; t++) {
-							siblingTerm += pSibling[s * stateCount + t] * lSibling[t];
-						}
-						double factor = outside[k][p][s] * siblingTerm;
-						for (int i = 0; i < stateCount; i++) {
-							next[k][p][i] += factor * pChild[s * stateCount + i];
-						}
+			DataType dataType = data.getDataType();
+			compatible = new boolean[patternCount][stateCount];
+			for (int p = 0; p < patternCount; p++) {
+				Arrays.fill(compatible[p], true);
+				for (int code : data.getPattern(p)) {
+					boolean[] allowed = new boolean[stateCount];
+					for (int state : dataType.getStatesForCode(code)) {
+						allowed[state] = true;
+					}
+					for (int i = 0; i < stateCount; i++) {
+						compatible[p][i] &= allowed[i];
 					}
 				}
 			}
-			outside = next;
 		}
 
-		double[][] marginal = new double[patternCount][stateCount];
-		for (int p = 0; p < patternCount; p++) {
-			double total = 0;
-			for (int k = 0; k < categoryCount; k++) {
-				double[] l = inside(core, mrca, k, p, patternCount, stateCount, categoryCount);
+		double logLikelihood() {
+			double logL = 0;
+			for (int p = 0; p < patternCount; p++) {
+				double site = 0;
+				for (int k = 0; k < categoryCount; k++) {
+					double[] l = inside(tree.getRoot(), k, p);
+					for (int i = 0; i < stateCount; i++) {
+						site += weights[k] * pi[i] * l[i];
+					}
+				}
 				for (int i = 0; i < stateCount; i++) {
-					double v = weights[k] * outside[k][p][i] * l[i];
-					marginal[p][i] += v;
-					total += v;
+					site += compatible[p][i] ? pInv * pi[i] : 0;
+				}
+				logL += data.getPatternWeight(p) * Math.log(site);
+			}
+			return logL;
+		}
+
+		/** P(x = i | D) at MRCA(target), per pattern. */
+		double[][] marginal(Set<String> target) {
+			Node mrca = null;
+			for (Node node : tree.getNodesAsArray()) {
+				Set<String> leaves = new HashSet<>();
+				for (Node leaf : node.getAllLeafNodes()) {
+					leaves.add(leaf.getID());
+				}
+				if (node.isLeaf()) {
+					leaves.add(node.getID());
+				}
+				if (leaves.equals(target)) {
+					mrca = node;
 				}
 			}
-			for (int i = 0; i < stateCount; i++) {
-				marginal[p][i] /= total;
+			assertNotNull(mrca);
+
+			List<Node> path = new ArrayList<>();
+			for (Node n = mrca; n != null; n = n.getParent()) {
+				path.add(0, n);
 			}
+
+			// outside[k][p][i], starting from the root prior.
+			double[][][] outside = new double[categoryCount][patternCount][stateCount];
+			for (double[][] perCategory : outside) {
+				for (double[] perPattern : perCategory) {
+					System.arraycopy(pi, 0, perPattern, 0, stateCount);
+				}
+			}
+			for (int step = 1; step < path.size(); step++) {
+				Node child = path.get(step);
+				Node parent = child.getParent();
+				Node sibling = parent.getLeft() == child ? parent.getRight() : parent.getLeft();
+				double[][][] next = new double[categoryCount][patternCount][stateCount];
+				for (int k = 0; k < categoryCount; k++) {
+					double[] pChild = matrix(child, k);
+					double[] pSibling = matrix(sibling, k);
+					for (int p = 0; p < patternCount; p++) {
+						double[] lSibling = inside(sibling, k, p);
+						for (int s = 0; s < stateCount; s++) {
+							double siblingTerm = 0;
+							for (int t = 0; t < stateCount; t++) {
+								siblingTerm += pSibling[s * stateCount + t] * lSibling[t];
+							}
+							double factor = outside[k][p][s] * siblingTerm;
+							for (int i = 0; i < stateCount; i++) {
+								next[k][p][i] += factor * pChild[s * stateCount + i];
+							}
+						}
+					}
+				}
+				outside = next;
+			}
+
+			double[][] marginal = new double[patternCount][stateCount];
+			for (int p = 0; p < patternCount; p++) {
+				double total = 0;
+				for (int i = 0; i < stateCount; i++) {
+					double v = compatible[p][i] ? pInv * pi[i] : 0;
+					for (int k = 0; k < categoryCount; k++) {
+						v += weights[k] * outside[k][p][i] * inside(mrca, k, p)[i];
+					}
+					marginal[p][i] = v;
+					total += v;
+				}
+				for (int i = 0; i < stateCount; i++) {
+					marginal[p][i] /= total;
+				}
+			}
+			return marginal;
 		}
-		return marginal;
-	}
 
-	private static double[] matrix(LikelihoodCore core, Node node, int k, int stateCount) {
-		double[] m = new double[stateCount * stateCount];
-		core.getNodeMatrix(node.getNr(), k, m);
-		return m;
-	}
+		double[] matrix(Node node, int k) {
+			double[] m = new double[stateCount * stateCount];
+			core.getNodeMatrix(node.getNr(), k, m);
+			return m;
+		}
 
-	/** Inside partials L_k(node, i) for one pattern; leaves use their observed state. */
-	private static double[] inside(LikelihoodCore core, Node node, int k, int p,
-			int patternCount, int stateCount, int categoryCount) {
-		double[] l = new double[stateCount];
-		if (node.isLeaf()) {
-			int[] states = new int[patternCount];
-			core.getNodeStates(node.getNr(), states);
-			if (states[p] >= 0 && states[p] < stateCount) {
-				l[states[p]] = 1.0;
+		/** Inside partials L_k(node, i) for one pattern; leaves use their observed state. */
+		double[] inside(Node node, int k, int p) {
+			double[] l = new double[stateCount];
+			if (node.isLeaf()) {
+				int[] states = new int[patternCount];
+				core.getNodeStates(node.getNr(), states);
+				if (states[p] >= 0 && states[p] < stateCount) {
+					l[states[p]] = 1.0;
+				} else {
+					Arrays.fill(l, 1.0); // gap or ambiguity
+				}
 			} else {
-				Arrays.fill(l, 1.0); // gap or ambiguity
+				double[] partials = new double[patternCount * stateCount * categoryCount];
+				core.getNodePartials(node.getNr(), partials);
+				System.arraycopy(partials, (k * patternCount + p) * stateCount, l, 0, stateCount);
 			}
-		} else {
-			double[] partials = new double[patternCount * stateCount * categoryCount];
-			core.getNodePartials(node.getNr(), partials);
-			System.arraycopy(partials, (k * patternCount + p) * stateCount, l, 0, stateCount);
+			return l;
 		}
-		return l;
 	}
 }
