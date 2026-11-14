@@ -71,9 +71,10 @@ public class EpochSubstitutionModel extends Base {
 		Arrays.fill(tmp, 1.0);
 		m_substitutionModels[iStart].getTransitionProbabilities(node, fStartTime, fEpochDates[iStart-1], fRate, matrix);
 		int iEnd = iStart - 1;
-		int nStates = (int) (Math.sqrt(matrix.length)+0.1) - 1;
-		
-		while (iEnd > 0 && fEpochDates[iEnd- 1] > fEndTime) {
+		// take state count from substitution model for robustness
+		int nStates = m_substitutionModels[iStart].getStateCount();
+
+		while (iEnd > 0 && fEpochDates[iEnd - 1] > fEndTime) {
 			// work through epochs that are completely overlapped by the time interval 
 			m_substitutionModels[iEnd].getTransitionProbabilities(node, fEpochDates[iEnd], fEpochDates[iEnd-1], fRate, tmp);
 			// matrix multiplication

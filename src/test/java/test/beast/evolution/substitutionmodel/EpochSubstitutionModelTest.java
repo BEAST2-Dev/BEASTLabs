@@ -12,7 +12,7 @@ import beast.base.spec.domain.Real;
 import beast.base.spec.inference.parameter.RealVectorParam;
 import beastlabs.evolution.substitutionmodel.EpochSubstitutionModel;
 
-public class EpochSubtitutionModelTest {
+public class EpochSubstitutionModelTest {
 
 	private static RealVectorParam<Real> realVec(String values) {
 		RealVectorParam<Real> p = new RealVectorParam<>();
