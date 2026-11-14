@@ -13,11 +13,16 @@ import beast.base.core.Input.Validate;
 import beast.base.core.Loggable;
 import beast.base.evolution.alignment.TaxonSet;
 import beast.base.evolution.likelihood.TreeLikelihood;
+import beast.base.evolution.sitemodel.SiteModel;
 import beast.base.evolution.tree.Node;
 import beast.base.util.Randomizer;
 
 
-@Description("Logs internal states sampled from the distribution at the MRCA of a set of taxa")
+@Description("Logs internal states sampled from the distribution at the MRCA of a set of taxa. "
+		+ "Supports discrete-Gamma site-rate heterogeneity: each site's rate category is drawn jointly "
+		+ "with the root state and kept for the whole tree, which gives exact draws from the joint posterior. "
+		+ "A proportion of invariant sites is handled as one more category with rate zero: a site drawn as "
+		+ "invariant keeps its root state at every node.")
 public class AncestralStateLogger extends TreeLikelihood implements Loggable {
 	public Input<TaxonSet> taxonsetInput = new Input<>("taxonset", "set of taxa defining a clade. The MRCA node of the clade is logged", Validate.REQUIRED);
 	public Input<String> valueInput = new Input<>("value", "space delimited set of labels, one for each site in the alignment. Used as site label in the log file.");
@@ -28,6 +33,11 @@ public class AncestralStateLogger extends TreeLikelihood implements Loggable {
     Set<String> isInTaxaSet = new LinkedHashSet<>();
     Node MRCA;
 	int [] parentSample;
+    // Per-site rate category sampled at the root and carried down the tree:
+    // a discrete-Gamma category 0..categoryCount-1, or INVARIANT for a site
+    // drawn from the proportion of invariant sites.
+	int [] siteCategory;
+	static final int INVARIANT = -1;
     boolean logParent;
     boolean logMRCA;
     
@@ -38,6 +48,13 @@ public class AncestralStateLogger extends TreeLikelihood implements Loggable {
         System.setProperty("java.only", "true");
 		super.initAndValidate();
         System.setProperty("java.only", "" + forceJava);
+
+        // Invariant sites need the list of constant (pattern, state) pairs.
+        // TreeLikelihood only builds it when proportionInvariant > 0 at start-up,
+        // so build it here if pInv is estimated from a starting value of 0.
+        if (getConstantPattern() == null && isProportionInvariantEstimated()) {
+        	calcConstantPatternIndices(dataInput.get().getPatternCount(), dataInput.get().getMaxStateCount());
+        }
         
         String values = valueInput.get();
 		if (values != null && values.trim().length() > 0) {
@@ -103,8 +120,31 @@ public class AncestralStateLogger extends TreeLikelihood implements Loggable {
         if (!logParent && ! logMRCA) {
         	throw new IllegalArgumentException("At least one of logMRCA and logParent should be seleceted");
         }
+        // Allocate the per-site category array once; sample() fills it fresh each call.
+        siteCategory = new int[dataInput.get().getSiteCount()];
 	}
 	
+
+	private boolean isProportionInvariantEstimated() {
+		if (m_siteModel instanceof SiteModel) {
+			var invar = ((SiteModel) m_siteModel).invarParameterInput.get();
+			return invar != null && invar.isEstimatedInput.get();
+		}
+		return false;
+	}
+
+	/** constant[pattern * stateCount + state] is true if every taxon at that
+	 * pattern is compatible with the state (gaps and ambiguities included). */
+	private boolean[] constantStates(int patternCount, int stateCount) {
+		boolean [] constant = new boolean[patternCount * stateCount];
+		List<Integer> constantPattern = getConstantPattern();
+		if (constantPattern != null) {
+			for (int index : constantPattern) {
+				constant[index] = true;
+			}
+		}
+		return constant;
+	}
 
 	@Override
 	public void init(PrintStream out) {
@@ -167,40 +207,91 @@ public class AncestralStateLogger extends TreeLikelihood implements Loggable {
 				throw new RuntimeException("BEAGLE is not supported yet");
 				// m_fRootPartials = beagle.m_fRootPartials;
 			}
-			
-			double [] p = new double[stateCount];
+
 			double [] freqs = substitutionModel.getFrequencies();
-			for (int i = 0; i < sample.length; i++) {
-				int offset = stateCount * dataInput.get().getPatternIndex(i);
-				for (int j = 0; j < stateCount; j++) {
-					p[j] = m_fRootPartials[offset + j] * freqs[j];
+			int categoryCount = m_siteModel.getCategoryCount();
+			double pInv = m_siteModel.getProportionInvariant();
+			if (categoryCount == 1 && pInv == 0) {
+				double [] p = new double[stateCount];
+				for (int i = 0; i < sample.length; i++) {
+					int offset = stateCount * dataInput.get().getPatternIndex(i);
+					for (int j = 0; j < stateCount; j++) {
+						p[j] = m_fRootPartials[offset + j] * freqs[j];
+					}
+					sample[i] = Randomizer.randomChoicePDF(p);
+					siteCategory[i] = 0;
 				}
-				sample[i] = Randomizer.randomChoicePDF(p);
+			} else {
+				// Draw (category, state) jointly per site. Gamma category k:
+				//     P(k, i | site) proportional to w_k * freqs[i] * partials[k, pattern, i]
+				// Invariant class (rate 0), stored after the Gamma categories:
+				//     P(inv, i | site) proportional to pInv * freqs[i] * [all taxa compatible with i]
+				// (the w_k already sum to 1 - pInv). Retain the category in
+				// siteCategory[] for downward propagation.
+				int patternCount = dataInput.get().getPatternCount();
+				double [] partials = new double[patternCount * stateCount * categoryCount];
+				likelihoodCore.getNodePartials(node.getNr(), partials);
+				double [] weights = m_siteModel.getCategoryProportions(node);
+				boolean [] constant = pInv > 0 ? constantStates(patternCount, stateCount) : null;
+				int optionCount = categoryCount + 1;
+				double [] joint = new double[optionCount * stateCount];
+				for (int i = 0; i < sample.length; i++) {
+					int patternIdx = dataInput.get().getPatternIndex(i);
+					double total = 0.0;
+					for (int k = 0; k < categoryCount; k++) {
+						int base = (k * patternCount + patternIdx) * stateCount;
+						for (int j = 0; j < stateCount; j++) {
+							double v = weights[k] * freqs[j] * partials[base + j];
+							joint[k * stateCount + j] = v;
+							total += v;
+						}
+					}
+					for (int j = 0; j < stateCount; j++) {
+						double v = (constant != null && constant[patternIdx * stateCount + j]) ? pInv * freqs[j] : 0.0;
+						joint[categoryCount * stateCount + j] = v;
+						total += v;
+					}
+					double r = Randomizer.nextDouble() * total;
+					double cum = 0.0;
+					int sampledK = 0, sampledJ = 0;
+					outer:
+					for (int k = 0; k < optionCount; k++) {
+						for (int j = 0; j < stateCount; j++) {
+							cum += joint[k * stateCount + j];
+							if (r <= cum) { sampledK = k; sampledJ = j; break outer; }
+						}
+					}
+					sample[i] = sampledJ;
+					siteCategory[i] = sampledK == categoryCount ? INVARIANT : sampledK;
+				}
 			}
-			
+
 		} else {
 			parentSample = sample(node.getParent());
-			
+
 			double [] p = new double[stateCount];
-			double [] partials = new double[dataInput.get().getPatternCount() * stateCount * m_siteModel.getCategoryCount()];
-			
-			if (m_siteModel.getCategoryCount() != 1) {
-				throw new RuntimeException("Gamma rate heterogeneity or proportion invariant is not supported yet");
-			}
+			int patternCount = dataInput.get().getPatternCount();
+			int categoryCount = m_siteModel.getCategoryCount();
+			double [] partials = new double[patternCount * stateCount * categoryCount];
+
 			if (beagle != null) {
 				throw new RuntimeException("BEAGLE is not supported yet");
 				// beagle.beagle.getPartials(arg0, arg1, arg2);
         		// getTransitionMatrix(nodeNum, probabilities);
-			} else {
-				likelihoodCore.getNodeMatrix(node.getNr(), 0, probabilities);
+			}
+			// Fetch per-category transition matrices. In the single-category case
+			// catMatrix[0] is identical to the legacy 'probabilities' buffer.
+			double [][] catMatrix = new double[categoryCount][stateCount * stateCount];
+			for (int k = 0; k < categoryCount; k++) {
+				likelihoodCore.getNodeMatrix(node.getNr(), k, catMatrix[k]);
 			}
 
-			if (node.isLeaf()) { 
+			if (node.isLeaf()) {
 				if (!m_useAmbiguities.get()) {
 					// leaf node values come mainly from the states.
 					// only ambiguous sites are sampled
-					
-					int [] states = new int [dataInput.get().getPatternCount() * m_siteModel.getCategoryCount()];
+
+					int [] states = new int [patternCount * categoryCount];
 					if (beagle != null) {
 						throw new RuntimeException("BEAGLE is not supported yet");
 						// beagle.beagle.getPartials(arg0, arg1, arg2);
@@ -208,7 +299,7 @@ public class AncestralStateLogger extends TreeLikelihood implements Loggable {
 					} else {
 						likelihoodCore.getNodeStates(node.getNr(), states);
 					}
-					
+
 		            for (int j = 0; j < sample.length; j++) {
 		            	int childIndex = dataInput.get().getPatternIndex(j);
 		            	if (states[childIndex] >= 0 && states[childIndex] < stateCount) {
@@ -223,30 +314,44 @@ public class AncestralStateLogger extends TreeLikelihood implements Loggable {
 					// sample conditioned on child partials
 					likelihoodCore.getNodePartials(node.getNr(), partials);
 
-					// sample using transition matrix and parent states
+					// sample using transition matrix and parent states; under
+					// discrete-Gamma use the category chosen at the root for site j.
 		            for (int j = 0; j < sample.length; j++) {
+		            	int k = siteCategory[j];
+		            	if (k == INVARIANT) {
+		            		// rate 0: the state cannot change along the branch
+		            		sample[j] = parentSample[j];
+		            		continue;
+		            	}
 		                int parentIndex = parentSample[j] * stateCount;
-		                int childIndex = dataInput.get().getPatternIndex(j) * stateCount;
-		
+		                int partialBase = (k * patternCount + dataInput.get().getPatternIndex(j)) * stateCount;
+
 		                for (int i = 0; i < stateCount; i++) {
-		                    p[i] = partials[childIndex + i] * probabilities[parentIndex + i];
+		                    p[i] = partials[partialBase + i] * catMatrix[k][parentIndex + i];
 		                }
-		
+
 						sample[j] = Randomizer.randomChoicePDF(p);
 		            }
 				}
 			} else {
 				likelihoodCore.getNodePartials(node.getNr(), partials);
 
-				// sample using transition matrix and parent states
+				// sample using transition matrix and parent states; under
+				// discrete-Gamma use the category chosen at the root for site j.
 	            for (int j = 0; j < sample.length; j++) {
+	            	int k = siteCategory[j];
+	            	if (k == INVARIANT) {
+	            		// rate 0: the state cannot change along the branch
+	            		sample[j] = parentSample[j];
+	            		continue;
+	            	}
 	                int parentIndex = parentSample[j] * stateCount;
-	                int childIndex = dataInput.get().getPatternIndex(j) * stateCount;
-	
+	                int partialBase = (k * patternCount + dataInput.get().getPatternIndex(j)) * stateCount;
+
 	                for (int i = 0; i < stateCount; i++) {
-	                    p[i] = partials[childIndex + i] * probabilities[parentIndex + i];
+	                    p[i] = partials[partialBase + i] * catMatrix[k][parentIndex + i];
 	                }
-	
+
 					sample[j] = Randomizer.randomChoicePDF(p);
 	            }
             }
