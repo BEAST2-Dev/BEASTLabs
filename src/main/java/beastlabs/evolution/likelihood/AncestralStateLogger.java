@@ -13,11 +13,15 @@ import beast.base.core.Input.Validate;
 import beast.base.core.Loggable;
 import beast.base.evolution.alignment.TaxonSet;
 import beast.base.evolution.likelihood.TreeLikelihood;
+import beast.base.evolution.sitemodel.SiteModel;
 import beast.base.evolution.tree.Node;
 import beast.base.util.Randomizer;
 
 
-@Description("Logs internal states sampled from the distribution at the MRCA of a set of taxa")
+@Description("Logs internal states sampled from the distribution at the MRCA of a set of taxa. "
+		+ "Supports discrete-Gamma site-rate heterogeneity: each site's rate category is drawn jointly "
+		+ "with the root state and kept for the whole tree, which gives exact draws from the joint posterior. "
+		+ "A proportion of invariant sites is not supported.")
 public class AncestralStateLogger extends TreeLikelihood implements Loggable {
 	public Input<TaxonSet> taxonsetInput = new Input<>("taxonset", "set of taxa defining a clade. The MRCA node of the clade is logged", Validate.REQUIRED);
 	public Input<String> valueInput = new Input<>("value", "space delimited set of labels, one for each site in the alignment. Used as site label in the log file.");
@@ -41,6 +45,15 @@ public class AncestralStateLogger extends TreeLikelihood implements Loggable {
         System.setProperty("java.only", "true");
 		super.initAndValidate();
         System.setProperty("java.only", "" + forceJava);
+
+        // TreeLikelihood handles invariant sites outside the per-category partials
+        // that sample() reads, so a proportion of invariant sites would be silently
+        // ignored. Refuse it rather than sample from the wrong model.
+        if (m_siteModel.getProportionInvariant() > 0 || isProportionInvariantEstimated()) {
+        	throw new IllegalArgumentException("AncestralStateLogger does not support a proportion of invariant sites "
+        			+ "(proportionInvariant = " + m_siteModel.getProportionInvariant() + "). "
+        			+ "Give the logger a site model without proportionInvariant.");
+        }
         
         String values = valueInput.get();
 		if (values != null && values.trim().length() > 0) {
@@ -110,6 +123,14 @@ public class AncestralStateLogger extends TreeLikelihood implements Loggable {
         siteCategory = new int[dataInput.get().getSiteCount()];
 	}
 	
+
+	private boolean isProportionInvariantEstimated() {
+		if (m_siteModel instanceof SiteModel) {
+			var invar = ((SiteModel) m_siteModel).invarParameterInput.get();
+			return invar != null && invar.isEstimatedInput.get();
+		}
+		return false;
+	}
 
 	@Override
 	public void init(PrintStream out) {
